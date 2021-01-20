@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.cache.IdCacheEntry;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.schema.SequenceEnum;
@@ -101,7 +101,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkSurfaceGeometry xlink) throws SQLException {
-		UIDCacheEntry rootGeometryEntry = manager.getGeometryId(xlink.getGmlId());
+		IdCacheEntry rootGeometryEntry = manager.getGeometryId(xlink.getGmlId());
 		if (rootGeometryEntry == null || rootGeometryEntry.getRootId() == -1) {
 			// do not return an error in case of implicit geometries since the
 			// the implicit geometry might be a point or curve

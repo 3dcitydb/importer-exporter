@@ -27,8 +27,8 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
+import org.citydb.citygml.common.cache.IdCacheEntry;
+import org.citydb.citygml.common.xlink.DBXlinkBasic;
 import org.citydb.database.schema.TableEnum;
 
 import java.sql.Connection;
@@ -55,7 +55,7 @@ public class XlinkBasic implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkBasic xlink) throws SQLException {
-		UIDCacheEntry entry = TableEnum.SURFACE_GEOMETRY.getName().equalsIgnoreCase(xlink.getTable()) ? 
+		IdCacheEntry entry = TableEnum.SURFACE_GEOMETRY.getName().equalsIgnoreCase(xlink.getTable()) ?
 				manager.getGeometryId(xlink.getGmlId()) :
 				manager.getObjectId(xlink.getGmlId());
 

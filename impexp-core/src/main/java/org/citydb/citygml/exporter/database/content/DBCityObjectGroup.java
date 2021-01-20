@@ -165,7 +165,7 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 							String gmlId = rs.getString("parent_gmlid");
 
 							if (!exporter.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
-									&& !exporter.lookupObjectUID(gmlId))
+									&& !exporter.lookupObjectId(gmlId))
 								continue;
 
 							if (gmlId != null) {
@@ -191,7 +191,7 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 						String gmlId = rs.getString("member_gmlid");
 
 						if (!exporter.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
-								&& !exporter.lookupObjectUID(gmlId))
+								&& !exporter.lookupObjectId(gmlId))
 							continue;
 
 						if (gmlId != null) {

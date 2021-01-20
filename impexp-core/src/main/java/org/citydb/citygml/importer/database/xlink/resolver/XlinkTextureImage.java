@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.common.xlink.DBXlinkTextureFile;
 import org.citydb.database.adapter.BlobImportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.event.global.CounterEvent;

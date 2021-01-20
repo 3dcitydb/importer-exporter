@@ -170,7 +170,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 				String gmlId = rs.getString("rcgmlid");
 				boolean generateNewGmlId = false;
 				if (!rs.wasNull()) {
-					if (exporter.lookupAndPutObjectUID(gmlId, componentId, objectClassId)) {
+					if (exporter.lookupAndPutObjectId(gmlId, componentId, objectClassId)) {
 						if (useXLink) {
 							ReliefComponentProperty property = new ReliefComponentProperty();
 							property.setHref("#" + gmlId);

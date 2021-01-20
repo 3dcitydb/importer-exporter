@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
+import org.citydb.citygml.common.xlink.DBXlinkBasic;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
@@ -101,13 +101,13 @@ public class DBAppearance implements DBImporter {
 
 			// mapping entry
 			if (appearance.isSetId())
-				importer.putObjectUID(appearance.getId(), appearanceId, gmlId, featureType.getObjectClassId());
+				importer.putObjectId(appearance.getId(), appearanceId, gmlId, featureType.getObjectClassId());
 
 			appearance.setId(gmlId);
 
 		} else {
 			if (appearance.isSetId())
-				importer.putObjectUID(appearance.getId(), appearanceId, featureType.getObjectClassId());
+				importer.putObjectId(appearance.getId(), appearanceId, featureType.getObjectClassId());
 			else
 				appearance.setId(importer.generateNewGmlId());
 		}

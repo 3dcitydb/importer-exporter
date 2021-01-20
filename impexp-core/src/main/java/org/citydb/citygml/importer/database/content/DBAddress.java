@@ -112,13 +112,13 @@ public class DBAddress implements DBImporter {
 
 			// mapping entry
 			if (address.isSetId())
-				importer.putObjectUID(address.getId(), addressId, gmlId, featureType.getObjectClassId());
+				importer.putObjectId(address.getId(), addressId, gmlId, featureType.getObjectClassId());
 
 			address.setId(gmlId);
 
 		} else {
 			if (address.isSetId())
-				importer.putObjectUID(address.getId(), addressId, featureType.getObjectClassId());
+				importer.putObjectId(address.getId(), addressId, featureType.getObjectClassId());
 			else
 				address.setId(importer.generateNewGmlId());
 		}

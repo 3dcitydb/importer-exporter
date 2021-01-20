@@ -403,7 +403,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 					String gmlId = rs.getString("opgmlid");
 					boolean generateNewGmlId = false;
 					if (!rs.wasNull()) {
-						if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+						if (exporter.lookupAndPutObjectId(gmlId, openingId, objectClassId)) {
 							if (useXLink) {
 								openingProperty = new OpeningProperty();
 								openingProperty.setHref("#" + gmlId);

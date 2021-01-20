@@ -318,7 +318,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		// check for xlinks
 		if (geomNode.gmlId != null
 				&& geomNode.isXlink > 0
-				&& exporter.lookupAndPutGeometryUID(geomNode.gmlId, geomNode.id, geomNode.isXlink == XlinkType.LOCAL.value())) {
+				&& exporter.lookupAndPutGeometryId(geomNode.gmlId, geomNode.id, geomNode.isXlink == XlinkType.LOCAL.value())) {
 			if (useXLink) {
 				// check whether we have to embrace the geometry with an orientableSurface
 				return geomNode.isReverse != isSetOrientableSurface ?

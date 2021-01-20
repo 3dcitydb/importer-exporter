@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceDataToTexImage;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -27,10 +27,10 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureParam;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureParamEnum;
+import org.citydb.citygml.common.cache.IdCacheEntry;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociationTarget;
+import org.citydb.citygml.common.xlink.DBXlinkTextureParam;
+import org.citydb.citygml.common.xlink.DBXlinkTextureParamEnum;
 import org.citydb.util.Util;
 
 import java.sql.Connection;
@@ -59,7 +59,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 		if (Util.isRemoteXlink(xlink.getGmlId()))
 			return false;
 
-		UIDCacheEntry geometryEntry = manager.getGeometryId(xlink.getGmlId());
+		IdCacheEntry geometryEntry = manager.getGeometryId(xlink.getGmlId());
 		if (geometryEntry == null || geometryEntry.getId() == -1)
 			return false;
 

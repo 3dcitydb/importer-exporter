@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.xlink.DBXlink;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.xlink.DBXlink;
+import org.citydb.citygml.common.xlink.DBXlinkTextureFile;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -260,7 +260,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 		if (gmlId != null) {
 			// process xlink
-			if (exporter.lookupAndPutObjectUID(gmlId, surfaceDataId, objectClassId)) {
+			if (exporter.lookupAndPutObjectId(gmlId, surfaceDataId, objectClassId)) {
 				if (useXLink)
 					return new SurfaceDataProperty("#" + gmlId);
 				else {

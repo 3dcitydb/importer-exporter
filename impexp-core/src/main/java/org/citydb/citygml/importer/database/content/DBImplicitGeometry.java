@@ -27,8 +27,8 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkLibraryObject;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.ConcurrentLockManager;
 import org.citydb.citygml.importer.util.ExternalFileChecker;
@@ -141,7 +141,7 @@ public class DBImplicitGeometry implements DBImporter {
 
 			// check relative geometry reference
 			else if (gmlId != null)
-				implicitGeometryId = importer.getObjectId(gmlId);				
+				implicitGeometryId = importer.getObjectId(gmlId);
 
 			if (implicitGeometryId <= 0) {
 				implicitGeometryId = importer.getNextSequenceValue(SequenceEnum.IMPLICIT_GEOMETRY_ID_SEQ.getName());
@@ -151,7 +151,7 @@ public class DBImplicitGeometry implements DBImporter {
 				++batchCounter;
 
 				if (gmlId != null)
-					importer.putObjectUID(gmlId, implicitGeometryId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID);
+					importer.putObjectId(gmlId, implicitGeometryId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID);
 
 				importer.updateObjectCounter(implicitGeometry, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID, implicitGeometryId);
 			}
@@ -228,7 +228,7 @@ public class DBImplicitGeometry implements DBImporter {
 			lock.unlock();
 		}
 
-		if (isXLink && !importer.lookupAndPutObjectUID("#xlink#" + gmlId, 1, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
+		if (isXLink && !importer.lookupAndPutObjectId("#xlink#" + gmlId, 1, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
 			importer.propagateXlink(new DBXlinkSurfaceGeometry(
 					MappingConstants.IMPLICIT_GEOMETRY_TABLE,
 					implicitGeometryId, 

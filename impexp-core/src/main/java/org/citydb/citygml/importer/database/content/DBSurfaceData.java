@@ -27,12 +27,12 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociation;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureCoordList;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureParam;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureParamEnum;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceDataToTexImage;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociation;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociationTarget;
+import org.citydb.citygml.common.xlink.DBXlinkTextureCoordList;
+import org.citydb.citygml.common.xlink.DBXlinkTextureParam;
+import org.citydb.citygml.common.xlink.DBXlinkTextureParamEnum;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.citygml.importer.util.ExternalFileChecker;
@@ -175,13 +175,13 @@ public class DBSurfaceData implements DBImporter {
 
 			// mapping entry
 			if (surfaceData.isSetId())
-				importer.putObjectUID(surfaceData.getId(), surfaceDataId, gmlId, featureType.getObjectClassId());
+				importer.putObjectId(surfaceData.getId(), surfaceDataId, gmlId, featureType.getObjectClassId());
 
 			surfaceData.setId(gmlId);
 
 		} else {
 			if (surfaceData.isSetId())
-				importer.putObjectUID(surfaceData.getId(), surfaceDataId, featureType.getObjectClassId());
+				importer.putObjectId(surfaceData.getId(), surfaceDataId, featureType.getObjectClassId());
 			else
 				surfaceData.setId(importer.generateNewGmlId());
 		}

@@ -31,7 +31,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
+import org.citydb.citygml.common.xlink.DBXlinkDeprecatedMaterial;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;

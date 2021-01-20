@@ -31,13 +31,13 @@ import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.ade.exporter.ADEExportManager;
 import org.citydb.ade.exporter.CityGMLExportHelper;
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModel;
-import org.citydb.citygml.common.database.uid.UIDCache;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.uid.UIDCacheType;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.model.CacheTableModel;
+import org.citydb.citygml.common.cache.IdCache;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.cache.IdCacheType;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AppearanceRemover;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
@@ -155,7 +155,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final List<CityGMLExportExtension> plugins;
 	private final FeatureWriter featureWriter;
 	private final WorkerPool<DBXlink> xlinkPool;
-	private final UIDCacheManager uidCacheManager;
+	private final IdCacheManager idCacheManager;
 	private final CacheTableManager cacheTableManager;
 	private final InternalConfig internalConfig;
 	private final Config config;
@@ -179,7 +179,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
 			WorkerPool<DBXlink> xlinkPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
 			InternalConfig internalConfig,
 			Config config) throws CityGMLExportException {
@@ -190,7 +190,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.featureWriter = featureWriter;
 		this.xlinkPool = xlinkPool;
-		this.uidCacheManager = uidCacheManager;
+		this.idCacheManager = idCacheManager;
 		this.cacheTableManager = cacheTableManager;
 		this.internalConfig = internalConfig;
 		this.config = config;
@@ -735,28 +735,28 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public boolean lookupAndPutObjectUID(String gmlId, long id, int objectClassId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
+	public boolean lookupAndPutObjectId(String gmlId, long id, int objectClassId) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		return cache != null && cache.lookupAndPut(gmlId, id, objectClassId);
 	}
 
 	@Override
-	public boolean lookupObjectUID(String gmlId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
+	public boolean lookupObjectId(String gmlId) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		return cache != null && cache.get(gmlId) != null;
 	}
 
-	public void putObjectUID(String gmlId, long id, int objectClassId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
+	public void putObjectId(String gmlId, long id, int objectClassId) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		if (cache != null)
 			cache.put(gmlId, id, -1, false, null, objectClassId);
 	}	
 
-	public boolean lookupAndPutGeometryUID(String gmlId, long id, boolean useLocalScope) {
+	public boolean lookupAndPutGeometryId(String gmlId, long id, boolean useLocalScope) {
 		boolean isCached = !localGeometryCache.add(gmlId);
 
 		if (!useLocalScope) {
-			UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
+			IdCache cache = idCacheManager.getCache(IdCacheType.GEOMETRY);
 			if (cache != null) {
 				if (isCached) {
 					cache.put(gmlId, id, 0, false, null, MappingConstants.SURFACE_GEOMETRY_OBJECTCLASS_ID);
@@ -769,10 +769,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return isCached;
 	}
 
-	public boolean lookupGeometryUID(String gmlId) {
+	public boolean lookupGeometryId(String gmlId) {
 		boolean isCached = localGeometryCache.contains(gmlId);
 		if (!isCached) {
-			UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
+			IdCache cache = idCacheManager.getCache(IdCacheType.GEOMETRY);
 			isCached = cache != null && cache.get(gmlId) != null;
 		}
 

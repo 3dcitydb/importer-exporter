@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.common.xlink.DBXlinkTextureFile;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.ConcurrentLockManager;
 import org.citydb.citygml.importer.util.ExternalFileChecker;
@@ -102,7 +102,7 @@ public class DBTexImage implements DBImporter {
 					texImageId = 0;
 				}
 
-				importer.putTextureImageUID(md5URI, texImageId);
+				importer.putTextureImageId(md5URI, texImageId);
 			}
 		} finally {
 			lockManager.releaseLock(md5URI);

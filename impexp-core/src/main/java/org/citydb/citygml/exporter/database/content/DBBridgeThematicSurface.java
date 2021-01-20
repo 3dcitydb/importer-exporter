@@ -201,7 +201,7 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 				String gmlId = rs.getString("opgmlid");
 				boolean generateNewGmlId = false;
 				if (!rs.wasNull()) {
-					if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+					if (exporter.lookupAndPutObjectId(gmlId, openingId, objectClassId)) {
 						if (useXLink) {
 							OpeningProperty openingProperty = new OpeningProperty();
 							openingProperty.setHref("#" + gmlId);

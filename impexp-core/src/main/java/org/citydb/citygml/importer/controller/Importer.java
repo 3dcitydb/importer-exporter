@@ -28,17 +28,17 @@
 package org.citydb.citygml.importer.controller;
 
 import org.apache.tika.exception.TikaException;
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.uid.UIDCacheType;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.cache.IdCacheType;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.concurrent.DBImportWorkerFactory;
 import org.citydb.citygml.importer.concurrent.DBImportXlinkResolverWorkerFactory;
 import org.citydb.citygml.importer.concurrent.DBImportXlinkWorkerFactory;
-import org.citydb.citygml.importer.database.uid.FeatureGmlIdCache;
-import org.citydb.citygml.importer.database.uid.GeometryGmlIdCache;
-import org.citydb.citygml.importer.database.uid.TextureImageCache;
+import org.citydb.citygml.importer.cache.ObjectGmlIdCache;
+import org.citydb.citygml.importer.cache.GeometryGmlIdCache;
+import org.citydb.citygml.importer.cache.TextureImageCache;
 import org.citydb.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.filter.CityGMLFilterBuilder;
@@ -235,7 +235,7 @@ public class Importer implements EventHandler {
         FeatureReaderFactoryBuilder builder = new FeatureReaderFactoryBuilder();
 
         CacheTableManager cacheTableManager = null;
-        UIDCacheManager uidCacheManager = null;
+        IdCacheManager idCacheManager = null;
         WorkerPool<CityGML> dbWorkerPool = null;
         WorkerPool<DBXlink> tmpXlinkPool = null;
         WorkerPool<DBXlink> xlinkResolverPool = null;
@@ -303,12 +303,12 @@ public class Importer implements EventHandler {
                 }
 
                 // create instance of gml:id lookup server manager...
-                uidCacheManager = new UIDCacheManager();
+                idCacheManager = new IdCacheManager();
 
                 // ...and start servers
                 try {
-                    uidCacheManager.initCache(
-                            UIDCacheType.GEOMETRY,
+                    idCacheManager.initCache(
+                            IdCacheType.GEOMETRY,
                             new GeometryGmlIdCache(cacheTableManager,
                                     config.getImportConfig().getResources().getIdCache().getGeometry().getPartitions(),
                                     lookupCacheBatchSize),
@@ -316,9 +316,9 @@ public class Importer implements EventHandler {
                             config.getImportConfig().getResources().getIdCache().getGeometry().getPageFactor(),
                             maxThreads);
 
-                    uidCacheManager.initCache(
-                            UIDCacheType.OBJECT,
-                            new FeatureGmlIdCache(cacheTableManager,
+                    idCacheManager.initCache(
+                            IdCacheType.OBJECT,
+                            new ObjectGmlIdCache(cacheTableManager,
                                     config.getImportConfig().getResources().getIdCache().getFeature().getPartitions(),
                                     lookupCacheBatchSize),
                             config.getImportConfig().getResources().getIdCache().getFeature().getCacheSize(),
@@ -327,8 +327,8 @@ public class Importer implements EventHandler {
 
                     if (config.getImportConfig().getAppearances().isSetImportAppearance() &&
                             config.getImportConfig().getAppearances().isSetImportTextureFiles()) {
-                        uidCacheManager.initCache(
-                                UIDCacheType.TEXTURE_IMAGE,
+                        idCacheManager.initCache(
+                                IdCacheType.TEXTURE_IMAGE,
                                 new TextureImageCache(cacheTableManager,
                                         config.getImportConfig().getResources().getTexImageCache().getPartitions(),
                                         lookupCacheBatchSize),
@@ -360,7 +360,7 @@ public class Importer implements EventHandler {
                         new DBImportWorkerFactory(schemaMapping,
                                 cityGMLBuilder,
                                 tmpXlinkPool,
-                                uidCacheManager,
+                                idCacheManager,
                                 filter,
                                 affineTransformer,
                                 importLogger,
@@ -418,7 +418,7 @@ public class Importer implements EventHandler {
                             PoolSizeAdaptationStrategy.AGGRESSIVE,
                             new DBImportXlinkResolverWorkerFactory(file,
                                     tmpXlinkPool,
-                                    uidCacheManager,
+                                    idCacheManager,
                                     cacheTableManager,
                                     config,
                                     eventDispatcher),
@@ -481,9 +481,9 @@ public class Importer implements EventHandler {
                     //
                 }
 
-                if (uidCacheManager != null) {
+                if (idCacheManager != null) {
                     try {
-                        uidCacheManager.shutdownAll();
+                        idCacheManager.shutdownAll();
                     } catch (SQLException e) {
                         setException("Failed to clean the gml:id caches.", e);
                         shouldRun = false;

@@ -315,7 +315,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 				String gmlId = rs.getString("wsgmlid");
 				boolean generateNewGmlId = false;
 				if (!rs.wasNull()) {
-					if (exporter.lookupAndPutObjectUID(gmlId, waterBoundarySurfaceId, objectClassId)) {
+					if (exporter.lookupAndPutObjectId(gmlId, waterBoundarySurfaceId, objectClassId)) {
 						if (useXLink) {
 							BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfaceProperty();
 							boundedByProperty.setHref("#" + gmlId);

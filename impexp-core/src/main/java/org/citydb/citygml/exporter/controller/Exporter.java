@@ -27,17 +27,17 @@
  */
 package org.citydb.citygml.exporter.controller;
 
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.uid.UIDCacheType;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.cache.IdCacheType;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.concurrent.DBExportWorkerFactory;
 import org.citydb.citygml.exporter.concurrent.DBExportXlinkWorkerFactory;
 import org.citydb.citygml.exporter.database.content.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
-import org.citydb.citygml.exporter.database.uid.FeatureGmlIdCache;
-import org.citydb.citygml.exporter.database.uid.GeometryGmlIdCache;
+import org.citydb.citygml.exporter.cache.ObjectGmlIdCache;
+import org.citydb.citygml.exporter.cache.GeometryGmlIdCache;
 import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
@@ -370,7 +370,7 @@ public class Exporter implements EventHandler {
                 }
 
                 CacheTableManager cacheTableManager = null;
-                UIDCacheManager uidCacheManager = null;
+                IdCacheManager idCacheManager = null;
                 FeatureWriter writer = null;
                 OutputFile file = null;
 
@@ -416,12 +416,12 @@ public class Exporter implements EventHandler {
                     }
 
                     // create instance of gml:id lookup server manager...
-                    uidCacheManager = new UIDCacheManager();
+                    idCacheManager = new IdCacheManager();
 
                     // ...and start servers
                     try {
-                        uidCacheManager.initCache(
-                                UIDCacheType.GEOMETRY,
+                        idCacheManager.initCache(
+                                IdCacheType.GEOMETRY,
                                 new GeometryGmlIdCache(cacheTableManager,
                                         config.getExportConfig().getResources().getIdCache().getGeometry().getPartitions(),
                                         config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
@@ -429,9 +429,9 @@ public class Exporter implements EventHandler {
                                 config.getExportConfig().getResources().getIdCache().getGeometry().getPageFactor(),
                                 config.getExportConfig().getResources().getThreadPool().getMaxThreads());
 
-                        uidCacheManager.initCache(
-                                UIDCacheType.OBJECT,
-                                new FeatureGmlIdCache(cacheTableManager,
+                        idCacheManager.initCache(
+                                IdCacheType.OBJECT,
+                                new ObjectGmlIdCache(cacheTableManager,
                                         config.getExportConfig().getResources().getIdCache().getFeature().getPartitions(),
                                         config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
                                 config.getExportConfig().getResources().getIdCache().getFeature().getCacheSize(),
@@ -462,7 +462,7 @@ public class Exporter implements EventHandler {
                                     cityGMLBuilder,
                                     writer,
                                     xlinkExporterPool,
-                                    uidCacheManager,
+                                    idCacheManager,
                                     cacheTableManager,
                                     query,
                                     internalConfig,
@@ -489,7 +489,7 @@ public class Exporter implements EventHandler {
                                 schemaMapping,
                                 dbWorkerPool,
                                 query,
-                                uidCacheManager.getCache(UIDCacheType.OBJECT),
+                                idCacheManager.getCache(IdCacheType.OBJECT),
                                 cacheTableManager,
                                 eventDispatcher,
                                 internalConfig,
@@ -554,9 +554,9 @@ public class Exporter implements EventHandler {
                         //
                     }
 
-                    if (uidCacheManager != null) {
+                    if (idCacheManager != null) {
                         try {
-                            uidCacheManager.shutdownAll();
+                            idCacheManager.shutdownAll();
                         } catch (SQLException e) {
                             setException("Failed to clean the gml:id caches.", e);
                             shouldRun = false;

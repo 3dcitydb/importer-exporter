@@ -27,10 +27,10 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.uid.UIDCache;
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.uid.UIDCacheType;
+import org.citydb.citygml.common.cache.IdCache;
+import org.citydb.citygml.common.cache.IdCacheEntry;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.cache.IdCacheType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.log.Logger;
 
@@ -41,29 +41,29 @@ import java.sql.SQLException;
 
 public class DBGmlIdResolver {
 	private final Logger log = Logger.getInstance();
-	private final UIDCacheManager uidCacheManager;
+	private final IdCacheManager idCacheManager;
 	private final PreparedStatement psSurfaceGeometryId;
 	private final PreparedStatement psCityObjectId;
 	
-	public DBGmlIdResolver(Connection connection, AbstractDatabaseAdapter databaseAdapter, UIDCacheManager uidCacheManager) throws SQLException {
-		this.uidCacheManager = uidCacheManager;
+	public DBGmlIdResolver(Connection connection, AbstractDatabaseAdapter databaseAdapter, IdCacheManager idCacheManager) throws SQLException {
+		this.idCacheManager = idCacheManager;
 		String schema = databaseAdapter.getConnectionDetails().getSchema();
 		psSurfaceGeometryId = connection.prepareStatement("select ID from " + schema + ".SURFACE_GEOMETRY where ROOT_ID=? and GMLID=?");
 		psCityObjectId = connection.prepareStatement("select ID, OBJECTCLASS_ID from " + schema + ".CITYOBJECT where GMLID=?");
 	}
 	
-	public UIDCacheEntry getDBId(String gmlId, UIDCacheType type, boolean forceCityObjectDatabaseLookup) {
-		UIDCache cache = uidCacheManager.getCache(type);
+	public IdCacheEntry getDBId(String gmlId, IdCacheType type, boolean forceCityObjectDatabaseLookup) {
+		IdCache cache = idCacheManager.getCache(type);
 		if (cache == null)
 			return null;
 
 		// replace leading #
 		gmlId = gmlId.replaceAll("^#", "");
-		UIDCacheEntry entry = cacheLookup(gmlId, null, cache);
+		IdCacheEntry entry = cacheLookup(gmlId, null, cache);
 
 		if (entry == null || entry.getId() == -1) {
 			try {
-				if (type == UIDCacheType.GEOMETRY) {
+				if (type == IdCacheType.GEOMETRY) {
 					if (entry == null)
 						return null;
 
@@ -82,30 +82,30 @@ public class DBGmlIdResolver {
 		return entry;
 	}
 
-	private UIDCacheEntry geometryLookup(UIDCacheEntry entry) throws SQLException {
+	private IdCacheEntry geometryLookup(IdCacheEntry entry) throws SQLException {
 		psSurfaceGeometryId.setLong(1, entry.getRootId());
 		psSurfaceGeometryId.setString(2, entry.getMapping());
 
 		try (ResultSet rs = psSurfaceGeometryId.executeQuery()) {
 			return rs.next() ?
-					new UIDCacheEntry(rs.getLong(1), entry.getRootId(), entry.isReverse(), entry.getMapping()) :
+					new IdCacheEntry(rs.getLong(1), entry.getRootId(), entry.isReverse(), entry.getMapping()) :
 					null;
 		}
 	}
 
-	private UIDCacheEntry cityObjectLookup(String gmlId) throws SQLException {
+	private IdCacheEntry cityObjectLookup(String gmlId) throws SQLException {
 		psCityObjectId.setString(1, gmlId);
 
 		try (ResultSet rs = psCityObjectId.executeQuery()) {
 			return rs.next() ?
-					new UIDCacheEntry(rs.getLong(1), 0, false, gmlId, rs.getInt(2)) :
+					new IdCacheEntry(rs.getLong(1), 0, false, gmlId, rs.getInt(2)) :
 					null;
 		}
 	}
 	
-	private UIDCacheEntry cacheLookup(String gmlId, UIDCacheEntry oldEntry, UIDCache cache) {
+	private IdCacheEntry cacheLookup(String gmlId, IdCacheEntry oldEntry, IdCache cache) {
 		// this is a recursive server request since we might have mapped gml:ids!
-		UIDCacheEntry entry = cache.get(gmlId);
+		IdCacheEntry entry = cache.get(gmlId);
 
 		// we get an answer and it has got some meaningful content. so we are done
 		if (entry != null && entry.getId() != -1) {
@@ -113,7 +113,7 @@ public class DBGmlIdResolver {
 			// flip reverse attribute if necessary. since we do not want to
 			// change the entry in the gmlId cache we create a new one to do so
 			if (oldEntry != null)
-				entry = new UIDCacheEntry(
+				entry = new IdCacheEntry(
 						entry.getId(),
 						entry.getRootId(),
 						entry.isReverse() ^ oldEntry.isReverse(),
@@ -131,7 +131,7 @@ public class DBGmlIdResolver {
 			// flip reverse attribute if necessary. since we do not want to
 			// change the entry in the gmlId cache we create a new one to do so
 			if (oldEntry != null)
-				entry = new UIDCacheEntry(
+				entry = new IdCacheEntry(
 						entry.getId(),
 						entry.getRootId(),
 						entry.isReverse() ^ oldEntry.isReverse(),

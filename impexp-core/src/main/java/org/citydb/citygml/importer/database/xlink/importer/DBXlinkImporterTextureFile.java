@@ -27,8 +27,8 @@
  */
 package org.citydb.citygml.importer.database.xlink.importer;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.xlink.DBXlinkTextureFile;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.exporter.concurrent;
 
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.database.content.CityGMLExportManager;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
@@ -90,7 +90,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
 			WorkerPool<DBXlink> xlinkPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
 			Query query,
 			InternalConfig internalConfig,
@@ -115,7 +115,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				cityGMLBuilder,
 				featureWriter,
 				xlinkPool,
-				uidCacheManager,
+				idCacheManager,
 				cacheTableManager,
 				internalConfig,
 				config);
@@ -203,7 +203,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 
 				// register gml:id in cache
 				if (internalConfig.isRegisterGmlIdInCache() && feature.isSetId())
-					exporter.putObjectUID(feature.getId(), work.getId(), work.getObjectType().getObjectClassId());
+					exporter.putObjectId(feature.getId(), work.getId(), work.getObjectType().getObjectClassId());
 				
 				// update export counter
 				exporter.updateExportCounter(feature);

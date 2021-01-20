@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkLinearRing;
-import org.citydb.citygml.common.database.xlink.DBXlinkSolidGeometry;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkLinearRing;
+import org.citydb.citygml.common.xlink.DBXlinkSolidGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.citygml.importer.util.RingValidator;
@@ -293,7 +293,7 @@ public class DBSurfaceGeometry implements DBImporter {
                     Object object = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometryObject, batchConn);
 
                     if (origGmlId != null && !isCopy)
-                        importer.putGeometryUID(origGmlId, id, rootId, reverse, gmlId);
+                        importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
                     psGeomElem.setLong(1, id);
                     psGeomElem.setString(2, gmlId);
@@ -354,7 +354,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 					// do mapping
 					if (origGmlId != null && !isCopy)
-						importer.putGeometryUID(origGmlId, -1, -1, negativeOrientation, targetURI);
+						importer.putGeometryId(origGmlId, -1, -1, negativeOrientation, targetURI);
 
 					if (surface instanceof Polygon) {
 						// make sure all exterior and interior rings do have a gml:id to assign texture coordinates
@@ -384,7 +384,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 						// do mapping
 						if (origGmlId != null && !isCopy)
-							importer.putGeometryUID(origGmlId, -1, -1, negativeOrientation, targetURI);
+							importer.putGeometryId(origGmlId, -1, -1, negativeOrientation, targetURI);
 
 						// well, regarding appearances we cannot work on remote geometries so far...
 						importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
@@ -456,7 +456,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
                 // do mapping
                 if (origGmlId != null && !isCopy)
-                    importer.putGeometryUID(origGmlId, -1, -1, negativeOrientation, mapping);
+                    importer.putGeometryId(origGmlId, -1, -1, negativeOrientation, mapping);
             } else {
 				importer.logOrThrowErrorMessage(importer.getObjectSignature(orientableSurface, origGmlId) +
 						": The orientable surface lacks a base surface.");
@@ -468,7 +468,7 @@ public class DBSurfaceGeometry implements DBImporter {
             CompositeSurface compositeSurface = (CompositeSurface) geometry;
 
             if (origGmlId != null && !isCopy)
-                importer.putGeometryUID(origGmlId, id, rootId, reverse, gmlId);
+                importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
             // set root entry
             psGeomElem.setLong(1, id);
@@ -517,7 +517,7 @@ public class DBSurfaceGeometry implements DBImporter {
             TriangulatedSurface triangulatedSurface = (TriangulatedSurface) geometry;
 
             if (origGmlId != null && !isCopy)
-                importer.putGeometryUID(origGmlId, id, rootId, reverse, gmlId);
+                importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
             // set root entry
             psGeomElem.setLong(1, id);
@@ -565,7 +565,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			Surface surface = (Surface) geometry;
 
 			if (origGmlId != null && !isCopy)
-				importer.putGeometryUID(origGmlId, id, rootId, reverse, gmlId);
+				importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
 			int nrOfPatches = surface.isSetPatches() && surface.getPatches().isSetSurfacePatch() ?
 					surface.getPatches().getSurfacePatch().size() : 0;
@@ -631,7 +631,7 @@ public class DBSurfaceGeometry implements DBImporter {
             Solid solid = (Solid) geometry;
 
             if (origGmlId != null && !isCopy)
-                importer.putGeometryUID(origGmlId, id, rootId, reverse, gmlId);
+                importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
             // set root entry
             psGeomElem.setLong(1, id);
@@ -703,7 +703,7 @@ public class DBSurfaceGeometry implements DBImporter {
             CompositeSolid compositeSolid = (CompositeSolid) geometry;
 
             if (origGmlId != null && !isCopy)
-                importer.putGeometryUID(origGmlId, id, rootId, reverse, gmlId);
+                importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
             // set root entry
             psGeomElem.setLong(1, id);
@@ -770,7 +770,7 @@ public class DBSurfaceGeometry implements DBImporter {
             MultiPolygon multiPolygon = (MultiPolygon) geometry;
 
             if (origGmlId != null && !isCopy)
-                importer.putGeometryUID(origGmlId, id, rootId, reverse, gmlId);
+                importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
             // set root entry
             psGeomElem.setLong(1, id);
@@ -819,7 +819,7 @@ public class DBSurfaceGeometry implements DBImporter {
             MultiSurface multiSurface = (MultiSurface) geometry;
 
             if (origGmlId != null && !isCopy)
-                importer.putGeometryUID(origGmlId, id, rootId, reverse, gmlId);
+                importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
             // set root entry
             psGeomElem.setLong(1, id);
@@ -877,7 +877,7 @@ public class DBSurfaceGeometry implements DBImporter {
             MultiSolid multiSolid = (MultiSolid) geometry;
 
             if (origGmlId != null && !isCopy)
-                importer.putGeometryUID(origGmlId, id, rootId, reverse, gmlId);
+                importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
             // set root entry
             psGeomElem.setLong(1, id);
