@@ -42,6 +42,7 @@ import javax.xml.bind.annotation.XmlType;
         "appearances",
         "affineTransformation",
         "cityGMLOptions",
+        "cityJSONOptions",
         "indexes",
         "importLog",
         "resources"
@@ -54,6 +55,7 @@ public class ImportConfig {
     private ImportAppearance appearances;
     private AffineTransformation affineTransformation;
     private CityGMLOptions cityGMLOptions;
+    private CityJSONOptions cityJSONOptions;
     private Index indexes;
     private ImportLog importLog;
     private ImportResources resources;
@@ -66,6 +68,7 @@ public class ImportConfig {
         filter = new ImportFilter();
         affineTransformation = new AffineTransformation();
         cityGMLOptions = new CityGMLOptions();
+        cityJSONOptions = new CityJSONOptions();
         indexes = new Index();
         importLog = new ImportLog();
         resources = new ImportResources();
@@ -148,6 +151,16 @@ public class ImportConfig {
     public void setCityGMLOptions(CityGMLOptions cityGMLOptions) {
         if (cityGMLOptions != null) {
             this.cityGMLOptions = cityGMLOptions;
+        }
+    }
+
+    public CityJSONOptions getCityJSONOptions() {
+        return cityJSONOptions;
+    }
+
+    public void setCityJSONOptions(CityJSONOptions cityJSONOptions) {
+        if (cityJSONOptions != null) {
+            this.cityJSONOptions = cityJSONOptions;
         }
     }
 

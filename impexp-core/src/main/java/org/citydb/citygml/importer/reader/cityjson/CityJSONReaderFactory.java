@@ -25,6 +25,7 @@ public class CityJSONReaderFactory implements FeatureReaderFactory {
         CityJSONBuilder builder = CityGMLContext.getInstance().createCityJSONBuilder();
         try {
             factory = builder.createCityJSONInputFactory();
+            factory.setProcessUnknownExtensions(config.getImportConfig().getCityJSONOptions().isMapUnknownExtensions());
         } catch (CityJSONBuilderException e) {
             throw new FeatureReadException("Failed to initialize CityJSON input factory.", e);
         }
