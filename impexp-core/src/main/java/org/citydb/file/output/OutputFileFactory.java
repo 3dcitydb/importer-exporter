@@ -75,7 +75,7 @@ public class OutputFileFactory {
             case "gz":
                 return new GZipOutputFile(file);
             default:
-                return new XMLOutputFile(file);
+                return new RegularOutputFile(file);
         }
     }
 

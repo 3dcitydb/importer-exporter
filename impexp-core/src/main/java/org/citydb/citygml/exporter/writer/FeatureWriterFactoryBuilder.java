@@ -27,14 +27,24 @@
  */
 package org.citydb.citygml.exporter.writer;
 
+import org.citydb.citygml.exporter.writer.citygml.CityGMLWriterFactory;
+import org.citydb.citygml.exporter.writer.cityjson.CityJSONWriterFactory;
 import org.citydb.config.Config;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.Query;
+import org.citydb.util.Util;
+
+import java.nio.file.Path;
 
 public class FeatureWriterFactoryBuilder {
 
-	public static FeatureWriterFactory buildFactory(Query query, SchemaMapping schemaMapping, Config config) throws FeatureWriteException {
-		return new CityGMLWriterFactory(query, schemaMapping, config);
+	public static FeatureWriterFactory buildFactory(Path outputFile, Query query, SchemaMapping schemaMapping, Config config) throws FeatureWriteException {
+		switch (Util.getFileExtension(outputFile.getFileName().toString())) {
+			case "json":
+			case "cityjson":
+				return new CityJSONWriterFactory(query, config);
+			default:
+				return new CityGMLWriterFactory(query, schemaMapping, config);
+		}
 	}
-	
 }

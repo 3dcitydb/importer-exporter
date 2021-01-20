@@ -32,12 +32,12 @@ import org.citydb.citygml.common.cache.IdCacheManager;
 import org.citydb.citygml.common.cache.IdCacheType;
 import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.citygml.exporter.cache.GeometryGmlIdCache;
+import org.citydb.citygml.exporter.cache.ObjectGmlIdCache;
 import org.citydb.citygml.exporter.concurrent.DBExportWorkerFactory;
 import org.citydb.citygml.exporter.concurrent.DBExportXlinkWorkerFactory;
 import org.citydb.citygml.exporter.database.content.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
-import org.citydb.citygml.exporter.cache.ObjectGmlIdCache;
-import org.citydb.citygml.exporter.cache.GeometryGmlIdCache;
 import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
@@ -95,7 +95,6 @@ import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -183,7 +182,7 @@ public class Exporter implements EventHandler {
         // create feature writer factory
         FeatureWriterFactory writerFactory;
         try {
-            writerFactory = FeatureWriterFactoryBuilder.buildFactory(query, schemaMapping, config);
+            writerFactory = FeatureWriterFactoryBuilder.buildFactory(outputFile, query, schemaMapping, config);
         } catch (FeatureWriteException e) {
             throw new CityGMLExportException("Failed to build the feature writer factory.", e);
         }
@@ -300,7 +299,7 @@ public class Exporter implements EventHandler {
 
             internalConfig.setExportTextureURI(textureFolder);
 
-            // check for unique texture filenames when exporting an archiv
+            // check for unique texture filenames when exporting as archive
             if (!config.getExportConfig().getAppearances().isSetUniqueTextureFileNames()
                     && fileFactory.getFileType(outputFile.getFileName()) == FileType.ARCHIVE) {
                 log.warn("Using unique texture filenames because of writing to an archive file.");
@@ -399,9 +398,7 @@ public class Exporter implements EventHandler {
 
                     // create output writer
                     try {
-                        writer = writerFactory.createFeatureWriter(new OutputStreamWriter(file.openStream(),
-                                config.getExportConfig().getCityGMLOptions().getFileEncoding()));
-                        writer.useIndentation(file.getType() == FileType.REGULAR);
+                        writer = writerFactory.createFeatureWriter(file.openStream(), file.getType());
                     } catch (FeatureWriteException | IOException e) {
                         throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
                     }

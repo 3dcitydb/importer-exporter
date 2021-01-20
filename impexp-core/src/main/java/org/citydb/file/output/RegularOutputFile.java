@@ -33,9 +33,9 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class XMLOutputFile extends AbstractRegularOutputFile {
+public class RegularOutputFile extends AbstractRegularOutputFile {
 
-    XMLOutputFile(Path file) {
+    RegularOutputFile(Path file) {
         super(file, false);
     }
 

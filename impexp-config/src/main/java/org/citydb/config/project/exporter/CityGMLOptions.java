@@ -30,15 +30,11 @@ package org.citydb.config.project.exporter;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@XmlType(name = "CityGMLExportOptionsType", propOrder = {
-        "fileEncoding",
-        "writeProductHeader",
-        "gmlEnvelope",
-        "namespaces"
-})
+@XmlType(name = "CityGMLExportOptionsType", propOrder = {})
 public class CityGMLOptions {
     private String fileEncoding;
     private Boolean writeProductHeader;
@@ -51,7 +47,7 @@ public class CityGMLOptions {
     }
 
     public String getFileEncoding() {
-        return fileEncoding != null ? fileEncoding : "UTF-8";
+        return fileEncoding != null ? fileEncoding : StandardCharsets.UTF_8.name();
     }
 
     public void setFileEncoding(String fileEncoding) {

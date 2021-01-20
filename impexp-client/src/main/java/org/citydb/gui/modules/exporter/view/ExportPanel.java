@@ -334,12 +334,13 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
 
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.zip, *.gz, *.gzip)",
-				"gml", "xml", "zip", "gz", "gzip");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.json, *.zip, *.gz, *.gzip)",
+				"gml", "xml", "json", "zip", "gz", "gzip");
 		chooser.addChoosableFileFilter(filter);
 		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML GML Files (*.gml, *.xml)", "gml", "xml"));
-		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML ZIP Files (*.zip)", "zip"));
-		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityJSON Files (*.json)", "json"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("ZIP Files (*.zip)", "zip"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
 		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
 		chooser.setFileFilter(filter);
 

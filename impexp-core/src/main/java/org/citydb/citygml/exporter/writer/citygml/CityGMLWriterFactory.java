@@ -25,16 +25,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.exporter.writer;
+package org.citydb.citygml.exporter.writer.citygml;
 
 import org.citydb.ade.model.module.CityDBADE100Module;
 import org.citydb.ade.model.module.CityDBADE200Module;
+import org.citydb.citygml.exporter.writer.FeatureWriteException;
+import org.citydb.citygml.exporter.writer.FeatureWriter;
+import org.citydb.citygml.exporter.writer.FeatureWriterFactory;
 import org.citydb.config.Config;
 import org.citydb.config.project.exporter.CityGMLOptions;
 import org.citydb.config.project.exporter.Namespace;
 import org.citydb.config.project.exporter.NamespaceMode;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.file.FileType;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.filter.type.FeatureTypeFilter;
@@ -56,7 +60,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
-import java.io.Writer;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -113,12 +118,16 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 	}
 
 	@Override
-	public FeatureWriter createFeatureWriter(Writer writer) {
-		SAXWriter saxWriter = new SAXWriter();
-
+	public FeatureWriter createFeatureWriter(OutputStream outputStream, FileType fileType) throws FeatureWriteException {
 		// prepare SAX writer
-		saxWriter.setWriteEncoding(true);
-		saxWriter.setIndentString("  ");
+		SAXWriter saxWriter;
+		try {
+			saxWriter = new SAXWriter(outputStream, config.getExportConfig().getCityGMLOptions().getFileEncoding());
+			saxWriter.setWriteEncoding(true);
+			saxWriter.setIndentString(fileType == FileType.REGULAR ? "  " : "");
+		} catch (IOException e) {
+			throw new FeatureWriteException("Failed to create CityGML writer.", e);
+		}
 
 		if (cityGMLOptions.isWriteProductHeader()) {
 			saxWriter.setHeaderComment("Written by " + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
@@ -196,9 +205,6 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 				saxWriter.setSchemaLocation(namespace.getURI(), namespace.getSchemaLocation());
 			}
 		}
-
-		// set writer as output for SAXWriter
-		saxWriter.setOutput(writer);
 
 		// create CityGML writer
 		return new CityGMLWriter(saxWriter, version, transformerChainFactory, useSequentialWriting);

@@ -5,11 +5,7 @@ import org.citydb.config.project.common.XSLTransformation;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "CityGMLImportOptionsType", propOrder = {
-        "importXalAddress",
-        "xmlValidation",
-        "xslTransformation"
-})
+@XmlType(name = "CityGMLImportOptionsType", propOrder = {})
 public class CityGMLOptions {
     @XmlElement(defaultValue = "true")
     private boolean importXalAddress = true;

@@ -25,9 +25,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.exporter.writer;
+package org.citydb.citygml.exporter.writer.citygml;
 
 import org.citydb.citygml.exporter.util.Metadata;
+import org.citydb.citygml.exporter.writer.FeatureWriteException;
+import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.event.Event;
