@@ -202,7 +202,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		if (config.getImportConfig().getAffineTransformation().isEnabled())
 			this.affineTransformer = affineTransformer;
 
-		if (config.getImportConfig().getCityGMLOptions().getAddress().isSetImportXAL()) {
+		if (config.getImportConfig().getCityGMLOptions().isImportXalAddress()) {
 			cityGMLVersion = CityGMLVersion.DEFAULT;
 			jaxbMarshaller = cityGMLBuilder.createJAXBMarshaller(cityGMLVersion);
 			saxWriter = new SAXWriter();

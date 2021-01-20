@@ -2,32 +2,31 @@ package org.citydb.config.project.importer;
 
 import org.citydb.config.project.common.XSLTransformation;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "CityGMLImportOptionsType", propOrder = {
-        "address",
+        "importXalAddress",
         "xmlValidation",
         "xslTransformation"
 })
 public class CityGMLOptions {
-    private ImportAddress address;
+    @XmlElement(defaultValue = "true")
+    private boolean importXalAddress = true;
     private XMLValidation xmlValidation;
     private XSLTransformation xslTransformation;
 
     public CityGMLOptions() {
-        address = new ImportAddress();
         xmlValidation = new XMLValidation();
         xslTransformation = new XSLTransformation();
     }
 
-    public ImportAddress getAddress() {
-        return address;
+    public boolean isImportXalAddress() {
+        return importXalAddress;
     }
 
-    public void setAddress(ImportAddress address) {
-        if (address != null) {
-            this.address = address;
-        }
+    public void setImportXalAddress(boolean importXalAddress) {
+        this.importXalAddress = importXalAddress;
     }
 
     public XMLValidation getXMLValidation() {

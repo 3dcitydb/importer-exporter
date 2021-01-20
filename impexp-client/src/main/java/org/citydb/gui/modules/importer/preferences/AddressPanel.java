@@ -29,7 +29,6 @@ package org.citydb.gui.modules.importer.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.importer.ImportAddress;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
@@ -48,8 +47,7 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		ImportAddress address = config.getImportConfig().getCityGMLOptions().getAddress();
-		if (importXAL.isSelected() != address.isSetImportXAL()) return true;
+		if (importXAL.isSelected() != config.getImportConfig().getCityGMLOptions().isImportXalAddress()) return true;
 		return false;
 	}
 
@@ -67,14 +65,12 @@ public class AddressPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void loadSettings() {
-		ImportAddress address = config.getImportConfig().getCityGMLOptions().getAddress();
-		importXAL.setSelected(address.isSetImportXAL());
+		importXAL.setSelected(config.getImportConfig().getCityGMLOptions().isImportXalAddress());
 	}
 
 	@Override
 	public void setSettings() {
-		ImportAddress address = config.getImportConfig().getCityGMLOptions().getAddress();
-		address.setImportXAL(importXAL.isSelected());
+		config.getImportConfig().getCityGMLOptions().setImportXalAddress(importXAL.isSelected());
 	}
 
 	@Override

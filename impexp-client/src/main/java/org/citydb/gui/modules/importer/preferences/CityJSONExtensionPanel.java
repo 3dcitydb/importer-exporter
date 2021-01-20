@@ -29,8 +29,6 @@ package org.citydb.gui.modules.importer.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.importer.CityJSONOptions;
-import org.citydb.config.project.importer.ImportAddress;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;

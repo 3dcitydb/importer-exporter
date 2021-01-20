@@ -68,7 +68,7 @@ public class DBAddress implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		importXALSource = config.getImportConfig().getCityGMLOptions().getAddress().isSetImportXAL();
+		importXALSource = config.getImportConfig().getCityGMLOptions().isImportXalAddress();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasGmlIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
 		replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
