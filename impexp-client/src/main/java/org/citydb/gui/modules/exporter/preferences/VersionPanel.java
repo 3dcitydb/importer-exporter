@@ -30,12 +30,9 @@ package org.citydb.gui.modules.exporter.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
-import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
@@ -102,10 +99,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 			}
 		} else {
 			cityGMLVersionBox[0].setSelected(true);
-			version = CityGMLVersionType.values()[0];
 		}
-
-		firePropertyChange(version);
 	}
 
 	@Override
@@ -113,7 +107,6 @@ public class VersionPanel extends AbstractPreferencesComponent {
 		for (int i = 0; i < CityGMLVersionType.values().length; i++) {
 			if (cityGMLVersionBox[i].isSelected()) {
 				config.getExportConfig().getSimpleQuery().setVersion(CityGMLVersionType.fromValue(cityGMLVersionBox[i].getText()));
-				firePropertyChange(CityGMLVersionType.values()[i]);
 				break;
 			}
 		}
@@ -122,10 +115,5 @@ public class VersionPanel extends AbstractPreferencesComponent {
 	@Override
 	public String getTitle() {
 		return Language.I18N.getString("pref.tree.export.version");
-	}
-
-	private void firePropertyChange(CityGMLVersionType version) {
-		ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(
-				new PropertyChangeEvent("citygml.version", null, Util.toCityGMLVersion(version), this));
 	}
 }
