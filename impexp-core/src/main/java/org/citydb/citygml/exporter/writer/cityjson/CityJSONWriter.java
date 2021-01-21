@@ -70,8 +70,8 @@ public class CityJSONWriter implements FeatureWriter, EventHandler {
     public void write(AbstractFeature feature, long sequenceId) throws FeatureWriteException {
         if (feature instanceof AbstractCityObject) {
             CityJSON cityJSON = new CityJSON();
-            AbstractCityObjectType cityObject = marshaller.marshal((AbstractCityObject) feature, cityJSON);
 
+            AbstractCityObjectType cityObject = marshaller.marshal((AbstractCityObject) feature, cityJSON);
             for (AbstractCityObjectType child : cityJSON.getCityObjects()) {
                 writerPool.addWork(child);
             }
@@ -80,21 +80,23 @@ public class CityJSONWriter implements FeatureWriter, EventHandler {
                 cityJSON.getExtensionProperties().forEach(writer::addRootExtensionProperty);
             }
 
-            if (!useSequentialWriting) {
-                writerPool.addWork(cityObject);
-            } else {
-                try {
-                    if (addSequenceId && sequenceId >= 0) {
-                        cityObject.getAttributes().addExtensionAttribute("sequenceId", sequenceId);
-                    }
+            if (cityObject != null) {
+                if (!useSequentialWriting) {
+                    writerPool.addWork(cityObject);
+                } else {
+                    try {
+                        if (addSequenceId && sequenceId >= 0) {
+                            cityObject.getAttributes().addExtensionAttribute("sequenceId", sequenceId);
+                        }
 
-                    sequentialWriter.write(cityObject, sequenceId);
-                } catch (InterruptedException e) {
-                    throw new FeatureWriteException("Failed to write city object with gml:id '" + feature.getId() + "'.", e);
+                        sequentialWriter.write(cityObject, sequenceId);
+                    } catch (InterruptedException e) {
+                        throw new FeatureWriteException("Failed to write city object with gml:id '" + feature.getId() + "'.", e);
+                    }
                 }
             }
 
-            hasContent = true;
+            hasContent = cityObject != null || cityJSON.hasCityObjects();
         }
     }
 
