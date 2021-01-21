@@ -57,7 +57,7 @@ public class OutputFileFactory {
         file = file.toAbsolutePath().normalize();
         Files.createDirectories(file.getParent());
 
-        String extension = Util.getFileExtension(file.getFileName().toString());
+        String extension = Util.getFileExtension(file);
         if (extension.isEmpty()) {
             extension = "gml";
             file = file.resolveSibling(file.getFileName() + ".gml");
@@ -80,7 +80,7 @@ public class OutputFileFactory {
     }
 
     public FileType getFileType(Path file) {
-        switch (Util.getFileExtension(file.getFileName().toString())) {
+        switch (Util.getFileExtension(file)) {
             case "zip":
                 return FileType.ARCHIVE;
             case "gzip":

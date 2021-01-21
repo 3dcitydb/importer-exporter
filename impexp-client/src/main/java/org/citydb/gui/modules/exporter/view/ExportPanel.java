@@ -360,16 +360,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		if (result == JFileChooser.CANCEL_OPTION) return;
 		try {
 			String exportString = chooser.getSelectedFile().getAbsolutePath();
-
-			if (!exportString.trim().isEmpty() && !chooser.getSelectedFile().getName().contains(".")) {
-				String fileName = Util.stripFileExtension(exportString);
-				for (String extension : new String[]{".gml", ".zip", ".gz"}) {
-					String candidate = fileName + extension;
-					if (chooser.getFileFilter().accept(new File(candidate))) {
-						exportString = candidate;
-						break;
-					}
-				}
+			if (Util.getFileExtension(exportString).isEmpty()) {
+				exportString += ".gml";
 			}
 
 			browseText.setText(exportString);

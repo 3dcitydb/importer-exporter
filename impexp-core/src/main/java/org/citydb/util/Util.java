@@ -392,15 +392,27 @@ public class Util {
 	}
 
 	public static String getFileExtension(String file) {
-		String fileName = new File(file).getName();
-		int i = fileName.lastIndexOf('.');
-		return i > 0 ? fileName.substring(i + 1).toLowerCase() : "";
+		return getFileExtension(file, true);
+	}
+
+	public static String getFileExtension(Path file) {
+		return file.getFileName() != null ? getFileExtension(file.getFileName().toString(), false) : "";
+	}
+
+	private static String getFileExtension(String file, boolean checkSeparator) {
+		int extension = indexOfExtension(file, checkSeparator);
+		return extension > 0 ? file.substring(extension + 1).toLowerCase() : "";
 	}
 
 	public static String stripFileExtension(String file) {
-		int separator = Math.max(file.lastIndexOf(File.separator), file.lastIndexOf('\\'));
-		int dot = file.lastIndexOf('.');
-		return dot > separator ? file.substring(0, dot) : file;
+		int extension = indexOfExtension(file, true);
+		return extension > 0 ? file.substring(0, extension) : file;
+	}
+
+	private static int indexOfExtension(String file, boolean checkSeparator) {
+		int separator = checkSeparator ? Math.max(file.lastIndexOf(File.separator), file.lastIndexOf('\\')) : -1;
+		int extension = file.lastIndexOf('.');
+		return extension > separator ? extension : -1;
 	}
 
 	public static String formatElapsedTime(long millis) {
