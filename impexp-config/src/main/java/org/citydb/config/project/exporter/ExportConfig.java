@@ -46,7 +46,6 @@ import javax.xml.bind.annotation.XmlType;
         "address",
         "appearances",
         "xlink",
-        "xslTransformation",
         "metadataProvider",
         "cityGMLOptions",
         "cityJSONOptions",
@@ -63,7 +62,6 @@ public class ExportConfig {
     private ExportAddress address;
     private ExportAppearance appearances;
     private XLink xlink;
-    private XSLTransformation xslTransformation;
     private String metadataProvider;
     private CityGMLOptions cityGMLOptions;
     private CityJSONOptions cityJSONOptions;
@@ -78,7 +76,6 @@ public class ExportConfig {
         address = new ExportAddress();
         appearances = new ExportAppearance();
         xlink = new XLink();
-        xslTransformation = new XSLTransformation();
         cityGMLOptions = new CityGMLOptions();
         cityJSONOptions = new CityJSONOptions();
         resources = new Resources();
@@ -169,16 +166,6 @@ public class ExportConfig {
     public void setXlink(XLink xlink) {
         if (xlink != null) {
             this.xlink = xlink;
-        }
-    }
-
-    public XSLTransformation getXSLTransformation() {
-        return xslTransformation;
-    }
-
-    public void setXSLTransformation(XSLTransformation xslTransformation) {
-        if (xslTransformation != null) {
-            this.xslTransformation = xslTransformation;
         }
     }
 

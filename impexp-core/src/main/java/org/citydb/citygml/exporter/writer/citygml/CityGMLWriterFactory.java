@@ -72,11 +72,11 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 	private final Config config;
 	private final CityGMLVersion version;
 	private final FeatureTypeFilter featureTypeFilter;
+	private final CityGMLOptions cityGMLOptions;
+	private final boolean useSequentialWriting;
 
 	private TransformerChainFactory transformerChainFactory;
-	private CityGMLOptions cityGMLOptions;
 	private boolean setAllCityGMLPrefixes;
-	private boolean useSequentialWriting;
 
 	public CityGMLWriterFactory(Query query, SchemaMapping schemaMapping, Config config) throws FeatureWriteException {
 		this.config = config;
@@ -89,12 +89,12 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		useSequentialWriting = query.isSetSorting();
 
 		// build XSLT transformer chain
-		if (config.getExportConfig().getXSLTransformation().isEnabled()
-				&& config.getExportConfig().getXSLTransformation().isSetStylesheets()) {
+		if (cityGMLOptions.getXSLTransformation().isEnabled()
+				&& cityGMLOptions.getXSLTransformation().isSetStylesheets()) {
 			try {
 				log.info("Applying XSL transformations on export data.");
 
-				List<String> stylesheets = config.getExportConfig().getXSLTransformation().getStylesheets();
+				List<String> stylesheets = cityGMLOptions.getXSLTransformation().getStylesheets();
 				SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
 				Templates[] templates = new Templates[stylesheets.size()];
 

@@ -28,10 +28,13 @@
 
 package org.citydb.config.project.exporter;
 
+import org.citydb.config.project.common.XSLTransformation;
+
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @XmlType(name = "CityGMLExportOptionsType", propOrder = {})
@@ -41,9 +44,11 @@ public class CityGMLOptions {
     private GMLEnvelope gmlEnvelope;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private LinkedHashMap<String, Namespace> namespaces;
+    private XSLTransformation xslTransformation;
 
     public CityGMLOptions() {
         gmlEnvelope = new GMLEnvelope();
+        xslTransformation = new XSLTransformation();
     }
 
     public String getFileEncoding() {
@@ -80,5 +85,25 @@ public class CityGMLOptions {
 
     public Map<String, Namespace> getNamespaces() {
         return namespaces;
+    }
+
+    public void setNamespaces(List<Namespace> namespaces) {
+        if (this.namespaces == null) {
+            this.namespaces = new LinkedHashMap<>();
+        }
+
+        namespaces.stream()
+                .filter(Namespace::isSetURI)
+                .forEach(v -> this.namespaces.put(v.getURI(), v));
+    }
+
+    public XSLTransformation getXSLTransformation() {
+        return xslTransformation;
+    }
+
+    public void setXSLTransformation(XSLTransformation xslTransformation) {
+        if (xslTransformation != null) {
+            this.xslTransformation = xslTransformation;
+        }
     }
 }
