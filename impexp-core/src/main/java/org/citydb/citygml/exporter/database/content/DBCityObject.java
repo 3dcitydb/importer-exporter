@@ -212,7 +212,7 @@ public class DBCityObject implements DBExporter {
 						contexts = batches.get(objectId);
 						if (contexts != null) {
 							for (ObjectContext context : contexts) {
-								if (context.initialize() && !initializeObject(objectId, context, rs))
+								if (context.initialize() && !initializeObject(context, rs))
 									return false;
 							}
 						} else {
@@ -248,7 +248,7 @@ public class DBCityObject implements DBExporter {
 
 		try (ResultSet rs = psSelect.executeQuery()) {
 			if (rs.next()) {
-				if (!initializeObject(objectId, context, rs))
+				if (!initializeObject(context, rs))
 					return false;
 
 				if (context.isCityObject) {
@@ -268,7 +268,7 @@ public class DBCityObject implements DBExporter {
 		}
 	}
 
-	protected boolean initializeObject(long objectId, ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
+	protected boolean initializeObject(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
 		boolean setEnvelope = !context.isCityObject || (context.projectionFilter.containsProperty("boundedBy", gmlModule)
 				&& (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
 				|| (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && context.isTopLevel)));
