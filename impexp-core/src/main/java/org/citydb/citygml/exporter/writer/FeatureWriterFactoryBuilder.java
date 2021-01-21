@@ -39,7 +39,7 @@ import java.nio.file.Path;
 public class FeatureWriterFactoryBuilder {
 
 	public static FeatureWriterFactory buildFactory(Path outputFile, Query query, SchemaMapping schemaMapping, Config config) throws FeatureWriteException {
-		switch (Util.getFileExtension(outputFile.getFileName().toString())) {
+		switch (Util.getFileExtension(outputFile)) {
 			case "json":
 			case "cityjson":
 				return new CityJSONWriterFactory(query, config);
