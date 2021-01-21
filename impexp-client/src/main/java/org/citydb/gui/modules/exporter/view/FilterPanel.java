@@ -38,6 +38,10 @@ import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.lod.LodFilterMode;
 import org.citydb.config.project.query.filter.lod.LodSearchMode;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.event.Event;
+import org.citydb.event.EventHandler;
+import org.citydb.event.global.EventType;
+import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.common.BlankNumberFormatter;
 import org.citydb.gui.components.common.TitledPanel;
@@ -52,6 +56,9 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
+import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.Util;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -63,7 +70,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class FilterPanel extends JPanel {
+public class FilterPanel extends JPanel implements EventHandler {
 	private final Config config;
 
 	private JPanel mainPanel;
@@ -110,6 +117,8 @@ public class FilterPanel extends JPanel {
 
 	public FilterPanel(ViewController viewController, Config config) {
 		this.config = config;
+
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);
 		initGui(viewController);
 	}
 
@@ -171,7 +180,7 @@ public class FilterPanel extends JPanel {
 		tilingRowsText = new JFormattedTextField(tileFormat);
 		tilingColumnsText = new JFormattedTextField(tileFormat);
 
-		featureTree = new FeatureTypeTree();
+		featureTree = new FeatureTypeTree(Util.toCityGMLVersion(config.getExportConfig().getSimpleQuery().getVersion()));
 		featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 1);
 
 		// get rid of standard icons
@@ -593,5 +602,12 @@ public class FilterPanel extends JPanel {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		PropertyChangeEvent e = (PropertyChangeEvent)event;
+		if (e.getPropertyName().equals("citygml.version"))
+			featureTree.updateCityGMLVersion((CityGMLVersion) e.getNewValue(), useFeatureFilter.isSelected());
 	}
 }
