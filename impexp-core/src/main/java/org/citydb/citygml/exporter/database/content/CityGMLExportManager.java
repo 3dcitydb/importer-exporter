@@ -33,10 +33,10 @@ import org.citydb.ade.exporter.ADEExportManager;
 import org.citydb.ade.exporter.CityGMLExportHelper;
 import org.citydb.citygml.common.cache.CacheTable;
 import org.citydb.citygml.common.cache.CacheTableManager;
-import org.citydb.citygml.common.cache.model.CacheTableModel;
 import org.citydb.citygml.common.cache.IdCache;
 import org.citydb.citygml.common.cache.IdCacheManager;
 import org.citydb.citygml.common.cache.IdCacheType;
+import org.citydb.citygml.common.cache.model.CacheTableModel;
 import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AppearanceRemover;
@@ -702,11 +702,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return schemaMapping.getAbstractObjectType(objectClassId);
 	}
 
-	public String generateNewGmlId(AbstractFeature feature) {
-		return generateNewGmlId(feature, feature.getId());
+	public String generateFeatureGmlId(AbstractFeature feature) {
+		return generateFeatureGmlId(feature, feature.getId());
 	}
 
-	public String generateNewGmlId(AbstractFeature feature, String oldGmlId) {
+	public String generateFeatureGmlId(AbstractFeature feature, String oldGmlId) {
 		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(config.getExportConfig().getXlink().getFeature().getIdPrefix());
 
 		if (oldGmlId != null) {
@@ -725,6 +725,19 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 				((AbstractCityObject)feature).addExternalReference(externalReference);
 			}
+		}
+
+		return gmlId;
+	}
+
+	public String generateGeometryGmlId(AbstractGeometry geometry) {
+		return generateGeometryGmlId(geometry.getId());
+	}
+
+	public String generateGeometryGmlId(String oldGmlId) {
+		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(config.getExportConfig().getXlink().getGeometry().getIdPrefix());
+		if (config.getExportConfig().getXlink().getGeometry().isSetAppendId() && oldGmlId != null) {
+			gmlId = gmlId + "-" + oldGmlId;
 		}
 
 		return gmlId;

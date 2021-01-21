@@ -424,7 +424,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 					}
 
 					if (generateNewGmlId)
-						opening.setId(exporter.generateNewGmlId(opening, gmlId));
+						opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 					// get projection filter
 					openingProjectionFilter = exporter.getProjectionFilter(featureType);

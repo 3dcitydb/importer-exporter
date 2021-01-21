@@ -631,7 +631,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						}
 
 						if (generateNewGmlId)
-							opening.setId(exporter.generateNewGmlId(opening, gmlId));
+							opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 						// get projection filter
 						openingProjectionFilter = exporter.getProjectionFilter(featureType);

@@ -513,7 +513,7 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 			}
 
 			if (generateNewGmlId)
-				opening.setId(exporter.generateNewGmlId(opening, gmlId));
+				opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 			// get projection filter
 			ProjectionFilter openingProjectionFilter = exporter.getProjectionFilter(featureType);

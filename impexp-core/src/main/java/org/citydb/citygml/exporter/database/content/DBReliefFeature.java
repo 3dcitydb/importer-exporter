@@ -190,7 +190,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 				}
 
 				if (generateNewGmlId)
-					component.setId(exporter.generateNewGmlId(component, gmlId));
+					component.setId(exporter.generateFeatureGmlId(component, gmlId));
 
 				reliefFeature.addReliefComponent(new ReliefComponentProperty(component));
 			}

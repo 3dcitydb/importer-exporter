@@ -502,7 +502,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 			}
 
 			if (generateNewGmlId)
-				opening.setId(exporter.generateNewGmlId(opening, gmlId));
+				opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 			boundarySurface.getOpening().add(new OpeningProperty(opening));
 		}

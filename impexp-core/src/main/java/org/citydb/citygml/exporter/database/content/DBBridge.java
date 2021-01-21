@@ -558,7 +558,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 						}
 
 						if (generateNewGmlId)
-							opening.setId(exporter.generateNewGmlId(opening, gmlId));
+							opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 						// get projection filter
 						openingProjectionFilter = exporter.getProjectionFilter(featureType);

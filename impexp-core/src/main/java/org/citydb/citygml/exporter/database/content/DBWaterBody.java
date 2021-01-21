@@ -335,7 +335,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 				}
 
 				if (generateNewGmlId)
-					waterBoundarySurface.setId(exporter.generateNewGmlId(waterBoundarySurface, gmlId));
+					waterBoundarySurface.setId(exporter.generateFeatureGmlId(waterBoundarySurface, gmlId));
 
 				waterBody.addBoundedBySurface(new BoundedByWaterSurfaceProperty(waterBoundarySurface));
 			}

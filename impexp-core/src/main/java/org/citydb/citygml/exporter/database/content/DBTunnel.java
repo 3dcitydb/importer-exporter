@@ -501,7 +501,7 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 						}
 
 						if (generateNewGmlId)
-							opening.setId(exporter.generateNewGmlId(opening, gmlId));
+							opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 						openingProperty = new OpeningProperty(opening);
 						boundarySurface.getOpening().add(openingProperty);

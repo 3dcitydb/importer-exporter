@@ -216,7 +216,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 				}
 
 				if (generateNewGmlId)
-					opening.setId(exporter.generateNewGmlId(opening, gmlId));
+					opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 				// get projection filter
 				ProjectionFilter openingProjectionFilter = exporter.getProjectionFilter(featureType);

@@ -205,7 +205,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 				}
 
 				if (generateNewGmlId)
-					opening.setId(exporter.generateNewGmlId(opening, gmlId));
+					opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 				boundarySurface.addOpening(new OpeningProperty(opening));
 			}
