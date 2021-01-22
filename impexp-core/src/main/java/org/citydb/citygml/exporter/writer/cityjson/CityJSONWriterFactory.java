@@ -33,7 +33,7 @@ public class CityJSONWriterFactory implements FeatureWriterFactory {
         try {
             CityJSONBuilder builder = CityGMLContext.getInstance().createCityJSONBuilder();
             factory = builder.createCityJSONOutputFactory();
-            factory.setGenerateCityGMLMetadata(config.getExportConfig().getCityJSONOptions().isGenerateCityGMLMetadata());
+            factory.setRemoveDuplicateChildGeometries(config.getExportConfig().getCityJSONOptions().isRemoveDuplicateChildGeometries());
         } catch (CityJSONBuilderException e) {
             throw new FeatureWriteException("Failed to initialize CityJSON output factory.", e);
         }
@@ -54,7 +54,7 @@ public class CityJSONWriterFactory implements FeatureWriterFactory {
         chunkWriter.setTextureVerticesBuilder(new DefaultTextureVerticesBuilder()
                 .withSignificantDigits(cityJSONOptions.getSignificantTextureDigits()));
 
-        if (cityJSONOptions.isTransformVertices()) {
+        if (cityJSONOptions.isUseGeometryCompression()) {
             chunkWriter.setVerticesTransformer(new DefaultVerticesTransformer());
         }
 

@@ -43,11 +43,11 @@ public class CityJSONOptions {
     @XmlSchemaType(name = "positiveInteger")
     private int significantTextureDigits = 7;
     @XmlElement(defaultValue = "true")
-    private boolean transformVertices = true;
+    private boolean useGeometryCompression = true;
     @XmlElement(defaultValue = "false")
     private boolean addSequenceIdWhenSorting;
     @XmlElement(defaultValue = "false")
-    private boolean generateCityGMLMetadata;
+    private boolean removeDuplicateChildGeometries;
 
     public boolean isPrettyPrint() {
         return prettyPrint;
@@ -77,12 +77,12 @@ public class CityJSONOptions {
         }
     }
 
-    public boolean isTransformVertices() {
-        return transformVertices;
+    public boolean isUseGeometryCompression() {
+        return useGeometryCompression;
     }
 
-    public void setTransformVertices(boolean transformVertices) {
-        this.transformVertices = transformVertices;
+    public void setUseGeometryCompression(boolean useGeometryCompression) {
+        this.useGeometryCompression = useGeometryCompression;
     }
 
     public boolean isAddSequenceIdWhenSorting() {
@@ -93,11 +93,11 @@ public class CityJSONOptions {
         this.addSequenceIdWhenSorting = addSequenceIdWhenSorting;
     }
 
-    public boolean isGenerateCityGMLMetadata() {
-        return generateCityGMLMetadata;
+    public boolean isRemoveDuplicateChildGeometries() {
+        return removeDuplicateChildGeometries;
     }
 
-    public void setGenerateCityGMLMetadata(boolean generateCityGMLMetadata) {
-        this.generateCityGMLMetadata = generateCityGMLMetadata;
+    public void setRemoveDuplicateChildGeometries(boolean removeDuplicateChildGeometries) {
+        this.removeDuplicateChildGeometries = removeDuplicateChildGeometries;
     }
 }

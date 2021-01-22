@@ -48,10 +48,7 @@ public class CityGMLImportPreferences extends AbstractPreferences {
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XMLValidationPanel(config)));
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(false, config)));
 
-		DefaultPreferencesEntry cityJSONOptions = new CityJSONOptionsPanel();
-		root.addChildEntry(cityJSONOptions);
-		cityJSONOptions.addChildEntry(new DefaultPreferencesEntry(new CityJSONExtensionPanel(config)));
-
+		root.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ImportLogPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
