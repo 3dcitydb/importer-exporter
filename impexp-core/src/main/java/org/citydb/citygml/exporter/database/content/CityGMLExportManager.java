@@ -50,6 +50,9 @@ import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.ExportConfig;
+import org.citydb.config.project.exporter.OutputFormat;
+import org.citydb.config.project.exporter.XLinkConfig;
+import org.citydb.config.project.exporter.XLinkFeatureConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
@@ -707,27 +710,30 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	public String generateFeatureGmlId(AbstractFeature feature, String oldGmlId) {
-		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(config.getExportConfig().getXlink().getFeature().getIdPrefix());
+		if (internalConfig.getOutputFormat() == OutputFormat.CITYJSON) {
+			return DefaultGMLIdManager.getInstance().generateUUID();
+		} else {
+			XLinkFeatureConfig xlinkOptions = config.getExportConfig().getCityGMLOptions().getXlink().getFeature();
+			String gmlId = DefaultGMLIdManager.getInstance().generateUUID(xlinkOptions.getIdPrefix());
+			if (oldGmlId != null) {
+				if (xlinkOptions.isSetAppendId())
+					gmlId = gmlId + "-" + oldGmlId;
 
-		if (oldGmlId != null) {
-			if (config.getExportConfig().getXlink().getFeature().isSetAppendId())
-				gmlId = gmlId + "-" + oldGmlId;
+				if (xlinkOptions.isSetKeepGmlIdAsExternalReference() && feature instanceof AbstractCityObject) {
+					ExternalReference externalReference = new ExternalReference();
+					if (internalConfig.getOutputFile() != null)
+						externalReference.setInformationSystem(internalConfig.getOutputFile().getFile().toString());
 
-			if (config.getExportConfig().getXlink().getFeature().isSetKeepGmlIdAsExternalReference()
-					&& feature instanceof AbstractCityObject) {
-				ExternalReference externalReference = new ExternalReference();
-				if (internalConfig.getOutputFile() != null)
-					externalReference.setInformationSystem(internalConfig.getOutputFile().getFile().toString());
+					ExternalObject externalObject = new ExternalObject();
+					externalObject.setName(oldGmlId);
+					externalReference.setExternalObject(externalObject);
 
-				ExternalObject externalObject = new ExternalObject();
-				externalObject.setName(oldGmlId);
-				externalReference.setExternalObject(externalObject);
-
-				((AbstractCityObject)feature).addExternalReference(externalReference);
+					((AbstractCityObject) feature).addExternalReference(externalReference);
+				}
 			}
-		}
 
-		return gmlId;
+			return gmlId;
+		}
 	}
 
 	public String generateGeometryGmlId(AbstractGeometry geometry) {
@@ -735,8 +741,9 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	public String generateGeometryGmlId(String oldGmlId) {
-		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(config.getExportConfig().getXlink().getGeometry().getIdPrefix());
-		if (config.getExportConfig().getXlink().getGeometry().isSetAppendId() && oldGmlId != null) {
+		XLinkConfig xlinkOptions = config.getExportConfig().getCityGMLOptions().getXlink().getGeometry();
+		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(xlinkOptions.getIdPrefix());
+		if (xlinkOptions.isSetAppendId() && oldGmlId != null) {
 			gmlId = gmlId + "-" + oldGmlId;
 		}
 

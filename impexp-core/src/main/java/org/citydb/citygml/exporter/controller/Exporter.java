@@ -50,9 +50,11 @@ import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.config.project.exporter.TileNameSuffixMode;
 import org.citydb.config.project.exporter.TileSuffixMode;
+import org.citydb.config.project.exporter.XLink;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -160,6 +162,10 @@ public class Exporter implements EventHandler {
     private boolean process(Path outputFile) throws CityGMLExportException {
         InternalConfig internalConfig = new InternalConfig();
 
+        // set output format and format-specific options
+        OutputFormat outputFormat = getOutputFormat(outputFile);
+        setOutputFormatOptions(outputFormat, internalConfig);
+
         // log workspace
         if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
             Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
@@ -182,7 +188,7 @@ public class Exporter implements EventHandler {
         // create feature writer factory
         FeatureWriterFactory writerFactory;
         try {
-            writerFactory = FeatureWriterFactoryBuilder.buildFactory(outputFile, query, schemaMapping, config);
+            writerFactory = FeatureWriterFactoryBuilder.buildFactory(outputFormat, query, schemaMapping, config);
         } catch (FeatureWriteException e) {
             throw new CityGMLExportException("Failed to build the feature writer factory.", e);
         }
@@ -608,6 +614,29 @@ public class Exporter implements EventHandler {
         }
 
         return shouldRun;
+    }
+
+    private OutputFormat getOutputFormat(Path outputFile) {
+	    switch (Util.getFileExtension(outputFile)) {
+            case "json":
+            case "cityjson":
+                return OutputFormat.CITYJSON;
+        }
+
+        return OutputFormat.CITYGML;
+    }
+
+    private void setOutputFormatOptions(OutputFormat outputFormat, InternalConfig internalConfig) {
+	    internalConfig.setOutputFormat(outputFormat);
+
+	    if (outputFormat == OutputFormat.CITYJSON) {
+	        internalConfig.setExportFeatureReferences(false);
+	        internalConfig.setExportGeometryReferences(true);
+        } else {
+            XLink xlinkOptions = config.getExportConfig().getCityGMLOptions().getXlink();
+	        internalConfig.setExportFeatureReferences(xlinkOptions.getFeature().isModeXLink());
+	        internalConfig.setExportGeometryReferences(xlinkOptions.getGeometry().isModeXLink());
+        }
     }
 
     private void setException(String message, Throwable cause) {

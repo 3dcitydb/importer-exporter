@@ -28,7 +28,6 @@
 package org.citydb.config.project.exporter;
 
 import org.citydb.config.project.common.Path;
-import org.citydb.config.project.common.XSLTransformation;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.resources.Resources;
 
@@ -45,7 +44,6 @@ import javax.xml.bind.annotation.XmlType;
         "cityObjectGroup",
         "address",
         "appearances",
-        "xlink",
         "metadataProvider",
         "cityGMLOptions",
         "cityJSONOptions",
@@ -61,7 +59,6 @@ public class ExportConfig {
     private ExportCityObjectGroup cityObjectGroup;
     private ExportAddress address;
     private ExportAppearance appearances;
-    private XLink xlink;
     private String metadataProvider;
     private CityGMLOptions cityGMLOptions;
     private CityJSONOptions cityJSONOptions;
@@ -75,7 +72,6 @@ public class ExportConfig {
         cityObjectGroup = new ExportCityObjectGroup();
         address = new ExportAddress();
         appearances = new ExportAppearance();
-        xlink = new XLink();
         cityGMLOptions = new CityGMLOptions();
         cityJSONOptions = new CityJSONOptions();
         resources = new Resources();
@@ -156,16 +152,6 @@ public class ExportConfig {
     public void setCityObjectGroup(ExportCityObjectGroup cityObjectGroup) {
         if (cityObjectGroup != null) {
             this.cityObjectGroup = cityObjectGroup;
-        }
-    }
-
-    public XLink getXlink() {
-        return xlink;
-    }
-
-    public void setXlink(XLink xlink) {
-        if (xlink != null) {
-            this.xlink = xlink;
         }
     }
 

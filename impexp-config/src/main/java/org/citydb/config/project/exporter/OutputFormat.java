@@ -25,20 +25,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.exporter.writer;
+package org.citydb.config.project.exporter;
 
-import org.citydb.citygml.exporter.writer.citygml.CityGMLWriterFactory;
-import org.citydb.citygml.exporter.writer.cityjson.CityJSONWriterFactory;
-import org.citydb.config.Config;
-import org.citydb.config.project.exporter.OutputFormat;
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.query.Query;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
-public class FeatureWriterFactoryBuilder {
+@XmlType(name = "OutputFormatType")
+@XmlEnum
+public enum OutputFormat {
+    @XmlEnumValue("CityGML")
+    CITYGML("CityGML"),
+    @XmlEnumValue("CityJSON")
+    CITYJSON("CityJSON");
 
-	public static FeatureWriterFactory buildFactory(OutputFormat outputFormat, Query query, SchemaMapping schemaMapping, Config config) throws FeatureWriteException {
-		return outputFormat == OutputFormat.CITYJSON ?
-				new CityJSONWriterFactory(query, config) :
-				new CityGMLWriterFactory(query, schemaMapping, config);
-	}
+    private final String value;
+
+    OutputFormat(String v) {
+        value = v;
+    }
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }

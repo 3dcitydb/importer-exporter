@@ -44,10 +44,12 @@ public class CityGMLOptions {
     private GMLEnvelope gmlEnvelope;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private LinkedHashMap<String, Namespace> namespaces;
+    private XLink xlink;
     private XSLTransformation xslTransformation;
 
     public CityGMLOptions() {
         gmlEnvelope = new GMLEnvelope();
+        xlink = new XLink();
         xslTransformation = new XSLTransformation();
     }
 
@@ -95,6 +97,16 @@ public class CityGMLOptions {
         namespaces.stream()
                 .filter(Namespace::isSetURI)
                 .forEach(v -> this.namespaces.put(v.getURI(), v));
+    }
+
+    public XLink getXlink() {
+        return xlink;
+    }
+
+    public void setXlink(XLink xlink) {
+        if (xlink != null) {
+            this.xlink = xlink;
+        }
     }
 
     public XSLTransformation getXSLTransformation() {
