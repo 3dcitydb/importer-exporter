@@ -29,9 +29,10 @@
 package org.citydb.file.output;
 
 import org.citydb.config.Config;
+import org.citydb.config.project.exporter.OutputFormat;
+import org.citydb.event.EventDispatcher;
 import org.citydb.file.FileType;
 import org.citydb.file.OutputFile;
-import org.citydb.event.EventDispatcher;
 import org.citydb.util.Util;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class OutputFileFactory {
         this(config, eventDispatcher, null);
     }
 
-    public OutputFile createOutputFile(Path file) throws IOException {
+    public OutputFile createOutputFile(Path file, OutputFormat outputFormat) throws IOException {
         file = file.toAbsolutePath().normalize();
         Files.createDirectories(file.getParent());
 
@@ -65,7 +66,8 @@ public class OutputFileFactory {
 
         switch (extension) {
             case "zip":
-                return new ZipOutputFile(Util.stripFileExtension(file.getFileName().toString()) + ".gml",
+                extension = outputFormat == OutputFormat.CITYJSON ? ".json" : ".gml";
+                return new ZipOutputFile(Util.stripFileExtension(file.getFileName().toString()) + extension,
                         file,
                         file.getParent(),
                         config.getExportConfig().getResources().getThreadPool().getMaxThreads(),
@@ -79,7 +81,7 @@ public class OutputFileFactory {
         }
     }
 
-    public FileType getFileType(Path file) {
+    public static FileType getFileType(Path file) {
         switch (Util.getFileExtension(file)) {
             case "zip":
                 return FileType.ARCHIVE;
@@ -89,5 +91,19 @@ public class OutputFileFactory {
             default:
                 return FileType.REGULAR;
         }
+    }
+
+    public static OutputFormat getOutputFormat(Path file, Config config) {
+        switch (Util.getFileExtension(file)) {
+            case "json":
+            case "cityjson":
+                return OutputFormat.CITYJSON;
+            case "zip":
+            case "gzip":
+            case "gz":
+                return config.getExportConfig().getGeneralOptions().getCompressionFormat();
+        }
+
+        return OutputFormat.CITYGML;
     }
 }

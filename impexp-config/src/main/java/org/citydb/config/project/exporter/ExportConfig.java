@@ -32,6 +32,7 @@ import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.resources.Resources;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -40,6 +41,7 @@ import javax.xml.bind.annotation.XmlType;
         "query",
         "simpleQuery",
         "path",
+        "generalOptions",
         "continuation",
         "cityObjectGroup",
         "address",
@@ -55,6 +57,8 @@ public class ExportConfig {
     private QueryConfig query;
     private SimpleQuery simpleQuery;
     private Path path;
+    @XmlElement(name = "general")
+    private GeneralOptions generalOptions;
     private Continuation continuation;
     private ExportCityObjectGroup cityObjectGroup;
     private ExportAddress address;
@@ -68,6 +72,7 @@ public class ExportConfig {
         query = new QueryConfig();
         simpleQuery = new SimpleQuery();
         path = new Path();
+        generalOptions = new GeneralOptions();
         continuation = new Continuation();
         cityObjectGroup = new ExportCityObjectGroup();
         address = new ExportAddress();
@@ -112,6 +117,16 @@ public class ExportConfig {
     public void setPath(Path path) {
         if (path != null) {
             this.path = path;
+        }
+    }
+
+    public GeneralOptions getGeneralOptions() {
+        return generalOptions;
+    }
+
+    public void setGeneralOptions(GeneralOptions generalOptions) {
+        if (generalOptions != null) {
+            this.generalOptions = generalOptions;
         }
     }
 

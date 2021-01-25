@@ -163,7 +163,7 @@ public class Exporter implements EventHandler {
         InternalConfig internalConfig = new InternalConfig();
 
         // set output format and format-specific options
-        OutputFormat outputFormat = getOutputFormat(outputFile);
+        OutputFormat outputFormat = OutputFileFactory.getOutputFormat(outputFile, config);
         setOutputFormatOptions(outputFormat, internalConfig);
 
         // log workspace
@@ -307,7 +307,7 @@ public class Exporter implements EventHandler {
 
             // check for unique texture filenames when exporting as archive
             if (!config.getExportConfig().getAppearances().isSetUniqueTextureFileNames()
-                    && fileFactory.getFileType(outputFile.getFileName()) == FileType.ARCHIVE) {
+                    && OutputFileFactory.getFileType(outputFile.getFileName()) == FileType.ARCHIVE) {
                 log.warn("Using unique texture filenames because of writing to an archive file.");
                 config.getExportConfig().getAppearances().setUniqueTextureFileNames(true);
             }
@@ -385,7 +385,7 @@ public class Exporter implements EventHandler {
                     eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles, this));
 
                     try {
-                        file = fileFactory.createOutputFile(folder.resolve(fileName));
+                        file = fileFactory.createOutputFile(folder.resolve(fileName), outputFormat);
                         internalConfig.setOutputFile(file);
                     } catch (IOException e) {
                         throw new CityGMLExportException("Failed to create output file '" + folder.resolve(fileName) + "'.", e);
@@ -614,16 +614,6 @@ public class Exporter implements EventHandler {
         }
 
         return shouldRun;
-    }
-
-    private OutputFormat getOutputFormat(Path outputFile) {
-	    switch (Util.getFileExtension(outputFile)) {
-            case "json":
-            case "cityjson":
-                return OutputFormat.CITYJSON;
-        }
-
-        return OutputFormat.CITYGML;
     }
 
     private void setOutputFormatOptions(OutputFormat outputFormat, InternalConfig internalConfig) {
