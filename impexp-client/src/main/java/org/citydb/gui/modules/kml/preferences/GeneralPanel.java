@@ -320,7 +320,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		add(gltfPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(kmlRegionPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		PopupMenuDecorator.getInstance().decorate(groupSizeText, visibleFromText, viewRefreshTimeText);
+		PopupMenuDecorator.getInstance().decorate(groupSizeText, visibleFromText, viewRefreshTimeText,
+				((JSpinner.DefaultEditor) scaleFactorSpinner.getEditor()).getTextField());
 
 		createGltfCheckbox.addActionListener(e -> excludeGltfAndKMZ(true));
 		kmzCheckbox.addActionListener(e -> excludeGltfAndKMZ(false));
