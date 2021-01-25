@@ -40,11 +40,11 @@ import org.citydb.util.Util;
 import javax.swing.*;
 import java.awt.*;
 
-public class VersionPanel extends AbstractPreferencesComponent {
+public class GeneralPanel extends AbstractPreferencesComponent {
 	private TitledPanel versionPanel;
 	private JRadioButton[] cityGMLVersionBox;
 
-	public VersionPanel(Config config) {
+	public GeneralPanel(Config config) {
 		super(config);
 		initGui();
 	}
@@ -87,7 +87,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		versionPanel.setTitle(Language.I18N.getString("pref.export.version.border.versions"));
+		versionPanel.setTitle(Language.I18N.getString("pref.export.version.border.version"));
 	}
 
 	@Override
@@ -121,7 +121,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.export.version");
+		return Language.I18N.getString("pref.tree.export.general");
 	}
 
 	private void firePropertyChange(CityGMLVersionType version) {
