@@ -35,12 +35,12 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "FeatureEnvelopeModeType")
 @XmlEnum
 public enum FeatureEnvelopeMode {
-    @XmlEnumValue("none")
-    NONE("none"),
     @XmlEnumValue("top-level")
     TOP_LEVEL("top-level"),
     @XmlEnumValue("all")
-    ALL("all");
+    ALL("all"),
+    @XmlEnumValue("none")
+    NONE("none");
 
     private final String value;
 

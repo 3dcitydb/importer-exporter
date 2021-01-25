@@ -271,7 +271,7 @@ public class DBSplitter {
 						double[] coordinates = extent.getCoordinates(0);
 
 						if (query.isSetTiling() &&
-								config.getExportConfig().getGeneralOptions().getEnvelope().getCityModelMode().isUseTileExtent()) {
+								config.getExportConfig().getGeneralOptions().getEnvelope().isUseTileExtentForCityModel()) {
 							BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
 							coordinates[0] = tileExtent.getLowerCorner().getX();
 							coordinates[1] = tileExtent.getLowerCorner().getY();
@@ -317,7 +317,7 @@ public class DBSplitter {
 
 				if (calculateExtent
 						&& query.isSetTiling()
-						&& config.getExportConfig().getGeneralOptions().getEnvelope().getCityModelMode().isUseTileExtent()) {
+						&& config.getExportConfig().getGeneralOptions().getEnvelope().isUseTileExtentForCityModel()) {
 					BoundingBox extent = new BoundingBox(query.getTiling().getActiveTile().getExtent());
 					int srid = extent.isSetSrs() ?
 							extent.getSrs().getSrid() :

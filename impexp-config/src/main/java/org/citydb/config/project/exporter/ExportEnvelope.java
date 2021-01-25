@@ -28,37 +28,43 @@
 
 package org.citydb.config.project.exporter;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ExportEnvelopeType", propOrder = {
-        "cityModel",
-        "features"
+        "featureMode",
+        "cityModel"
 })
 public class ExportEnvelope {
+    @XmlElement(name = "features")
+    private FeatureEnvelopeMode featureMode = FeatureEnvelopeMode.TOP_LEVEL;
     private CityModelEnvelopeMode cityModel;
-    private FeatureEnvelopeMode features = FeatureEnvelopeMode.TOP_LEVEL;
 
-    public boolean isSetCityModelMode() {
-        return cityModel != null;
-    }
-
-    public CityModelEnvelopeMode getCityModelMode() {
-        return cityModel;
-    }
-
-    public void setCityModelMode(CityModelEnvelopeMode mode) {
-        this.cityModel = mode;
-    }
-
-    public boolean isUseEnvelopeOnCityModel() {
-        return cityModel != null && cityModel.isEnabled();
+    public ExportEnvelope() {
+        cityModel = new CityModelEnvelopeMode();
     }
 
     public FeatureEnvelopeMode getFeatureMode() {
-        return features;
+        return featureMode != null ? featureMode : FeatureEnvelopeMode.TOP_LEVEL;
     }
 
-    public void setFeatureMode(FeatureEnvelopeMode mode) {
-        this.features = mode;
+    public void setFeatureMode(FeatureEnvelopeMode featureMode) {
+        this.featureMode = featureMode;
+    }
+
+    public boolean isUseEnvelopeOnCityModel() {
+        return cityModel.isEnabled();
+    }
+
+    public void setUseEnvelopeOnCityModel(boolean useEnvelope) {
+        cityModel.setEnabled(useEnvelope);
+    }
+
+    public boolean isUseTileExtentForCityModel() {
+        return cityModel.isUseTileExtent();
+    }
+
+    public void setUseTileExtentForCityModel(boolean useTileExtent) {
+        cityModel.setUseTileExtent(useTileExtent);
     }
 }
