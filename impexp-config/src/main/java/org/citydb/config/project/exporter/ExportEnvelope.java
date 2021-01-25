@@ -30,28 +30,28 @@ package org.citydb.config.project.exporter;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "GMLEnvelopeType", propOrder = {
+@XmlType(name = "ExportEnvelopeType", propOrder = {
         "cityModel",
         "features"
 })
-public class GMLEnvelope {
+public class ExportEnvelope {
     private CityModelEnvelopeMode cityModel;
     private FeatureEnvelopeMode features = FeatureEnvelopeMode.TOP_LEVEL;
 
-    public boolean isSetCityModelEnvelopeMode() {
+    public boolean isSetCityModelMode() {
         return cityModel != null;
     }
 
-    public CityModelEnvelopeMode getCityModelEnvelopeMode() {
+    public CityModelEnvelopeMode getCityModelMode() {
         return cityModel;
     }
 
-    public void setCityModelEnvelopeMode(CityModelEnvelopeMode mode) {
+    public void setCityModelMode(CityModelEnvelopeMode mode) {
         this.cityModel = mode;
     }
 
     public boolean isUseEnvelopeOnCityModel() {
-        return cityModel != null && cityModel.isUseEnvelope();
+        return cityModel != null && cityModel.isEnabled();
     }
 
     public FeatureEnvelopeMode getFeatureMode() {

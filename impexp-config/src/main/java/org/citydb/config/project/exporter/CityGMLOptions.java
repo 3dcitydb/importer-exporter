@@ -41,14 +41,12 @@ import java.util.Map;
 public class CityGMLOptions {
     private String fileEncoding;
     private Boolean writeProductHeader;
-    private GMLEnvelope gmlEnvelope;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private LinkedHashMap<String, Namespace> namespaces;
     private XLink xlink;
     private XSLTransformation xslTransformation;
 
     public CityGMLOptions() {
-        gmlEnvelope = new GMLEnvelope();
         xlink = new XLink();
         xslTransformation = new XSLTransformation();
     }
@@ -67,14 +65,6 @@ public class CityGMLOptions {
 
     public void setWriteProductHeader(Boolean writeProductHeader) {
         this.writeProductHeader = writeProductHeader;
-    }
-
-    public GMLEnvelope getGMLEnvelope() {
-        return gmlEnvelope;
-    }
-
-    public void setGMLEnvelope(GMLEnvelope gmlEnvelope) {
-        this.gmlEnvelope = gmlEnvelope;
     }
 
     public boolean isSetNamespaces() {
