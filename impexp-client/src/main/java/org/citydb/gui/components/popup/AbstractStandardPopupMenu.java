@@ -27,9 +27,8 @@
  */
 package org.citydb.gui.components.popup;
 
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 
-@SuppressWarnings("serial")
 public abstract class AbstractStandardPopupMenu extends JPopupMenu {
 	public abstract void doTranslation();
 }

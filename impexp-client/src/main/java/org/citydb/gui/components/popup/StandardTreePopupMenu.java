@@ -27,21 +27,16 @@
  */
 package org.citydb.gui.components.popup;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JMenuItem;
-import javax.swing.JTree;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.registry.ObjectRegistry;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+
 public class StandardTreePopupMenu extends AbstractStandardPopupMenu implements EventHandler {
 	private JMenuItem expand;
 	private JMenuItem expandAll;
@@ -63,31 +58,27 @@ public class StandardTreePopupMenu extends AbstractStandardPopupMenu implements 
 		collapseAll = new JMenuItem();
 		separator = new Separator();
 
-		expand.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (path != null)
-					performActionOnNodes(path, true, false);
+		expand.addActionListener(e -> {
+			if (path != null) {
+				performActionOnNodes(path, true, false);
 			}
 		});
 
-		expandAll.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (path != null)
-					performActionOnNodes(path, true, true);
+		expandAll.addActionListener(e -> {
+			if (path != null) {
+				performActionOnNodes(path, true, true);
 			}
 		});
 
-		collapse.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (path != null)
-					performActionOnNodes(path, false, false);
+		collapse.addActionListener(e -> {
+			if (path != null) {
+				performActionOnNodes(path, false, false);
 			}
 		});
 
-		collapseAll.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (path != null)
-					performActionOnNodes(path, false, true);
+		collapseAll.addActionListener(e -> {
+			if (path != null) {
+				performActionOnNodes(path, false, true);
 			}
 		});
 
@@ -129,14 +120,17 @@ public class StandardTreePopupMenu extends AbstractStandardPopupMenu implements 
 	private void performActionOnNodes(TreePath parent, boolean expand, boolean recursive) {
 		TreeNode node = (TreeNode)parent.getLastPathComponent();
 
-		if (recursive)
-			for (int i = 0; i < node.getChildCount(); ++i)
+		if (recursive) {
+			for (int i = 0; i < node.getChildCount(); i++) {
 				performActionOnNodes(parent.pathByAddingChild(node.getChildAt(i)), expand, recursive);
+			}
+		}
 
-		if (expand)
+		if (expand) {
 			tree.expandPath(parent);
-		else
+		} else {
 			tree.collapsePath(parent);
+		}
 	}
 
 	private boolean showAll(TreePath root, TreePath sub, boolean expand) {
@@ -144,15 +138,18 @@ public class StandardTreePopupMenu extends AbstractStandardPopupMenu implements 
 		
 		for (int i = 0; i < node.getChildCount(); ++i) {
 			TreeNode child = node.getChildAt(i);
-			if (child.isLeaf())
+			if (child.isLeaf()) {
 				continue;
+			}
 			
-			if (showAll(root, sub.pathByAddingChild(child), expand))
+			if (showAll(root, sub.pathByAddingChild(child), expand)) {
 				return true;
+			}
 		}
 		
-		if (root == sub)
+		if (root == sub) {
 			return false;
+		}
 		
 		return expand ? tree.isCollapsed(sub) : tree.isExpanded(sub);
 	}

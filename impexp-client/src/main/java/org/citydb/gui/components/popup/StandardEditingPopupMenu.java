@@ -27,30 +27,19 @@
  */
 package org.citydb.gui.components.popup;
 
-import java.awt.Component;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
-import javax.swing.JList;
-import javax.swing.JMenuItem;
-import javax.swing.JPasswordField;
-import javax.swing.KeyStroke;
-import javax.swing.TransferHandler;
-import javax.swing.text.JTextComponent;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.registry.ObjectRegistry;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+
 public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implements EventHandler {
 	private JMenuItem cut;
 	private JMenuItem copy;
@@ -77,13 +66,13 @@ public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implemen
 
 		if (component instanceof JTextComponent) {
 			selectAll.setAction(new TextSelectAllAction());
-
 			if (component instanceof JPasswordField) {
 				cut.setEnabled(false);
 				copy.setEnabled(false);
 			}
-		} else if (component instanceof JList)
-			selectAll.setAction(new ListSelectAllAction());		
+		} else if (component instanceof JList) {
+			selectAll.setAction(new ListSelectAllAction());
+		}
 
 		cut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -115,8 +104,9 @@ public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implemen
 			if (c instanceof JTextComponent) {
 				JTextComponent text = (JTextComponent)c;
 				text.requestFocus();
-				if (c instanceof JFormattedTextField)
+				if (c instanceof JFormattedTextField) {
 					text.setText(text.getText());
+				}
 
 				text.selectAll();
 			}
@@ -129,8 +119,9 @@ public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implemen
 			if (c instanceof JList) {
 				JList<?> list = (JList<?>)c;
 				int end = list.getModel().getSize() - 1;
-				if (end >= 0)
+				if (end >= 0) {
 					list.setSelectionInterval(0, end);
+				}
 			}
 		}
 	}
@@ -140,10 +131,10 @@ public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implemen
 			final Component c = getInvoker();
 			if (c instanceof JComponent) {
 				JComponent invoker = (JComponent)c;				
-				String action = (String)e.getActionCommand();
-				Action a = invoker.getActionMap().get(action);
-				if (a != null)
+				Action a = invoker.getActionMap().get(e.getActionCommand());
+				if (a != null) {
 					a.actionPerformed(new ActionEvent(invoker, ActionEvent.ACTION_PERFORMED, null));
+				}
 			}
 		}
 	}

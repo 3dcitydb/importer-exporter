@@ -27,19 +27,14 @@
  */
 package org.citydb.gui.components.popup;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JCheckBox;
-import javax.swing.JMenuItem;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.registry.ObjectRegistry;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+
 public class CheckBoxGroupPopupMenu extends AbstractStandardPopupMenu implements EventHandler {
 	private JMenuItem selectOthers;
 	private JMenuItem deselectOthers;
@@ -58,46 +53,41 @@ public class CheckBoxGroupPopupMenu extends AbstractStandardPopupMenu implements
 		deselectAll = new JMenuItem();
 		invert = new JMenuItem();
 
-		selectOthers.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				for (int i = 0; i < group.length; i++) {
-					if (i == index)
-						continue;
-					
-					group[i].setSelected(true);
+		selectOthers.addActionListener(e -> {
+			for (int i = 0; i < group.length; i++) {
+				if (i == index) {
+					continue;
 				}
+
+				group[i].setSelected(true);
 			}
 		});
 		
-		deselectOthers.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				for (int i = 0; i < group.length; i++) {
-					if (i == index)
-						continue;
-					
-					group[i].setSelected(false);
+		deselectOthers.addActionListener(e -> {
+			for (int i = 0; i < group.length; i++) {
+				if (i == index) {
+					continue;
 				}
+
+				group[i].setSelected(false);
 			}
 		});
 		
-		selectAll.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				for (int i = 0; i < group.length; i++)
-					group[i].setSelected(true);
+		selectAll.addActionListener(e -> {
+			for (JCheckBox jCheckBox : group) {
+				jCheckBox.setSelected(true);
 			}
 		});
 		
-		deselectAll.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				for (int i = 0; i < group.length; i++)
-					group[i].setSelected(false);
+		deselectAll.addActionListener(e -> {
+			for (JCheckBox jCheckBox : group) {
+				jCheckBox.setSelected(false);
 			}
 		});
 		
-		invert.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				for (int i = 0; i < group.length; i++)
-					group[i].setSelected(!group[i].isSelected());
+		invert.addActionListener(e -> {
+			for (JCheckBox jCheckBox : group) {
+				jCheckBox.setSelected(!jCheckBox.isSelected());
 			}
 		});
 		
@@ -111,11 +101,11 @@ public class CheckBoxGroupPopupMenu extends AbstractStandardPopupMenu implements
 	
 	@Override
 	public void doTranslation() {
-		selectOthers.setText(Language.I18N.getString("export.popup.lod.selectOthers"));
-		deselectOthers.setText(Language.I18N.getString("export.popup.lod.deselectOthers"));
-		selectAll.setText(Language.I18N.getString("export.popup.lod.selectAll"));
-		deselectAll.setText(Language.I18N.getString("export.popup.lod.deselectAll"));
-		invert.setText(Language.I18N.getString("export.popup.lod.invert"));
+		selectOthers.setText(Language.I18N.getString("common.popup.checkbox.selectOthers"));
+		deselectOthers.setText(Language.I18N.getString("common.popup.checkbox.deselectOthers"));
+		selectAll.setText(Language.I18N.getString("common.popup.checkbox.selectAll"));
+		deselectAll.setText(Language.I18N.getString("common.popup.checkbox.deselectAll"));
+		invert.setText(Language.I18N.getString("common.popup.checkbox.invert"));
 	}
 
 	@Override

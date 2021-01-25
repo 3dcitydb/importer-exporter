@@ -34,6 +34,7 @@ import org.citydb.config.project.kmlExporter.PointAndCurve;
 import org.citydb.config.project.kmlExporter.PointDisplayMode;
 import org.citydb.gui.components.common.ColorPicker;
 import org.citydb.gui.components.common.TitledPanel;
+import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
@@ -338,6 +339,15 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 
 		add(pointPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(curvePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		PopupMenuDecorator.getInstance().decorate(((JSpinner.DefaultEditor) pointCrossLineThicknessSpinner.getEditor()).getTextField(),
+				((JSpinner.DefaultEditor) pointCrossLineHighlightingThicknessSpinner.getEditor()).getTextField(),
+				((JSpinner.DefaultEditor) pointIconScaleSpinner.getEditor()).getTextField(),
+				((JSpinner.DefaultEditor) pointIconHighlightingScaleSpinner.getEditor()).getTextField(),
+				((JSpinner.DefaultEditor) pointCubeLengthOfSideSpinner.getEditor()).getTextField(),
+				((JSpinner.DefaultEditor) pointCubeHighlightingLineThicknessSpinner.getEditor()).getTextField(),
+				((JSpinner.DefaultEditor) curveThicknessSpinner.getEditor()).getTextField(),
+				((JSpinner.DefaultEditor) curveHighlightingThicknessSpinner.getEditor()).getTextField());
 
 		iconRButton.addActionListener(e -> setEnabledPointComponents());
         crossLineRButton.addActionListener(e -> setEnabledPointComponents());
