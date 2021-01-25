@@ -56,7 +56,9 @@ public class CityJSONOptionsPanel extends AbstractPreferencesComponent {
         significantDigits = new JSpinner(new SpinnerNumberModel(1, 1, 20, 1));
         significantTextureDigits = new JSpinner(new SpinnerNumberModel(1, 1, 20, 1));
 
-        PopupMenuDecorator.getInstance().decorate(significantDigits, significantTextureDigits);
+        PopupMenuDecorator.getInstance().decorate(significantDigits, significantTextureDigits,
+                ((JSpinner.DefaultEditor) significantDigits.getEditor()).getTextField(),
+                ((JSpinner.DefaultEditor) significantTextureDigits.getEditor()).getTextField());
 
         setLayout(new GridBagLayout());
         {
