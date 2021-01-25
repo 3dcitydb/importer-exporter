@@ -3,16 +3,16 @@ package org.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="GeneralExportOptionsType", propOrder={
-        "compressionFormat"
+        "compressedOutputFormat"
 })
 public class GeneralOptions {
-    private OutputFormat compressionFormat = OutputFormat.CITYGML;
+    private OutputFormat compressedOutputFormat = OutputFormat.CITYGML;
 
-    public OutputFormat getCompressionFormat() {
-        return compressionFormat != null ? compressionFormat : OutputFormat.CITYGML;
+    public OutputFormat getCompressedOutputFormat() {
+        return compressedOutputFormat != null ? compressedOutputFormat : OutputFormat.CITYGML;
     }
 
-    public void setCompressionFormat(OutputFormat compressionFormat) {
-        this.compressionFormat = compressionFormat;
+    public void setCompressedOutputFormat(OutputFormat compressedOutputFormat) {
+        this.compressedOutputFormat = compressedOutputFormat;
     }
 }

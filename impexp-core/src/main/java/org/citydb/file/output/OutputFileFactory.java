@@ -101,7 +101,7 @@ public class OutputFileFactory {
             case "zip":
             case "gzip":
             case "gz":
-                return config.getExportConfig().getGeneralOptions().getCompressionFormat();
+                return config.getExportConfig().getGeneralOptions().getCompressedOutputFormat();
         }
 
         return OutputFormat.CITYGML;

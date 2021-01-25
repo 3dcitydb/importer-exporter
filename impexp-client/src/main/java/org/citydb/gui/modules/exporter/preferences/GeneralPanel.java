@@ -29,6 +29,7 @@ package org.citydb.gui.modules.exporter.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
 import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.common.TitledPanel;
@@ -42,7 +43,10 @@ import java.awt.*;
 
 public class GeneralPanel extends AbstractPreferencesComponent {
 	private TitledPanel versionPanel;
-	private JRadioButton[] cityGMLVersionBox;
+	private JRadioButton cityGMLv2;
+	private JRadioButton cityGMLv1;
+	private JLabel compressedOutputFormatLabel;
+	private JComboBox<OutputFormat> compressedOutputFormat;
 
 	public GeneralPanel(Config config) {
 		super(config);
@@ -52,32 +56,39 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	@Override
 	public boolean isModified() {
 		CityGMLVersionType version = config.getExportConfig().getSimpleQuery().getVersion();
-		for (int i = 0; i < CityGMLVersionType.values().length; i++) {
-			if (cityGMLVersionBox[i].isSelected()) {
-				return version != CityGMLVersionType.fromValue(cityGMLVersionBox[i].getText());
-			}
-		}
+		if (cityGMLv2.isSelected() && version != CityGMLVersionType.v2_0_0) return true;
+		if (cityGMLv1.isSelected() && version != CityGMLVersionType.v1_0_0) return true;
+		if (compressedOutputFormat.getSelectedItem() != config.getExportConfig().getGeneralOptions().getCompressedOutputFormat()) return true;
 
 		return false;
 	}
 
 	private void initGui() {
-		ButtonGroup group = new ButtonGroup();
-		cityGMLVersionBox = new JRadioButton[CityGMLVersionType.values().length];
+		cityGMLv2 = new JRadioButton();
+		cityGMLv1 = new JRadioButton();
 
-		for (int i = 0; i < CityGMLVersionType.values().length; i++) {			
-			cityGMLVersionBox[i] = new JRadioButton();
-			cityGMLVersionBox[i].setText(CityGMLVersionType.values()[i].toString());
-			group.add(cityGMLVersionBox[i]);
+		ButtonGroup versionGroup = new ButtonGroup();
+		versionGroup.add(cityGMLv2);
+		versionGroup.add(cityGMLv1);
+
+		compressedOutputFormatLabel = new JLabel();
+		compressedOutputFormat = new JComboBox<>();
+		for (OutputFormat outputFormat : OutputFormat.values()) {
+			compressedOutputFormat.addItem(outputFormat);
 		}
 
 		setLayout(new GridBagLayout());
 		JPanel content = new JPanel();
 		content.setLayout(new GridBagLayout());
 		{
-			for (int i = 0; i < cityGMLVersionBox.length; i++) {
-				content.add(cityGMLVersionBox[i], GuiUtil.setConstraints(0, i, 1, 1, GridBagConstraints.BOTH, i == 0 ? 0 : 5, 0, 0, 0));
-			}
+			JPanel formatPanel = new JPanel();
+			formatPanel.setLayout(new GridBagLayout());
+			formatPanel.add(compressedOutputFormatLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+			formatPanel.add(compressedOutputFormat, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+
+			content.add(cityGMLv2, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			content.add(cityGMLv1, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			content.add(formatPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
 
 			versionPanel = new TitledPanel().build(content);
 		}
@@ -87,36 +98,33 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		versionPanel.setTitle(Language.I18N.getString("pref.export.version.border.version"));
+		versionPanel.setTitle(Language.I18N.getString("pref.export.general.border.general"));
+		cityGMLv2.setText(Language.I18N.getString("pref.export.general.label.citygmlv2"));
+		cityGMLv1.setText(Language.I18N.getString("pref.export.general.label.citygmlv1"));
+		compressedOutputFormatLabel.setText(Language.I18N.getString("pref.export.general.label.compressedFormat"));
 	}
 
 	@Override
 	public void loadSettings() {
 		CityGMLVersionType version = config.getExportConfig().getSimpleQuery().getVersion();
-		if (version != null) {
-			for (int i = 0; i < CityGMLVersionType.values().length; i++) {
-				if (CityGMLVersionType.values()[i] == version) {
-					cityGMLVersionBox[i].setSelected(true);
-					break;
-				}
-			}
-		} else {
-			cityGMLVersionBox[0].setSelected(true);
-			version = CityGMLVersionType.values()[0];
+		if (version == null) {
+			version = CityGMLVersionType.v2_0_0;
 		}
 
+		cityGMLv2.setSelected(version == CityGMLVersionType.v2_0_0);
+		cityGMLv1.setSelected(version == CityGMLVersionType.v1_0_0);
 		firePropertyChange(version);
+
+		compressedOutputFormat.setSelectedItem(config.getExportConfig().getGeneralOptions().getCompressedOutputFormat());
 	}
 
 	@Override
 	public void setSettings() {
-		for (int i = 0; i < CityGMLVersionType.values().length; i++) {
-			if (cityGMLVersionBox[i].isSelected()) {
-				config.getExportConfig().getSimpleQuery().setVersion(CityGMLVersionType.fromValue(cityGMLVersionBox[i].getText()));
-				firePropertyChange(CityGMLVersionType.values()[i]);
-				break;
-			}
-		}
+		CityGMLVersionType version = cityGMLv1.isSelected() ? CityGMLVersionType.v1_0_0 : CityGMLVersionType.v2_0_0;
+		config.getExportConfig().getSimpleQuery().setVersion(version);
+		firePropertyChange(version);
+
+		config.getExportConfig().getGeneralOptions().setCompressedOutputFormat((OutputFormat) compressedOutputFormat.getSelectedItem());
 	}
 
 	@Override
