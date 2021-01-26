@@ -49,6 +49,7 @@ import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.components.common.TitledPanel;
+import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.database.operations.DatabaseOperationsPanel;
 import org.citydb.gui.util.GuiUtil;
@@ -568,14 +569,13 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			}
 
 			if (showWarning) {
-				JPanel confirmPanel = new JPanel(new GridBagLayout());
-				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-                confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-                confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
+				ConfirmationCheckDialog dialog = new ConfirmationCheckDialog(viewController.getTopFrame(),
+						Language.I18N.getString("db.dialog.warn.title"),
+						warning.getFormattedMessage(),
+						JOptionPane.OK_CANCEL_OPTION);
 
-				option = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.OK_CANCEL_OPTION);
-
-				if (confirmDialogNoShow.isSelected()) {
+				option = dialog.show();
+				if (!dialog.keepShowingDialog()) {
 					switch ((ConnectionWarningType) warning.getType()) {
 						case OUTDATED_DATABASE_VERSION:
 							config.getGuiConfig().setShowOutdatedDatabaseVersionWarning(false);

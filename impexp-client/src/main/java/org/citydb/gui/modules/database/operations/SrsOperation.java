@@ -37,6 +37,7 @@ import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.connection.DatabaseMetaData;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.PropertyChangeEvent;
+import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
@@ -285,7 +286,6 @@ public class SrsOperation extends DatabaseOperationView {
 
 			if (changeSrid && config.getGuiConfig().isShowChangeSridWarning()) {
 				JPanel confirmPanel = new JPanel(new GridBagLayout());
-				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
 
 				JLabel headerLabel = new JLabel(Language.I18N.getString("db.dialog.srs.changeSrid"));
 				JLabel sridLabel = new JLabel(Language.I18N.getString("pref.db.srs.label.srid") + ":");
@@ -303,14 +303,13 @@ public class SrsOperation extends DatabaseOperationView {
 				confirmPanel.add(sridValue, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 0, 0));
 				confirmPanel.add(geometriesLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
 				confirmPanel.add(geometriesValue, GuiUtil.setConstraints(1, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
-				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0, 3, 2, 1, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 
-				int result = JOptionPane.showConfirmDialog(viewController.getTopFrame(),
-						confirmPanel,
+				ConfirmationCheckDialog dialog = new ConfirmationCheckDialog(viewController.getTopFrame(),
 						Language.I18N.getString("db.dialog.srs.window"),
-						JOptionPane.YES_NO_CANCEL_OPTION);
+						confirmPanel);
 
-				config.getGuiConfig().setShowChangeSridWarning(!confirmDialogNoShow.isSelected());
+				int result = dialog.show();
+				config.getGuiConfig().setShowChangeSridWarning(dialog.keepShowingDialog());
 				if (result != JOptionPane.YES_OPTION)
 					return;
 			}

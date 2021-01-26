@@ -30,6 +30,7 @@ package org.citydb.gui.modules.preferences.view;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
+import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.NullComponent;
 import org.citydb.gui.modules.database.DatabasePlugin;
@@ -275,17 +276,12 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		if (activeEntry.isModified()) {			
 			int res;
 			if (config.getGuiConfig().isShowPreferencesConfirmDialog()) {
-				JPanel confirmPanel = new JPanel(new GridBagLayout());
-				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-				confirmPanel.add(new JLabel(Language.I18N.getString("pref.dialog.apply.msg")), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
+				ConfirmationCheckDialog dialog = new ConfirmationCheckDialog(getTopLevelAncestor(),
+						Language.I18N.getString("pref.dialog.apply.title"),
+						Language.I18N.getString("pref.dialog.apply.msg"));
 
-				res = JOptionPane.showConfirmDialog(getTopLevelAncestor(),
-						confirmPanel, 
-						Language.I18N.getString("pref.dialog.apply.title"), 
-						JOptionPane.YES_NO_CANCEL_OPTION);
-
-				config.getGuiConfig().setShowPreferencesConfirmDialog(!confirmDialogNoShow.isSelected());
+				res = dialog.show();
+				config.getGuiConfig().setShowPreferencesConfirmDialog(dialog.keepShowingDialog());
 			} else
 				res = JOptionPane.YES_OPTION;
 
