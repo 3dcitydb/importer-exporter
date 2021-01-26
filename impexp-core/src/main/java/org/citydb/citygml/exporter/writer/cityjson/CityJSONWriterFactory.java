@@ -46,8 +46,9 @@ public class CityJSONWriterFactory implements FeatureWriterFactory {
     public FeatureWriter createFeatureWriter(OutputStream outputStream, FileType fileType) throws FeatureWriteException {
         CityJSONChunkWriter chunkWriter = factory.createCityJSONChunkWriter(new BufferedWriter(new OutputStreamWriter(outputStream)));
 
-        CityJSONOptions cityJSONOptions = config.getExportConfig().getCityJSONOptions();
+        chunkWriter.setCalcBoundingBox(config.getExportConfig().getGeneralOptions().getEnvelope().isUseEnvelopeOnCityModel());
 
+        CityJSONOptions cityJSONOptions = config.getExportConfig().getCityJSONOptions();
         chunkWriter.setIndent(cityJSONOptions.isPrettyPrint() ? " " : "");
         chunkWriter.setVerticesBuilder(new DefaultVerticesBuilder()
                 .withSignificantDigits(cityJSONOptions.getSignificantDigits()));
