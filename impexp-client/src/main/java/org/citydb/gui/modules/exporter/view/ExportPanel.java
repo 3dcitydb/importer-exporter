@@ -33,6 +33,7 @@ import org.citydb.config.Config;
 import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
@@ -45,6 +46,8 @@ import org.citydb.database.DatabaseController;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.InterruptEvent;
+import org.citydb.file.output.OutputFileFactory;
+import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
@@ -69,6 +72,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -193,6 +197,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				return;
 			}
 
+			boolean useTiling = false;
+
 			if (config.getExportConfig().isUseSimpleQuery()) {
 				SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
@@ -249,8 +255,10 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 						return;
 					}
 
-					if (bboxFilter.getMode() == SimpleTilingMode.TILING)
+					if (bboxFilter.getMode() == SimpleTilingMode.TILING) {
 						tileAmount = bboxFilter.getRows() * bboxFilter.getColumns();
+						useTiling = true;
+					}
 				}
 
 				// feature types
@@ -267,10 +275,31 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					return;
 				}
 
-				// copy tiling options if required
-				if (query.isSetTiling() && !(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions)) {
-					query.getTiling().setTilingOptions(config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions());
-					tileAmount = query.getTiling().getRows() * query.getTiling().getColumns();
+				if (query.isSetTiling()) {
+					// copy tiling options if required
+					if (!(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions)) {
+						query.getTiling().setTilingOptions(config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions());
+						tileAmount = query.getTiling().getRows() * query.getTiling().getColumns();
+					}
+
+					useTiling = true;
+				}
+			}
+
+			Path outputFile = Paths.get(browseText.getText());
+			if (!useTiling
+					&& OutputFileFactory.getOutputFormat(outputFile, config) == OutputFormat.CITYJSON
+					&& config.getGuiConfig().isShowCityJSONTilingWarning()) {
+				ConfirmationCheckDialog dialog = new ConfirmationCheckDialog(viewController.getTopFrame(),
+						Language.I18N.getString("export.dialog.warn.cityjson.title"),
+						Language.I18N.getString("export.dialog.warn.cityjson.msg"),
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.WARNING_MESSAGE);
+
+				int result = dialog.show();
+				config.getGuiConfig().setShowCityJSONTilingWarning(dialog.keepShowingDialog());
+				if (result != JOptionPane.YES_OPTION) {
+					return;
 				}
 			}
 
