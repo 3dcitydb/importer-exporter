@@ -269,6 +269,9 @@ public class Exporter implements EventHandler {
             } catch (FilterException e) {
                 throw new CityGMLExportException("Failed to transform tiling extent.", e);
             }
+        } else if (outputFormat == OutputFormat.CITYJSON) {
+            // log warning if CityJSON is used without tiling
+            log.warn("To avoid memory issues, a tiled export should be used for CityJSON.");
         }
 
         // create output file factory
