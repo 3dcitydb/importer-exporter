@@ -1,59 +1,62 @@
 package org.citydb.gui.components.dialog;
 
 import org.citydb.config.i18n.Language;
-import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConfirmationCheckDialog {
-    private final Component parent;
-    private final String title;
-    private final int optionType;
-    private final int messageType;
+    private final List<Object> messages;
+    private final JCheckBox disableDialog;
 
-    private JPanel content;
-    private JCheckBox disableDialog;
+    private Component parent;
+    private int messageType;
+    private int optionType;
+    private String title;
 
-    public ConfirmationCheckDialog(Component parent, String title, Component message, int optionType, int messageType) {
-        this.parent = parent;
-        this.title = title;
-        this.optionType = optionType;
-        this.messageType = messageType;
-
-        initGui(message);
-    }
-
-    public ConfirmationCheckDialog(Component parent, String title, Component message, int optionType) {
-        this(parent, title, message, optionType, JOptionPane.QUESTION_MESSAGE);
-    }
-
-    public ConfirmationCheckDialog(Component parent, String title, Component message) {
-        this(parent, title, message, JOptionPane.YES_NO_CANCEL_OPTION);
-    }
-
-    public ConfirmationCheckDialog(Component parent, String title, String message, int optionType, int messageType) {
-        this(parent, title, new JLabel(message), optionType, messageType);
-    }
-
-    public ConfirmationCheckDialog(Component parent, String title, String message, int optionType) {
-        this(parent, title, message, optionType, JOptionPane.QUESTION_MESSAGE);
-    }
-
-    public ConfirmationCheckDialog(Component parent, String title, String message) {
-        this(parent, title, message, JOptionPane.YES_NO_CANCEL_OPTION);
-    }
-
-    private void initGui(Component message) {
-        content = new JPanel(new GridBagLayout());
+    public ConfirmationCheckDialog() {
+        messages = new ArrayList<>();
         disableDialog = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
+    }
 
-        content.add(message, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-        content.add(disableDialog, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
+    public static ConfirmationCheckDialog defaults() {
+        ConfirmationCheckDialog dialog = new ConfirmationCheckDialog();
+        dialog.messageType = JOptionPane.QUESTION_MESSAGE;
+        dialog.optionType = JOptionPane.YES_NO_CANCEL_OPTION;
+        return dialog;
+    }
+
+    public ConfirmationCheckDialog withParentComponent(Component parent) {
+        this.parent = parent;
+        return this;
+    }
+
+    public ConfirmationCheckDialog withMessageType(int messageType) {
+        this.messageType = messageType;
+        return this;
+    }
+
+    public ConfirmationCheckDialog withOptionType(int optionType) {
+        this.optionType = optionType;
+        return this;
+    }
+
+    public ConfirmationCheckDialog withTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    public ConfirmationCheckDialog addMessage(Object message) {
+        messages.add(message);
+        return this;
     }
 
     public int show() {
-        return JOptionPane.showConfirmDialog(parent, content, title, optionType, messageType);
+        messages.add("\n");
+        messages.add(disableDialog);
+        return JOptionPane.showConfirmDialog(parent, messages.toArray(), title, optionType, messageType);
     }
 
     public boolean keepShowingDialog() {
