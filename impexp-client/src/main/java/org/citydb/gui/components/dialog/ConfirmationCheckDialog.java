@@ -10,24 +10,34 @@ public class ConfirmationCheckDialog {
     private final Component parent;
     private final String title;
     private final int optionType;
+    private final int messageType;
 
     private JPanel content;
     private JCheckBox disableDialog;
 
-    public ConfirmationCheckDialog(Component parent, String title, Component message, int optionType) {
+    public ConfirmationCheckDialog(Component parent, String title, Component message, int optionType, int messageType) {
         this.parent = parent;
         this.title = title;
         this.optionType = optionType;
+        this.messageType = messageType;
 
         initGui(message);
     }
 
-    public ConfirmationCheckDialog(Component parent, String title, String message, int optionType) {
-        this(parent, title, new JLabel(message), optionType);
+    public ConfirmationCheckDialog(Component parent, String title, Component message, int optionType) {
+        this(parent, title, message, optionType, JOptionPane.QUESTION_MESSAGE);
     }
 
     public ConfirmationCheckDialog(Component parent, String title, Component message) {
         this(parent, title, message, JOptionPane.YES_NO_CANCEL_OPTION);
+    }
+
+    public ConfirmationCheckDialog(Component parent, String title, String message, int optionType, int messageType) {
+        this(parent, title, new JLabel(message), optionType, messageType);
+    }
+
+    public ConfirmationCheckDialog(Component parent, String title, String message, int optionType) {
+        this(parent, title, message, optionType, JOptionPane.QUESTION_MESSAGE);
     }
 
     public ConfirmationCheckDialog(Component parent, String title, String message) {
@@ -43,7 +53,7 @@ public class ConfirmationCheckDialog {
     }
 
     public int show() {
-        return JOptionPane.showConfirmDialog(parent, content, title, optionType);
+        return JOptionPane.showConfirmDialog(parent, content, title, optionType, messageType);
     }
 
     public boolean keepShowingDialog() {
