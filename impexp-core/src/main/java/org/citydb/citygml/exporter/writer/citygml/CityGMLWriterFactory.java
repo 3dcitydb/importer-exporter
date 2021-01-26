@@ -122,7 +122,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		// prepare SAX writer
 		SAXWriter saxWriter;
 		try {
-			saxWriter = new SAXWriter(outputStream, config.getExportConfig().getCityGMLOptions().getFileEncoding());
+			saxWriter = new SAXWriter(outputStream, config.getExportConfig().getGeneralOptions().getFileEncoding());
 			saxWriter.setWriteEncoding(true);
 			saxWriter.setIndentString(fileType == FileType.REGULAR ? "  " : "");
 		} catch (IOException e) {

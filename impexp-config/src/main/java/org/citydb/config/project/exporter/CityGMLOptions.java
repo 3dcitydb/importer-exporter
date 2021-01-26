@@ -32,14 +32,12 @@ import org.citydb.config.project.common.XSLTransformation;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @XmlType(name = "CityGMLExportOptionsType", propOrder = {})
 public class CityGMLOptions {
-    private String fileEncoding;
     private Boolean writeProductHeader;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private LinkedHashMap<String, Namespace> namespaces;
@@ -49,14 +47,6 @@ public class CityGMLOptions {
     public CityGMLOptions() {
         xlink = new XLink();
         xslTransformation = new XSLTransformation();
-    }
-
-    public String getFileEncoding() {
-        return fileEncoding != null ? fileEncoding : StandardCharsets.UTF_8.name();
-    }
-
-    public void setFileEncoding(String fileEncoding) {
-        this.fileEncoding = fileEncoding;
     }
 
     public boolean isWriteProductHeader() {

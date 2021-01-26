@@ -13,13 +13,12 @@ import org.citygml4j.builder.cityjson.CityJSONBuilder;
 import org.citygml4j.builder.cityjson.CityJSONBuilderException;
 import org.citygml4j.builder.cityjson.json.io.writer.CityJSONChunkWriter;
 import org.citygml4j.builder.cityjson.json.io.writer.CityJSONOutputFactory;
+import org.citygml4j.builder.cityjson.json.io.writer.CityJSONWriteException;
 import org.citygml4j.builder.cityjson.marshal.util.DefaultTextureVerticesBuilder;
 import org.citygml4j.builder.cityjson.marshal.util.DefaultVerticesBuilder;
 import org.citygml4j.builder.cityjson.marshal.util.DefaultVerticesTransformer;
 
-import java.io.BufferedWriter;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 
 public class CityJSONWriterFactory implements FeatureWriterFactory {
     private final CityJSONOutputFactory factory;
@@ -44,7 +43,12 @@ public class CityJSONWriterFactory implements FeatureWriterFactory {
 
     @Override
     public FeatureWriter createFeatureWriter(OutputStream outputStream, FileType fileType) throws FeatureWriteException {
-        CityJSONChunkWriter chunkWriter = factory.createCityJSONChunkWriter(new BufferedWriter(new OutputStreamWriter(outputStream)));
+        CityJSONChunkWriter chunkWriter;
+        try {
+            chunkWriter = factory.createCityJSONChunkWriter(outputStream, config.getExportConfig().getGeneralOptions().getFileEncoding());
+        } catch (CityJSONWriteException e) {
+            throw new FeatureWriteException("Failed to create CityJSON writer.", e);
+        }
 
         chunkWriter.setCalcBoundingBox(config.getExportConfig().getGeneralOptions().getEnvelope().isUseEnvelopeOnCityModel());
 
