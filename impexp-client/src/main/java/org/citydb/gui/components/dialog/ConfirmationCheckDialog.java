@@ -16,7 +16,7 @@ public class ConfirmationCheckDialog {
     private int optionType;
     private String title;
 
-    public ConfirmationCheckDialog() {
+    private ConfirmationCheckDialog() {
         messages = new ArrayList<>();
         disableDialog = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
     }
