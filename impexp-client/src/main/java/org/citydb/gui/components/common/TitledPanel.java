@@ -127,7 +127,9 @@ public class TitledPanel extends JPanel {
         if (toggleButton != null) {
             titleComponent.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
-                    toggleButton.doClick();
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        toggleButton.doClick();
+                    }
                 }
             });
         }
