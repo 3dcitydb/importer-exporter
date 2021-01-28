@@ -29,12 +29,9 @@
 package org.citydb.gui.components.common;
 
 import org.citydb.gui.util.GuiUtil;
-import org.jdesktop.swingx.JXTitledSeparator;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class TitledPanel extends JPanel {
     public static final int TOP = 0;
@@ -44,30 +41,27 @@ public class TitledPanel extends JPanel {
 
     private String title = "";
     private Icon icon;
-    private int horizontalAlignment = SwingConstants.LEADING;
     private boolean showSeparator = true;
     private Insets margin;
 
-    private JComponent header;
     private JToggleButton toggleButton;
+    private JComponent titleComponent;
+    private JSeparator separator;
 
-    public TitledPanel withTitle(String title, Icon icon, int horizontalAlignment) {
+    public TitledPanel withTitle(String title, Icon icon) {
         this.title = title;
         this.icon = icon;
-        this.horizontalAlignment = horizontalAlignment;
         return this;
     }
 
     public TitledPanel withTitle(String title) {
-        return withTitle(title, null, SwingConstants.LEADING);
-    }
-
-    public TitledPanel withTitle(String title, Icon icon) {
-        return withTitle(title, icon, SwingConstants.LEADING);
+        return withTitle(title, null);
     }
 
     public TitledPanel withToggleButton(JToggleButton toggleButton) {
-        this.toggleButton = adaptMargin(toggleButton);
+        Insets margin = UIManager.getInsets("CheckBox.margin");
+        toggleButton.setMargin(new Insets(margin.top, 0, margin.bottom, 0));
+        this.toggleButton = toggleButton;
         return this;
     }
 
@@ -93,60 +87,50 @@ public class TitledPanel extends JPanel {
         int bottom = margin != null ? margin.bottom : BOTTOM;
         int right = margin != null ? margin.right : RIGHT;
 
-        Component leading;
-        int iconTextGap;
-        int paddingLeft;
-
+        Insets padding;
         if (toggleButton == null) {
-            JToggleButton dummy = adaptMargin(new JCheckBox());
-            Dimension dimension = dummy.getPreferredSize();
-
-            leading = Box.createVerticalStrut(dimension.height);
-            iconTextGap = 0;
-            paddingLeft = dimension.width + dummy.getIconTextGap();
+            titleComponent = new JLabel(title, icon, SwingConstants.LEADING);
+            padding = (Insets) UIManager.getInsets("CheckBox.margin").clone();
         } else {
-            leading = toggleButton;
-            iconTextGap = toggleButton.getIconTextGap();
-            paddingLeft = 0;
+            titleComponent = toggleButton;
+            toggleButton.setText(title);
+            padding = new Insets(0, 0, 0, 0);
         }
 
-        header = showSeparator ?
-                new JXTitledSeparator(title, horizontalAlignment, icon) :
-                new JLabel(title, icon, horizontalAlignment);
+        padding.left = UIManager.getIcon("CheckBox.icon").getIconWidth() + UIManager.getInt("CheckBox.iconTextGap");
 
-        add(leading, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, top, left, 5, iconTextGap));
-        add(header, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, 0, 5, right));
-        add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, paddingLeft, bottom, right));
-
-        if (toggleButton != null) {
-            header.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    toggleButton.doClick();
-                }
-            });
+        JComponent header;
+        if (showSeparator) {
+            separator = new JSeparator();
+            header = new JPanel();
+            header.setLayout(new GridBagLayout());
+            header.add(titleComponent, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0));
+            header.add(separator, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+        } else {
+            header = titleComponent;
         }
+
+        add(header, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, top + padding.top, left, 5 + padding.bottom, right));
+        add(content, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, left + padding.left, bottom, right));
 
         return this;
     }
 
     public void setTitle(String title) {
-        if (showSeparator) {
-            ((JXTitledSeparator) header).setTitle(title);
+        if (toggleButton != null) {
+            ((JToggleButton) titleComponent).setText(title);
         } else {
-            ((JLabel) header).setText(title);
+            ((JLabel) titleComponent).setText(title);
         }
-    }
-
-    private JToggleButton adaptMargin(JToggleButton toggleButton) {
-        Insets margin = toggleButton.getMargin();
-        toggleButton.setMargin(new Insets(margin.top, 0, margin.bottom, 0));
-        return toggleButton;
     }
 
     @Override
     public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
-        header.setEnabled(enabled);
+        titleComponent.setEnabled(enabled);
+
+        if (separator != null) {
+            separator.setEnabled(enabled);
+        }
 
         if (toggleButton != null) {
             toggleButton.setEnabled(enabled);
