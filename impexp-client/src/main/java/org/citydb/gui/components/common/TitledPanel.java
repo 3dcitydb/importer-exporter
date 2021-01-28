@@ -32,6 +32,8 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class TitledPanel extends JPanel {
     public static final int TOP = 0;
@@ -45,17 +47,17 @@ public class TitledPanel extends JPanel {
     private Insets margin;
 
     private JToggleButton toggleButton;
-    private JComponent titleComponent;
+    private JLabel titleLabel;
     private JSeparator separator;
 
-    public TitledPanel withTitle(String title, Icon icon) {
+    public TitledPanel withTitle(String title) {
         this.title = title;
-        this.icon = icon;
         return this;
     }
 
-    public TitledPanel withTitle(String title) {
-        return withTitle(title, null);
+    public TitledPanel withIcon(Icon icon) {
+        this.icon = icon;
+        return this;
     }
 
     public TitledPanel withToggleButton(JToggleButton toggleButton) {
@@ -87,46 +89,59 @@ public class TitledPanel extends JPanel {
         int bottom = margin != null ? margin.bottom : BOTTOM;
         int right = margin != null ? margin.right : RIGHT;
 
-        Insets padding;
+        int iconTextGap = UIManager.getInt("CheckBox.iconTextGap");
+        int padding = UIManager.getIcon("CheckBox.icon").getIconWidth() + iconTextGap;
+
+        titleLabel = new JLabel(title, icon, SwingConstants.LEADING);
+
+        Component buttonComponent;
         if (toggleButton == null) {
-            titleComponent = new JLabel(title, icon, SwingConstants.LEADING);
-            padding = (Insets) UIManager.getInsets("CheckBox.margin").clone();
+            Insets buttonMargin = UIManager.getInsets("CheckBox.margin");
+            int height = buttonMargin.top + buttonMargin.bottom + UIManager.getIcon("CheckBox.icon").getIconHeight();
+            buttonComponent = Box.createVerticalStrut(height);
+            iconTextGap = 0;
         } else {
-            titleComponent = toggleButton;
             toggleButton.setText(title);
-            padding = new Insets(0, 0, 0, 0);
+            buttonComponent = toggleButton;
         }
 
-        padding.left = UIManager.getIcon("CheckBox.icon").getIconWidth() + UIManager.getInt("CheckBox.iconTextGap");
+        JComponent titleComponent = new JPanel();
+        titleComponent.setLayout(new GridBagLayout());
+        titleComponent.add(buttonComponent, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0));
+        titleComponent.add(titleLabel, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, iconTextGap, 0, 0));
 
-        JComponent header;
+        JComponent headerComponent;
         if (showSeparator) {
             separator = new JSeparator();
-            header = new JPanel();
-            header.setLayout(new GridBagLayout());
-            header.add(titleComponent, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0));
-            header.add(separator, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            headerComponent = new JPanel();
+            headerComponent.setLayout(new GridBagLayout());
+            headerComponent.add(titleComponent, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0));
+            headerComponent.add(separator, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
         } else {
-            header = titleComponent;
+            headerComponent = titleComponent;
         }
 
-        add(header, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, top + padding.top, left, 5 + padding.bottom, right));
-        add(content, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, left + padding.left, bottom, right));
+        add(headerComponent, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, left, 5, right));
+        add(content, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, left + padding, bottom, right));
+
+        if (toggleButton != null) {
+            titleComponent.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    toggleButton.doClick();
+                }
+            });
+        }
 
         return this;
     }
 
     public void setTitle(String title) {
-        if (toggleButton != null) {
-            ((JToggleButton) titleComponent).setText(title);
-        } else {
-            ((JLabel) titleComponent).setText(title);
-        }
+        titleLabel.setText(title);
     }
 
     @Override
     public void setEnabled(boolean enabled) {
-        titleComponent.setEnabled(enabled);
+        titleLabel.setEnabled(enabled);
 
         if (separator != null) {
             separator.setEnabled(enabled);

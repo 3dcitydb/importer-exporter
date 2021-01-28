@@ -61,6 +61,8 @@ public class DefaultCheckboxTreeCellRenderer extends JPanel implements CheckboxT
 
     protected DefaultTreeCellRenderer label;
 
+    private int iconTextGap;
+
     // @Override
     // public void doLayout() {
     // Dimension d_check = this.checkBox.getPreferredSize();
@@ -105,11 +107,13 @@ public class DefaultCheckboxTreeCellRenderer extends JPanel implements CheckboxT
 
         label.setBorderSelectionColor(null);
         checkBox.setOpaque(false);
+        iconTextGap = Math.max(UIManager.getInt("CheckBox.iconTextGap") - checkBox.getMargin().right - label.getInsets().left, 0);
 
         // CHECK: a user suggested BorderLayout appears to work better than FlowLayout with most L&Fs
         this.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         this.setOpaque(false);
         add(this.checkBox);
+        add(Box.createHorizontalStrut(iconTextGap));
         add(this.label);
     }
 
@@ -117,7 +121,7 @@ public class DefaultCheckboxTreeCellRenderer extends JPanel implements CheckboxT
     public Dimension getPreferredSize() {
         Dimension d_check = this.checkBox.getPreferredSize();
         Dimension d_label = this.label.getPreferredSize();
-        return new Dimension(d_check.width + d_label.width, (d_check.height < d_label.height ? d_label.height : d_check.height));
+        return new Dimension(d_check.width + iconTextGap + d_label.width, (Math.max(d_check.height, d_label.height)));
     }
 
     /**
