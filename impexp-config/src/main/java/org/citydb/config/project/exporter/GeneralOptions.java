@@ -13,6 +13,10 @@ public class GeneralOptions {
         envelope = new ExportEnvelope();
     }
 
+    public boolean isSetFileEncoding() {
+        return fileEncoding != null;
+    }
+
     public String getFileEncoding() {
         return fileEncoding != null ? fileEncoding : StandardCharsets.UTF_8.name();
     }

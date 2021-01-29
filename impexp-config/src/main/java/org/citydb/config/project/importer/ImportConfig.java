@@ -30,6 +30,7 @@ package org.citydb.config.project.importer;
 import org.citydb.config.project.common.AffineTransformation;
 import org.citydb.config.project.common.Path;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -38,6 +39,7 @@ import javax.xml.bind.annotation.XmlType;
         "filter",
         "continuation",
         "path",
+        "generalOptions",
         "resourceId",
         "appearances",
         "affineTransformation",
@@ -51,6 +53,8 @@ public class ImportConfig {
     private ImportFilter filter;
     private Continuation continuation;
     private Path path;
+    @XmlElement(name = "general")
+    private GeneralOptions generalOptions;
     private ImportResourceId resourceId;
     private ImportAppearance appearances;
     private AffineTransformation affineTransformation;
@@ -63,6 +67,7 @@ public class ImportConfig {
     public ImportConfig() {
         continuation = new Continuation();
         path = new Path();
+        generalOptions = new GeneralOptions();
         resourceId = new ImportResourceId();
         appearances = new ImportAppearance();
         filter = new ImportFilter();
@@ -91,6 +96,16 @@ public class ImportConfig {
     public void setPath(Path path) {
         if (path != null) {
             this.path = path;
+        }
+    }
+
+    public GeneralOptions getGeneralOptions() {
+        return generalOptions;
+    }
+
+    public void setGeneralOptions(GeneralOptions generalOptions) {
+        if (generalOptions != null) {
+            this.generalOptions = generalOptions;
         }
     }
 

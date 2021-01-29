@@ -19,9 +19,12 @@ public class CityJSONReaderFactory implements FeatureReaderFactory {
     private CityJSONInputFactory factory;
     private CityGMLInputFilter typeFilter;
     private CounterFilter counterFilter;
+    private Config config;
 
     @Override
     public void initializeContext(CityGMLFilter filter, Config config) throws FeatureReadException {
+        this.config = config;
+
         CityJSONBuilder builder = CityGMLContext.getInstance().createCityJSONBuilder();
         try {
             factory = builder.createCityJSONInputFactory();
@@ -44,6 +47,6 @@ public class CityJSONReaderFactory implements FeatureReaderFactory {
 
     @Override
     public FeatureReader createFeatureReader() throws FeatureReadException {
-        return new CityJSONReader(typeFilter, counterFilter, factory);
+        return new CityJSONReader(typeFilter, counterFilter, factory, config);
     }
 }

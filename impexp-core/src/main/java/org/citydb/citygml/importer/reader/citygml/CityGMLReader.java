@@ -21,6 +21,7 @@ import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.XMLChunk;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public class CityGMLReader implements FeatureReader, EventHandler {
     private final CityGMLInputFilter typeFilter;
@@ -74,7 +75,8 @@ public class CityGMLReader implements FeatureReader, EventHandler {
             featureWorkerPool.prestartCoreWorkers();
 
             try {
-                reader = factory.createFilteredCityGMLReader(factory.createCityGMLReader(inputFile.getFile().toString(), inputFile.openStream()), typeFilter);
+                reader = factory.createFilteredCityGMLReader(
+                        createCityGMLReader(inputFile.getFile().toString(), inputFile.openStream()), typeFilter);
 
                 while (shouldRun && reader.hasNext()) {
                     XMLChunk chunk = reader.nextChunk();
@@ -109,8 +111,9 @@ public class CityGMLReader implements FeatureReader, EventHandler {
                 throw new FeatureReadException("Failed to close CityGML reader.", e);
             }
         } finally {
-            if (featureWorkerPool != null && !featureWorkerPool.isTerminated())
+            if (featureWorkerPool != null && !featureWorkerPool.isTerminated()) {
                 featureWorkerPool.shutdownNow();
+            }
         }
     }
 
@@ -122,5 +125,11 @@ public class CityGMLReader implements FeatureReader, EventHandler {
     @Override
     public void handleEvent(Event event) throws Exception {
         shouldRun = false;
+    }
+
+    private org.citygml4j.xml.io.reader.CityGMLReader createCityGMLReader(String systemId, InputStream stream) throws CityGMLReadException {
+        return !config.getImportConfig().getGeneralOptions().isSetFileEncoding() ?
+                factory.createCityGMLReader(systemId, stream) :
+                factory.createCityGMLReader(systemId, stream, config.getImportConfig().getGeneralOptions().getFileEncoding());
     }
 }
