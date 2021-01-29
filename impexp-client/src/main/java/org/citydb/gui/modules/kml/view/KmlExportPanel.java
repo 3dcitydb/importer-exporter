@@ -27,9 +27,11 @@
  */
 package org.citydb.gui.modules.kml.view;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.gui.kmlExporter.KmlExportGuiConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.global.LogLevel;
@@ -307,7 +309,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             tilingContent.add(columnsText, GuiUtil.setConstraints(6, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 
             tilingPanel = new TitledPanel()
+                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/tiling.svg"))
                     .withToggleButton(tilingCheckBox)
+                    .withCollapseButton()
                     .build(tilingContent);
 
             mainPanel.add(tilingPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -320,7 +324,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             gmlIdConent.add(gmlIdText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 
             gmlIdPanel = new TitledPanel()
+                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/attribute.svg"))
                     .withToggleButton(useGmlIdFilter)
+                    .withCollapseButton()
                     .build(gmlIdConent);
 
             mainPanel.add(gmlIdPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -328,7 +334,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         {
             // bbox
             bboxPanel = new TitledPanel()
+                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/bbox.svg"))
                     .withToggleButton(useBboxFilter)
+                    .withCollapseButton()
                     .build(bboxComponent);
 
             mainPanel.add(bboxPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -341,7 +349,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             }
 
             featureFilterPanel = new TitledPanel()
+                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/featureType.svg"))
                     .withToggleButton(useFeatureFilter)
+                    .withCollapseButton()
                     .build(featureTreePanel);
 
             mainPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -503,6 +513,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         themeComboBox.setSelectedItem(KmlExportConfig.THEME_NONE);
 
         setFilterEnabledValues();
+
+        // GUI specific settings
+        KmlExportGuiConfig guiConfig = config.getGuiConfig().getKmlExportGuiConfig();
+        tilingPanel.setCollapsed(guiConfig.isCollapseTilingFilter());
+        gmlIdPanel.setCollapsed(guiConfig.isCollapseAttributeFilter());
+        bboxPanel.setCollapsed(guiConfig.isCollapseBoundingBoxFilter());
+        featureFilterPanel.setCollapsed(guiConfig.isCollapseFeatureTypeFilter());
     }
 
     public void setSettings() {
@@ -613,6 +630,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 upperLevelVisibility = displayForm.getVisibleFrom();
             }
         }
+
+        // GUI specific settings
+        KmlExportGuiConfig guiConfig = config.getGuiConfig().getKmlExportGuiConfig();
+        guiConfig.setCollapseTilingFilter(tilingPanel.isCollapsed());
+        guiConfig.setCollapseAttributeFilter(gmlIdPanel.isCollapsed());
+        guiConfig.setCollapseBoundingBoxFilter(bboxPanel.isCollapsed());
+        guiConfig.setCollapseFeatureTypeFilter(featureFilterPanel.isCollapsed());
     }
 
     private void addListeners() {

@@ -83,8 +83,8 @@ public class SQLFilterView extends FilterView {
         toolBar.setFloatable(false);
         toolBar.setOrientation(JToolBar.VERTICAL);
 
-        component.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 0, 0, 0));
-        component.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.NONE, 10, 5, 0, 0));
+        component.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        component.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.NONE, 0, 5, 0, 0));
 
         addButton.addActionListener(e -> {
             Dimension size = scrollPane.getPreferredSize();
@@ -158,7 +158,7 @@ public class SQLFilterView extends FilterView {
     public void loadSettings() {
         SimpleQuery query = simpleQuerySupplier.get();
 
-        SelectOperator sql = query.getSelectionFilter().getSQLFilter();
+        SelectOperator sql = query.getSQLFilter();
         sqlText.setText(sql.getValue());
 
         additionalRows = sqlFilterComponentSupplier.get().getAdditionalRows();
@@ -181,7 +181,7 @@ public class SQLFilterView extends FilterView {
     public void setSettings() {
         SimpleQuery query = simpleQuerySupplier.get();
 
-        SelectOperator sql = query.getSelectionFilter().getSQLFilter();
+        SelectOperator sql = query.getSQLFilter();
         sql.reset();
         String value = sqlText.getText().trim();
         if (!value.isEmpty())

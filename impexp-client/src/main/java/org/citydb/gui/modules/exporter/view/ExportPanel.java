@@ -40,7 +40,7 @@ import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
-import org.citydb.config.project.query.simple.SimpleSelectionFilter;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -197,22 +197,24 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			if (config.getExportConfig().isUseSimpleQuery()) {
 				SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
-				// simple selection filter
-				if (query.isUseSelectionFilter()) {
-					SimpleSelectionFilter selectionFilter = query.getSelectionFilter();
-					if (!selectionFilter.isUseSQLFilter()
-							&& !selectionFilter.getGmlIdFilter().isSetResourceIds()
-							&& !selectionFilter.getGmlNameFilter().isSetLiteral()
-							&& !selectionFilter.getLineageFilter().isSetLiteral()) {
+				// attribute filter
+				if (query.isUseAttributeFilter()) {
+					SimpleAttributeFilter attributeFilter = query.getAttributeFilter();
+					if (!attributeFilter.getGmlIdFilter().isSetResourceIds()
+							&& !attributeFilter.getGmlNameFilter().isSetLiteral()
+							&& !attributeFilter.getLineageFilter().isSetLiteral()) {
 						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 								Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
 						return;
-					} else if (selectionFilter.isUseSQLFilter()
-							&& !selectionFilter.getSQLFilter().isSetValue()) {
-						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-								Language.I18N.getString("export.dialog.error.incorrectData.sql"));
-						return;
 					}
+				}
+
+				// SQL filter
+				if (query.isUseSQLFilter()
+						&& !query.getSQLFilter().isSetValue()) {
+					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+							Language.I18N.getString("export.dialog.error.incorrectData.sql"));
+					return;
 				}
 
 				// lod filter

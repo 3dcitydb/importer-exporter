@@ -44,11 +44,16 @@ public class TitledPanel extends JPanel {
     private String title = "";
     private Icon icon;
     private boolean showSeparator = true;
+    private boolean collapsible;
+    private boolean collapsed = true;
+    private boolean showSeparatorWhenCollapsed;
     private Insets margin;
 
+    private JLabel collapseButton;
     private JToggleButton toggleButton;
     private JLabel titleLabel;
-    private JSeparator separator;
+    private JPanel separator;
+    private Component content;
 
     public TitledPanel withTitle(String title) {
         this.title = title;
@@ -57,6 +62,11 @@ public class TitledPanel extends JPanel {
 
     public TitledPanel withIcon(Icon icon) {
         this.icon = icon;
+        return this;
+    }
+
+    public TitledPanel withCollapseButton() {
+        collapsible = true;
         return this;
     }
 
@@ -72,6 +82,11 @@ public class TitledPanel extends JPanel {
         return this;
     }
 
+    public TitledPanel showSeparatorWhenCollapsed(boolean showSeparatorWhenCollapsed) {
+        this.showSeparatorWhenCollapsed = showSeparatorWhenCollapsed;
+        return this;
+    }
+
     public TitledPanel withMargin(Insets margin) {
         this.margin = margin;
         return this;
@@ -82,6 +97,7 @@ public class TitledPanel extends JPanel {
     }
 
     public TitledPanel build(Component content) {
+        this.content = content;
         setLayout(new GridBagLayout());
 
         int top = margin != null ? margin.top : TOP;
@@ -112,7 +128,13 @@ public class TitledPanel extends JPanel {
 
         JComponent headerComponent;
         if (showSeparator) {
-            separator = new JSeparator();
+            separator = new JPanel();
+            separator.setLayout(new CardLayout());
+            separator.add(new JSeparator(), "visible");
+            if (!showSeparatorWhenCollapsed) {
+                separator.add(Box.createVerticalGlue(), "invisible");
+            }
+
             headerComponent = new JPanel();
             headerComponent.setLayout(new GridBagLayout());
             headerComponent.add(titleComponent, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0));
@@ -121,8 +143,16 @@ public class TitledPanel extends JPanel {
             headerComponent = titleComponent;
         }
 
-        add(headerComponent, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, left, 5, right));
-        add(content, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, left + padding, bottom, right));
+        int column = 0;
+        if (collapsible) {
+            collapseButton = new JLabel();
+            iconTextGap = UIManager.getInt("MenuItem.iconTextGap");
+            add(collapseButton, GuiUtil.setConstraints(column++, 0, 0, 0, GridBagConstraints.NONE, top, left, 5, iconTextGap));
+            left = 0;
+        }
+
+        add(headerComponent, GuiUtil.setConstraints(column, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, left, 5, right));
+        add(content, GuiUtil.setConstraints(column, 1, 1, 1, GridBagConstraints.BOTH, 0, left + padding, bottom, right));
 
         if (toggleButton != null) {
             titleComponent.addMouseListener(new MouseAdapter() {
@@ -134,11 +164,57 @@ public class TitledPanel extends JPanel {
             });
         }
 
+        if (collapsible) {
+            setCollapsed(collapsed);
+
+            collapseButton.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        setCollapsed(!collapsed);
+                    }
+                }
+            });
+
+            if (toggleButton != null) {
+                toggleButton.addActionListener(e -> {
+                    if (collapsed && toggleButton.isSelected()) {
+                        setCollapsed(false);
+                    }
+                });
+            }
+
+            headerComponent.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        setCollapsed(!collapsed);
+                    }
+                }
+            });
+        }
+
         return this;
     }
 
     public void setTitle(String title) {
         titleLabel.setText(title);
+    }
+
+    public boolean isCollapsed() {
+        return collapsed;
+    }
+
+    public void setCollapsed(boolean collapsed) {
+        if (collapsible) {
+            this.collapsed = collapsed;
+            collapseButton.setIcon(getCollapseIcon());
+            content.setVisible(!collapsed);
+
+            if (showSeparator) {
+                String constraint = !showSeparatorWhenCollapsed && collapsed ? "invisible" : "visible";
+                CardLayout layout = (CardLayout) separator.getLayout();
+                layout.show(separator, constraint);
+            }
+        }
     }
 
     @Override
@@ -152,5 +228,9 @@ public class TitledPanel extends JPanel {
         if (toggleButton != null) {
             toggleButton.setEnabled(enabled);
         }
+    }
+
+    private Icon getCollapseIcon() {
+        return UIManager.getIcon(collapsed ? "Tree.collapsedIcon" : "Tree.expandedIcon");
     }
 }

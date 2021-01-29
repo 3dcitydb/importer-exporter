@@ -44,9 +44,9 @@ import org.citydb.config.project.query.filter.selection.logical.AndOperator;
 import org.citydb.config.project.query.filter.selection.logical.OrOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
-import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.Query;
@@ -214,33 +214,33 @@ public class ConfigQueryBuilder {
 			}
 		}
 
-		// selection filter
-		if (queryConfig.isUseSelectionFilter() && queryConfig.isSetSelectionFilter()) {
-			SimpleSelectionFilter selectionFilter = queryConfig.getSelectionFilter();
+		// attribute filter
+		if (queryConfig.isUseAttributeFilter() && queryConfig.isSetAttributeFilter()) {
+			SimpleAttributeFilter attributeFilter = queryConfig.getAttributeFilter();
 
-			if (!selectionFilter.isUseSQLFilter()) {
-				// gml:id filter
-				if (selectionFilter.isSetGmlIdFilter() && selectionFilter.getGmlIdFilter().isSetResourceIds())
-					predicates.add(predicateBuilder.buildPredicate(selectionFilter.getGmlIdFilter()));
+			// gml:id filter
+			if (attributeFilter.isSetGmlIdFilter() && attributeFilter.getGmlIdFilter().isSetResourceIds())
+				predicates.add(predicateBuilder.buildPredicate(attributeFilter.getGmlIdFilter()));
 
-				// gml:name filter
-				if (selectionFilter.isSetGmlNameFilter() && selectionFilter.getGmlNameFilter().isSetLiteral()) {
-					LikeOperator gmlNameFilter = selectionFilter.getGmlNameFilter();
-					gmlNameFilter.setValueReference("gml:name");
-					predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
-				}
-
-				// citydb:lineage filter
-				if (selectionFilter.isSetLineageFilter() && selectionFilter.getLineageFilter().isSetLiteral()) {
-					LikeOperator lineageFilter = selectionFilter.getLineageFilter();
-					lineageFilter.setValueReference("citydb:lineage");
-					predicates.add(predicateBuilder.buildPredicate(lineageFilter));
-				}
-			} else if (selectionFilter.getSQLFilter().isSetValue()) {
-				// SQL filter
-				SelectOperatorBuilder selectOperatorBuilder = new SelectOperatorBuilder();
-				predicates.add(selectOperatorBuilder.buildSelectOperator(selectionFilter.getSQLFilter()));
+			// gml:name filter
+			if (attributeFilter.isSetGmlNameFilter() && attributeFilter.getGmlNameFilter().isSetLiteral()) {
+				LikeOperator gmlNameFilter = attributeFilter.getGmlNameFilter();
+				gmlNameFilter.setValueReference("gml:name");
+				predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
 			}
+
+			// citydb:lineage filter
+			if (attributeFilter.isSetLineageFilter() && attributeFilter.getLineageFilter().isSetLiteral()) {
+				LikeOperator lineageFilter = attributeFilter.getLineageFilter();
+				lineageFilter.setValueReference("citydb:lineage");
+				predicates.add(predicateBuilder.buildPredicate(lineageFilter));
+			}
+		}
+
+		// SQL filter
+		if (queryConfig.isUseSQLFilter() && queryConfig.isSetSQLFilter()) {
+			SelectOperatorBuilder selectOperatorBuilder = new SelectOperatorBuilder();
+			predicates.add(selectOperatorBuilder.buildSelectOperator(queryConfig.getSQLFilter()));
 		}
 
 		// counter filter

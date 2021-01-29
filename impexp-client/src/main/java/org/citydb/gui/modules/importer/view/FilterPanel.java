@@ -27,8 +27,10 @@
  */
 package org.citydb.gui.modules.importer.view;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.gui.importer.ImportGuiConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.importer.SimpleBBOXMode;
@@ -92,11 +94,6 @@ public class FilterPanel extends JPanel {
 		useBBoxFilter = new JCheckBox();
 		useFeatureFilter = new JCheckBox();
 
-		attributeFilterPanel = new TitledPanel().withToggleButton(useAttributeFilter);
-		counterFilterPanel = new TitledPanel().withToggleButton(useCounterFilter);
-		bboxFilterPanel = new TitledPanel().withToggleButton(useBBoxFilter);
-		featureFilterPanel = new TitledPanel().withToggleButton(useFeatureFilter);
-
 		gmlIdLabel = new JLabel();
 		gmlIdText = new JTextField();
 		gmlNameLabel = new JLabel();
@@ -144,7 +141,12 @@ public class FilterPanel extends JPanel {
 				content.add(gmlNameText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
 
-			attributeFilterPanel.build(content);
+			attributeFilterPanel = new TitledPanel()
+					.withIcon(new FlatSVGIcon("org/citydb/gui/filter/attribute.svg"))
+					.withToggleButton(useAttributeFilter)
+					.withCollapseButton()
+					.build(content);
+
 			add(attributeFilterPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -157,7 +159,12 @@ public class FilterPanel extends JPanel {
 				content.add(startIndexText, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
 
-			counterFilterPanel.build(content);
+			counterFilterPanel = new TitledPanel()
+					.withIcon(new FlatSVGIcon("org/citydb/gui/filter/counter.svg"))
+					.withToggleButton(useCounterFilter)
+					.withCollapseButton()
+					.build(content);
+
 			add(counterFilterPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -169,7 +176,12 @@ public class FilterPanel extends JPanel {
 				bboxPanel.addComponent(bboxModePanel, true);
 			}
 
-			bboxFilterPanel.build(bboxPanel);
+			bboxFilterPanel = new TitledPanel()
+					.withIcon(new FlatSVGIcon("org/citydb/gui/filter/bbox.svg"))
+					.withToggleButton(useBBoxFilter)
+					.withCollapseButton()
+					.build(bboxPanel);
+
 			add(bboxFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -179,7 +191,12 @@ public class FilterPanel extends JPanel {
 				featureTreePanel.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			}
 
-			featureFilterPanel.build(featureTreePanel);
+			featureFilterPanel = new TitledPanel()
+					.withIcon(new FlatSVGIcon("org/citydb/gui/filter/featureType.svg"))
+					.withToggleButton(useFeatureFilter)
+					.withCollapseButton()
+					.build(featureTreePanel);
+
 			add(featureFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
@@ -289,6 +306,13 @@ public class FilterPanel extends JPanel {
 		setEnabledCounterFilter();
 		setEnabledBBoxFilter();
 		setEnabledFeatureFilter();
+
+		// GUI specific settings
+		ImportGuiConfig guiConfig = config.getGuiConfig().getImportGuiConfig();
+		attributeFilterPanel.setCollapsed(guiConfig.isCollapseAttributeFilter());
+		counterFilterPanel.setCollapsed(guiConfig.isCollapseCounterFilter());
+		bboxFilterPanel.setCollapsed(guiConfig.isCollapseBoundingBoxFilter());
+		featureFilterPanel.setCollapsed(guiConfig.isCollapseFeatureTypeFilter());
 	}
 
 	public void setSettings() {
@@ -334,6 +358,13 @@ public class FilterPanel extends JPanel {
 		FeatureTypeFilter featureTypeFilter = filter.getFeatureTypeFilter();
 		featureTypeFilter.reset();
 		featureTypeFilter.setTypeNames(featureTree.getSelectedTypeNames());
+
+		// GUI specific settings
+		ImportGuiConfig guiConfig = config.getGuiConfig().getImportGuiConfig();
+		guiConfig.setCollapseAttributeFilter(attributeFilterPanel.isCollapsed());
+		guiConfig.setCollapseCounterFilter(counterFilterPanel.isCollapsed());
+		guiConfig.setCollapseBoundingBoxFilter(bboxFilterPanel.isCollapsed());
+		guiConfig.setCollapseFeatureTypeFilter(featureFilterPanel.isCollapsed());
 	}
 
 }

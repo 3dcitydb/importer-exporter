@@ -55,9 +55,9 @@ import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
 import org.citydb.config.project.query.filter.sorting.Sorting;
 import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
-import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.config.util.QueryWrapper;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -250,26 +250,27 @@ public class XMLQueryView extends FilterView {
             }
         }
 
-        if (simpleQuery.isUseSelectionFilter()) {
-            SimpleSelectionFilter selectionFilter = simpleQuery.getSelectionFilter();
+        if (simpleQuery.isUseAttributeFilter() && simpleQuery.isSetAttributeFilter()) {
+            SimpleAttributeFilter attributeFilter = simpleQuery.getAttributeFilter();
 
-            if (!selectionFilter.isUseSQLFilter()) {
-                if (selectionFilter.isSetGmlIdFilter() && selectionFilter.getGmlIdFilter().isSetResourceIds())
-                    predicates.add(selectionFilter.getGmlIdFilter());
+            if (attributeFilter.isSetGmlIdFilter() && attributeFilter.getGmlIdFilter().isSetResourceIds())
+                predicates.add(attributeFilter.getGmlIdFilter());
 
-                if (selectionFilter.isSetGmlNameFilter() && selectionFilter.getGmlNameFilter().isSetLiteral()) {
-                    LikeOperator nameFilter = selectionFilter.getGmlNameFilter();
-                    nameFilter.setValueReference("gml:name");
-                    predicates.add(nameFilter);
-                }
+            if (attributeFilter.isSetGmlNameFilter() && attributeFilter.getGmlNameFilter().isSetLiteral()) {
+                LikeOperator nameFilter = attributeFilter.getGmlNameFilter();
+                nameFilter.setValueReference("gml:name");
+                predicates.add(nameFilter);
+            }
 
-                if (selectionFilter.isSetLineageFilter() && selectionFilter.getLineageFilter().isSetLiteral()) {
-                    LikeOperator lineageFilter = selectionFilter.getLineageFilter();
-                    lineageFilter.setValueReference("citydb:lineage");
-                    predicates.add(lineageFilter);
-                }
-            } else if (selectionFilter.isSetSQLFilter() && selectionFilter.getSQLFilter().isSetValue())
-                predicates.add(selectionFilter.getSQLFilter());
+            if (attributeFilter.isSetLineageFilter() && attributeFilter.getLineageFilter().isSetLiteral()) {
+                LikeOperator lineageFilter = attributeFilter.getLineageFilter();
+                lineageFilter.setValueReference("citydb:lineage");
+                predicates.add(lineageFilter);
+            }
+        }
+
+        if (simpleQuery.isUseSQLFilter() && simpleQuery.isSetSQLFilter()) {
+            predicates.add(simpleQuery.getSQLFilter());
         }
 
         if (simpleQuery.isUseBboxFilter()

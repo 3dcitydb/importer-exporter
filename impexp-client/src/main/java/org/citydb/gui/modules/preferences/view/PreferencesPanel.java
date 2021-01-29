@@ -275,13 +275,13 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		if (activeEntry.isModified()) {			
 			int res;
-			if (config.getGuiConfig().isShowPreferencesConfirmDialog()) {
+			if (config.getGuiConfig().getPreferencesGuiConfig().isShowPreferencesConfirmDialog()) {
 				ConfirmationCheckDialog dialog = new ConfirmationCheckDialog(getTopLevelAncestor(),
 						Language.I18N.getString("pref.dialog.apply.title"),
 						Language.I18N.getString("pref.dialog.apply.msg"));
 
 				res = dialog.show();
-				config.getGuiConfig().setShowPreferencesConfirmDialog(dialog.keepShowingDialog());
+				config.getGuiConfig().getPreferencesGuiConfig().setShowPreferencesConfirmDialog(dialog.keepShowingDialog());
 			} else
 				res = JOptionPane.YES_OPTION;
 

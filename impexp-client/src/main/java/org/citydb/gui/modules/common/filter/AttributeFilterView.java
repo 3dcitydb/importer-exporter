@@ -67,8 +67,8 @@ public class AttributeFilterView extends FilterView {
         lineageText = new JTextField();
 
         // gml:id filter
-        component.add(gmlIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 5, 5));
-        component.add(gmlIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 0));
+        component.add(gmlIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+        component.add(gmlIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
 
         // gml:name filter
         component.add(gmlNameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
@@ -124,15 +124,15 @@ public class AttributeFilterView extends FilterView {
         SimpleQuery query = simpleQuerySupplier.get();
 
         // gml:id filter
-        ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();
+        ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getGmlIdFilter();
         gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
 
         // gml:name
-        LikeOperator gmlNameFilter = query.getSelectionFilter().getGmlNameFilter();
+        LikeOperator gmlNameFilter = query.getAttributeFilter().getGmlNameFilter();
         gmlNameText.setText(gmlNameFilter.getLiteral());
 
         // citydb:lineage
-        LikeOperator lineageFilter = query.getSelectionFilter().getLineageFilter();
+        LikeOperator lineageFilter = query.getAttributeFilter().getLineageFilter();
         lineageText.setText(lineageFilter.getLiteral());
     }
 
@@ -141,7 +141,7 @@ public class AttributeFilterView extends FilterView {
         SimpleQuery query = simpleQuerySupplier.get();
 
         // gml:id filter
-        ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();
+        ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getGmlIdFilter();
         gmlIdFilter.reset();
         if (!gmlIdText.getText().trim().isEmpty()) {
             String trimmed = gmlIdText.getText().replaceAll("\\s+", "");
@@ -149,13 +149,13 @@ public class AttributeFilterView extends FilterView {
         }
 
         // gml:name
-        LikeOperator gmlNameFilter = query.getSelectionFilter().getGmlNameFilter();
+        LikeOperator gmlNameFilter = query.getAttributeFilter().getGmlNameFilter();
         gmlNameFilter.reset();
         if (!gmlNameText.getText().trim().isEmpty())
             gmlNameFilter.setLiteral(gmlNameText.getText().trim());
 
         // citydb:lineage
-        LikeOperator lineageFilter = query.getSelectionFilter().getLineageFilter();
+        LikeOperator lineageFilter = query.getAttributeFilter().getLineageFilter();
         lineageFilter.reset();
         if (!lineageText.getText().trim().isEmpty())
             lineageFilter.setLiteral(lineageText.getText().trim());

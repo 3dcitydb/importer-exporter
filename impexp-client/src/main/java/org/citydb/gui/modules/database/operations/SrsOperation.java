@@ -284,7 +284,7 @@ public class SrsOperation extends DatabaseOperationView {
 				return;
 			}
 
-			if (changeSrid && config.getGuiConfig().isShowChangeSridWarning()) {
+			if (changeSrid && config.getGuiConfig().getDatabaseGuiConfig().isShowChangeSridWarning()) {
 				JPanel confirmPanel = new JPanel(new GridBagLayout());
 
 				JLabel headerLabel = new JLabel(Language.I18N.getString("db.dialog.srs.changeSrid"));
@@ -309,7 +309,7 @@ public class SrsOperation extends DatabaseOperationView {
 						confirmPanel);
 
 				int result = dialog.show();
-				config.getGuiConfig().setShowChangeSridWarning(dialog.keepShowingDialog());
+				config.getGuiConfig().getDatabaseGuiConfig().setShowChangeSridWarning(dialog.keepShowingDialog());
 				if (result != JOptionPane.YES_OPTION)
 					return;
 			}

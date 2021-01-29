@@ -30,9 +30,10 @@ package org.citydb.config.project.exporter;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
+import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
-import org.citydb.config.project.query.simple.SimpleSelectionFilter;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -43,7 +44,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SimpleExportQueryType", propOrder = {
         "featureTypeFilter",
         "featureVersionFilter",
-        "selectionFilter",
+        "attributeFilter",
+        "sqlFilter",
         "counterFilter",
         "lodFilter",
         "bboxFilter"
@@ -59,7 +61,9 @@ public class SimpleQuery {
     @XmlAttribute
     private boolean useFeatureVersionFilter;
     @XmlAttribute
-    private boolean useSelectionFilter;
+    private boolean useAttributeFilter;
+    @XmlAttribute
+    private boolean useSQLFilter;
     @XmlAttribute
     private boolean useCountFilter;
     @XmlAttribute
@@ -71,8 +75,10 @@ public class SimpleQuery {
     protected FeatureTypeFilter featureTypeFilter;
     @XmlElement(name = "featureVersion")
     private SimpleFeatureVersionFilter featureVersionFilter;
-    @XmlElement(name = "selection")
-    private SimpleSelectionFilter selectionFilter;
+    @XmlElement(name = "attributes")
+    private SimpleAttributeFilter attributeFilter;
+    @XmlElement(name = "sql", required = true)
+    private SelectOperator sqlFilter;
     @XmlElement(name = "limit")
     protected CounterFilter counterFilter;
     @XmlElement(name = "lods")
@@ -83,7 +89,8 @@ public class SimpleQuery {
     public SimpleQuery() {
         featureTypeFilter = new FeatureTypeFilter();
         featureVersionFilter = new SimpleFeatureVersionFilter();
-        selectionFilter = new SimpleSelectionFilter();
+        attributeFilter = new SimpleAttributeFilter();
+        sqlFilter = new SelectOperator();
         counterFilter = new CounterFilter();
         lodFilter = new LodFilter();
         bboxFilter = new SimpleTiling();
@@ -125,12 +132,20 @@ public class SimpleQuery {
         this.useFeatureVersionFilter = useFeatureVersionFilter;
     }
 
-    public boolean isUseSelectionFilter() {
-        return useSelectionFilter;
+    public boolean isUseAttributeFilter() {
+        return useAttributeFilter;
     }
 
-    public void setUseSelectionFilter(boolean useSelectionFilter) {
-        this.useSelectionFilter = useSelectionFilter;
+    public void setUseAttributeFilter(boolean useAttributeFilter) {
+        this.useAttributeFilter = useAttributeFilter;
+    }
+
+    public boolean isUseSQLFilter() {
+        return useSQLFilter;
+    }
+
+    public void setUseSQLFilter(boolean useSQLFilter) {
+        this.useSQLFilter = useSQLFilter;
     }
 
     public boolean isUseLodFilter() {
@@ -181,16 +196,28 @@ public class SimpleQuery {
         this.featureVersionFilter = featureVersionFilter;
     }
 
-    public SimpleSelectionFilter getSelectionFilter() {
-        return selectionFilter;
+    public SimpleAttributeFilter getAttributeFilter() {
+        return attributeFilter;
     }
 
-    public boolean isSetSelectionFilter() {
-        return selectionFilter != null;
+    public boolean isSetAttributeFilter() {
+        return attributeFilter != null;
     }
 
-    public void setSelectionFilter(SimpleSelectionFilter selectionFilter) {
-        this.selectionFilter = selectionFilter;
+    public void setAttributeFilter(SimpleAttributeFilter attributeFilter) {
+        this.attributeFilter = attributeFilter;
+    }
+
+    public SelectOperator getSQLFilter() {
+        return sqlFilter;
+    }
+
+    public boolean isSetSQLFilter() {
+        return sqlFilter != null;
+    }
+
+    public void setSQLFilter(SelectOperator sqlFilter) {
+        this.sqlFilter = sqlFilter;
     }
 
     public CounterFilter getCounterFilter() {
