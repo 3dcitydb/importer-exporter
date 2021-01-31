@@ -200,7 +200,7 @@ public class TitledPanel extends JPanel {
     }
 
     public boolean isCollapsed() {
-        return collapsed;
+        return collapsible && collapsed;
     }
 
     public void setCollapsed(boolean collapsed) {
