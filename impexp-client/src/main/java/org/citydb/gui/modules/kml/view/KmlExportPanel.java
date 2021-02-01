@@ -362,6 +362,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         PopupMenuDecorator.getInstance().decorate(browseText, gmlIdText, tileSizeText, rowsText, columnsText,
                 footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText,
                 featureTree);
+        PopupMenuDecorator.getInstance().decorateAndGetCheckBoxGroup(footprintCheckbox, extrudedCheckbox,
+                geometryCheckbox, colladaCheckbox);
 
         UIManager.addPropertyChangeListener(e -> {
             if ("lookAndFeel".equals(e.getPropertyName())) {
@@ -638,10 +640,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             }
         });
 
-        footprintCheckbox.addActionListener(e -> setVisibilityEnabledValues());
-        extrudedCheckbox.addActionListener(e -> setVisibilityEnabledValues());
-        geometryCheckbox.addActionListener(e -> setVisibilityEnabledValues());
-        colladaCheckbox.addActionListener(e -> setVisibilityEnabledValues());
+        footprintCheckbox.addItemListener(e -> setVisibilityEnabledValues());
+        extrudedCheckbox.addItemListener(e -> setVisibilityEnabledValues());
+        geometryCheckbox.addItemListener(e -> setVisibilityEnabledValues());
+        colladaCheckbox.addItemListener(e -> setVisibilityEnabledValues());
         fetchThemesButton.addActionListener(e -> new ThemeUpdater().execute());
 
         useFeatureFilter.addActionListener(e -> setEnabledFeatureFilter());
