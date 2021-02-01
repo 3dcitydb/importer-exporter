@@ -407,7 +407,7 @@ public class Exporter implements EventHandler {
 
                     // create output writer
                     try {
-                        writer = writerFactory.createFeatureWriter(file.openStream(), file.getType());
+                        writer = writerFactory.createFeatureWriter(file.openStream());
                     } catch (FeatureWriteException | IOException e) {
                         throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
                     }

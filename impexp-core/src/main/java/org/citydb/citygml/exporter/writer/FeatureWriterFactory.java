@@ -27,10 +27,8 @@
  */
 package org.citydb.citygml.exporter.writer;
 
-import org.citydb.file.FileType;
-
 import java.io.OutputStream;
 
 public interface FeatureWriterFactory {
-	FeatureWriter createFeatureWriter(OutputStream outputStream, FileType fileType) throws FeatureWriteException;
+	FeatureWriter createFeatureWriter(OutputStream outputStream) throws FeatureWriteException;
 }

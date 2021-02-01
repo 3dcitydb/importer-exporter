@@ -6,7 +6,6 @@ import org.citydb.citygml.exporter.writer.FeatureWriterFactory;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.CityJSONOptions;
-import org.citydb.file.FileType;
 import org.citydb.query.Query;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.cityjson.CityJSONBuilder;
@@ -42,7 +41,7 @@ public class CityJSONWriterFactory implements FeatureWriterFactory {
     }
 
     @Override
-    public FeatureWriter createFeatureWriter(OutputStream outputStream, FileType fileType) throws FeatureWriteException {
+    public FeatureWriter createFeatureWriter(OutputStream outputStream) throws FeatureWriteException {
         CityJSONChunkWriter chunkWriter;
         try {
             chunkWriter = factory.createCityJSONChunkWriter(outputStream, config.getExportConfig().getGeneralOptions().getFileEncoding());

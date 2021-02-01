@@ -30,6 +30,7 @@ package org.citydb.config.project.exporter;
 
 import org.citydb.config.project.common.XSLTransformation;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.LinkedHashMap;
@@ -39,6 +40,8 @@ import java.util.Map;
 @XmlType(name = "CityGMLExportOptionsType", propOrder = {})
 public class CityGMLOptions {
     private Boolean writeProductHeader;
+    @XmlElement(defaultValue = "true")
+    private boolean prettyPrint = true;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private LinkedHashMap<String, Namespace> namespaces;
     private XLink xlink;
@@ -55,6 +58,14 @@ public class CityGMLOptions {
 
     public void setWriteProductHeader(Boolean writeProductHeader) {
         this.writeProductHeader = writeProductHeader;
+    }
+
+    public boolean isPrettyPrint() {
+        return prettyPrint;
+    }
+
+    public void setPrettyPrint(boolean prettyPrint) {
+        this.prettyPrint = prettyPrint;
     }
 
     public boolean isSetNamespaces() {

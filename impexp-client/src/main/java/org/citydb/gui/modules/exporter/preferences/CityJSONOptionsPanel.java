@@ -117,7 +117,7 @@ public class CityJSONOptionsPanel extends AbstractPreferencesComponent {
     @Override
     public void doTranslation() {
         generalOptionsPanel.setTitle(Language.I18N.getString("pref.export.cityjson.border.general"));
-        prettyPrint.setText(Language.I18N.getString("pref.export.cityjson.label.prettyPrint"));
+        prettyPrint.setText(Language.I18N.getString("pref.export.common.label.prettyPrint"));
         useGeometryCompression.setText(Language.I18N.getString("pref.export.cityjson.label.geometryCompression"));
         removeDuplicateChildGeometries.setText(Language.I18N.getString("pref.export.cityjson.label.removeDuplicates"));
         addSequenceIdWhenSorting.setText(Language.I18N.getString("pref.export.cityjson.label.sequenceId"));

@@ -38,7 +38,6 @@ import org.citydb.config.project.exporter.Namespace;
 import org.citydb.config.project.exporter.NamespaceMode;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.file.FileType;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.filter.type.FeatureTypeFilter;
@@ -118,13 +117,13 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 	}
 
 	@Override
-	public FeatureWriter createFeatureWriter(OutputStream outputStream, FileType fileType) throws FeatureWriteException {
+	public FeatureWriter createFeatureWriter(OutputStream outputStream) throws FeatureWriteException {
 		// prepare SAX writer
 		SAXWriter saxWriter;
 		try {
 			saxWriter = new SAXWriter(outputStream, config.getExportConfig().getGeneralOptions().getFileEncoding());
 			saxWriter.setWriteEncoding(true);
-			saxWriter.setIndentString(fileType == FileType.REGULAR ? "  " : "");
+			saxWriter.setIndentString(config.getExportConfig().getCityGMLOptions().isPrettyPrint() ? "  " : "");
 		} catch (IOException e) {
 			throw new FeatureWriteException("Failed to create CityGML writer.", e);
 		}
