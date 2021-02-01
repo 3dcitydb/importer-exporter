@@ -206,13 +206,6 @@ public class FilterPanel extends JPanel {
 		useFeatureFilter.addItemListener(e -> setEnabledFeatureFilter());
 
 		PopupMenuDecorator.getInstance().decorate(featureTree, gmlNameText, gmlIdText, countText, startIndexText);
-		JPopupMenu[] filterPopupMenus = PopupMenuDecorator.getInstance().decorateAndGetCheckBoxGroup(useAttributeFilter,
-				useCounterFilter, useBBoxFilter, useFeatureFilter);
-
-		attributeFilterPanel.getTitleLabel().setComponentPopupMenu(filterPopupMenus[0]);
-		counterFilterPanel.getTitleLabel().setComponentPopupMenu(filterPopupMenus[1]);
-		bboxFilterPanel.getTitleLabel().setComponentPopupMenu(filterPopupMenus[2]);
-		featureFilterPanel.getTitleLabel().setComponentPopupMenu(filterPopupMenus[3]);
 
 		UIManager.addPropertyChangeListener(e -> {
 			if ("lookAndFeel".equals(e.getPropertyName())) {

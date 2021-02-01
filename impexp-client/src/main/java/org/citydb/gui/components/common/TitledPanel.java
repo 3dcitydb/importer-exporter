@@ -32,7 +32,6 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -183,8 +182,8 @@ public class TitledPanel extends JPanel {
             headerComponent.addMouseListener(adapter);
 
             if (toggleButton != null) {
-                toggleButton.addItemListener(e -> {
-                    if (collapsed && e.getStateChange() == ItemEvent.SELECTED) {
+                toggleButton.addActionListener(e -> {
+                    if (collapsed && toggleButton.isSelected()) {
                         setCollapsed(false);
                     }
                 });
@@ -200,6 +199,10 @@ public class TitledPanel extends JPanel {
 
     public void setTitle(String title) {
         titleLabel.setText(title);
+    }
+
+    public boolean isCollapsible() {
+        return collapsible;
     }
 
     public boolean isCollapsed() {
@@ -218,6 +221,14 @@ public class TitledPanel extends JPanel {
                 layout.show(separator, constraint);
             }
         }
+    }
+
+    public boolean hasToggleButton() {
+        return toggleButton != null;
+    }
+
+    public JToggleButton getToggleButton() {
+        return toggleButton;
     }
 
     @Override

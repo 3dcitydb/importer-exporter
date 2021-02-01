@@ -374,13 +374,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 featureTree);
         PopupMenuDecorator.getInstance().decorateAndGetCheckBoxGroup(footprintCheckbox, extrudedCheckbox,
                 geometryCheckbox, colladaCheckbox);
-        JPopupMenu[] filterPopupMenus = PopupMenuDecorator.getInstance().decorateAndGetCheckBoxGroup(useTilingFilter,
-                useGmlIdFilter, useBboxFilter, useFeatureFilter);
-
-        tilingPanel.getTitleLabel().setComponentPopupMenu(filterPopupMenus[0]);
-        gmlIdPanel.getTitleLabel().setComponentPopupMenu(filterPopupMenus[1]);
-        bboxPanel.getTitleLabel().setComponentPopupMenu(filterPopupMenus[2]);
-        featureFilterPanel.getTitleLabel().setComponentPopupMenu(filterPopupMenus[3]);
 
         UIManager.addPropertyChangeListener(e -> {
             if ("lookAndFeel".equals(e.getPropertyName())) {
