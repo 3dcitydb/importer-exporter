@@ -316,7 +316,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 			guiPanel.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 7, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
-		useAttributeFilter.addItemListener(e -> setEnabledAttribtueFilter());
+		useAttributeFilter.addItemListener(e -> setEnabledAttributeFilter());
 		useSQLFilter.addItemListener(e -> setEnabledSQLFilter());
 		useCounterFilter.addItemListener(e -> setEnabledCounterFilter());
 		useLodFilter.addItemListener(e -> setEnabledLodFilter());
@@ -389,7 +389,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 		lodMode.setEnabled(selected > 1);
 	}
 
-	private void setEnabledAttribtueFilter() {
+	private void setEnabledAttributeFilter() {
 		attributeFilter.setEnabled(useAttributeFilter.isSelected());
 	}
 
@@ -511,7 +511,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 		featureTree.getCheckingModel().clearChecking();
 		featureTree.setSelected(featureTypeFilter.getTypeNames());
 
-		setEnabledAttribtueFilter();
+		setEnabledAttributeFilter();
 		setEnabledSQLFilter();
 		setEnabledCounterFilter();
 		setEnabledLodFilter();
