@@ -47,6 +47,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private TitledPanel versionPanel;
 	private JRadioButton cityGMLv2;
 	private JRadioButton cityGMLv1;
+	private JLabel versionHintLabel;
 	private JLabel compressedOutputFormatLabel;
 	private JComboBox<OutputFormat> compressedOutputFormat;
 
@@ -84,6 +85,9 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		versionGroup.add(cityGMLv2);
 		versionGroup.add(cityGMLv1);
 
+		versionHintLabel = new JLabel();
+		versionHintLabel.setFont(versionHintLabel.getFont().deriveFont(Font.ITALIC));
+
 		compressedOutputFormatLabel = new JLabel();
 		compressedOutputFormat = new JComboBox<>();
 		for (OutputFormat outputFormat : OutputFormat.values()) {
@@ -119,10 +123,12 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			JPanel content = new JPanel();
 			content.setLayout(new GridBagLayout());
 
+			int lmargin = GuiUtil.getTextOffset(cityGMLv2);
 			content.add(cityGMLv2, GuiUtil.setConstraints(0, 0, 2, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-			content.add(cityGMLv1, GuiUtil.setConstraints(0, 1, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			content.add(compressedOutputFormatLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
-			content.add(compressedOutputFormat, GuiUtil.setConstraints(1, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+			content.add(versionHintLabel, GuiUtil.setConstraints(0, 1, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
+			content.add(cityGMLv1, GuiUtil.setConstraints(0, 2, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			content.add(compressedOutputFormatLabel, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
+			content.add(compressedOutputFormat, GuiUtil.setConstraints(1, 3, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
 
 			versionPanel = new TitledPanel().build(content);
 		}
@@ -150,6 +156,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		versionPanel.setTitle(Language.I18N.getString("pref.export.general.border.general"));
 		cityGMLv2.setText(Language.I18N.getString("pref.export.general.label.citygmlv2"));
 		cityGMLv1.setText(Language.I18N.getString("pref.export.general.label.citygmlv1"));
+		versionHintLabel.setText(Language.I18N.getString("pref.export.general.label.versionHint"));
 		compressedOutputFormatLabel.setText(Language.I18N.getString("pref.export.general.label.compressedFormat"));
 		envelopePanel.setTitle(Language.I18N.getString("pref.export.general.border.bbox"));
 		featureEnvelopeLabel.setText(Language.I18N.getString("pref.export.general.label.feature"));
