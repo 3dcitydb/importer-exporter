@@ -32,7 +32,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.text.JTextComponent;
 
-public interface StandardEditingPopupMenuDecorator {
+public interface DefaultPopupMenuDecorator {
 	void decorate(JTextComponent... components);
 	JPopupMenu decorateAndGet(JTextComponent component);
 	void decorate(JTree... trees);

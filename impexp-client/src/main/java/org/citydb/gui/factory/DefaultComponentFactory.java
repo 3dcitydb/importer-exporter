@@ -32,7 +32,7 @@ import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.plugin.extension.view.components.ComponentFactory;
 import org.citydb.plugin.extension.view.components.DatabaseSrsComboBox;
-import org.citydb.plugin.extension.view.components.StandardEditingPopupMenuDecorator;
+import org.citydb.plugin.extension.view.components.DefaultPopupMenuDecorator;
 
 public class DefaultComponentFactory implements ComponentFactory {
 	private final ViewController viewController;
@@ -47,7 +47,7 @@ public class DefaultComponentFactory implements ComponentFactory {
 	}
 
 	@Override
-	public StandardEditingPopupMenuDecorator createPopupMenuDecorator() {
+	public DefaultPopupMenuDecorator createPopupMenuDecorator() {
 		return PopupMenuDecorator.getInstance();
 	}
 

@@ -27,12 +27,12 @@
  */
 package org.citydb.gui.factory;
 
-import org.citydb.gui.components.popup.AbstractStandardPopupMenu;
+import org.citydb.gui.components.popup.AbstractPopupMenu;
 import org.citydb.gui.components.popup.CheckBoxGroupPopupMenu;
-import org.citydb.gui.components.popup.StandardEditingPopupMenu;
-import org.citydb.gui.components.popup.StandardTreePopupMenu;
+import org.citydb.gui.components.popup.EditPopupMenu;
+import org.citydb.gui.components.popup.TreePopupMenu;
 import org.citydb.log.Logger;
-import org.citydb.plugin.extension.view.components.StandardEditingPopupMenuDecorator;
+import org.citydb.plugin.extension.view.components.DefaultPopupMenuDecorator;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -47,10 +47,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
+public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 	private static PopupMenuDecorator instance;
-	private final Map<String, AbstractStandardPopupMenu> standardPopupMenus = new HashMap<>();
-	private final Set<AbstractStandardPopupMenu> popupMenus = Collections.newSetFromMap(new WeakHashMap<>());
+	private final Map<String, AbstractPopupMenu> standardPopupMenus = new HashMap<>();
+	private final Set<AbstractPopupMenu> popupMenus = Collections.newSetFromMap(new WeakHashMap<>());
 
 	private PopupMenuDecorator() {
 		// just to thwart instantiation
@@ -64,7 +64,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 		return instance;
 	}
 
-	private void decorate(final JComponent component, final AbstractStandardPopupMenu popupMenu) {
+	private void decorate(final JComponent component, final AbstractPopupMenu popupMenu) {
 		component.addMouseListener(new MouseAdapter() {
 			private void processMouseEvent(MouseEvent e) {
 				if (e.isPopupTrigger()) {
@@ -74,7 +74,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 
 					if (e.getComponent() instanceof JTextComponent) {
 						boolean isEditable = ((JTextComponent) e.getComponent()).isEditable();
-						((StandardEditingPopupMenu) popupMenu).prepare(isEditable);
+						((EditPopupMenu) popupMenu).prepare(isEditable);
 					} else if (e.getComponent() instanceof JTree) {
 						Point point = e.getPoint();
 						TreePath path = ((JTree) e.getComponent()).getPathForLocation(point.x, point.y);
@@ -84,7 +84,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 							return;
 						}
 
-						((StandardTreePopupMenu) popupMenu).prepare((JTree) e.getComponent(), path);
+						((TreePopupMenu) popupMenu).prepare((JTree) e.getComponent(), path);
 					}
 
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
@@ -119,7 +119,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 
 	@Override
 	public JPopupMenu decorateAndGet(JTextComponent component) {
-		StandardEditingPopupMenu popupMenu = new StandardEditingPopupMenu();
+		EditPopupMenu popupMenu = new EditPopupMenu();
 		popupMenu.init(component);
 		popupMenu.doTranslation();
 		decorate(component, popupMenu);
@@ -134,7 +134,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 
 	@Override
 	public JPopupMenu decorateAndGet(JTree tree) {
-		StandardTreePopupMenu popupMenu = new StandardTreePopupMenu();
+		TreePopupMenu popupMenu = new TreePopupMenu();
 		popupMenu.init();
 		popupMenu.doTranslation();
 		decorate(tree, popupMenu);
@@ -167,7 +167,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 	}
 
 	public void updateUI() {
-		for (AbstractStandardPopupMenu popupMenu : popupMenus) {
+		for (AbstractPopupMenu popupMenu : popupMenus) {
 			try {
 				SwingUtilities.updateComponentTreeUI(popupMenu);
 			} catch (Exception e) {
@@ -176,16 +176,16 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 		}
 	}
 
-	private AbstractStandardPopupMenu getStandardPopupMenu(JComponent component) {
-		AbstractStandardPopupMenu popupMenu = standardPopupMenus.get(component.getClass().getName());
+	private AbstractPopupMenu getStandardPopupMenu(JComponent component) {
+		AbstractPopupMenu popupMenu = standardPopupMenus.get(component.getClass().getName());
 
 		if (popupMenu == null) {
 			if (component instanceof JTree) {
-				popupMenu = new StandardTreePopupMenu();
-				((StandardTreePopupMenu) popupMenu).init();
+				popupMenu = new TreePopupMenu();
+				((TreePopupMenu) popupMenu).init();
 			} else {
-				popupMenu = new StandardEditingPopupMenu();
-				((StandardEditingPopupMenu) popupMenu).init(component);
+				popupMenu = new EditPopupMenu();
+				((EditPopupMenu) popupMenu).init(component);
 			}
 
 			popupMenu.doTranslation();
