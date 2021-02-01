@@ -32,6 +32,7 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -155,44 +156,46 @@ public class TitledPanel extends JPanel {
         add(content, GuiUtil.setConstraints(column, 1, 1, 1, GridBagConstraints.BOTH, 0, left + padding, bottom, right));
 
         if (toggleButton != null) {
-            titleComponent.addMouseListener(new MouseAdapter() {
+            MouseAdapter adapter = new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         toggleButton.doClick();
                     }
                 }
-            });
+            };
+
+            titleLabel.addMouseListener(adapter);
+            titleComponent.addMouseListener(adapter);
         }
 
         if (collapsible) {
             setCollapsed(collapsed);
 
-            collapseButton.addMouseListener(new MouseAdapter() {
+            MouseAdapter adapter = new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         setCollapsed(!collapsed);
                     }
                 }
-            });
+            };
+
+            collapseButton.addMouseListener(adapter);
+            headerComponent.addMouseListener(adapter);
 
             if (toggleButton != null) {
-                toggleButton.addActionListener(e -> {
-                    if (collapsed && toggleButton.isSelected()) {
+                toggleButton.addItemListener(e -> {
+                    if (collapsed && e.getStateChange() == ItemEvent.SELECTED) {
                         setCollapsed(false);
                     }
                 });
             }
-
-            headerComponent.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        setCollapsed(!collapsed);
-                    }
-                }
-            });
         }
 
         return this;
+    }
+
+    public JLabel getTitleLabel() {
+        return titleLabel;
     }
 
     public void setTitle(String title) {
