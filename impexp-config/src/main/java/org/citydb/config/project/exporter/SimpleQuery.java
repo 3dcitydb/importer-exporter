@@ -77,7 +77,7 @@ public class SimpleQuery {
     private SimpleFeatureVersionFilter featureVersionFilter;
     @XmlElement(name = "attributes")
     private SimpleAttributeFilter attributeFilter;
-    @XmlElement(name = "sql", required = true)
+    @XmlElement(name = "sql")
     private SelectOperator sqlFilter;
     @XmlElement(name = "limit")
     protected CounterFilter counterFilter;
