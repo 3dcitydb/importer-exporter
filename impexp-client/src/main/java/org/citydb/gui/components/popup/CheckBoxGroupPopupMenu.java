@@ -35,7 +35,7 @@ import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
 
-public class CheckBoxGroupPopupMenu extends AbstractStandardPopupMenu implements EventHandler {
+public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHandler {
 	private JMenuItem selectOthers;
 	private JMenuItem deselectOthers;
 	private JMenuItem selectAll;

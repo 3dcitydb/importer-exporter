@@ -37,7 +37,7 @@ import javax.swing.*;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-public class StandardTreePopupMenu extends AbstractStandardPopupMenu implements EventHandler {
+public class TreePopupMenu extends AbstractPopupMenu implements EventHandler {
 	private JMenuItem expand;
 	private JMenuItem expandAll;
 	private JMenuItem collapse;
@@ -47,7 +47,7 @@ public class StandardTreePopupMenu extends AbstractStandardPopupMenu implements 
 	private JTree tree;
 	private TreePath path;
 
-	public StandardTreePopupMenu() {
+	public TreePopupMenu() {
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
 	}
 
@@ -97,11 +97,6 @@ public class StandardTreePopupMenu extends AbstractStandardPopupMenu implements 
 		boolean hasNestedChildren = hasNestedChildren(path);		
 		boolean isCollapsed = tree.isCollapsed(path);
 		boolean isLeaf = node.isLeaf();
-
-		expand.setEnabled(!isLeaf && isCollapsed);
-		expandAll.setEnabled(!isLeaf && hasNestedChildren);
-		collapse.setEnabled(!isLeaf && !isCollapsed);
-		collapseAll.setEnabled(!isLeaf && !isCollapsed && hasNestedChildren);
 
 		expand.setVisible(isLeaf || isCollapsed);
 		expandAll.setVisible(!isLeaf && hasNestedChildren && (isCollapsed || showAll(path, path, true)));

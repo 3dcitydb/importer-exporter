@@ -40,13 +40,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
-public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implements EventHandler {
+public class EditPopupMenu extends AbstractPopupMenu implements EventHandler {
 	private JMenuItem cut;
 	private JMenuItem copy;
 	private JMenuItem paste;
 	private JMenuItem selectAll;
 
-	public StandardEditingPopupMenu() {
+	public EditPopupMenu() {
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
 	}
 
