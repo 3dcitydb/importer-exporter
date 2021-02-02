@@ -291,7 +291,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			Path outputFile = Paths.get(browseText.getText());
 			if (!useTiling
 					&& OutputFileFactory.getOutputFormat(outputFile, config) == OutputFormat.CITYJSON
-					&& config.getGuiConfig().isShowCityJSONTilingWarning()) {
+					&& config.getGuiConfig().getExportGuiConfig().isShowCityJSONTilingWarning()) {
 				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
 						.withParentComponent(viewController.getTopFrame())
 						.withMessageType(JOptionPane.WARNING_MESSAGE)
@@ -300,7 +300,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 						.addMessage(Language.I18N.getString("export.dialog.warn.cityjson.msg"));
 
 				int result = dialog.show();
-				config.getGuiConfig().setShowCityJSONTilingWarning(dialog.keepShowingDialog());
+				config.getGuiConfig().getExportGuiConfig().setShowCityJSONTilingWarning(dialog.keepShowingDialog());
 				if (result != JOptionPane.YES_OPTION) {
 					return;
 				}

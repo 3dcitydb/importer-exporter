@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlType;
         "collapseCounterFilter",
         "collapseBoundingBoxFilter",
         "collapseFeatureTypeFilter",
+        "showCityJSONTilingWarning",
         "sqlFilter"
 })
 public class ExportGuiConfig {
@@ -20,6 +21,7 @@ public class ExportGuiConfig {
     private boolean collapseCounterFilter = true;
     private boolean collapseBoundingBoxFilter = true;
     private boolean collapseFeatureTypeFilter = true;
+    private boolean showCityJSONTilingWarning = true;
     private SQLExportFilterComponent sqlFilter;
 
     public ExportGuiConfig() {
@@ -72,6 +74,14 @@ public class ExportGuiConfig {
 
     public void setCollapseFeatureTypeFilter(boolean collapseFeatureTypeFilter) {
         this.collapseFeatureTypeFilter = collapseFeatureTypeFilter;
+    }
+
+    public boolean isShowCityJSONTilingWarning() {
+        return showCityJSONTilingWarning;
+    }
+
+    public void setShowCityJSONTilingWarning(boolean showCityJSONTilingWarning) {
+        this.showCityJSONTilingWarning = showCityJSONTilingWarning;
     }
 
     public SQLExportFilterComponent getSQLExportFilterComponent() {
