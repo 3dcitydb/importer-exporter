@@ -455,7 +455,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 		SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
 		useAttributeFilter.setSelected(query.isUseAttributeFilter());
-		useSQLFilter.setSelected(query.isSetSQLFilter());
+		useSQLFilter.setSelected(query.isUseSQLFilter());
 		useLodFilter.setSelected(query.isUseLodFilter());
 		useCounterFilter.setSelected(query.isUseCountFilter());
 		useBBoxFilter.setSelected(query.isUseBboxFilter());
