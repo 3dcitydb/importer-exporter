@@ -151,6 +151,7 @@ public class XMLQueryView extends FilterView {
         validateButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/check.svg"));
 
         JToolBar toolBar = new JToolBar();
+        toolBar.setBorder(BorderFactory.createEmptyBorder());
         toolBar.add(newButton);
         toolBar.add(duplicateButton);
         toolBar.addSeparator();

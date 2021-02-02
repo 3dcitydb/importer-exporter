@@ -285,6 +285,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		pasteBBox.setEnabled(clipboardHandler.containsPossibleBoundingBox());
 
 		JToolBar toolBar = new JToolBar();
+		toolBar.setBorder(BorderFactory.createEmptyBorder());
 		toolBar.add(copyBBox);
 		toolBar.add(pasteBBox);
 		toolBar.setFloatable(false);

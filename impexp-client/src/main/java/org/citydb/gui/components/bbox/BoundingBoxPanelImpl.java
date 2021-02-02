@@ -111,6 +111,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         paste = new JButton(new FlatSVGIcon("org/citydb/gui/icons/paste.svg"));
 
         JToolBar toolBar = new JToolBar();
+        toolBar.setBorder(BorderFactory.createEmptyBorder());
         toolBar.add(map);
         toolBar.addSeparator();
         toolBar.add(copy);

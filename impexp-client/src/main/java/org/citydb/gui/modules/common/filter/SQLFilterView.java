@@ -78,6 +78,7 @@ public class SQLFilterView extends FilterView {
         scrollPane = new RTextScrollPane(sqlText);
 
         JToolBar toolBar = new JToolBar();
+        toolBar.setBorder(BorderFactory.createEmptyBorder());
         toolBar.add(addButton);
         toolBar.add(removeButton);
         toolBar.setFloatable(false);

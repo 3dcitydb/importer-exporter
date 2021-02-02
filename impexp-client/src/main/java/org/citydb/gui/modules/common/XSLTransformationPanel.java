@@ -274,6 +274,7 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
             removeButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/remove.svg"));
 
             JToolBar toolBar = new JToolBar();
+            toolBar.setBorder(BorderFactory.createEmptyBorder());
             toolBar.setFloatable(false);
             toolBar.add(addButton);
             toolBar.add(removeButton);
