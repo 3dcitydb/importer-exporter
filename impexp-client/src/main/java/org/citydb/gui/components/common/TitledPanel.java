@@ -156,7 +156,7 @@ public class TitledPanel extends JPanel {
 
         if (toggleButton != null) {
             MouseAdapter adapter = new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
+                public void mousePressed(MouseEvent e) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         toggleButton.doClick();
                     }
@@ -171,7 +171,7 @@ public class TitledPanel extends JPanel {
             setCollapsed(collapsed);
 
             MouseAdapter adapter = new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
+                public void mousePressed(MouseEvent e) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         setCollapsed(!collapsed);
                     }
