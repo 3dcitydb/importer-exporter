@@ -206,6 +206,8 @@ public class FilterPanel extends JPanel {
 		useFeatureFilter.addItemListener(e -> setEnabledFeatureFilter());
 
 		PopupMenuDecorator.getInstance().decorate(featureTree, gmlNameText, gmlIdText, countText, startIndexText);
+		PopupMenuDecorator.getInstance().decorateTitledPanelGroup(attributeFilterPanel, counterFilterPanel,
+				bboxFilterPanel, featureFilterPanel);
 
 		UIManager.addPropertyChangeListener(e -> {
 			if ("lookAndFeel".equals(e.getPropertyName())) {

@@ -340,6 +340,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 		PopupMenuDecorator.getInstance().decorateCheckBoxGroup(lods);
 		PopupMenuDecorator.getInstance().decorate(featureTree, countText, startIndexText, tilingRowsText, tilingColumnsText,
 				((JSpinner.DefaultEditor) lodDepth.getEditor()).getTextField());
+		PopupMenuDecorator.getInstance().decorateTitledPanelGroup(attributeFilterPanel, sqlFilterPanel,
+				counterFilterPanel, lodFilterPanel, bboxFilterPanel, featureFilterPanel);
 
 		UIManager.addPropertyChangeListener(e -> {
 			if ("lookAndFeel".equals(e.getPropertyName())) {
