@@ -27,8 +27,8 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.config.Config;

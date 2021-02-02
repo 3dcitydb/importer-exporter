@@ -27,10 +27,10 @@
  */
 package org.citydb.citygml.exporter.concurrent;
 
-import org.citydb.citygml.common.database.xlink.DBXlink;
-import org.citydb.citygml.common.database.xlink.DBXlinkEnum;
-import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.common.xlink.DBXlink;
+import org.citydb.citygml.common.xlink.DBXlinkEnum;
+import org.citydb.citygml.common.xlink.DBXlinkLibraryObject;
+import org.citydb.citygml.common.xlink.DBXlinkTextureFile;
 import org.citydb.citygml.exporter.database.xlink.DBXlinkExporterEnum;
 import org.citydb.citygml.exporter.database.xlink.DBXlinkExporterLibraryObject;
 import org.citydb.citygml.exporter.database.xlink.DBXlinkExporterManager;

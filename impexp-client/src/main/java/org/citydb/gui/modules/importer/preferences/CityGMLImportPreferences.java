@@ -38,13 +38,18 @@ public class CityGMLImportPreferences extends AbstractPreferences {
 		super(new CityGMLImportEntry());
 		
 		root.addChildEntry(new DefaultPreferencesEntry(new ContinuationPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new IdHandlingPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new ResourceIdPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(config)));
+
+		DefaultPreferencesEntry cityGMLOptions = new CityGMLOptionsPanel();
+		root.addChildEntry(cityGMLOptions);
+		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
+		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XMLValidationPanel(config)));
+		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(false, config)));
+
+		root.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new XMLValidationPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(false, config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ImportLogPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
 	}

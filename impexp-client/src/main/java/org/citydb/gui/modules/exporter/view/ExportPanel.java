@@ -33,6 +33,7 @@ import org.citydb.config.Config;
 import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
@@ -45,6 +46,8 @@ import org.citydb.database.DatabaseController;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.InterruptEvent;
+import org.citydb.file.output.OutputFileFactory;
+import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
@@ -69,11 +72,11 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-@SuppressWarnings("serial")
 public class ExportPanel extends JPanel implements DropTargetListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
@@ -194,14 +197,16 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				return;
 			}
 
+			boolean useTiling = false;
+
 			if (config.getExportConfig().isUseSimpleQuery()) {
 				SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
 				// attribute filter
 				if (query.isUseAttributeFilter()) {
 					SimpleAttributeFilter attributeFilter = query.getAttributeFilter();
-					if (!attributeFilter.getGmlIdFilter().isSetResourceIds()
-							&& !attributeFilter.getGmlNameFilter().isSetLiteral()
+					if (!attributeFilter.getResourceIdFilter().isSetResourceIds()
+							&& !attributeFilter.getNameFilter().isSetLiteral()
 							&& !attributeFilter.getLineageFilter().isSetLiteral()) {
 						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 								Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
@@ -252,8 +257,10 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 						return;
 					}
 
-					if (bboxFilter.getMode() == SimpleTilingMode.TILING)
+					if (bboxFilter.getMode() == SimpleTilingMode.TILING) {
 						tileAmount = bboxFilter.getRows() * bboxFilter.getColumns();
+						useTiling = true;
+					}
 				}
 
 				// feature types
@@ -270,10 +277,32 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					return;
 				}
 
-				// copy tiling options if required
-				if (query.isSetTiling() && !(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions)) {
-					query.getTiling().setTilingOptions(config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions());
-					tileAmount = query.getTiling().getRows() * query.getTiling().getColumns();
+				if (query.isSetTiling()) {
+					// copy tiling options if required
+					if (!(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions)) {
+						query.getTiling().setTilingOptions(config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions());
+						tileAmount = query.getTiling().getRows() * query.getTiling().getColumns();
+					}
+
+					useTiling = true;
+				}
+			}
+
+			Path outputFile = Paths.get(browseText.getText());
+			if (!useTiling
+					&& OutputFileFactory.getOutputFormat(outputFile, config) == OutputFormat.CITYJSON
+					&& config.getGuiConfig().isShowCityJSONTilingWarning()) {
+				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
+						.withParentComponent(viewController.getTopFrame())
+						.withMessageType(JOptionPane.WARNING_MESSAGE)
+						.withOptionType(JOptionPane.YES_NO_OPTION)
+						.withTitle(Language.I18N.getString("export.dialog.warn.cityjson.title"))
+						.addMessage(Language.I18N.getString("export.dialog.warn.cityjson.msg"));
+
+				int result = dialog.show();
+				config.getGuiConfig().setShowCityJSONTilingWarning(dialog.keepShowingDialog());
+				if (result != JOptionPane.YES_OPTION) {
+					return;
 				}
 			}
 
@@ -337,12 +366,13 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
 
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.zip, *.gz, *.gzip)",
-				"gml", "xml", "zip", "gz", "gzip");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.json, *.zip, *.gz, *.gzip)",
+				"gml", "xml", "json", "zip", "gz", "gzip");
 		chooser.addChoosableFileFilter(filter);
 		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML GML Files (*.gml, *.xml)", "gml", "xml"));
-		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML ZIP Files (*.zip)", "zip"));
-		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityJSON Files (*.json)", "json"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("ZIP Files (*.zip)", "zip"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
 		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
 		chooser.setFileFilter(filter);
 

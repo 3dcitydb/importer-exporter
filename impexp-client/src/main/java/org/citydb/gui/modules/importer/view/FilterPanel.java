@@ -66,10 +66,10 @@ public class FilterPanel extends JPanel {
 	private TitledPanel bboxFilterPanel;
 	private TitledPanel featureFilterPanel;
 
-	private JLabel gmlIdLabel;
-	private JTextField gmlIdText;
-	private JLabel gmlNameLabel;
-	private JTextField gmlNameText;
+	private JLabel resourceIdLabel;
+	private JTextField resourceIdText;
+	private JLabel nameLabel;
+	private JTextField nameText;
 
 	private JLabel countLabel;
 	private JLabel startIndexLabel;
@@ -94,10 +94,10 @@ public class FilterPanel extends JPanel {
 		useBBoxFilter = new JCheckBox();
 		useFeatureFilter = new JCheckBox();
 
-		gmlIdLabel = new JLabel();
-		gmlIdText = new JTextField();
-		gmlNameLabel = new JLabel();
-		gmlNameText = new JTextField();
+		resourceIdLabel = new JLabel();
+		resourceIdText = new JTextField();
+		nameLabel = new JLabel();
+		nameText = new JTextField();
 
 		countLabel = new JLabel();
 		startIndexLabel = new JLabel();
@@ -135,10 +135,10 @@ public class FilterPanel extends JPanel {
 			JPanel content = new JPanel();
 			content.setLayout(new GridBagLayout());
 			{
-				content.add(gmlIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
-				content.add(gmlIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
-				content.add(gmlNameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-				content.add(gmlNameText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+				content.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+				content.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+				content.add(nameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+				content.add(nameText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
 
 			attributeFilterPanel = new TitledPanel()
@@ -205,7 +205,7 @@ public class FilterPanel extends JPanel {
 		useBBoxFilter.addItemListener(e -> setEnabledBBoxFilter());
 		useFeatureFilter.addItemListener(e -> setEnabledFeatureFilter());
 
-		PopupMenuDecorator.getInstance().decorate(featureTree, gmlNameText, gmlIdText, countText, startIndexText);
+		PopupMenuDecorator.getInstance().decorate(featureTree, nameText, resourceIdText, countText, startIndexText);
 		PopupMenuDecorator.getInstance().decorateTitledPanelGroup(attributeFilterPanel, counterFilterPanel,
 				bboxFilterPanel, featureFilterPanel);
 
@@ -223,10 +223,10 @@ public class FilterPanel extends JPanel {
 	}
 
 	private void setEnabledAttributeFilter() {
-		gmlIdLabel.setEnabled(useAttributeFilter.isSelected());
-		gmlIdText.setEnabled(useAttributeFilter.isSelected());
-		gmlNameLabel.setEnabled(useAttributeFilter.isSelected());
-		gmlNameText.setEnabled(useAttributeFilter.isSelected());
+		resourceIdLabel.setEnabled(useAttributeFilter.isSelected());
+		resourceIdText.setEnabled(useAttributeFilter.isSelected());
+		nameLabel.setEnabled(useAttributeFilter.isSelected());
+		nameText.setEnabled(useAttributeFilter.isSelected());
 	}
 
 	private void setEnabledCounterFilter() {
@@ -259,8 +259,8 @@ public class FilterPanel extends JPanel {
 		bboxFilterPanel.setTitle(Language.I18N.getString("filter.border.boundingBox"));
 		featureFilterPanel.setTitle(Language.I18N.getString("filter.border.featureClass"));
 
-		gmlIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
-		gmlNameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
+		resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
+		nameLabel.setText(Language.I18N.getString("filter.label.name"));
 		countLabel.setText(Language.I18N.getString("filter.label.counter.count"));
 		startIndexLabel.setText(Language.I18N.getString("filter.label.counter.startIndex"));
 		bboxOverlaps.setText(Language.I18N.getString("filter.label.boundingBox.overlaps"));
@@ -275,13 +275,13 @@ public class FilterPanel extends JPanel {
 		useBBoxFilter.setSelected(filter.isUseBboxFilter());
 		useFeatureFilter.setSelected(filter.isUseTypeNames());
 
-		// gml:id filter
-		ResourceIdOperator gmlIdFilter = filter.getAttributeFilter().getGmlIdFilter();
-		gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
+		// resource id filter
+		ResourceIdOperator resourceIdFilter = filter.getAttributeFilter().getResourceIdFilter();
+		resourceIdText.setText(String.join(",", resourceIdFilter.getResourceIds()));
 
-		// gml:name
-		LikeOperator gmlNameFilter = filter.getAttributeFilter().getGmlNameFilter();
-		gmlNameText.setText(gmlNameFilter.getLiteral());
+		// name filter
+		LikeOperator nameFilter = filter.getAttributeFilter().getNameFilter();
+		nameText.setText(nameFilter.getLiteral());
 
 		// counter filter
 		CounterFilter counterFilter = filter.getCounterFilter();
@@ -325,19 +325,19 @@ public class FilterPanel extends JPanel {
 		filter.setUseBboxFilter(useBBoxFilter.isSelected());
 		filter.setUseTypeNames(useFeatureFilter.isSelected());
 
-		// gml:id filter
-		ResourceIdOperator gmlIdFilter = filter.getAttributeFilter().getGmlIdFilter();
-		gmlIdFilter.reset();
-		if (gmlIdText.getText().trim().length() > 0) {
-			String trimmed = gmlIdText.getText().replaceAll("\\s+", "");
-			gmlIdFilter.setResourceIds(Util.string2string(trimmed, ","));
+		// resource id filter
+		ResourceIdOperator resourceIdFilter = filter.getAttributeFilter().getResourceIdFilter();
+		resourceIdFilter.reset();
+		if (resourceIdText.getText().trim().length() > 0) {
+			String trimmed = resourceIdText.getText().replaceAll("\\s+", "");
+			resourceIdFilter.setResourceIds(Util.string2string(trimmed, ","));
 		}
 
-		// gml:name
-		LikeOperator gmlNameFilter = filter.getAttributeFilter().getGmlNameFilter();
-		gmlNameFilter.reset();
-		if (gmlNameText.getText().trim().length() > 0)
-			gmlNameFilter.setLiteral(gmlNameText.getText().trim());
+		// name filter
+		LikeOperator nameFilter = filter.getAttributeFilter().getNameFilter();
+		nameFilter.reset();
+		if (nameText.getText().trim().length() > 0)
+			nameFilter.setLiteral(nameText.getText().trim());
 
 		// counter filter
 		CounterFilter counterFilter = filter.getCounterFilter();

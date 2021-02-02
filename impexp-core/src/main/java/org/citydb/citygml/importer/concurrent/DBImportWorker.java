@@ -27,8 +27,8 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.database.content.CityGMLImportManager;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
@@ -88,7 +88,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CityGMLFilter filter,
 			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
@@ -106,7 +106,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				schemaMapping,
 				cityGMLBuilder,
 				xlinkPool,
-				uidCacheManager,
+				idCacheManager,
 				affineTransformer,
 				internalConfig,
 				config);

@@ -27,17 +27,17 @@
  */
 package org.citydb.citygml.exporter.controller;
 
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.uid.UIDCacheType;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.cache.IdCacheType;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.citygml.exporter.cache.GeometryGmlIdCache;
+import org.citydb.citygml.exporter.cache.ObjectGmlIdCache;
 import org.citydb.citygml.exporter.concurrent.DBExportWorkerFactory;
 import org.citydb.citygml.exporter.concurrent.DBExportXlinkWorkerFactory;
 import org.citydb.citygml.exporter.database.content.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
-import org.citydb.citygml.exporter.database.uid.FeatureGmlIdCache;
-import org.citydb.citygml.exporter.database.uid.GeometryGmlIdCache;
 import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
@@ -50,9 +50,11 @@ import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.config.project.exporter.TileNameSuffixMode;
 import org.citydb.config.project.exporter.TileSuffixMode;
+import org.citydb.config.project.exporter.XLink;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -95,7 +97,6 @@ import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -161,6 +162,10 @@ public class Exporter implements EventHandler {
     private boolean process(Path outputFile) throws CityGMLExportException {
         InternalConfig internalConfig = new InternalConfig();
 
+        // set output format and format-specific options
+        OutputFormat outputFormat = OutputFileFactory.getOutputFormat(outputFile, config);
+        setOutputFormatOptions(outputFormat, internalConfig);
+
         // log workspace
         if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
             Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
@@ -183,7 +188,7 @@ public class Exporter implements EventHandler {
         // create feature writer factory
         FeatureWriterFactory writerFactory;
         try {
-            writerFactory = FeatureWriterFactoryBuilder.buildFactory(query, schemaMapping, config);
+            writerFactory = FeatureWriterFactoryBuilder.buildFactory(outputFormat, query, schemaMapping, config);
         } catch (FeatureWriteException e) {
             throw new CityGMLExportException("Failed to build the feature writer factory.", e);
         }
@@ -264,6 +269,9 @@ public class Exporter implements EventHandler {
             } catch (FilterException e) {
                 throw new CityGMLExportException("Failed to transform tiling extent.", e);
             }
+        } else if (outputFormat == OutputFormat.CITYJSON) {
+            // log warning if CityJSON is used without tiling
+            log.warn("To avoid memory issues, a tiled export should be used for CityJSON.");
         }
 
         // create output file factory
@@ -300,9 +308,9 @@ public class Exporter implements EventHandler {
 
             internalConfig.setExportTextureURI(textureFolder);
 
-            // check for unique texture filenames when exporting an archiv
+            // check for unique texture filenames when exporting as archive
             if (!config.getExportConfig().getAppearances().isSetUniqueTextureFileNames()
-                    && fileFactory.getFileType(outputFile.getFileName()) == FileType.ARCHIVE) {
+                    && OutputFileFactory.getFileType(outputFile.getFileName()) == FileType.ARCHIVE) {
                 log.warn("Using unique texture filenames because of writing to an archive file.");
                 config.getExportConfig().getAppearances().setUniqueTextureFileNames(true);
             }
@@ -370,7 +378,7 @@ public class Exporter implements EventHandler {
                 }
 
                 CacheTableManager cacheTableManager = null;
-                UIDCacheManager uidCacheManager = null;
+                IdCacheManager idCacheManager = null;
                 FeatureWriter writer = null;
                 OutputFile file = null;
 
@@ -380,7 +388,7 @@ public class Exporter implements EventHandler {
                     eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles, this));
 
                     try {
-                        file = fileFactory.createOutputFile(folder.resolve(fileName));
+                        file = fileFactory.createOutputFile(folder.resolve(fileName), outputFormat);
                         internalConfig.setOutputFile(file);
                     } catch (IOException e) {
                         throw new CityGMLExportException("Failed to create output file '" + folder.resolve(fileName) + "'.", e);
@@ -399,9 +407,7 @@ public class Exporter implements EventHandler {
 
                     // create output writer
                     try {
-                        writer = writerFactory.createFeatureWriter(new OutputStreamWriter(file.openStream(),
-                                config.getExportConfig().getCityGMLOptions().getFileEncoding()));
-                        writer.useIndentation(file.getType() == FileType.REGULAR);
+                        writer = writerFactory.createFeatureWriter(file.openStream());
                     } catch (FeatureWriteException | IOException e) {
                         throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
                     }
@@ -416,26 +422,26 @@ public class Exporter implements EventHandler {
                     }
 
                     // create instance of gml:id lookup server manager...
-                    uidCacheManager = new UIDCacheManager();
+                    idCacheManager = new IdCacheManager();
 
                     // ...and start servers
                     try {
-                        uidCacheManager.initCache(
-                                UIDCacheType.GEOMETRY,
+                        idCacheManager.initCache(
+                                IdCacheType.GEOMETRY,
                                 new GeometryGmlIdCache(cacheTableManager,
-                                        config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPartitions(),
+                                        config.getExportConfig().getResources().getIdCache().getGeometry().getPartitions(),
                                         config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
-                                config.getExportConfig().getResources().getGmlIdCache().getGeometry().getCacheSize(),
-                                config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPageFactor(),
+                                config.getExportConfig().getResources().getIdCache().getGeometry().getCacheSize(),
+                                config.getExportConfig().getResources().getIdCache().getGeometry().getPageFactor(),
                                 config.getExportConfig().getResources().getThreadPool().getMaxThreads());
 
-                        uidCacheManager.initCache(
-                                UIDCacheType.OBJECT,
-                                new FeatureGmlIdCache(cacheTableManager,
-                                        config.getExportConfig().getResources().getGmlIdCache().getFeature().getPartitions(),
+                        idCacheManager.initCache(
+                                IdCacheType.OBJECT,
+                                new ObjectGmlIdCache(cacheTableManager,
+                                        config.getExportConfig().getResources().getIdCache().getFeature().getPartitions(),
                                         config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
-                                config.getExportConfig().getResources().getGmlIdCache().getFeature().getCacheSize(),
-                                config.getExportConfig().getResources().getGmlIdCache().getFeature().getPageFactor(),
+                                config.getExportConfig().getResources().getIdCache().getFeature().getCacheSize(),
+                                config.getExportConfig().getResources().getIdCache().getFeature().getPageFactor(),
                                 config.getExportConfig().getResources().getThreadPool().getMaxThreads());
                     } catch (SQLException e) {
                         throw new CityGMLExportException("Failed to initialize internal gml:id caches.", e);
@@ -462,7 +468,7 @@ public class Exporter implements EventHandler {
                                     cityGMLBuilder,
                                     writer,
                                     xlinkExporterPool,
-                                    uidCacheManager,
+                                    idCacheManager,
                                     cacheTableManager,
                                     query,
                                     internalConfig,
@@ -489,7 +495,7 @@ public class Exporter implements EventHandler {
                                 schemaMapping,
                                 dbWorkerPool,
                                 query,
-                                uidCacheManager.getCache(UIDCacheType.OBJECT),
+                                idCacheManager.getCache(IdCacheType.OBJECT),
                                 cacheTableManager,
                                 eventDispatcher,
                                 internalConfig,
@@ -554,9 +560,9 @@ public class Exporter implements EventHandler {
                         //
                     }
 
-                    if (uidCacheManager != null) {
+                    if (idCacheManager != null) {
                         try {
-                            uidCacheManager.shutdownAll();
+                            idCacheManager.shutdownAll();
                         } catch (SQLException e) {
                             setException("Failed to clean the gml:id caches.", e);
                             shouldRun = false;
@@ -611,6 +617,19 @@ public class Exporter implements EventHandler {
         }
 
         return shouldRun;
+    }
+
+    private void setOutputFormatOptions(OutputFormat outputFormat, InternalConfig internalConfig) {
+	    internalConfig.setOutputFormat(outputFormat);
+
+	    if (outputFormat == OutputFormat.CITYJSON) {
+	        internalConfig.setExportFeatureReferences(false);
+	        internalConfig.setExportGeometryReferences(true);
+        } else {
+            XLink xlinkOptions = config.getExportConfig().getCityGMLOptions().getXlink();
+	        internalConfig.setExportFeatureReferences(xlinkOptions.getFeature().isModeXLink());
+	        internalConfig.setExportGeometryReferences(xlinkOptions.getGeometry().isModeXLink());
+        }
     }
 
     private void setException(String message, Throwable cause) {

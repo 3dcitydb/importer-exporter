@@ -30,9 +30,9 @@ package org.citydb.citygml.importer.database.xlink.importer;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModel;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.model.CacheTableModel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;

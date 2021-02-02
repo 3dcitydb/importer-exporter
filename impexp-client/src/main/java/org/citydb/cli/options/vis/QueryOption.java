@@ -59,8 +59,8 @@ public class QueryOption implements CliOption {
         if (resourceIdOption != null) {
             ResourceIdOperator idOperator = resourceIdOption.toResourceIdOperator();
             if (idOperator != null) {
-                query.setUseGmlIdFilter(true);
-                query.setGmlIdFilter(idOperator);
+                query.setUseResourceIdFilter(true);
+                query.setResourceIdFilter(idOperator);
             }
         }
 

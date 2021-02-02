@@ -82,7 +82,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.THEMATIC_SURFACE.getName());
 		buildingModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BUILDING).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
+		useXLink = exporter.getInternalConfig().isExportFeatureReferences();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.THEMATIC_SURFACE.getName(), schema);
@@ -196,7 +196,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 				String gmlId = rs.getString("opgmlid");
 				boolean generateNewGmlId = false;
 				if (!rs.wasNull()) {
-					if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+					if (exporter.lookupAndPutObjectId(gmlId, openingId, objectClassId)) {
 						if (useXLink) {
 							OpeningProperty openingProperty = new OpeningProperty();
 							openingProperty.setHref("#" + gmlId);
@@ -216,7 +216,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 				}
 
 				if (generateNewGmlId)
-					opening.setId(exporter.generateNewGmlId(opening, gmlId));
+					opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 				// get projection filter
 				ProjectionFilter openingProjectionFilter = exporter.getProjectionFilter(featureType);

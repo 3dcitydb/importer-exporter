@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.exporter.concurrent;
 
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.citygml.exporter.util.InternalConfig;
@@ -56,7 +56,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final CityGMLBuilder cityGMLBuilder;
 	private final FeatureWriter featureWriter;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
-	private final UIDCacheManager uidCacheManager;
+	private final IdCacheManager idCacheManager;
 	private final CacheTableManager cacheTableManager;
 	private final Query query;
 	private final InternalConfig internalConfig;
@@ -67,7 +67,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
 			WorkerPool<DBXlink> xlinkExporterPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
 			Query query,
 			InternalConfig internalConfig,
@@ -77,7 +77,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.featureWriter = featureWriter;
 		this.xlinkExporterPool = xlinkExporterPool;
-		this.uidCacheManager = uidCacheManager;
+		this.idCacheManager = idCacheManager;
 		this.cacheTableManager = cacheTableManager;
 		this.query = query;
 		this.internalConfig = internalConfig;
@@ -95,7 +95,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			connection.setAutoCommit(false);
 
 			dbWorker = new DBExportWorker(connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
-					xlinkExporterPool, uidCacheManager, cacheTableManager, query, internalConfig, config, eventDispatcher);
+					xlinkExporterPool, idCacheManager, cacheTableManager, query, internalConfig, config, eventDispatcher);
 		} catch (CityGMLExportException | SQLException e) {
 			log.error("Failed to create export worker.", e);
 		}

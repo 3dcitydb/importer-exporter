@@ -61,7 +61,6 @@ import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.Triangle;
 import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -82,22 +81,14 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	private final boolean exportAppearance;
 	private final boolean useXLink;
 
-	private boolean appendOldGmlId;
-	private String gmlIdPrefix;
-
 	public DBSurfaceGeometry(Connection connection, CityGMLExportManager exporter) throws SQLException {
 		this.exporter = exporter;
 
 		batches = new ArrayList<>();
 		batchSize = exporter.getGeometryBatchSize();
 		exportAppearance = exporter.getInternalConfig().isExportGlobalAppearances();
-		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
+		useXLink = exporter.getInternalConfig().isExportGeometryReferences();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-
-		if (!useXLink) {
-			appendOldGmlId = exporter.getExportConfig().getXlink().getGeometry().isSetAppendId();
-			gmlIdPrefix = exporter.getExportConfig().getXlink().getGeometry().getIdPrefix();
-		}
 
 		Table table = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
 		Select select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("parent_id"),
@@ -318,7 +309,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		// check for xlinks
 		if (geomNode.gmlId != null
 				&& geomNode.isXlink > 0
-				&& exporter.lookupAndPutGeometryUID(geomNode.gmlId, geomNode.id, geomNode.isXlink == XlinkType.LOCAL.value())) {
+				&& exporter.lookupAndPutGeometryId(geomNode.gmlId, geomNode.id, geomNode.isXlink == XlinkType.LOCAL.value())) {
 			if (useXLink) {
 				// check whether we have to embrace the geometry with an orientableSurface
 				return geomNode.isReverse != isSetOrientableSurface ?
@@ -326,11 +317,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 						new SurfaceGeometry("#" + geomNode.gmlId, surfaceGeometryType);
 			} else {
 				geomNode.isXlink = XlinkType.NONE.value();
-				String gmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
-				if (appendOldGmlId)
-					gmlId = gmlId + "-" + geomNode.gmlId;
-
-				geomNode.gmlId = gmlId;
+				geomNode.gmlId = exporter.generateGeometryGmlId(geomNode.gmlId);
 				return rebuildGeometry(geomNode, isSetOrientableSurface, true);
 			}
 		}

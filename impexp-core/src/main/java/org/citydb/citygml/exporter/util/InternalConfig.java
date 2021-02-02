@@ -28,14 +28,18 @@
 
 package org.citydb.citygml.exporter.util;
 
+import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.file.OutputFile;
 
 public class InternalConfig {
     private OutputFile outputFile;
+    private OutputFormat outputFormat;
     private String exportTextureURI;
     private boolean transformCoordinates = false;
     private boolean exportGlobalAppearances = false;
     private boolean registerGmlIdInCache = false;
+    private boolean exportFeatureReferences = true;
+    private boolean exportGeometryReferences = true;
 
     public OutputFile getOutputFile() {
         return outputFile;
@@ -43,6 +47,14 @@ public class InternalConfig {
 
     public void setOutputFile(OutputFile outputFile) {
         this.outputFile = outputFile;
+    }
+
+    public OutputFormat getOutputFormat() {
+        return outputFormat != null ? outputFormat : OutputFormat.CITYGML;
+    }
+
+    public void setOutputFormat(OutputFormat outputFormat) {
+        this.outputFormat = outputFormat;
     }
 
     public String getExportTextureURI() {
@@ -75,5 +87,21 @@ public class InternalConfig {
 
     public void setRegisterGmlIdInCache(boolean registerGmlIdInCache) {
         this.registerGmlIdInCache = registerGmlIdInCache;
+    }
+
+    public boolean isExportFeatureReferences() {
+        return exportFeatureReferences;
+    }
+
+    public void setExportFeatureReferences(boolean exportFeatureReferences) {
+        this.exportFeatureReferences = exportFeatureReferences;
+    }
+
+    public boolean isExportGeometryReferences() {
+        return exportGeometryReferences;
+    }
+
+    public void setExportGeometryReferences(boolean exportGeometryReferences) {
+        this.exportGeometryReferences = exportGeometryReferences;
     }
 }

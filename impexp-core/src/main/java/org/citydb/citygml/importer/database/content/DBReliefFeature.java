@@ -31,7 +31,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
+import org.citydb.citygml.common.xlink.DBXlinkBasic;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citydb.database.schema.TableEnum;

@@ -105,16 +105,16 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     private JTextField browseText;
     private JButton browseButton;
 
-    private TitledPanel gmlIdPanel;
+    private TitledPanel resourceIdPanel;
     private TitledPanel bboxPanel;
     private TitledPanel tilingPanel;
     private TitledPanel lodPanel;
     private TitledPanel displayAsPanel;
 	private TitledPanel featureFilterPanel;
 
-    private JCheckBox useGmlIdFilter;
-    private JLabel gmlIdLabel;
-    private JTextField gmlIdText;
+    private JCheckBox useResourceIdFilter;
+    private JLabel resourceIdLabel;
+    private JTextField resourceIdText;
     private JCheckBox useBboxFilter;
     private BoundingBoxPanel bboxComponent;
 
@@ -175,10 +175,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         browsePanel.add(browseText, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
         browsePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
 
-        useGmlIdFilter = new JCheckBox();
+        useResourceIdFilter = new JCheckBox();
         useBboxFilter = new JCheckBox();
-        gmlIdLabel = new JLabel("gml:id");
-        gmlIdText = new JTextField();
+        resourceIdLabel = new JLabel();
+        resourceIdText = new JTextField();
 
         bboxComponent = viewController.getComponentFactory().createBoundingBoxPanel();
         useTilingFilter = new JCheckBox();
@@ -317,19 +317,19 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             mainPanel.add(tilingPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            // gml:id
-            JPanel gmlIdConent = new JPanel();
-            gmlIdConent.setLayout(new GridBagLayout());
-            gmlIdConent.add(gmlIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-            gmlIdConent.add(gmlIdText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            // resource id
+            JPanel resourceIdConent = new JPanel();
+            resourceIdConent.setLayout(new GridBagLayout());
+            resourceIdConent.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+            resourceIdConent.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 
-            gmlIdPanel = new TitledPanel()
+                resourceIdPanel = new TitledPanel()
                     .withIcon(new FlatSVGIcon("org/citydb/gui/filter/attribute.svg"))
-                    .withToggleButton(useGmlIdFilter)
+                    .withToggleButton(useResourceIdFilter)
                     .withCollapseButton()
-                    .build(gmlIdConent);
+                    .build(resourceIdConent);
 
-            mainPanel.add(gmlIdPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            mainPanel.add(resourceIdPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
             // bbox
@@ -369,12 +369,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
         add(exportButton, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.NONE, 10, 10, 10, 10));
 
-        PopupMenuDecorator.getInstance().decorate(browseText, gmlIdText, tileSizeText, rowsText, columnsText,
+        PopupMenuDecorator.getInstance().decorate(browseText, resourceIdText, tileSizeText, rowsText, columnsText,
                 footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText,
                 featureTree);
         PopupMenuDecorator.getInstance().decorateAndGetCheckBoxGroup(footprintCheckbox, extrudedCheckbox,
                 geometryCheckbox, colladaCheckbox);
-        PopupMenuDecorator.getInstance().decorateTitledPanelGroup(tilingPanel, gmlIdPanel, bboxPanel,
+        PopupMenuDecorator.getInstance().decorateTitledPanelGroup(tilingPanel, resourceIdPanel, bboxPanel,
                 featureFilterPanel);
 
         UIManager.addPropertyChangeListener(e -> {
@@ -392,13 +392,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
     public void doTranslation() {
         browseButton.setText(Language.I18N.getString("common.button.browse"));
-        gmlIdPanel.setTitle(Language.I18N.getString("filter.border.attributes"));
+        resourceIdPanel.setTitle(Language.I18N.getString("filter.border.attributes"));
         bboxPanel.setTitle(Language.I18N.getString("filter.border.boundingBox"));
         tilingPanel.setTitle(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
 
         manualTilingRadioButton.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
         columnsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.columns"));
         automaticTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.automatic"));
+        resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
 
         lodPanel.setTitle(Language.I18N.getString("kmlExport.label.fromLOD"));
         int selectedIndex = lodComboBox.getSelectedIndex();
@@ -434,7 +435,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
 
         useFeatureFilter.setSelected(query.isUseTypeNames());
-        useGmlIdFilter.setSelected(query.isUseGmlIdFilter());
+        useResourceIdFilter.setSelected(query.isUseResourceIdFilter());
         useBboxFilter.setSelected(query.isUseBboxFilter());
 
         // feature type filter
@@ -442,9 +443,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         featureTree.getCheckingModel().clearChecking();
         featureTree.setSelected(featureTypeFilter.getTypeNames());
 
-        // gml:id filter
-        ResourceIdOperator gmlIdFilter = query.getGmlIdFilter();
-        gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
+        // resource id filter
+        ResourceIdOperator resourceIdFilter = query.getResourceIdFilter();
+        resourceIdText.setText(String.join(",", resourceIdFilter.getResourceIds()));
 
         // bbox filter
         KmlTiling spatialFilter = query.getSpatialFilter();
@@ -521,7 +522,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         // GUI specific settings
         KmlExportGuiConfig guiConfig = config.getGuiConfig().getKmlExportGuiConfig();
         tilingPanel.setCollapsed(guiConfig.isCollapseTilingFilter());
-        gmlIdPanel.setCollapsed(guiConfig.isCollapseAttributeFilter());
+        resourceIdPanel.setCollapsed(guiConfig.isCollapseAttributeFilter());
         bboxPanel.setCollapsed(guiConfig.isCollapseBoundingBoxFilter());
         featureFilterPanel.setCollapsed(guiConfig.isCollapseFeatureTypeFilter());
     }
@@ -537,7 +538,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         // filter
         SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
 
-        query.setUseGmlIdFilter(useGmlIdFilter.isSelected());
+        query.setUseResourceIdFilter(useResourceIdFilter.isSelected());
         query.setUseBboxFilter(useBboxFilter.isSelected());
         query.setUseTypeNames(useFeatureFilter.isSelected());
 
@@ -546,12 +547,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         featureTypeFilter.reset();
         featureTypeFilter.setTypeNames(featureTree.getSelectedTypeNames());
 
-        // gml:id filter
-        ResourceIdOperator gmlIdFilter = query.getGmlIdFilter();
-        gmlIdFilter.reset();
-        if (gmlIdText.getText().trim().length() > 0) {
-            String trimmed = gmlIdText.getText().replaceAll("\\s+", "");
-            gmlIdFilter.setResourceIds(Util.string2string(trimmed, ","));
+        // resource id filter
+        ResourceIdOperator resourceIdFilter = query.getResourceIdFilter();
+        resourceIdFilter.reset();
+        if (resourceIdText.getText().trim().length() > 0) {
+            String trimmed = resourceIdText.getText().replaceAll("\\s+", "");
+            resourceIdFilter.setResourceIds(Util.string2string(trimmed, ","));
         }
 
         // bbox filter
@@ -638,7 +639,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         // GUI specific settings
         KmlExportGuiConfig guiConfig = config.getGuiConfig().getKmlExportGuiConfig();
         guiConfig.setCollapseTilingFilter(tilingPanel.isCollapsed());
-        guiConfig.setCollapseAttributeFilter(gmlIdPanel.isCollapsed());
+        guiConfig.setCollapseAttributeFilter(resourceIdPanel.isCollapsed());
         guiConfig.setCollapseBoundingBoxFilter(bboxPanel.isCollapsed());
         guiConfig.setCollapseFeatureTypeFilter(featureFilterPanel.isCollapsed());
     }
@@ -653,7 +654,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
         browseButton.addActionListener(e -> saveFile());
 
-        useGmlIdFilter.addItemListener(e -> setFilterEnabledValues());
+        useResourceIdFilter.addItemListener(e -> setFilterEnabledValues());
         useBboxFilter.addItemListener(e -> setFilterEnabledValues());
         useTilingFilter.addItemListener(e -> setFilterEnabledValues());
         useFeatureFilter.addItemListener(e -> setEnabledFeatureFilter());
@@ -690,11 +691,11 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 return;
             }
 
-            // gmlId
-            if (query.isUseGmlIdFilter()
-                    && !query.getGmlIdFilter().isSetResourceIds()) {
+            // resource id
+            if (query.isUseResourceIdFilter()
+                    && !query.getResourceIdFilter().isSetResourceIds()) {
                 viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-                        Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
+                        Language.I18N.getString("common.dialog.error.incorrectData.id"));
                 return;
             }
 
@@ -841,8 +842,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     }
 
     private void setFilterEnabledValues() {
-        gmlIdLabel.setEnabled(useGmlIdFilter.isSelected());
-        gmlIdText.setEnabled(useGmlIdFilter.isSelected());
+        resourceIdLabel.setEnabled(useResourceIdFilter.isSelected());
+        resourceIdText.setEnabled(useResourceIdFilter.isSelected());
         bboxComponent.setEnabled(useBboxFilter.isSelected());
 
         automaticTilingRadioButton.setEnabled(useTilingFilter.isSelected());

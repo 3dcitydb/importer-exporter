@@ -31,27 +31,28 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ResourcesType", propOrder = {
-        "gmlIdCache",
+        "idCache",
         "threadPool"
 })
 public class Resources {
     @XmlElement(required = true)
-    private UIDCache gmlIdCache;
+    private IdCache idCache;
     @XmlElement(required = true)
     private ThreadPool threadPool;
 
     public Resources() {
-        gmlIdCache = new UIDCache();
+        idCache = new IdCache();
         threadPool = new ThreadPool();
     }
 
-    public UIDCache getGmlIdCache() {
-        return gmlIdCache;
+    public IdCache getIdCache() {
+        return idCache;
     }
 
-    public void setGmlIdCache(UIDCache gmlIdCache) {
-        if (gmlIdCache != null)
-            this.gmlIdCache = gmlIdCache;
+    public void setIdCache(IdCache idCache) {
+        if (idCache != null) {
+            this.idCache = idCache;
+        }
     }
 
     public ThreadPool getThreadPool() {
@@ -59,8 +60,9 @@ public class Resources {
     }
 
     public void setThreadPool(ThreadPool threadPool) {
-        if (threadPool != null)
+        if (threadPool != null) {
             this.threadPool = threadPool;
+        }
     }
 
 }

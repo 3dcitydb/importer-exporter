@@ -28,34 +28,28 @@
 
 package org.citydb.config.project.exporter;
 
+import org.citydb.config.project.common.XSLTransformation;
+
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-@XmlType(name = "CityGMLOptionsType", propOrder = {
-        "fileEncoding",
-        "writeProductHeader",
-        "gmlEnvelope",
-        "namespaces"
-})
+@XmlType(name = "CityGMLExportOptionsType", propOrder = {})
 public class CityGMLOptions {
-    private String fileEncoding;
     private Boolean writeProductHeader;
-    private GMLEnvelope gmlEnvelope;
+    @XmlElement(defaultValue = "true")
+    private boolean prettyPrint = true;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private LinkedHashMap<String, Namespace> namespaces;
+    private XLink xlink;
+    private XSLTransformation xslTransformation;
 
     public CityGMLOptions() {
-        gmlEnvelope = new GMLEnvelope();
-    }
-
-    public String getFileEncoding() {
-        return fileEncoding != null ? fileEncoding : "UTF-8";
-    }
-
-    public void setFileEncoding(String fileEncoding) {
-        this.fileEncoding = fileEncoding;
+        xlink = new XLink();
+        xslTransformation = new XSLTransformation();
     }
 
     public boolean isWriteProductHeader() {
@@ -66,12 +60,12 @@ public class CityGMLOptions {
         this.writeProductHeader = writeProductHeader;
     }
 
-    public GMLEnvelope getGMLEnvelope() {
-        return gmlEnvelope;
+    public boolean isPrettyPrint() {
+        return prettyPrint;
     }
 
-    public void setGMLEnvelope(GMLEnvelope gmlEnvelope) {
-        this.gmlEnvelope = gmlEnvelope;
+    public void setPrettyPrint(boolean prettyPrint) {
+        this.prettyPrint = prettyPrint;
     }
 
     public boolean isSetNamespaces() {
@@ -84,5 +78,35 @@ public class CityGMLOptions {
 
     public Map<String, Namespace> getNamespaces() {
         return namespaces;
+    }
+
+    public void setNamespaces(List<Namespace> namespaces) {
+        if (this.namespaces == null) {
+            this.namespaces = new LinkedHashMap<>();
+        }
+
+        namespaces.stream()
+                .filter(Namespace::isSetURI)
+                .forEach(v -> this.namespaces.put(v.getURI(), v));
+    }
+
+    public XLink getXlink() {
+        return xlink;
+    }
+
+    public void setXlink(XLink xlink) {
+        if (xlink != null) {
+            this.xlink = xlink;
+        }
+    }
+
+    public XSLTransformation getXSLTransformation() {
+        return xslTransformation;
+    }
+
+    public void setXSLTransformation(XSLTransformation xslTransformation) {
+        if (xslTransformation != null) {
+            this.xslTransformation = xslTransformation;
+        }
     }
 }

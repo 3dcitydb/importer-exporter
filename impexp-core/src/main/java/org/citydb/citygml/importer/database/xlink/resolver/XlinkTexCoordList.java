@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureCoordList;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociationTarget;
+import org.citydb.citygml.common.xlink.DBXlinkTextureCoordList;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.log.Logger;
 import org.citydb.util.Util;

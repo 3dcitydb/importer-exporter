@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citydb.database.schema.TableEnum;

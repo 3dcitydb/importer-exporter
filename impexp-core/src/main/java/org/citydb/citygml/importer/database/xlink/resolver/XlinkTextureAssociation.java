@@ -27,10 +27,10 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociation;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.cache.IdCacheEntry;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociation;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociationTarget;
 import org.citydb.log.Logger;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -98,7 +98,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 				if (rs.next()) {
 					String worldToTexture = rs.getString("WORLD_TO_TEXTURE");
 					if (!rs.wasNull()) {
-						UIDCacheEntry entry = manager.getGeometryId(xlink.getTargetURI());
+						IdCacheEntry entry = manager.getGeometryId(xlink.getTargetURI());
 						if (entry == null || entry.getId() == -1) {
 							log.error("Failed to resolve XLink reference '" + xlink.getTargetURI() + "'.");
 							continue;

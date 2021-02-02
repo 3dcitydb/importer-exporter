@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum CityGMLVersionType {
     @XmlEnumValue("2.0.0")
-    v2_0_0("v2.0.0 (OGC Encoding Standard)"),
+    v2_0_0("v2.0.0"),
     @XmlEnumValue("1.0.0")
     v1_0_0("v1.0.0");
 

@@ -32,8 +32,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureParam;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.xlink.DBXlinkTextureParam;
 
 public class DBXlinkImporterTextureParam implements DBXlinkImporter {
 	private final DBXlinkImporterManager xlinkImporterManager;

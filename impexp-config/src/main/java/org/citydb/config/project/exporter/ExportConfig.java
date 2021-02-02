@@ -28,11 +28,11 @@
 package org.citydb.config.project.exporter;
 
 import org.citydb.config.project.common.Path;
-import org.citydb.config.project.common.XSLTransformation;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.resources.Resources;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -41,14 +41,14 @@ import javax.xml.bind.annotation.XmlType;
         "query",
         "simpleQuery",
         "path",
+        "generalOptions",
         "continuation",
         "cityObjectGroup",
         "address",
         "appearances",
-        "xlink",
-        "xslTransformation",
         "metadataProvider",
         "cityGMLOptions",
+        "cityJSONOptions",
         "resources"
 })
 public class ExportConfig {
@@ -57,27 +57,28 @@ public class ExportConfig {
     private QueryConfig query;
     private SimpleQuery simpleQuery;
     private Path path;
+    @XmlElement(name = "general")
+    private GeneralOptions generalOptions;
     private Continuation continuation;
     private ExportCityObjectGroup cityObjectGroup;
     private ExportAddress address;
     private ExportAppearance appearances;
-    private XLink xlink;
-    private XSLTransformation xslTransformation;
     private String metadataProvider;
     private CityGMLOptions cityGMLOptions;
+    private CityJSONOptions cityJSONOptions;
     private Resources resources;
 
     public ExportConfig() {
         query = new QueryConfig();
         simpleQuery = new SimpleQuery();
         path = new Path();
+        generalOptions = new GeneralOptions();
         continuation = new Continuation();
         cityObjectGroup = new ExportCityObjectGroup();
         address = new ExportAddress();
         appearances = new ExportAppearance();
-        xlink = new XLink();
-        xslTransformation = new XSLTransformation();
         cityGMLOptions = new CityGMLOptions();
+        cityJSONOptions = new CityJSONOptions();
         resources = new Resources();
     }
 
@@ -94,8 +95,9 @@ public class ExportConfig {
     }
 
     public void setQuery(QueryConfig query) {
-        if (query != null)
+        if (query != null) {
             this.query = query;
+        }
     }
 
     public SimpleQuery getSimpleQuery() {
@@ -103,8 +105,9 @@ public class ExportConfig {
     }
 
     public void setSimpleQuery(SimpleQuery query) {
-        if (query != null)
+        if (query != null) {
             this.simpleQuery = query;
+        }
     }
 
     public Path getPath() {
@@ -112,8 +115,19 @@ public class ExportConfig {
     }
 
     public void setPath(Path path) {
-        if (path != null)
+        if (path != null) {
             this.path = path;
+        }
+    }
+
+    public GeneralOptions getGeneralOptions() {
+        return generalOptions;
+    }
+
+    public void setGeneralOptions(GeneralOptions generalOptions) {
+        if (generalOptions != null) {
+            this.generalOptions = generalOptions;
+        }
     }
 
     public Continuation getContinuation() {
@@ -121,8 +135,9 @@ public class ExportConfig {
     }
 
     public void setContinuation(Continuation continuation) {
-        if (continuation != null)
+        if (continuation != null) {
             this.continuation = continuation;
+        }
     }
 
     public ExportAddress getAddress() {
@@ -130,8 +145,9 @@ public class ExportConfig {
     }
 
     public void setAddress(ExportAddress address) {
-        if (address != null)
+        if (address != null) {
             this.address = address;
+        }
     }
 
     public ExportAppearance getAppearances() {
@@ -139,8 +155,9 @@ public class ExportConfig {
     }
 
     public void setAppearances(ExportAppearance appearances) {
-        if (appearances != null)
+        if (appearances != null) {
             this.appearances = appearances;
+        }
     }
 
     public ExportCityObjectGroup getCityObjectGroup() {
@@ -148,26 +165,9 @@ public class ExportConfig {
     }
 
     public void setCityObjectGroup(ExportCityObjectGroup cityObjectGroup) {
-        if (cityObjectGroup != null)
+        if (cityObjectGroup != null) {
             this.cityObjectGroup = cityObjectGroup;
-    }
-
-    public XLink getXlink() {
-        return xlink;
-    }
-
-    public void setXlink(XLink xlink) {
-        if (xlink != null)
-            this.xlink = xlink;
-    }
-
-    public XSLTransformation getXSLTransformation() {
-        return xslTransformation;
-    }
-
-    public void setXSLTransformation(XSLTransformation xslTransformation) {
-        if (xslTransformation != null)
-            this.xslTransformation = xslTransformation;
+        }
     }
 
     public boolean isSetMetadataProvider() {
@@ -187,8 +187,19 @@ public class ExportConfig {
     }
 
     public void setCityGMLOptions(CityGMLOptions cityGMLOptions) {
-        if (cityGMLOptions != null)
+        if (cityGMLOptions != null) {
             this.cityGMLOptions = cityGMLOptions;
+        }
+    }
+
+    public CityJSONOptions getCityJSONOptions() {
+        return cityJSONOptions;
+    }
+
+    public void setCityJSONOptions(CityJSONOptions cityJSONOptions) {
+        if (cityJSONOptions != null) {
+            this.cityJSONOptions = cityJSONOptions;
+        }
     }
 
     public Resources getResources() {
@@ -196,8 +207,9 @@ public class ExportConfig {
     }
 
     public void setResources(Resources system) {
-        if (system != null)
+        if (system != null) {
             this.resources = system;
+        }
     }
 
 }

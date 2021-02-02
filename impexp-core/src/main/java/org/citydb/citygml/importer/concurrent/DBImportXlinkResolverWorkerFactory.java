@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.concurrent.WorkerPool;
@@ -52,7 +52,7 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 	private final boolean isManagedTransaction;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
-	private final UIDCacheManager uidCacheManager;
+	private final IdCacheManager idCacheManager;
 	private final CacheTableManager cacheTableManager;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -62,7 +62,7 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<DBXlink> tmpXlinkPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
 			Config config,
 			EventDispatcher eventDispatcher) {
@@ -71,7 +71,7 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 		this.isManagedTransaction = isManagedTransaction;
 		this.databaseAdapter = databaseAdapter;
 		this.tmpXlinkPool = tmpXlinkPool;
-		this.uidCacheManager = uidCacheManager;
+		this.idCacheManager = idCacheManager;
 		this.cacheTableManager = cacheTableManager;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -79,23 +79,23 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 
 	public DBImportXlinkResolverWorkerFactory(InputFile inputFile,
 			WorkerPool<DBXlink> tmpXlinkPool,
-			UIDCacheManager uidCacheManager, 
+			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
 		this(inputFile, DatabaseConnectionPool.getInstance(), false, DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter(),
-				tmpXlinkPool, uidCacheManager, cacheTableManager, config, eventDispatcher);
+				tmpXlinkPool, idCacheManager, cacheTableManager, config, eventDispatcher);
 	}
 	
 	public DBImportXlinkResolverWorkerFactory(InputFile inputFile,
 			ConnectionManager connectionManager,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<DBXlink> tmpXlinkPool, 
-			UIDCacheManager uidCacheManager, 
+			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
-		this(inputFile, connectionManager, true, databaseAdapter, tmpXlinkPool, uidCacheManager, cacheTableManager, config, eventDispatcher);
+		this(inputFile, connectionManager, true, databaseAdapter, tmpXlinkPool, idCacheManager, cacheTableManager, config, eventDispatcher);
 	}
 
 	@Override
@@ -109,7 +109,7 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 			}
 
 			dbWorker = new DBImportXlinkResolverWorker(inputFile, connection, isManagedTransaction, databaseAdapter,
-					tmpXlinkPool, uidCacheManager, cacheTableManager, config, eventDispatcher);
+					tmpXlinkPool, idCacheManager, cacheTableManager, config, eventDispatcher);
 		} catch (SQLException e) {
 			log.error("Failed to create XLink resolver worker.", e);
 		}

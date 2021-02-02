@@ -57,6 +57,7 @@ import java.util.List;
         "exportGuiConfig",
         "kmlExportGuiConfig",
         "preferencesGuiConfig",
+        "showCityJSONTilingWarning",
         "recentlyUsedProjects"
 })
 public class GuiConfig {
@@ -74,6 +75,7 @@ public class GuiConfig {
     private KmlExportGuiConfig kmlExportGuiConfig;
     @XmlElement(name = "preferences")
     private PreferencesGuiConfig preferencesGuiConfig;
+    private boolean showCityJSONTilingWarning = true;
     @XmlElementWrapper(name = "recentlyUsedProjects")
     @XmlElement(name = "fileName")
     private List<String> recentlyUsedProjects;
@@ -182,6 +184,14 @@ public class GuiConfig {
         if (preferencesGuiConfig != null) {
             this.preferencesGuiConfig = preferencesGuiConfig;
         }
+    }
+
+    public boolean isShowCityJSONTilingWarning() {
+        return showCityJSONTilingWarning;
+    }
+
+    public void setShowCityJSONTilingWarning(boolean showCityJSONTilingWarning) {
+        this.showCityJSONTilingWarning = showCityJSONTilingWarning;
     }
 
     public List<String> getRecentlyUsedConfigFiles() {

@@ -27,10 +27,10 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModel;
-import org.citydb.citygml.common.database.uid.UIDCache;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.IdCache;
+import org.citydb.citygml.common.cache.model.CacheTableModel;
 import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
@@ -93,7 +93,7 @@ public class DBSplitter {
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
 	private final Query query;
 	private final FeatureWriter writer;
-	private final UIDCache featureGmlIdCache;
+	private final IdCache featureGmlIdCache;
 	private final CacheTableManager cacheTableManager;
 	private final InternalConfig internalConfig;
 	private final Config config;
@@ -115,7 +115,7 @@ public class DBSplitter {
 			SchemaMapping schemaMapping,
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			Query query,
-			UIDCache featureGmlIdCache,
+			IdCache featureGmlIdCache,
 			CacheTableManager cacheTableManager,
 			EventDispatcher eventDispatcher,
 			InternalConfig internalConfig,
@@ -134,7 +134,7 @@ public class DBSplitter {
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 		connection.setAutoCommit(false);
 		schema = databaseAdapter.getConnectionDetails().getSchema();
-		calculateExtent = config.getExportConfig().getCityGMLOptions().getGMLEnvelope().isUseEnvelopeOnCityModel();
+		calculateExtent = config.getExportConfig().getGeneralOptions().getEnvelope().isUseEnvelopeOnCityModel();
 
 		// create temporary table for global appearances if needed
 		if (internalConfig.isExportGlobalAppearances()) {
@@ -271,7 +271,7 @@ public class DBSplitter {
 						double[] coordinates = extent.getCoordinates(0);
 
 						if (query.isSetTiling() &&
-								config.getExportConfig().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
+								config.getExportConfig().getGeneralOptions().getEnvelope().isUseTileExtentForCityModel()) {
 							BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
 							coordinates[0] = tileExtent.getLowerCorner().getX();
 							coordinates[1] = tileExtent.getLowerCorner().getY();
@@ -317,7 +317,7 @@ public class DBSplitter {
 
 				if (calculateExtent
 						&& query.isSetTiling()
-						&& config.getExportConfig().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
+						&& config.getExportConfig().getGeneralOptions().getEnvelope().isUseTileExtentForCityModel()) {
 					BoundingBox extent = new BoundingBox(query.getTiling().getActiveTile().getExtent());
 					int srid = extent.isSetSrs() ?
 							extent.getSrs().getSrid() :

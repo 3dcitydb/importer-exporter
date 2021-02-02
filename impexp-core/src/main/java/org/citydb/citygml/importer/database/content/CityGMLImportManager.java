@@ -33,13 +33,13 @@ import org.citydb.ade.importer.ADEImportManager;
 import org.citydb.ade.importer.ADEPropertyCollection;
 import org.citydb.ade.importer.CityGMLImportHelper;
 import org.citydb.ade.importer.ForeignKeys;
-import org.citydb.citygml.common.database.uid.UIDCache;
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.uid.UIDCacheType;
-import org.citydb.citygml.common.database.xlink.DBXlink;
-import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.citygml.common.cache.IdCache;
+import org.citydb.citygml.common.cache.IdCacheEntry;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.cache.IdCacheType;
+import org.citydb.citygml.common.xlink.DBXlink;
+import org.citydb.citygml.common.xlink.DBXlinkBasic;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.database.SequenceHelper;
 import org.citydb.citygml.importer.database.TableHelper;
@@ -142,7 +142,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private final ADEExtensionManager adeManager;
 	private final CityGMLBuilder cityGMLBuilder;
 	private final WorkerPool<DBXlink> xlinkPool;
-	private final UIDCacheManager uidCacheManager;
+	private final IdCacheManager idCacheManager;
 	private final InternalConfig internalConfig;
 	private final Config config;
 
@@ -169,7 +169,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			AffineTransformer affineTransformer,
 			InternalConfig internalConfig,
 			Config config) throws SQLException {
@@ -178,7 +178,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		this.schemaMapping = schemaMapping;
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.xlinkPool = xlinkPool;
-		this.uidCacheManager = uidCacheManager;
+		this.idCacheManager = idCacheManager;
 		this.internalConfig = internalConfig;
 		this.config = config;
 
@@ -202,7 +202,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		if (config.getImportConfig().getAffineTransformation().isEnabled())
 			this.affineTransformer = affineTransformer;
 
-		if (config.getImportConfig().getAddress().isSetImportXAL()) {
+		if (config.getImportConfig().getCityGMLOptions().isImportXalAddress()) {
 			cityGMLVersion = CityGMLVersion.DEFAULT;
 			jaxbMarshaller = cityGMLBuilder.createJAXBMarshaller(cityGMLVersion);
 			saxWriter = new SAXWriter();
@@ -540,7 +540,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	public String generateNewGmlId() {
-		return DefaultGMLIdManager.getInstance().generateUUID(config.getImportConfig().getGmlId().getIdPrefix());
+		return DefaultGMLIdManager.getInstance().generateUUID(config.getImportConfig().getResourceId().getIdPrefix());
 	}
 
 	public LocalAppearanceHandler getLocalAppearanceHandler() {
@@ -609,18 +609,18 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		return tmp;
 	}
 
-	public void putObjectUID(String gmlId, long id, String mapping, int objectClassId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
+	public void putObjectId(String gmlId, long id, String mapping, int objectClassId) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		if (cache != null)
 			cache.put(gmlId, id, -1, false, mapping, objectClassId);
 	}
 
-	public void putObjectUID(String gmlId, long id, int objectClassId) {
-		putObjectUID(gmlId, id, null, objectClassId);
+	public void putObjectId(String gmlId, long id, int objectClassId) {
+		putObjectId(gmlId, id, null, objectClassId);
 	}
 
-	protected boolean lookupAndPutObjectUID(String gmlId, long id, int objectClassId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
+	protected boolean lookupAndPutObjectId(String gmlId, long id, int objectClassId) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		if (cache != null)
 			return cache.lookupAndPut(gmlId, id, objectClassId);
 		else
@@ -628,9 +628,9 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	public long getObjectId(String gmlId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
+		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		if (cache != null) {
-			UIDCacheEntry entry = cache.get(gmlId);
+			IdCacheEntry entry = cache.get(gmlId);
 			if (entry != null)
 				return entry.getId();
 		}
@@ -638,17 +638,17 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		return -1;
 	}
 
-	public void putTextureImageUID(String gmlId, long id) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.TEXTURE_IMAGE);
+	public void putTextureImageId(String resourceId, long id) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.TEXTURE_IMAGE);
 		if (cache != null)
-			cache.put(gmlId, id, -1, false, null, 0);
+			cache.put(resourceId, id, -1, false, null, 0);
 	}
 
-	public long getTextureImageId(String gmlId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.TEXTURE_IMAGE);
+	public long getTextureImageId(String resourceId) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.TEXTURE_IMAGE);
 
 		if (cache != null) {
-			UIDCacheEntry entry = cache.get(gmlId);
+			IdCacheEntry entry = cache.get(resourceId);
 			if (entry != null)
 				return entry.getId();
 		}
@@ -656,17 +656,17 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		return -1;
 	}
 
-	public void putGeometryUID(String gmlId, long id, long rootId, boolean reverse, String mapping) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
+	public void putGeometryId(String gmlId, long id, long rootId, boolean reverse, String mapping) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.GEOMETRY);
 		if (cache != null)
 			cache.put(gmlId, id, rootId, reverse, mapping, 0);
 	}
 
 	public long getGeometryIdFromMemory(String gmlId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
+		IdCache cache = idCacheManager.getCache(IdCacheType.GEOMETRY);
 
 		if (cache != null) {
-			UIDCacheEntry entry = cache.getFromMemory(gmlId);
+			IdCacheEntry entry = cache.getFromMemory(gmlId);
 			if (entry != null)
 				return entry.getId();
 		}

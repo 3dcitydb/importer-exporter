@@ -120,7 +120,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 	public FilterPanel(ViewController viewController, Config config) {
 		this.config = config;
 
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);		
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);
 		initGui(viewController);
 	}
 
@@ -612,6 +612,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 	public void handleEvent(Event event) throws Exception {
 		PropertyChangeEvent e = (PropertyChangeEvent)event;
 		if (e.getPropertyName().equals("citygml.version"))
-			featureTree.updateCityGMLVersion((CityGMLVersion)e.getNewValue(), useFeatureFilter.isSelected());
+			featureTree.updateCityGMLVersion((CityGMLVersion) e.getNewValue(), useFeatureFilter.isSelected());
 	}
 }

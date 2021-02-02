@@ -219,12 +219,12 @@ public class ConfigQueryBuilder {
 			SimpleAttributeFilter attributeFilter = queryConfig.getAttributeFilter();
 
 			// gml:id filter
-			if (attributeFilter.isSetGmlIdFilter() && attributeFilter.getGmlIdFilter().isSetResourceIds())
-				predicates.add(predicateBuilder.buildPredicate(attributeFilter.getGmlIdFilter()));
+			if (attributeFilter.isSetResourceIdFilter() && attributeFilter.getResourceIdFilter().isSetResourceIds())
+				predicates.add(predicateBuilder.buildPredicate(attributeFilter.getResourceIdFilter()));
 
 			// gml:name filter
-			if (attributeFilter.isSetGmlNameFilter() && attributeFilter.getGmlNameFilter().isSetLiteral()) {
-				LikeOperator gmlNameFilter = attributeFilter.getGmlNameFilter();
+			if (attributeFilter.isSetNameFilter() && attributeFilter.getNameFilter().isSetLiteral()) {
+				LikeOperator gmlNameFilter = attributeFilter.getNameFilter();
 				gmlNameFilter.setValueReference("gml:name");
 				predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
 			}
@@ -318,8 +318,8 @@ public class ConfigQueryBuilder {
 		}
 
 		// gml:id filter
-		if (queryConfig.isUseGmlIdFilter() && queryConfig.isSetGmlIdFilter() && queryConfig.getGmlIdFilter().isSetResourceIds()) {
-			query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getGmlIdFilter())));
+		if (queryConfig.isUseResourceIdFilter() && queryConfig.isSetResourceIdFilter() && queryConfig.getResourceIdFilter().isSetResourceIds()) {
+			query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getResourceIdFilter())));
 		}
 
 		KmlTiling spatialFilter = queryConfig.getSpatialFilter();

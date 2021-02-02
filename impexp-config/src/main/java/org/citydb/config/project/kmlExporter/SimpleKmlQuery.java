@@ -36,27 +36,27 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "SimpleKmlExportQueryType", propOrder = {
         "featureTypeFilter",
-        "gmlIdFilter",
+        "resourceIdFilter",
         "spatialFilter"
 })
 public class SimpleKmlQuery {
     @XmlAttribute
     private boolean useTypeNames;
     @XmlAttribute
-    private boolean useGmlIdFilter;
+    private boolean useResourceIdFilter;
     @XmlAttribute
     private boolean useBboxFilter;
 
     @XmlElement(name = "typeNames")
     protected FeatureTypeFilter featureTypeFilter;
-    @XmlElement(name = "gmlIds")
-    private ResourceIdOperator gmlIdFilter;
+    @XmlElement(name = "resourceIds")
+    private ResourceIdOperator resourceIdFilter;
     @XmlElement(name = "bbox", required = true)
     private KmlTiling spatialFilter;
 
     public SimpleKmlQuery() {
         featureTypeFilter = new FeatureTypeFilter();
-        gmlIdFilter = new ResourceIdOperator();
+        resourceIdFilter = new ResourceIdOperator();
         spatialFilter = new KmlTiling();
     }
 
@@ -80,24 +80,24 @@ public class SimpleKmlQuery {
         this.featureTypeFilter = featureTypeFilter;
     }
 
-    public boolean isUseGmlIdFilter() {
-        return useGmlIdFilter;
+    public boolean isUseResourceIdFilter() {
+        return useResourceIdFilter;
     }
 
-    public void setUseGmlIdFilter(boolean useGmlIdFilter) {
-        this.useGmlIdFilter = useGmlIdFilter;
+    public void setUseResourceIdFilter(boolean useResourceIdFilter) {
+        this.useResourceIdFilter = useResourceIdFilter;
     }
 
-    public ResourceIdOperator getGmlIdFilter() {
-        return gmlIdFilter;
+    public ResourceIdOperator getResourceIdFilter() {
+        return resourceIdFilter;
     }
 
-    public boolean isSetGmlIdFilter() {
-        return gmlIdFilter != null;
+    public boolean isSetResourceIdFilter() {
+        return resourceIdFilter != null;
     }
 
-    public void setGmlIdFilter(ResourceIdOperator gmlIdFilter) {
-        this.gmlIdFilter = gmlIdFilter;
+    public void setResourceIdFilter(ResourceIdOperator resourceIdFilter) {
+        this.resourceIdFilter = resourceIdFilter;
     }
 
     public boolean isUseBboxFilter() {

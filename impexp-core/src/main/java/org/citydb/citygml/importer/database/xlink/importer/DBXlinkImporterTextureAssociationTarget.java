@@ -30,8 +30,8 @@ package org.citydb.citygml.importer.database.xlink.importer;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociationTarget;
 
 public class DBXlinkImporterTextureAssociationTarget implements DBXlinkImporter {
 	private final DBXlinkImporterManager xlinkImporterManager;
