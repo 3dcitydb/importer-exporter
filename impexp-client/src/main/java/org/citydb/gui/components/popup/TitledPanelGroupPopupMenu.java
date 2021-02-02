@@ -87,10 +87,15 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 	public void prepare() {
 		if (titledPanel.isCollapsible()) {
 			expand.setVisible(titledPanel.isCollapsed());
-			expandAll.setVisible(Arrays.stream(group).filter(TitledPanel::isCollapsible).anyMatch(TitledPanel::isCollapsed));
 			collapse.setVisible(!titledPanel.isCollapsed());
-			collapseAll.setVisible(Arrays.stream(group).filter(TitledPanel::isCollapsible).anyMatch(p -> !p.isCollapsed()));
-			separator.setVisible((expand.isVisible() || expandAll.isVisible()) && (collapse.isVisible() || collapseAll.isVisible()));
+
+			expandAll.setVisible(Arrays.stream(group)
+					.anyMatch(p -> p != titledPanel && p.isCollapsible() && p.isCollapsed()));
+			collapseAll.setVisible(Arrays.stream(group)
+					.anyMatch(p -> p != titledPanel && p.isCollapsible() && !p.isCollapsed()));
+
+			separator.setVisible((expand.isVisible() || expandAll.isVisible())
+					&& (collapse.isVisible() || collapseAll.isVisible()));
 		}
 	}
 
