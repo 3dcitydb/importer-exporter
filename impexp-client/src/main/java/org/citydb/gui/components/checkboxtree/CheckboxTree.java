@@ -363,7 +363,7 @@ public class CheckboxTree extends JTree {
      */
     @Override
     protected void processMouseEvent(MouseEvent e) {
-        if (e.getID() == MouseEvent.MOUSE_PRESSED) {
+        if (SwingUtilities.isLeftMouseButton(e) && e.getID() == MouseEvent.MOUSE_PRESSED) {
             // we use mousePressed instead of mouseClicked for performance
             if (!e.isConsumed() && this.isEnabled()) {
                 int x = e.getX();
