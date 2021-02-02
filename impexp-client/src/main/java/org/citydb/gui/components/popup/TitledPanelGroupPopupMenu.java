@@ -43,6 +43,11 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 	private JMenuItem collapse;
 	private JMenuItem collapseAll;
 	private Separator separator;
+	private JMenuItem selectOthers;
+	private JMenuItem deselectOthers;
+	private JMenuItem selectAll;
+	private JMenuItem deselectAll;
+	private JMenuItem invert;
 
 	private TitledPanel titledPanel;
 	private TitledPanel[] group;
@@ -72,6 +77,38 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 			add(separator);
 			add(collapse);
 			add(collapseAll);
+
+			if (titledPanel.hasToggleButton()) {
+				addSeparator();
+			}
+		}
+
+		if (titledPanel.hasToggleButton()) {
+			selectOthers = new JMenuItem();
+			deselectOthers = new JMenuItem();
+			selectAll = new JMenuItem();
+			deselectAll = new JMenuItem();
+			invert = new JMenuItem();
+
+			selectOthers.addActionListener(e -> setSelected(group, index, true));
+			deselectOthers.addActionListener(e -> setSelected(group, index, false));
+			selectAll.addActionListener(e -> setSelected(group, true));
+			deselectAll.addActionListener(e -> setSelected(group, false));
+
+			invert.addActionListener(e -> {
+				for (TitledPanel panel : group) {
+					if (panel.hasToggleButton()) {
+						panel.getToggleButton().setSelected(!panel.getToggleButton().isSelected());
+					}
+				}
+			});
+
+			add(selectOthers);
+			add(deselectOthers);
+			addSeparator();
+			add(selectAll);
+			add(deselectAll);
+			add(invert);
 		}
 	}
 
@@ -94,6 +131,24 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 		}
 	}
 
+	private void setSelected(TitledPanel[] group, int index, boolean selected) {
+		for (int i = 0; i < group.length; i++) {
+			if (i == index || !group[i].hasToggleButton()) {
+				continue;
+			}
+
+			group[i].getToggleButton().setSelected(selected);
+		}
+	}
+
+	private void setSelected(TitledPanel[] group, boolean selected) {
+		for (TitledPanel titledPanel : group) {
+			if (titledPanel.hasToggleButton()) {
+				titledPanel.getToggleButton().setSelected(selected);
+			}
+		}
+	}
+
 	@Override
 	public void doTranslation() {
 		if (titledPanel.isCollapsible()) {
@@ -101,6 +156,14 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 			expandAll.setText(Language.I18N.getString("common.popup.expandAll"));
 			collapse.setText(Language.I18N.getString("common.popup.collapse"));
 			collapseAll.setText(Language.I18N.getString("common.popup.collapseAll"));
+		}
+
+		if (titledPanel.hasToggleButton()) {
+			selectOthers.setText(Language.I18N.getString("common.popup.checkbox.selectOthers"));
+			deselectOthers.setText(Language.I18N.getString("common.popup.checkbox.deselectOthers"));
+			selectAll.setText(Language.I18N.getString("common.popup.checkbox.selectAll"));
+			deselectAll.setText(Language.I18N.getString("common.popup.checkbox.deselectAll"));
+			invert.setText(Language.I18N.getString("common.popup.checkbox.invert"));
 		}
 	}
 
