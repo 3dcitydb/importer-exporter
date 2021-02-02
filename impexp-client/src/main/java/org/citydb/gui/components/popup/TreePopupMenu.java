@@ -42,7 +42,6 @@ public class TreePopupMenu extends AbstractPopupMenu implements EventHandler {
 	private JMenuItem expandAll;
 	private JMenuItem collapse;
 	private JMenuItem collapseAll;
-	private Separator separator;
 
 	private JTree tree;
 	private TreePath path;
@@ -56,7 +55,6 @@ public class TreePopupMenu extends AbstractPopupMenu implements EventHandler {
 		expandAll = new JMenuItem();		
 		collapse = new JMenuItem();
 		collapseAll = new JMenuItem();
-		separator = new Separator();
 
 		expand.addActionListener(e -> {
 			if (path != null) {
@@ -84,7 +82,7 @@ public class TreePopupMenu extends AbstractPopupMenu implements EventHandler {
 
 		add(expand);
 		add(expandAll);
-		add(separator);
+		addSeparator();
 		add(collapse);
 		add(collapseAll);
 	}
@@ -99,10 +97,9 @@ public class TreePopupMenu extends AbstractPopupMenu implements EventHandler {
 		boolean isLeaf = node.isLeaf();
 
 		expand.setVisible(isLeaf || isCollapsed);
-		expandAll.setVisible(!isLeaf && hasNestedChildren && (isCollapsed || showAll(path, path, true)));
+		expandAll.setEnabled(!isLeaf && hasNestedChildren && (isCollapsed || showAll(path, path, true)));
 		collapse.setVisible(!isLeaf && !isCollapsed);
-		collapseAll.setVisible(!isLeaf && !isCollapsed && hasNestedChildren && showAll(path, path, false));
-		separator.setVisible((expand.isVisible() || expandAll.isVisible()) && (collapse.isVisible() || collapseAll.isVisible()));
+		collapseAll.setEnabled(!isLeaf && !isCollapsed && hasNestedChildren && showAll(path, path, false));
 	}
 
 	public void doTranslation() {

@@ -34,6 +34,7 @@ import org.citydb.event.global.EventType;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
+import java.util.Arrays;
 
 public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHandler {
 	private JMenuItem selectOthers;
@@ -41,26 +42,32 @@ public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHa
 	private JMenuItem selectAll;
 	private JMenuItem deselectAll;
 	private JMenuItem invert;
+
+	private JCheckBox checkBox;
+	private JCheckBox[] group;
 	
 	public CheckBoxGroupPopupMenu() {
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
 	}
 	
-	public void init(final int index, final JCheckBox... group) {
+	public void init(JCheckBox checkBox, JCheckBox... group) {
+		this.checkBox = checkBox;
+		this.group = group;
+
 		selectOthers = new JMenuItem();
 		deselectOthers = new JMenuItem();
 		selectAll = new JMenuItem();
 		deselectAll = new JMenuItem();
 		invert = new JMenuItem();
 
-		selectOthers.addActionListener(e -> setSelected(group, index, true));
-		deselectOthers.addActionListener(e -> setSelected(group, index, false));
-		selectAll.addActionListener(e -> setSelected(group, true));
-		deselectAll.addActionListener(e -> setSelected(group, false));
+		selectOthers.addActionListener(e -> setSelected(group, true, true));
+		deselectOthers.addActionListener(e -> setSelected(group, false, true));
+		selectAll.addActionListener(e -> setSelected(group, true, false));
+		deselectAll.addActionListener(e -> setSelected(group, false, false));
 		
 		invert.addActionListener(e -> {
-			for (JCheckBox checkBox : group) {
-				checkBox.setSelected(!checkBox.isSelected());
+			for (JCheckBox member : group) {
+				member.setSelected(!member.isSelected());
 			}
 		});
 		
@@ -72,19 +79,20 @@ public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHa
 		add(invert);
 	}
 
-	private void setSelected(JCheckBox[] group, int index, boolean selected) {
-		for (int i = 0; i < group.length; i++) {
-			if (i == index) {
+	public void prepare() {
+		selectOthers.setEnabled(Arrays.stream(group).anyMatch(c -> c != checkBox && !c.isSelected()));
+		deselectOthers.setEnabled(Arrays.stream(group).anyMatch(c -> c != checkBox && c.isSelected()));
+		selectAll.setEnabled(Arrays.stream(group).anyMatch(c -> !c.isSelected()));
+		deselectAll.setEnabled(Arrays.stream(group).anyMatch(AbstractButton::isSelected));
+	}
+
+	private void setSelected(JCheckBox[] group, boolean selected, boolean skipSelf) {
+		for (JCheckBox member : group) {
+			if (skipSelf && member == checkBox) {
 				continue;
 			}
 
-			group[i].setSelected(selected);
-		}
-	}
-
-	private void setSelected(JCheckBox[] group, boolean selected) {
-		for (JCheckBox checkBox : group) {
-			checkBox.setSelected(selected);
+			member.setSelected(selected);
 		}
 	}
 	

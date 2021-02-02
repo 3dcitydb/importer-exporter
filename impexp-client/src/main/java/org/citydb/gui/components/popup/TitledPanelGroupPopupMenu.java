@@ -42,7 +42,6 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 	private JMenuItem expandAll;
 	private JMenuItem collapse;
 	private JMenuItem collapseAll;
-	private Separator separator;
 	private JMenuItem selectOthers;
 	private JMenuItem deselectOthers;
 	private JMenuItem selectAll;
@@ -56,7 +55,7 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
 	}
 	
-	public void init(final int index, TitledPanel titledPanel, TitledPanel... group) {
+	public void init(TitledPanel titledPanel, TitledPanel... group) {
 		this.titledPanel = titledPanel;
 		this.group = group;
 
@@ -65,7 +64,6 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 			expandAll = new JMenuItem();
 			collapse = new JMenuItem();
 			collapseAll = new JMenuItem();
-			separator = new Separator();
 
 			expand.addActionListener(e -> titledPanel.setCollapsed(false));
 			expandAll.addActionListener(e -> setCollapsed(group, false));
@@ -74,7 +72,7 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 
 			add(expand);
 			add(expandAll);
-			add(separator);
+			addSeparator();
 			add(collapse);
 			add(collapseAll);
 
@@ -90,15 +88,15 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 			deselectAll = new JMenuItem();
 			invert = new JMenuItem();
 
-			selectOthers.addActionListener(e -> setSelected(group, index, true));
-			deselectOthers.addActionListener(e -> setSelected(group, index, false));
-			selectAll.addActionListener(e -> setSelected(group, true));
-			deselectAll.addActionListener(e -> setSelected(group, false));
+			selectOthers.addActionListener(e -> setSelected(group, true, true));
+			deselectOthers.addActionListener(e -> setSelected(group, false, true));
+			selectAll.addActionListener(e -> setSelected(group, true, false));
+			deselectAll.addActionListener(e -> setSelected(group, false, false));
 
 			invert.addActionListener(e -> {
-				for (TitledPanel panel : group) {
-					if (panel.hasToggleButton()) {
-						panel.getToggleButton().setSelected(!panel.getToggleButton().isSelected());
+				for (TitledPanel member : group) {
+					if (member.hasToggleButton()) {
+						member.getToggleButton().setSelected(!member.getToggleButton().isSelected());
 					}
 				}
 			});
@@ -115,13 +113,20 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 	public void prepare() {
 		if (titledPanel.isCollapsible()) {
 			expand.setVisible(titledPanel.isCollapsed());
+			expandAll.setEnabled(Arrays.stream(group).anyMatch(p -> p.isCollapsible() && p.isCollapsed()));
 			collapse.setVisible(!titledPanel.isCollapsed());
-			expandAll.setVisible(Arrays.stream(group)
-					.anyMatch(p -> p != titledPanel && p.isCollapsible() && p.isCollapsed()));
-			collapseAll.setVisible(Arrays.stream(group)
-					.anyMatch(p -> p != titledPanel && p.isCollapsible() && !p.isCollapsed()));
-			separator.setVisible((expand.isVisible() || expandAll.isVisible())
-					&& (collapse.isVisible() || collapseAll.isVisible()));
+			collapseAll.setEnabled(Arrays.stream(group).anyMatch(p -> p.isCollapsible() && !p.isCollapsed()));
+		}
+
+		if (titledPanel.hasToggleButton()) {
+			selectOthers.setEnabled(Arrays.stream(group)
+					.anyMatch(p -> p != titledPanel && p.hasToggleButton() && !p.getToggleButton().isSelected()));
+			deselectOthers.setEnabled(Arrays.stream(group)
+					.anyMatch(p -> p != titledPanel && p.hasToggleButton() && p.getToggleButton().isSelected()));
+			selectAll.setEnabled(Arrays.stream(group)
+					.anyMatch(p -> p.hasToggleButton() && !p.getToggleButton().isSelected()));
+			deselectAll.setEnabled(Arrays.stream(group)
+					.anyMatch(p -> p.hasToggleButton() && p.getToggleButton().isSelected()));
 		}
 	}
 
@@ -131,20 +136,14 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 		}
 	}
 
-	private void setSelected(TitledPanel[] group, int index, boolean selected) {
-		for (int i = 0; i < group.length; i++) {
-			if (i == index || !group[i].hasToggleButton()) {
+	private void setSelected(TitledPanel[] group, boolean selected, boolean skipSelf) {
+		for (TitledPanel member : group) {
+			if (skipSelf && member == titledPanel) {
 				continue;
 			}
 
-			group[i].getToggleButton().setSelected(selected);
-		}
-	}
-
-	private void setSelected(TitledPanel[] group, boolean selected) {
-		for (TitledPanel titledPanel : group) {
-			if (titledPanel.hasToggleButton()) {
-				titledPanel.getToggleButton().setSelected(selected);
+			if (member.hasToggleButton()) {
+				member.getToggleButton().setSelected(selected);
 			}
 		}
 	}

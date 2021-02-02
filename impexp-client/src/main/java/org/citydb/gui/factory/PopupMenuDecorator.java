@@ -74,10 +74,13 @@ public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 						return;
 					}
 
-					if (e.getComponent() instanceof JTextComponent) {
-						boolean isEditable = ((JTextComponent) e.getComponent()).isEditable();
-						((EditPopupMenu) popupMenu).prepare(isEditable);
-					} else if (e.getComponent() instanceof JTree) {
+					if (popupMenu instanceof EditPopupMenu && e.getComponent() instanceof JTextComponent) {
+						((EditPopupMenu) popupMenu).prepare(((JTextComponent) e.getComponent()).isEditable());
+					} else if (popupMenu instanceof TitledPanelGroupPopupMenu) {
+						((TitledPanelGroupPopupMenu) popupMenu).prepare();
+					} else if (popupMenu instanceof CheckBoxGroupPopupMenu) {
+						((CheckBoxGroupPopupMenu) popupMenu).prepare();
+					} else if (popupMenu instanceof TreePopupMenu && e.getComponent() instanceof JTree) {
 						Point point = e.getPoint();
 						TreePath path = ((JTree) e.getComponent()).getPathForLocation(point.x, point.y);
 						if (path == null
@@ -87,8 +90,6 @@ public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 						}
 
 						((TreePopupMenu) popupMenu).prepare((JTree) e.getComponent(), path);
-					} else if (popupMenu instanceof TitledPanelGroupPopupMenu) {
-						((TitledPanelGroupPopupMenu) popupMenu).prepare();
 					}
 
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
@@ -160,7 +161,7 @@ public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 		JPopupMenu[] popupMenus = new JPopupMenu[group.length];
 		for (int i = 0; i < group.length; i++) {
 			CheckBoxGroupPopupMenu popupMenu = new CheckBoxGroupPopupMenu();
-			popupMenu.init(i, group);
+			popupMenu.init(group[i], group);
 			popupMenu.doTranslation();
 			decorate(group[i], popupMenu);
 
@@ -182,7 +183,7 @@ public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 		JPopupMenu[] popupMenus = new JPopupMenu[group.length];
 		for (int i = 0; i < group.length; i++) {
 			TitledPanelGroupPopupMenu popupMenu = new TitledPanelGroupPopupMenu();
-			popupMenu.init(i, group[i], group);
+			popupMenu.init(group[i], group);
 			popupMenu.doTranslation();
 			decorate(group[i].getTitleLabel(), popupMenu);
 			if (group[i].hasToggleButton()) {
