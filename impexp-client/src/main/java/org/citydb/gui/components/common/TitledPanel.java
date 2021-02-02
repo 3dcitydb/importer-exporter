@@ -32,6 +32,7 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -156,7 +157,7 @@ public class TitledPanel extends JPanel {
 
         if (toggleButton != null) {
             MouseAdapter adapter = new MouseAdapter() {
-                public void mousePressed(MouseEvent e) {
+                public void mouseClicked(MouseEvent e) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         toggleButton.doClick();
                     }
@@ -182,8 +183,8 @@ public class TitledPanel extends JPanel {
             headerComponent.addMouseListener(adapter);
 
             if (toggleButton != null) {
-                toggleButton.addActionListener(e -> {
-                    if (collapsed && toggleButton.isSelected()) {
+                toggleButton.addItemListener(e -> {
+                    if (collapsed && e.getStateChange() == ItemEvent.SELECTED) {
                         setCollapsed(false);
                     }
                 });

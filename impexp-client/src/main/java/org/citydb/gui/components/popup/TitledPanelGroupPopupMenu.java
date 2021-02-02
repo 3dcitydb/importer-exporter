@@ -63,18 +63,9 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 			separator = new Separator();
 
 			expand.addActionListener(e -> titledPanel.setCollapsed(false));
-			expandAll.addActionListener(e -> {
-				for (TitledPanel panel : group) {
-					panel.setCollapsed(false);
-				}
-			});
-
+			expandAll.addActionListener(e -> setCollapsed(group, false));
 			collapse.addActionListener(e -> titledPanel.setCollapsed(true));
-			collapseAll.addActionListener(e -> {
-				for (TitledPanel panel : group) {
-					panel.setCollapsed(true);
-				}
-			});
+			collapseAll.addActionListener(e -> setCollapsed(group, true));
 
 			add(expand);
 			add(expandAll);
@@ -88,24 +79,28 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 		if (titledPanel.isCollapsible()) {
 			expand.setVisible(titledPanel.isCollapsed());
 			collapse.setVisible(!titledPanel.isCollapsed());
-
 			expandAll.setVisible(Arrays.stream(group)
 					.anyMatch(p -> p != titledPanel && p.isCollapsible() && p.isCollapsed()));
 			collapseAll.setVisible(Arrays.stream(group)
 					.anyMatch(p -> p != titledPanel && p.isCollapsible() && !p.isCollapsed()));
-
 			separator.setVisible((expand.isVisible() || expandAll.isVisible())
 					&& (collapse.isVisible() || collapseAll.isVisible()));
+		}
+	}
+
+	private void setCollapsed(TitledPanel[] group, boolean collapsed) {
+		for (TitledPanel panel : group) {
+			panel.setCollapsed(collapsed);
 		}
 	}
 
 	@Override
 	public void doTranslation() {
 		if (titledPanel.isCollapsible()) {
-			expand.setText(Language.I18N.getString("pref.popup.expand"));
-			expandAll.setText(Language.I18N.getString("pref.popup.expandAll"));
-			collapse.setText(Language.I18N.getString("pref.popup.collapse"));
-			collapseAll.setText(Language.I18N.getString("pref.popup.collapseAll"));
+			expand.setText(Language.I18N.getString("common.popup.expand"));
+			expandAll.setText(Language.I18N.getString("common.popup.expandAll"));
+			collapse.setText(Language.I18N.getString("common.popup.collapse"));
+			collapseAll.setText(Language.I18N.getString("common.popup.collapseAll"));
 		}
 	}
 

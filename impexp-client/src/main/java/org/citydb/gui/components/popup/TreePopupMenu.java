@@ -106,10 +106,10 @@ public class TreePopupMenu extends AbstractPopupMenu implements EventHandler {
 	}
 
 	public void doTranslation() {
-		expand.setText(Language.I18N.getString("pref.popup.expand"));		
-		expandAll.setText(Language.I18N.getString("pref.popup.expandAll"));		
-		collapse.setText(Language.I18N.getString("pref.popup.collapse"));		
-		collapseAll.setText(Language.I18N.getString("pref.popup.collapseAll"));		
+		expand.setText(Language.I18N.getString("common.popup.expand"));
+		expandAll.setText(Language.I18N.getString("common.popup.expandAll"));
+		collapse.setText(Language.I18N.getString("common.popup.collapse"));
+		collapseAll.setText(Language.I18N.getString("common.popup.collapseAll"));
 	}
 
 	private void performActionOnNodes(TreePath parent, boolean expand, boolean recursive) {

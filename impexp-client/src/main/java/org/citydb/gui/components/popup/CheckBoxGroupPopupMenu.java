@@ -53,41 +53,14 @@ public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHa
 		deselectAll = new JMenuItem();
 		invert = new JMenuItem();
 
-		selectOthers.addActionListener(e -> {
-			for (int i = 0; i < group.length; i++) {
-				if (i == index) {
-					continue;
-				}
-
-				group[i].setSelected(true);
-			}
-		});
-		
-		deselectOthers.addActionListener(e -> {
-			for (int i = 0; i < group.length; i++) {
-				if (i == index) {
-					continue;
-				}
-
-				group[i].setSelected(false);
-			}
-		});
-		
-		selectAll.addActionListener(e -> {
-			for (JCheckBox jCheckBox : group) {
-				jCheckBox.setSelected(true);
-			}
-		});
-		
-		deselectAll.addActionListener(e -> {
-			for (JCheckBox jCheckBox : group) {
-				jCheckBox.setSelected(false);
-			}
-		});
+		selectOthers.addActionListener(e -> setSelected(group, index, true));
+		deselectOthers.addActionListener(e -> setSelected(group, index, false));
+		selectAll.addActionListener(e -> setSelected(group, true));
+		deselectAll.addActionListener(e -> setSelected(group, false));
 		
 		invert.addActionListener(e -> {
-			for (JCheckBox jCheckBox : group) {
-				jCheckBox.setSelected(!jCheckBox.isSelected());
+			for (JCheckBox checkBox : group) {
+				checkBox.setSelected(!checkBox.isSelected());
 			}
 		});
 		
@@ -97,6 +70,22 @@ public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHa
 		add(selectAll);
 		add(deselectAll);
 		add(invert);
+	}
+
+	private void setSelected(JCheckBox[] group, int index, boolean selected) {
+		for (int i = 0; i < group.length; i++) {
+			if (i == index) {
+				continue;
+			}
+
+			group[i].setSelected(selected);
+		}
+	}
+
+	private void setSelected(JCheckBox[] group, boolean selected) {
+		for (JCheckBox checkBox : group) {
+			checkBox.setSelected(selected);
+		}
 	}
 	
 	@Override
