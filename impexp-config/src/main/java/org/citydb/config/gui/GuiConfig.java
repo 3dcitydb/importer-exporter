@@ -28,6 +28,11 @@
 package org.citydb.config.gui;
 
 import org.citydb.config.gui.components.SQLExportFilterComponent;
+import org.citydb.config.gui.database.DatabaseGuiConfig;
+import org.citydb.config.gui.exporter.ExportGuiConfig;
+import org.citydb.config.gui.importer.ImportGuiConfig;
+import org.citydb.config.gui.kmlExporter.KmlExportGuiConfig;
+import org.citydb.config.gui.preferences.PreferencesGuiConfig;
 import org.citydb.config.gui.style.Appearance;
 import org.citydb.config.gui.window.ConsoleWindow;
 import org.citydb.config.gui.window.MainWindow;
@@ -47,12 +52,11 @@ import java.util.List;
         "console",
         "map",
         "appearance",
-        "sqlExportFilter",
-        "showPreferencesConfirmDialog",
-        "showOutdatedDatabaseVersionWarning",
-        "showUnsupportedADEWarning",
-        "showKmlExportUnsupportedADEWarning",
-        "showChangeSridWarning",
+        "databaseGuiConfig",
+        "importGuiConfig",
+        "exportGuiConfig",
+        "kmlExportGuiConfig",
+        "preferencesGuiConfig",
         "showCityJSONTilingWarning",
         "recentlyUsedProjects"
 })
@@ -61,12 +65,16 @@ public class GuiConfig {
     private ConsoleWindow console;
     private MapWindow map;
     private Appearance appearance;
-    private SQLExportFilterComponent sqlExportFilter;
-    private boolean showPreferencesConfirmDialog = true;
-    private boolean showOutdatedDatabaseVersionWarning = true;
-    private boolean showUnsupportedADEWarning = true;
-    private boolean showKmlExportUnsupportedADEWarning = true;
-    private boolean showChangeSridWarning = true;
+    @XmlElement(name = "database")
+    private DatabaseGuiConfig databaseGuiConfig;
+    @XmlElement(name = "import")
+    private ImportGuiConfig importGuiConfig;
+    @XmlElement(name = "export")
+    private ExportGuiConfig exportGuiConfig;
+    @XmlElement(name = "kmlExport")
+    private KmlExportGuiConfig kmlExportGuiConfig;
+    @XmlElement(name = "preferences")
+    private PreferencesGuiConfig preferencesGuiConfig;
     private boolean showCityJSONTilingWarning = true;
     @XmlElementWrapper(name = "recentlyUsedProjects")
     @XmlElement(name = "fileName")
@@ -80,7 +88,11 @@ public class GuiConfig {
         console = new ConsoleWindow();
         map = new MapWindow();
         appearance = new Appearance();
-        sqlExportFilter = new SQLExportFilterComponent();
+        databaseGuiConfig = new DatabaseGuiConfig();
+        importGuiConfig = new ImportGuiConfig();
+        exportGuiConfig = new ExportGuiConfig();
+        kmlExportGuiConfig = new KmlExportGuiConfig();
+        preferencesGuiConfig = new PreferencesGuiConfig();
         recentlyUsedProjects = new ArrayList<>(maxLastUsedEntries + 1);
     }
 
@@ -89,8 +101,9 @@ public class GuiConfig {
     }
 
     public void setMainWindow(MainWindow main) {
-        if (main != null)
+        if (main != null) {
             this.main = main;
+        }
     }
 
     public ConsoleWindow getConsoleWindow() {
@@ -98,8 +111,9 @@ public class GuiConfig {
     }
 
     public void setConsoleWindow(ConsoleWindow console) {
-        if (console != null)
+        if (console != null) {
             this.console = console;
+        }
     }
 
     public MapWindow getMapWindow() {
@@ -107,8 +121,9 @@ public class GuiConfig {
     }
 
     public void setMapWindow(MapWindow map) {
-        if (map != null)
+        if (map != null) {
             this.map = map;
+        }
     }
 
     public Appearance getAppearance() {
@@ -121,53 +136,54 @@ public class GuiConfig {
         }
     }
 
-    public void setSQLExportFilterComponent(SQLExportFilterComponent sqlExportFilter) {
-        if (sqlExportFilter != null)
-            this.sqlExportFilter = sqlExportFilter;
+    public DatabaseGuiConfig getDatabaseGuiConfig() {
+        return databaseGuiConfig;
     }
 
-    public SQLExportFilterComponent getSQLExportFilterComponent() {
-        return sqlExportFilter;
+    public void setDatabaseGuiConfig(DatabaseGuiConfig databaseGuiConfig) {
+        if (databaseGuiConfig != null) {
+            this.databaseGuiConfig = databaseGuiConfig;
+        }
     }
 
-    public boolean isShowPreferencesConfirmDialog() {
-        return showPreferencesConfirmDialog;
+    public ImportGuiConfig getImportGuiConfig() {
+        return importGuiConfig;
     }
 
-    public void setShowPreferencesConfirmDialog(boolean showPreferencesConfirmDialog) {
-        this.showPreferencesConfirmDialog = showPreferencesConfirmDialog;
+    public void setImportGuiConfig(ImportGuiConfig importGuiConfig) {
+        if (importGuiConfig != null) {
+            this.importGuiConfig = importGuiConfig;
+        }
     }
 
-    public boolean isShowOutdatedDatabaseVersionWarning() {
-        return showOutdatedDatabaseVersionWarning;
+    public ExportGuiConfig getExportGuiConfig() {
+        return exportGuiConfig;
     }
 
-    public void setShowOutdatedDatabaseVersionWarning(boolean showOutdatedDatabaseVersionWarning) {
-        this.showOutdatedDatabaseVersionWarning = showOutdatedDatabaseVersionWarning;
+    public void setExportGuiConfig(ExportGuiConfig exportGuiConfig) {
+        if (exportGuiConfig != null) {
+            this.exportGuiConfig = exportGuiConfig;
+        }
     }
 
-    public boolean isShowUnsupportedADEWarning() {
-        return showUnsupportedADEWarning;
+    public KmlExportGuiConfig getKmlExportGuiConfig() {
+        return kmlExportGuiConfig;
     }
 
-    public void setShowUnsupportedADEWarning(boolean showUnsupportedADEWarning) {
-        this.showUnsupportedADEWarning = showUnsupportedADEWarning;
+    public void setKmlExportGuiConfig(KmlExportGuiConfig kmlExportGuiConfig) {
+        if (kmlExportGuiConfig != null) {
+            this.kmlExportGuiConfig = kmlExportGuiConfig;
+        }
     }
 
-    public boolean isShowKmlExportUnsupportedADEWarning() {
-        return showKmlExportUnsupportedADEWarning;
+    public PreferencesGuiConfig getPreferencesGuiConfig() {
+        return preferencesGuiConfig;
     }
 
-    public void setShowKmlExportUnsupportedADEWarning(boolean showKmlExportUnsupportedADEWarning) {
-        this.showKmlExportUnsupportedADEWarning = showKmlExportUnsupportedADEWarning;
-    }
-
-    public boolean isShowChangeSridWarning() {
-        return showChangeSridWarning;
-    }
-
-    public void setShowChangeSridWarning(boolean showChangeSridWarning) {
-        this.showChangeSridWarning = showChangeSridWarning;
+    public void setPreferencesGuiConfig(PreferencesGuiConfig preferencesGuiConfig) {
+        if (preferencesGuiConfig != null) {
+            this.preferencesGuiConfig = preferencesGuiConfig;
+        }
     }
 
     public boolean isShowCityJSONTilingWarning() {

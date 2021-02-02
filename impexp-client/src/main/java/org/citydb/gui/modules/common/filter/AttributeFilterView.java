@@ -67,8 +67,8 @@ public class AttributeFilterView extends FilterView {
         lineageText = new JTextField();
 
         // resource id filter
-        component.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 5, 5));
-        component.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 0));
+        component.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+        component.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
 
         // name filter
         component.add(nameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
@@ -124,15 +124,15 @@ public class AttributeFilterView extends FilterView {
         SimpleQuery query = simpleQuerySupplier.get();
 
         // resource id filter
-        ResourceIdOperator resourceIdFilter = query.getSelectionFilter().getResourceIdFilter();
-        resourceIdText.setText(String.join(",", resourceIdFilter.getResourceIds()));
+        ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getResourceIdFilter();
+        resourceIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
 
         // name
-        LikeOperator nameFilter = query.getSelectionFilter().getNameFilter();
-        nameText.setText(nameFilter.getLiteral());
+        LikeOperator gmlNameFilter = query.getAttributeFilter().getNameFilter();
+        nameText.setText(gmlNameFilter.getLiteral());
 
         // citydb:lineage
-        LikeOperator lineageFilter = query.getSelectionFilter().getLineageFilter();
+        LikeOperator lineageFilter = query.getAttributeFilter().getLineageFilter();
         lineageText.setText(lineageFilter.getLiteral());
     }
 
@@ -141,21 +141,21 @@ public class AttributeFilterView extends FilterView {
         SimpleQuery query = simpleQuerySupplier.get();
 
         // resource id filter
-        ResourceIdOperator resourceIdFilter = query.getSelectionFilter().getResourceIdFilter();
-        resourceIdFilter.reset();
+        ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getResourceIdFilter();
+        gmlIdFilter.reset();
         if (!resourceIdText.getText().trim().isEmpty()) {
             String trimmed = resourceIdText.getText().replaceAll("\\s+", "");
-            resourceIdFilter.setResourceIds(Util.string2string(trimmed, ","));
+            gmlIdFilter.setResourceIds(Util.string2string(trimmed, ","));
         }
 
         // name
-        LikeOperator nameFilter = query.getSelectionFilter().getNameFilter();
-        nameFilter.reset();
+        LikeOperator gmlNameFilter = query.getAttributeFilter().getNameFilter();
+        gmlNameFilter.reset();
         if (!nameText.getText().trim().isEmpty())
-            nameFilter.setLiteral(nameText.getText().trim());
+            gmlNameFilter.setLiteral(nameText.getText().trim());
 
         // citydb:lineage
-        LikeOperator lineageFilter = query.getSelectionFilter().getLineageFilter();
+        LikeOperator lineageFilter = query.getAttributeFilter().getLineageFilter();
         lineageFilter.reset();
         if (!lineageText.getText().trim().isEmpty())
             lineageFilter.setLiteral(lineageText.getText().trim());

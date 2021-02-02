@@ -27,9 +27,11 @@
  */
 package org.citydb.gui.modules.kml.view;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.gui.kmlExporter.KmlExportGuiConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.global.LogLevel;
@@ -116,7 +118,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     private JCheckBox useBboxFilter;
     private BoundingBoxPanel bboxComponent;
 
-    private JCheckBox tilingCheckBox;
+    private JCheckBox useTilingFilter;
     private JRadioButton automaticTilingRadioButton;
     private JRadioButton manualTilingRadioButton;
     private JFormattedTextField tileSizeText;
@@ -179,7 +181,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         resourceIdText = new JTextField();
 
         bboxComponent = viewController.getComponentFactory().createBoundingBoxPanel();
-        tilingCheckBox = new JCheckBox();
+        useTilingFilter = new JCheckBox();
         automaticTilingRadioButton = new JRadioButton();
         manualTilingRadioButton = new JRadioButton();
         tileSizeUnit = new JLabel("m");
@@ -307,7 +309,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             tilingContent.add(columnsText, GuiUtil.setConstraints(6, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 
             tilingPanel = new TitledPanel()
-                    .withToggleButton(tilingCheckBox)
+                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/tiling.svg"))
+                    .withToggleButton(useTilingFilter)
+                    .withCollapseButton()
                     .build(tilingContent);
 
             mainPanel.add(tilingPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -319,8 +323,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             resourceIdConent.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
             resourceIdConent.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 
-            resourceIdPanel = new TitledPanel()
+                resourceIdPanel = new TitledPanel()
+                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/attribute.svg"))
                     .withToggleButton(useResourceIdFilter)
+                    .withCollapseButton()
                     .build(resourceIdConent);
 
             mainPanel.add(resourceIdPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -328,7 +334,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         {
             // bbox
             bboxPanel = new TitledPanel()
+                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/bbox.svg"))
                     .withToggleButton(useBboxFilter)
+                    .withCollapseButton()
                     .build(bboxComponent);
 
             mainPanel.add(bboxPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -341,7 +349,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             }
 
             featureFilterPanel = new TitledPanel()
+                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/featureType.svg"))
                     .withToggleButton(useFeatureFilter)
+                    .withCollapseButton()
                     .build(featureTreePanel);
 
             mainPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -364,6 +374,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 featureTree);
         PopupMenuDecorator.getInstance().decorateAndGetCheckBoxGroup(footprintCheckbox, extrudedCheckbox,
                 geometryCheckbox, colladaCheckbox);
+        PopupMenuDecorator.getInstance().decorateTitledPanelGroup(tilingPanel, resourceIdPanel, bboxPanel,
+                featureFilterPanel);
 
         UIManager.addPropertyChangeListener(e -> {
             if ("lookAndFeel".equals(e.getPropertyName())) {
@@ -442,7 +454,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             bboxComponent.setBoundingBox(spatialFilter.getExtent());
 
         // tiling
-        tilingCheckBox.setSelected(spatialFilter.getMode() != KmlTilingMode.NO_TILING);
+        useTilingFilter.setSelected(spatialFilter.getMode() != KmlTilingMode.NO_TILING);
         if (spatialFilter.getMode() == KmlTilingMode.MANUAL) {
             manualTilingRadioButton.setSelected(true);
         } else {
@@ -506,6 +518,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         themeComboBox.setSelectedItem(KmlExportConfig.THEME_NONE);
 
         setFilterEnabledValues();
+
+        // GUI specific settings
+        KmlExportGuiConfig guiConfig = config.getGuiConfig().getKmlExportGuiConfig();
+        tilingPanel.setCollapsed(guiConfig.isCollapseTilingFilter());
+        resourceIdPanel.setCollapsed(guiConfig.isCollapseAttributeFilter());
+        bboxPanel.setCollapsed(guiConfig.isCollapseBoundingBoxFilter());
+        featureFilterPanel.setCollapsed(guiConfig.isCollapseFeatureTypeFilter());
     }
 
     public void setSettings() {
@@ -541,7 +560,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         spatialFilter.setExtent(bboxComponent.getBoundingBox());
 
         // tiling
-        if (tilingCheckBox.isSelected()) {
+        if (useTilingFilter.isSelected()) {
             if (manualTilingRadioButton.isSelected()) {
                 spatialFilter.setMode(KmlTilingMode.MANUAL);
             } else {
@@ -616,6 +635,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 upperLevelVisibility = displayForm.getVisibleFrom();
             }
         }
+
+        // GUI specific settings
+        KmlExportGuiConfig guiConfig = config.getGuiConfig().getKmlExportGuiConfig();
+        guiConfig.setCollapseTilingFilter(tilingPanel.isCollapsed());
+        guiConfig.setCollapseAttributeFilter(resourceIdPanel.isCollapsed());
+        guiConfig.setCollapseBoundingBoxFilter(bboxPanel.isCollapsed());
+        guiConfig.setCollapseFeatureTypeFilter(featureFilterPanel.isCollapsed());
     }
 
     private void addListeners() {
@@ -627,13 +653,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         }.execute());
 
         browseButton.addActionListener(e -> saveFile());
-        ActionListener filterListener = e -> setFilterEnabledValues();
 
-        useResourceIdFilter.addActionListener(filterListener);
-        useBboxFilter.addActionListener(filterListener);
-        tilingCheckBox.addActionListener(filterListener);
-        manualTilingRadioButton.addActionListener(filterListener);
-        automaticTilingRadioButton.addActionListener(filterListener);
+        useResourceIdFilter.addItemListener(e -> setFilterEnabledValues());
+        useBboxFilter.addItemListener(e -> setFilterEnabledValues());
+        useTilingFilter.addItemListener(e -> setFilterEnabledValues());
+        useFeatureFilter.addItemListener(e -> setEnabledFeatureFilter());
+
+        manualTilingRadioButton.addActionListener(e -> setFilterEnabledValues());
+        automaticTilingRadioButton.addActionListener(e -> setFilterEnabledValues());
 
         lodComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -646,8 +673,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         geometryCheckbox.addItemListener(e -> setVisibilityEnabledValues());
         colladaCheckbox.addItemListener(e -> setVisibilityEnabledValues());
         fetchThemesButton.addActionListener(e -> new ThemeUpdater().execute());
-
-        useFeatureFilter.addActionListener(e -> setEnabledFeatureFilter());
     }
 
     private void doExport() {
@@ -821,8 +846,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         resourceIdText.setEnabled(useResourceIdFilter.isSelected());
         bboxComponent.setEnabled(useBboxFilter.isSelected());
 
-        automaticTilingRadioButton.setEnabled(tilingCheckBox.isSelected());
-        manualTilingRadioButton.setEnabled(tilingCheckBox.isSelected());
+        automaticTilingRadioButton.setEnabled(useTilingFilter.isSelected());
+        manualTilingRadioButton.setEnabled(useTilingFilter.isSelected());
 
         tileSizeText.setEnabled(automaticTilingRadioButton.isEnabled() && automaticTilingRadioButton.isSelected());
         tileSizeUnit.setEnabled(automaticTilingRadioButton.isEnabled() && automaticTilingRadioButton.isSelected());

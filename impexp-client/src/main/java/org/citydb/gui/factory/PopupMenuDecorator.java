@@ -27,9 +27,11 @@
  */
 package org.citydb.gui.factory;
 
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.popup.AbstractPopupMenu;
 import org.citydb.gui.components.popup.CheckBoxGroupPopupMenu;
 import org.citydb.gui.components.popup.EditPopupMenu;
+import org.citydb.gui.components.popup.TitledPanelGroupPopupMenu;
 import org.citydb.gui.components.popup.TreePopupMenu;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.components.DefaultPopupMenuDecorator;
@@ -85,6 +87,8 @@ public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 						}
 
 						((TreePopupMenu) popupMenu).prepare((JTree) e.getComponent(), path);
+					} else if (popupMenu instanceof TitledPanelGroupPopupMenu) {
+						((TitledPanelGroupPopupMenu) popupMenu).prepare();
 					}
 
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
@@ -159,6 +163,31 @@ public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 			popupMenu.init(i, group);
 			popupMenu.doTranslation();
 			decorate(group[i], popupMenu);
+
+			popupMenus[i] = popupMenu;
+		}
+
+		return popupMenus;
+	}
+
+	public void decorateTitledPanelGroup(TitledPanel... group) {
+		decorateAndGetTitledPanelGroup(group);
+	}
+
+	public JPopupMenu[] decorateAndGetTitledPanelGroup(TitledPanel... group) {
+		if (group == null || group.length <= 1) {
+			throw new IllegalArgumentException("The titled panel group may not be null and must contain more than two members.");
+		}
+
+		JPopupMenu[] popupMenus = new JPopupMenu[group.length];
+		for (int i = 0; i < group.length; i++) {
+			TitledPanelGroupPopupMenu popupMenu = new TitledPanelGroupPopupMenu();
+			popupMenu.init(i, group[i], group);
+			popupMenu.doTranslation();
+			decorate(group[i].getTitleLabel(), popupMenu);
+			if (group[i].hasToggleButton()) {
+				decorate(group[i].getToggleButton(), popupMenu);
+			}
 
 			popupMenus[i] = popupMenu;
 		}

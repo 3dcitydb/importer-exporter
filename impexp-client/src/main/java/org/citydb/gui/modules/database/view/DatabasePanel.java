@@ -29,6 +29,7 @@ package org.citydb.gui.modules.database.view;
 
 import com.formdev.flatlaf.extras.components.FlatComboBox;
 import org.citydb.config.Config;
+import org.citydb.config.gui.database.DatabaseGuiConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfigurationException;
@@ -558,13 +559,14 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			String text = Language.I18N.getString("db.dialog.warn.general");
 			option = viewController.warnMessage(Language.I18N.getString("db.dialog.warn.title"), MessageFormat.format(text, warning.getMessage()));
 		} else {
+			DatabaseGuiConfig guiConfig = config.getGuiConfig().getDatabaseGuiConfig();
 			boolean showWarning = false;
 			switch ((ConnectionWarningType) warning.getType()) {
 				case OUTDATED_DATABASE_VERSION:
-					showWarning = config.getGuiConfig().isShowOutdatedDatabaseVersionWarning();
+					showWarning = guiConfig.isShowOutdatedDatabaseVersionWarning();
 					break;
 				case UNSUPPORTED_ADE:
-					showWarning = config.getGuiConfig().isShowUnsupportedADEWarning();
+					showWarning = guiConfig.isShowUnsupportedADEWarning();
 					break;
 			}
 
@@ -579,10 +581,10 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 				if (!dialog.keepShowingDialog()) {
 					switch ((ConnectionWarningType) warning.getType()) {
 						case OUTDATED_DATABASE_VERSION:
-							config.getGuiConfig().setShowOutdatedDatabaseVersionWarning(false);
+							guiConfig.setShowOutdatedDatabaseVersionWarning(false);
 							break;
 						case UNSUPPORTED_ADE:
-							config.getGuiConfig().setShowUnsupportedADEWarning(false);
+							guiConfig.setShowUnsupportedADEWarning(false);
 							break;
 					}
 				}
