@@ -102,7 +102,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		tunnelModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TUNNEL).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
-		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
+		useXLink = exporter.getInternalConfig().isExportFeatureReferences();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.TUNNEL_HOLLOW_SPACE.getName(), schema);
@@ -391,7 +391,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 					String gmlId = rs.getString("opgmlid");
 					boolean generateNewGmlId = false;
 					if (!rs.wasNull()) {
-						if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+						if (exporter.lookupAndPutObjectId(gmlId, openingId, objectClassId)) {
 							if (useXLink) {
 								openingProperty = new OpeningProperty();
 								openingProperty.setHref("#" + gmlId);
@@ -412,7 +412,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 					}
 
 					if (generateNewGmlId)
-						opening.setId(exporter.generateNewGmlId(opening, gmlId));
+						opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 					openingProperty = new OpeningProperty(opening);
 					boundarySurface.getOpening().add(openingProperty);

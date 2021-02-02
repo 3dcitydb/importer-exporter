@@ -270,8 +270,8 @@ public class DBCityObject implements DBExporter {
 
 	protected boolean initializeObject(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
 		boolean setEnvelope = !context.isCityObject || (context.projectionFilter.containsProperty("boundedBy", gmlModule)
-				&& (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
-				|| (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && context.isTopLevel)));
+				&& (exporter.getExportConfig().getGeneralOptions().getEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
+				|| (exporter.getExportConfig().getGeneralOptions().getEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && context.isTopLevel)));
 
 		// gml:id
 		if (!context.object.isSetId())

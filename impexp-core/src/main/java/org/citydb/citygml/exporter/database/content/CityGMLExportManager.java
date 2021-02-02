@@ -31,13 +31,13 @@ import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.ade.exporter.ADEExportManager;
 import org.citydb.ade.exporter.CityGMLExportHelper;
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModel;
-import org.citydb.citygml.common.database.uid.UIDCache;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.uid.UIDCacheType;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.IdCache;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.cache.IdCacheType;
+import org.citydb.citygml.common.cache.model.CacheTableModel;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AppearanceRemover;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
@@ -50,6 +50,9 @@ import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.ExportConfig;
+import org.citydb.config.project.exporter.OutputFormat;
+import org.citydb.config.project.exporter.XLinkConfig;
+import org.citydb.config.project.exporter.XLinkFeatureConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
@@ -155,7 +158,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final List<CityGMLExportExtension> plugins;
 	private final FeatureWriter featureWriter;
 	private final WorkerPool<DBXlink> xlinkPool;
-	private final UIDCacheManager uidCacheManager;
+	private final IdCacheManager idCacheManager;
 	private final CacheTableManager cacheTableManager;
 	private final InternalConfig internalConfig;
 	private final Config config;
@@ -179,7 +182,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
 			WorkerPool<DBXlink> xlinkPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
 			InternalConfig internalConfig,
 			Config config) throws CityGMLExportException {
@@ -190,7 +193,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.featureWriter = featureWriter;
 		this.xlinkPool = xlinkPool;
-		this.uidCacheManager = uidCacheManager;
+		this.idCacheManager = idCacheManager;
 		this.cacheTableManager = cacheTableManager;
 		this.internalConfig = internalConfig;
 		this.config = config;
@@ -702,29 +705,46 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return schemaMapping.getAbstractObjectType(objectClassId);
 	}
 
-	public String generateNewGmlId(AbstractFeature feature) {
-		return generateNewGmlId(feature, feature.getId());
+	public String generateFeatureGmlId(AbstractFeature feature) {
+		return generateFeatureGmlId(feature, feature.getId());
 	}
 
-	public String generateNewGmlId(AbstractFeature feature, String oldGmlId) {
-		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(config.getExportConfig().getXlink().getFeature().getIdPrefix());
+	public String generateFeatureGmlId(AbstractFeature feature, String oldGmlId) {
+		if (internalConfig.getOutputFormat() == OutputFormat.CITYJSON) {
+			return DefaultGMLIdManager.getInstance().generateUUID();
+		} else {
+			XLinkFeatureConfig xlinkOptions = config.getExportConfig().getCityGMLOptions().getXlink().getFeature();
+			String gmlId = DefaultGMLIdManager.getInstance().generateUUID(xlinkOptions.getIdPrefix());
+			if (oldGmlId != null) {
+				if (xlinkOptions.isSetAppendId())
+					gmlId = gmlId + "-" + oldGmlId;
 
-		if (oldGmlId != null) {
-			if (config.getExportConfig().getXlink().getFeature().isSetAppendId())
-				gmlId = gmlId + "-" + oldGmlId;
+				if (xlinkOptions.isSetKeepGmlIdAsExternalReference() && feature instanceof AbstractCityObject) {
+					ExternalReference externalReference = new ExternalReference();
+					if (internalConfig.getOutputFile() != null)
+						externalReference.setInformationSystem(internalConfig.getOutputFile().getFile().toString());
 
-			if (config.getExportConfig().getXlink().getFeature().isSetKeepGmlIdAsExternalReference()
-					&& feature instanceof AbstractCityObject) {
-				ExternalReference externalReference = new ExternalReference();
-				if (internalConfig.getOutputFile() != null)
-					externalReference.setInformationSystem(internalConfig.getOutputFile().getFile().toString());
+					ExternalObject externalObject = new ExternalObject();
+					externalObject.setName(oldGmlId);
+					externalReference.setExternalObject(externalObject);
 
-				ExternalObject externalObject = new ExternalObject();
-				externalObject.setName(oldGmlId);
-				externalReference.setExternalObject(externalObject);
-
-				((AbstractCityObject)feature).addExternalReference(externalReference);
+					((AbstractCityObject) feature).addExternalReference(externalReference);
+				}
 			}
+
+			return gmlId;
+		}
+	}
+
+	public String generateGeometryGmlId(AbstractGeometry geometry) {
+		return generateGeometryGmlId(geometry.getId());
+	}
+
+	public String generateGeometryGmlId(String oldGmlId) {
+		XLinkConfig xlinkOptions = config.getExportConfig().getCityGMLOptions().getXlink().getGeometry();
+		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(xlinkOptions.getIdPrefix());
+		if (xlinkOptions.isSetAppendId() && oldGmlId != null) {
+			gmlId = gmlId + "-" + oldGmlId;
 		}
 
 		return gmlId;
@@ -735,28 +755,28 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public boolean lookupAndPutObjectUID(String gmlId, long id, int objectClassId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
+	public boolean lookupAndPutObjectId(String gmlId, long id, int objectClassId) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		return cache != null && cache.lookupAndPut(gmlId, id, objectClassId);
 	}
 
 	@Override
-	public boolean lookupObjectUID(String gmlId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
+	public boolean lookupObjectId(String gmlId) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		return cache != null && cache.get(gmlId) != null;
 	}
 
-	public void putObjectUID(String gmlId, long id, int objectClassId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
+	public void putObjectId(String gmlId, long id, int objectClassId) {
+		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		if (cache != null)
 			cache.put(gmlId, id, -1, false, null, objectClassId);
 	}	
 
-	public boolean lookupAndPutGeometryUID(String gmlId, long id, boolean useLocalScope) {
+	public boolean lookupAndPutGeometryId(String gmlId, long id, boolean useLocalScope) {
 		boolean isCached = !localGeometryCache.add(gmlId);
 
 		if (!useLocalScope) {
-			UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
+			IdCache cache = idCacheManager.getCache(IdCacheType.GEOMETRY);
 			if (cache != null) {
 				if (isCached) {
 					cache.put(gmlId, id, 0, false, null, MappingConstants.SURFACE_GEOMETRY_OBJECTCLASS_ID);
@@ -769,10 +789,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return isCached;
 	}
 
-	public boolean lookupGeometryUID(String gmlId) {
+	public boolean lookupGeometryId(String gmlId) {
 		boolean isCached = localGeometryCache.contains(gmlId);
 		if (!isCached) {
-			UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
+			IdCache cache = idCacheManager.getCache(IdCacheType.GEOMETRY);
 			isCached = cache != null && cache.get(gmlId) != null;
 		}
 

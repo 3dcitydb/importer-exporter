@@ -53,6 +53,7 @@ import java.util.List;
         "showUnsupportedADEWarning",
         "showKmlExportUnsupportedADEWarning",
         "showChangeSridWarning",
+        "showCityJSONTilingWarning",
         "recentlyUsedProjects"
 })
 public class GuiConfig {
@@ -66,6 +67,7 @@ public class GuiConfig {
     private boolean showUnsupportedADEWarning = true;
     private boolean showKmlExportUnsupportedADEWarning = true;
     private boolean showChangeSridWarning = true;
+    private boolean showCityJSONTilingWarning = true;
     @XmlElementWrapper(name = "recentlyUsedProjects")
     @XmlElement(name = "fileName")
     private List<String> recentlyUsedProjects;
@@ -166,6 +168,14 @@ public class GuiConfig {
 
     public void setShowChangeSridWarning(boolean showChangeSridWarning) {
         this.showChangeSridWarning = showChangeSridWarning;
+    }
+
+    public boolean isShowCityJSONTilingWarning() {
+        return showCityJSONTilingWarning;
+    }
+
+    public void setShowCityJSONTilingWarning(boolean showCityJSONTilingWarning) {
+        this.showCityJSONTilingWarning = showCityJSONTilingWarning;
     }
 
     public List<String> getRecentlyUsedConfigFiles() {

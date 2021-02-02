@@ -27,13 +27,13 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModel;
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.uid.UIDCacheType;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.model.CacheTableModel;
+import org.citydb.citygml.common.cache.IdCacheEntry;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.cache.IdCacheType;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.importer.database.SequenceHelper;
 import org.citydb.citygml.importer.util.ConcurrentLockManager;
 import org.citydb.concurrent.WorkerPool;
@@ -82,7 +82,7 @@ public class DBXlinkResolverManager {
 			Connection batchConn,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<DBXlink> tmpXlinkPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
@@ -94,7 +94,7 @@ public class DBXlinkResolverManager {
 		this.eventDispatcher = eventDispatcher;
 
 		resolvers = new HashMap<>();
-		gmlIdResolver = new DBGmlIdResolver(batchConn, databaseAdapter, uidCacheManager);
+		gmlIdResolver = new DBGmlIdResolver(batchConn, databaseAdapter, idCacheManager);
 		sequenceHelper = new SequenceHelper(batchConn, databaseAdapter, config);
      	schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
@@ -162,16 +162,16 @@ public class DBXlinkResolverManager {
 		return sequenceHelper.getNextSequenceValue(sequence);
 	}
 	
-	public UIDCacheEntry getObjectId(String gmlId) {
-		return gmlIdResolver.getDBId(gmlId, UIDCacheType.OBJECT, false);
+	public IdCacheEntry getObjectId(String gmlId) {
+		return gmlIdResolver.getDBId(gmlId, IdCacheType.OBJECT, false);
 	}
 
-	public UIDCacheEntry getObjectId(String gmlId, boolean forceCityObjectDatabaseLookup) {
-		return gmlIdResolver.getDBId(gmlId, UIDCacheType.OBJECT, forceCityObjectDatabaseLookup);
+	public IdCacheEntry getObjectId(String gmlId, boolean forceCityObjectDatabaseLookup) {
+		return gmlIdResolver.getDBId(gmlId, IdCacheType.OBJECT, forceCityObjectDatabaseLookup);
 	}	
 	
-	public UIDCacheEntry getGeometryId(String gmlId) {
-		return gmlIdResolver.getDBId(gmlId, UIDCacheType.GEOMETRY, false);
+	public IdCacheEntry getGeometryId(String gmlId) {
+		return gmlIdResolver.getDBId(gmlId, IdCacheType.GEOMETRY, false);
 	}
 	
 	public FeatureType getFeatureType(int objectClassId) {

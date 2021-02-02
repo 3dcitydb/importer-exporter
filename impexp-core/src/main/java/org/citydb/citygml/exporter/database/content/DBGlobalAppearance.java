@@ -27,11 +27,10 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
+import org.citydb.citygml.common.cache.CacheTable;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.Config;
 import org.citydb.database.schema.TableEnum;
-import org.citydb.query.Query;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
@@ -42,7 +41,6 @@ import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.util.walker.GMLWalker;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;

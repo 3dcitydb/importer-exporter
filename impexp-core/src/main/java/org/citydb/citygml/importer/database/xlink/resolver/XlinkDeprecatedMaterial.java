@@ -27,8 +27,8 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
+import org.citydb.citygml.common.cache.IdCacheEntry;
+import org.citydb.citygml.common.xlink.DBXlinkDeprecatedMaterial;
 import org.citydb.database.schema.SequenceEnum;
 
 import java.sql.Connection;
@@ -58,7 +58,7 @@ public class XlinkDeprecatedMaterial implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkDeprecatedMaterial xlink) throws SQLException {
-		UIDCacheEntry surfaceDataEntry = manager.getObjectId(xlink.getGmlId());
+		IdCacheEntry surfaceDataEntry = manager.getObjectId(xlink.getGmlId());
 		if (surfaceDataEntry == null || surfaceDataEntry.getId() == -1)
 			return false;
 

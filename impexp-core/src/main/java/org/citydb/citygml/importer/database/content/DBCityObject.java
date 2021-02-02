@@ -30,7 +30,7 @@ package org.citydb.citygml.importer.database.content;
 import org.citydb.ade.model.LineageProperty;
 import org.citydb.ade.model.ReasonForUpdateProperty;
 import org.citydb.ade.model.UpdatingPersonProperty;
-import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
+import org.citydb.citygml.common.xlink.DBXlinkBasic;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
@@ -115,8 +115,8 @@ public class DBCityObject implements DBImporter {
 		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 
-		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
-		rememberGmlId = config.getImportConfig().getGmlId().isSetKeepGmlIdAsExternalReference();
+		replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
+		rememberGmlId = config.getImportConfig().getResourceId().isSetKeepIdAsExternalReference();
 		if (replaceGmlId && rememberGmlId && importer.getInternalConfig().getInputFile() != null)
 			importFileName = importer.getInternalConfig().getInputFile().getFile().toString();
 
@@ -175,7 +175,7 @@ public class DBCityObject implements DBImporter {
 
 			// mapping entry
 			if (object.isSetId()) {
-				importer.putObjectUID(object.getId(), objectId, gmlId, objectType.getObjectClassId());
+				importer.putObjectId(object.getId(), objectId, gmlId, objectType.getObjectClassId());
 
 				if (rememberGmlId && isCityObject) {	
 					ExternalReference externalReference = new ExternalReference();
@@ -192,7 +192,7 @@ public class DBCityObject implements DBImporter {
 			object.setId(gmlId);
 		} else {
 			if (object.isSetId())
-				importer.putObjectUID(object.getId(), objectId, objectType.getObjectClassId());
+				importer.putObjectId(object.getId(), objectId, objectType.getObjectClassId());
 			else
 				object.setId(importer.generateNewGmlId());
 		}

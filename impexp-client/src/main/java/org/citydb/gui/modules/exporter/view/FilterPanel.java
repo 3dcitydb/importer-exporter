@@ -48,7 +48,10 @@ import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
-import org.citydb.gui.modules.common.filter.*;
+import org.citydb.gui.modules.common.filter.AttributeFilterView;
+import org.citydb.gui.modules.common.filter.FilterView;
+import org.citydb.gui.modules.common.filter.SQLFilterView;
+import org.citydb.gui.modules.common.filter.XMLQueryView;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
@@ -115,7 +118,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 	public FilterPanel(ViewController viewController, Config config) {
 		this.config = config;
 
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);		
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);
 		initGui(viewController);
 	}
 
@@ -606,6 +609,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 	public void handleEvent(Event event) throws Exception {
 		PropertyChangeEvent e = (PropertyChangeEvent)event;
 		if (e.getPropertyName().equals("citygml.version"))
-			featureTree.updateCityGMLVersion((CityGMLVersion)e.getNewValue(), useFeatureFilter.isSelected());
+			featureTree.updateCityGMLVersion((CityGMLVersion) e.getNewValue(), useFeatureFilter.isSelected());
 	}
 }

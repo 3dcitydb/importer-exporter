@@ -287,7 +287,6 @@ public class SrsOperation extends DatabaseOperationView {
 			if (changeSrid && config.getGuiConfig().isShowChangeSridWarning()) {
 				JPanel confirmPanel = new JPanel(new GridBagLayout());
 
-				JLabel headerLabel = new JLabel(Language.I18N.getString("db.dialog.srs.changeSrid"));
 				JLabel sridLabel = new JLabel(Language.I18N.getString("pref.db.srs.label.srid") + ":");
 				JLabel sridValue = new JLabel(String.valueOf(srs.getSrid()));
 				JLabel geometriesLabel = new JLabel(Language.I18N.getString("db.label.operation.srs.geometries") + ":");
@@ -298,15 +297,16 @@ public class SrsOperation extends DatabaseOperationView {
 				sridValue.setFont(sridValue.getFont().deriveFont(Font.BOLD));
 				geometriesValue.setFont(sridValue.getFont());
 
-				confirmPanel.add(headerLabel, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-				confirmPanel.add(sridLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
-				confirmPanel.add(sridValue, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 0, 0));
-				confirmPanel.add(geometriesLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
-				confirmPanel.add(geometriesValue, GuiUtil.setConstraints(1, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+				confirmPanel.add(sridLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
+				confirmPanel.add(sridValue, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 0, 0));
+				confirmPanel.add(geometriesLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+				confirmPanel.add(geometriesValue, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
 
-				ConfirmationCheckDialog dialog = new ConfirmationCheckDialog(viewController.getTopFrame(),
-						Language.I18N.getString("db.dialog.srs.window"),
-						confirmPanel);
+				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
+						.withParentComponent(viewController.getTopFrame())
+						.withTitle(Language.I18N.getString("db.dialog.srs.window"))
+						.addMessage(Language.I18N.getString("db.dialog.srs.changeSrid") + "\n")
+						.addMessage(confirmPanel);
 
 				int result = dialog.show();
 				config.getGuiConfig().setShowChangeSridWarning(dialog.keepShowingDialog());

@@ -107,7 +107,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 		bridgeModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BRIDGE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
-		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
+		useXLink = exporter.getInternalConfig().isExportFeatureReferences();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.BRIDGE_ROOM.getName(), schema);
@@ -403,7 +403,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 					String gmlId = rs.getString("opgmlid");
 					boolean generateNewGmlId = false;
 					if (!rs.wasNull()) {
-						if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+						if (exporter.lookupAndPutObjectId(gmlId, openingId, objectClassId)) {
 							if (useXLink) {
 								openingProperty = new OpeningProperty();
 								openingProperty.setHref("#" + gmlId);
@@ -424,7 +424,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 					}
 
 					if (generateNewGmlId)
-						opening.setId(exporter.generateNewGmlId(opening, gmlId));
+						opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 					// get projection filter
 					openingProjectionFilter = exporter.getProjectionFilter(featureType);

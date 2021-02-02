@@ -77,7 +77,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TUNNEL_THEMATIC_SURFACE.getName());
 		tunnelModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TUNNEL).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
+		useXLink = exporter.getInternalConfig().isExportFeatureReferences();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.TUNNEL_THEMATIC_SURFACE.getName(), schema);
@@ -185,7 +185,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 				String gmlId = rs.getString("opgmlid");
 				boolean generateNewGmlId = false;
 				if (!rs.wasNull()) {
-					if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+					if (exporter.lookupAndPutObjectId(gmlId, openingId, objectClassId)) {
 						if (useXLink) {
 							OpeningProperty openingProperty = new OpeningProperty();
 							openingProperty.setHref("#" + gmlId);
@@ -205,7 +205,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 				}
 
 				if (generateNewGmlId)
-					opening.setId(exporter.generateNewGmlId(opening, gmlId));
+					opening.setId(exporter.generateFeatureGmlId(opening, gmlId));
 
 				boundarySurface.addOpening(new OpeningProperty(opening));
 			}

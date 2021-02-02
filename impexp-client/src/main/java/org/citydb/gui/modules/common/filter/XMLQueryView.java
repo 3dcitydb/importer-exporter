@@ -254,11 +254,11 @@ public class XMLQueryView extends FilterView {
             SimpleSelectionFilter selectionFilter = simpleQuery.getSelectionFilter();
 
             if (!selectionFilter.isUseSQLFilter()) {
-                if (selectionFilter.isSetGmlIdFilter() && selectionFilter.getGmlIdFilter().isSetResourceIds())
-                    predicates.add(selectionFilter.getGmlIdFilter());
+                if (selectionFilter.isSetResourceIdFilter() && selectionFilter.getResourceIdFilter().isSetResourceIds())
+                    predicates.add(selectionFilter.getResourceIdFilter());
 
-                if (selectionFilter.isSetGmlNameFilter() && selectionFilter.getGmlNameFilter().isSetLiteral()) {
-                    LikeOperator nameFilter = selectionFilter.getGmlNameFilter();
+                if (selectionFilter.isSetNameFilter() && selectionFilter.getNameFilter().isSetLiteral()) {
+                    LikeOperator nameFilter = selectionFilter.getNameFilter();
                     nameFilter.setValueReference("gml:name");
                     predicates.add(nameFilter);
                 }

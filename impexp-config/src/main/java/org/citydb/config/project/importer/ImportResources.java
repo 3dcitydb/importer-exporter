@@ -31,24 +31,24 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.config.project.resources.Resources;
-import org.citydb.config.project.resources.UIDCacheConfig;
+import org.citydb.config.project.resources.IdCacheConfig;
 
 @XmlType(name = "ImportResourcesType", propOrder = {
         "texImageCache"
 })
 public class ImportResources extends Resources {
     @XmlElement(required = true)
-    private UIDCacheConfig texImageCache;
+    private IdCacheConfig texImageCache;
 
     public ImportResources() {
-        texImageCache = new UIDCacheConfig();
+        texImageCache = new IdCacheConfig();
     }
 
-    public UIDCacheConfig getTexImageCache() {
+    public IdCacheConfig getTexImageCache() {
         return texImageCache;
     }
 
-    public void setTexImageCache(UIDCacheConfig texImageCache) {
+    public void setTexImageCache(IdCacheConfig texImageCache) {
         this.texImageCache = texImageCache;
     }
 }

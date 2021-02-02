@@ -27,8 +27,8 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.ImportLogger;
@@ -58,7 +58,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	private final SchemaMapping schemaMapping;
 	private final CityGMLBuilder cityGMLBuilder;
 	private final WorkerPool<DBXlink> xlinkWorkerPool;
-	private final UIDCacheManager uidCacheManager;
+	private final IdCacheManager idCacheManager;
 	private final CityGMLFilter filter;
 	private final AffineTransformer affineTransformer;
 	private final ImportLogger importLogger;
@@ -72,7 +72,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkWorkerPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CityGMLFilter filter,
 			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
@@ -85,7 +85,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 		this.schemaMapping = schemaMapping;
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.xlinkWorkerPool = xlinkWorkerPool;
-		this.uidCacheManager = uidCacheManager;
+		this.idCacheManager = idCacheManager;
 		this.filter = filter;
 		this.affineTransformer = affineTransformer;
 		this.importLogger = importLogger;
@@ -97,7 +97,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	public DBImportWorkerFactory(SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkWorkerPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CityGMLFilter filter,
 			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
@@ -105,7 +105,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			Config config,
 			EventDispatcher eventDispatcher) {
 		this(DatabaseConnectionPool.getInstance(), false, DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter(),
-				schemaMapping, cityGMLBuilder, xlinkWorkerPool, uidCacheManager, filter, affineTransformer, importLogger,
+				schemaMapping, cityGMLBuilder, xlinkWorkerPool, idCacheManager, filter, affineTransformer, importLogger,
 				internalConfig, config, eventDispatcher);
 	}
 
@@ -114,14 +114,14 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkWorkerPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CityGMLFilter filter,
 			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
 			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this(connectionManager, true, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkWorkerPool, uidCacheManager,
+		this(connectionManager, true, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkWorkerPool, idCacheManager,
 				filter, affineTransformer, importLogger, internalConfig, config, eventDispatcher);
 	}
 
@@ -136,7 +136,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			}
 
 			dbWorker = new DBImportWorker(connection, isManagedTransaction, databaseAdapter, schemaMapping, cityGMLBuilder,
-					xlinkWorkerPool, uidCacheManager, filter, affineTransformer, importLogger, internalConfig, config, eventDispatcher);
+					xlinkWorkerPool, idCacheManager, filter, affineTransformer, importLogger, internalConfig, config, eventDispatcher);
 		} catch (SQLException e) {
 			log.error("Failed to create import worker.", e);
 		}

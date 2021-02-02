@@ -89,6 +89,6 @@ public interface CityGMLExportHelper {
 	ObjectType getObjectType(int objectClassId);
 	AbstractObjectType<?> getAbstractObjectType(int objectClassId);
 	
-	boolean lookupAndPutObjectUID(String gmlId, long id, int objectClassId);
-	boolean lookupObjectUID(String gmlId);
+	boolean lookupAndPutObjectId(String gmlId, long id, int objectClassId);
+	boolean lookupObjectId(String gmlId);
 }

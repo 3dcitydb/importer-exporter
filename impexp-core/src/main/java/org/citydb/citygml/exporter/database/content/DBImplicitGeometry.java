@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
+import org.citydb.citygml.common.xlink.DBXlinkLibraryObject;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.config.geometry.GeometryObject;
@@ -124,7 +124,7 @@ public class DBImplicitGeometry implements DBExporter {
 					isValid = true;
 					String gmlId = rs.getString(7);
 
-					if (exporter.lookupGeometryUID(gmlId)) {
+					if (exporter.lookupGeometryId(gmlId)) {
 						implicit.setRelativeGeometry(new GeometryProperty<>("#" + gmlId));
 					} else {
 						geometryExporter.addImplicitGeometryBatch(geometryId, implicit);
@@ -136,7 +136,7 @@ public class DBImplicitGeometry implements DBExporter {
 						long implicitId = rs.getLong(1);
 						String uuid = toHexString(md5.digest(String.valueOf(implicitId).getBytes()));
 
-						if (exporter.lookupAndPutObjectUID(uuid, implicitId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
+						if (exporter.lookupAndPutObjectId(uuid, implicitId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
 							implicit.setRelativeGeometry(new GeometryProperty<>("#UUID_" + uuid));
 						} else {
 							GeometryObject otherGeom = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(otherGeomObj);

@@ -27,21 +27,21 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.xlink.DBXlink;
-import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
-import org.citydb.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
-import org.citydb.citygml.common.database.xlink.DBXlinkGroupToCityObject;
-import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
-import org.citydb.citygml.common.database.xlink.DBXlinkLinearRing;
-import org.citydb.citygml.common.database.xlink.DBXlinkSolidGeometry;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociation;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureCoordList;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureParam;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.xlink.DBXlink;
+import org.citydb.citygml.common.xlink.DBXlinkBasic;
+import org.citydb.citygml.common.xlink.DBXlinkDeprecatedMaterial;
+import org.citydb.citygml.common.xlink.DBXlinkGroupToCityObject;
+import org.citydb.citygml.common.xlink.DBXlinkLibraryObject;
+import org.citydb.citygml.common.xlink.DBXlinkLinearRing;
+import org.citydb.citygml.common.xlink.DBXlinkSolidGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceDataToTexImage;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociation;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociationTarget;
+import org.citydb.citygml.common.xlink.DBXlinkTextureCoordList;
+import org.citydb.citygml.common.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.common.xlink.DBXlinkTextureParam;
 import org.citydb.citygml.importer.database.xlink.importer.DBXlinkImporterBasic;
 import org.citydb.citygml.importer.database.xlink.importer.DBXlinkImporterDeprecatedMaterial;
 import org.citydb.citygml.importer.database.xlink.importer.DBXlinkImporterEnum;

@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.exporter.concurrent;
 
-import org.citydb.citygml.common.database.xlink.DBXlink;
+import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;

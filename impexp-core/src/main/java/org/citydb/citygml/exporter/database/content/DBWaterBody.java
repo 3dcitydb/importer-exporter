@@ -90,7 +90,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 		waterBodyModule = targetVersion.getCityGMLModule(CityGMLModuleType.WATER_BODY).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
-		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
+		useXLink = exporter.getInternalConfig().isExportFeatureReferences();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.WATERBODY.getName(), schema);
@@ -315,7 +315,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 				String gmlId = rs.getString("wsgmlid");
 				boolean generateNewGmlId = false;
 				if (!rs.wasNull()) {
-					if (exporter.lookupAndPutObjectUID(gmlId, waterBoundarySurfaceId, objectClassId)) {
+					if (exporter.lookupAndPutObjectId(gmlId, waterBoundarySurfaceId, objectClassId)) {
 						if (useXLink) {
 							BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfaceProperty();
 							boundedByProperty.setHref("#" + gmlId);
@@ -335,7 +335,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 				}
 
 				if (generateNewGmlId)
-					waterBoundarySurface.setId(exporter.generateNewGmlId(waterBoundarySurface, gmlId));
+					waterBoundarySurface.setId(exporter.generateFeatureGmlId(waterBoundarySurface, gmlId));
 
 				waterBody.addBoundedBySurface(new BoundedByWaterSurfaceProperty(waterBoundarySurface));
 			}

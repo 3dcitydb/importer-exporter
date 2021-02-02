@@ -68,10 +68,10 @@ public class DBAddress implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		importXALSource = config.getImportConfig().getAddress().isSetImportXAL();
+		importXALSource = config.getImportConfig().getCityGMLOptions().isImportXalAddress();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasGmlIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
-		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
+		replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
 		String gmlIdCodespace = null;
 
 		if (hasGmlIdColumn) {
@@ -112,13 +112,13 @@ public class DBAddress implements DBImporter {
 
 			// mapping entry
 			if (address.isSetId())
-				importer.putObjectUID(address.getId(), addressId, gmlId, featureType.getObjectClassId());
+				importer.putObjectId(address.getId(), addressId, gmlId, featureType.getObjectClassId());
 
 			address.setId(gmlId);
 
 		} else {
 			if (address.isSetId())
-				importer.putObjectUID(address.getId(), addressId, featureType.getObjectClassId());
+				importer.putObjectId(address.getId(), addressId, featureType.getObjectClassId());
 			else
 				address.setId(importer.generateNewGmlId());
 		}

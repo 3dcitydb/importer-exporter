@@ -31,6 +31,10 @@ public class ImportCommand extends CliCommand {
             description = "Files or directories to import (glob patterns allowed).")
     private String[] files;
 
+    @CommandLine.Option(names = "--input-encoding",
+            description = "Encoding of the input file(s).")
+    private String encoding;
+
     @CommandLine.Option(names = "--import-log", paramLabel = "<file>",
             description = "Record imported top-level features to this file.")
     private Path importLogFile;
@@ -97,6 +101,8 @@ public class ImportCommand extends CliCommand {
     }
 
     private void setImportOptions(ImportConfig importConfig) {
+        importConfig.getGeneralOptions().setFileEncoding(encoding);
+
         if (importLogFile != null) {
             importConfig.getImportLog().setLogFile(importLogFile.toAbsolutePath().toString());
             importConfig.getImportLog().setLogImportedFeatures(true);

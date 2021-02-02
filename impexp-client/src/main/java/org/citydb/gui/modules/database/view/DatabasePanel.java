@@ -569,10 +569,11 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			}
 
 			if (showWarning) {
-				ConfirmationCheckDialog dialog = new ConfirmationCheckDialog(viewController.getTopFrame(),
-						Language.I18N.getString("db.dialog.warn.title"),
-						warning.getFormattedMessage(),
-						JOptionPane.OK_CANCEL_OPTION);
+				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
+						.withParentComponent(viewController.getTopFrame())
+						.withOptionType(JOptionPane.OK_CANCEL_OPTION)
+						.withTitle(Language.I18N.getString("db.dialog.warn.title"))
+						.addMessage(warning.getFormattedMessage());
 
 				option = dialog.show();
 				if (!dialog.keepShowingDialog()) {

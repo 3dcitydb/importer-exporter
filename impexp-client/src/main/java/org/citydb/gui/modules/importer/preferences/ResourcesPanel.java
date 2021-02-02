@@ -31,7 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.ImportBatching;
 import org.citydb.config.project.resources.ThreadPool;
-import org.citydb.config.project.resources.UIDCacheConfig;
+import org.citydb.config.project.resources.IdCacheConfig;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
@@ -92,9 +92,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	public boolean isModified() {
 		ThreadPool threadPool = config.getImportConfig().getResources().getThreadPool();
 		ImportBatching commit = config.getDatabaseConfig().getImportBatching();
-		UIDCacheConfig geometry = config.getImportConfig().getResources().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getImportConfig().getResources().getGmlIdCache().getFeature();
-		UIDCacheConfig texImage = config.getImportConfig().getResources().getTexImageCache();
+		IdCacheConfig geometry = config.getImportConfig().getResources().getIdCache().getGeometry();
+		IdCacheConfig feature = config.getImportConfig().getResources().getIdCache().getFeature();
+		IdCacheConfig texImage = config.getImportConfig().getResources().getTexImageCache();
 		
 		try { impResMinThreadsText.commitEdit(); } catch (ParseException e) { }
 		try { impResMaxThreadsText.commitEdit(); } catch (ParseException e) { }
@@ -331,9 +331,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	public void loadSettings() {
 		ThreadPool threadPool = config.getImportConfig().getResources().getThreadPool();
 		ImportBatching commit = config.getDatabaseConfig().getImportBatching();
-		UIDCacheConfig geometry = config.getImportConfig().getResources().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getImportConfig().getResources().getGmlIdCache().getFeature();
-		UIDCacheConfig texImage = config.getImportConfig().getResources().getTexImageCache();
+		IdCacheConfig geometry = config.getImportConfig().getResources().getIdCache().getGeometry();
+		IdCacheConfig feature = config.getImportConfig().getResources().getIdCache().getFeature();
+		IdCacheConfig texImage = config.getImportConfig().getResources().getTexImageCache();
 
 		int commitFeature = commit.getFeatureBatchSize();
 		if (commitFeature > ImportBatching.MAX_BATCH_SIZE)
@@ -367,9 +367,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	public void setSettings() {
 		ThreadPool threadPool = config.getImportConfig().getResources().getThreadPool();
 		ImportBatching commit = config.getDatabaseConfig().getImportBatching();
-		UIDCacheConfig geometry = config.getImportConfig().getResources().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getImportConfig().getResources().getGmlIdCache().getFeature();
-		UIDCacheConfig texImage = config.getImportConfig().getResources().getTexImageCache();
+		IdCacheConfig geometry = config.getImportConfig().getResources().getIdCache().getGeometry();
+		IdCacheConfig feature = config.getImportConfig().getResources().getIdCache().getFeature();
+		IdCacheConfig texImage = config.getImportConfig().getResources().getTexImageCache();
 
 		int minThreads = ((Number)impResMinThreadsText.getValue()).intValue();
 		int maxThreads = ((Number)impResMaxThreadsText.getValue()).intValue();

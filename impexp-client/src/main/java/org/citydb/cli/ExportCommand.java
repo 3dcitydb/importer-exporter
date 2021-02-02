@@ -108,7 +108,7 @@ public class ExportCommand extends CliCommand {
     }
 
     private void setExportOptions(ExportConfig exportConfig) {
-        exportConfig.getCityGMLOptions().setFileEncoding(encoding);
+        exportConfig.getGeneralOptions().setFileEncoding(encoding);
 
         if (queryOption != null) {
             exportConfig.getAppearances().setExportAppearances(queryOption.isExportAppearances());

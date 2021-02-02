@@ -35,7 +35,7 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 
 public class SelectionFilter {
 	private ResourceIdFilter resourceIdFilter;
-	private LikeFilter gmlNameFilter;
+	private LikeFilter nameFilter;
 	private SimpleBBOXFilter bboxFilter;
 
 	public ResourceIdFilter getResourceIdFilter() {
@@ -50,16 +50,16 @@ public class SelectionFilter {
 		this.resourceIdFilter = resourceIdFilter;
 	}
 
-	public LikeFilter getGmlNameFilter() {
-		return gmlNameFilter;
+	public LikeFilter getNameFilter() {
+		return nameFilter;
 	}
 
-	public boolean isSetGmlNameFilter() {
-		return gmlNameFilter != null;
+	public boolean isSetNameFilter() {
+		return nameFilter != null;
 	}
 
-	public void setGmlNameFilter(LikeFilter gmlNameFilter) {
-		this.gmlNameFilter = gmlNameFilter;
+	public void setNameFilter(LikeFilter nameFilter) {
+		this.nameFilter = nameFilter;
 	}
 
 	public SimpleBBOXFilter getBboxFilter() {
@@ -78,7 +78,7 @@ public class SelectionFilter {
 		if (resourceIdFilter != null && !resourceIdFilter.isSatisfiedBy(feature))
 			return false;
 
-		if (gmlNameFilter != null && !gmlNameFilter.isSatisfiedBy(feature))
+		if (nameFilter != null && !nameFilter.isSatisfiedBy(feature))
 			return false;
 
 		if (bboxFilter != null && !bboxFilter.isSatisfiedBy(feature))

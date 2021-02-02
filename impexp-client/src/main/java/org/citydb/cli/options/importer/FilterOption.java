@@ -65,7 +65,7 @@ public class FilterOption implements CliOption {
 
         if (idOption != null) {
             SimpleAttributeFilter attributeFilter = new SimpleAttributeFilter();
-            attributeFilter.setGmlIdFilter(idOption.toResourceIdOperator());
+            attributeFilter.setResourceIdFilter(idOption.toResourceIdOperator());
             importFilter.setAttributeFilter(attributeFilter);
             importFilter.setUseAttributeFilter(true);
         }

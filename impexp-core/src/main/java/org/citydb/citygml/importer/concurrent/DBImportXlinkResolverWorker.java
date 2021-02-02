@@ -27,22 +27,22 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.uid.UIDCacheManager;
-import org.citydb.citygml.common.database.xlink.DBXlink;
-import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
-import org.citydb.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
-import org.citydb.citygml.common.database.xlink.DBXlinkEnum;
-import org.citydb.citygml.common.database.xlink.DBXlinkGroupToCityObject;
-import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
-import org.citydb.citygml.common.database.xlink.DBXlinkSolidGeometry;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociation;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureCoordList;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureParam;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureParamEnum;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.IdCacheManager;
+import org.citydb.citygml.common.xlink.DBXlink;
+import org.citydb.citygml.common.xlink.DBXlinkBasic;
+import org.citydb.citygml.common.xlink.DBXlinkDeprecatedMaterial;
+import org.citydb.citygml.common.xlink.DBXlinkEnum;
+import org.citydb.citygml.common.xlink.DBXlinkGroupToCityObject;
+import org.citydb.citygml.common.xlink.DBXlinkLibraryObject;
+import org.citydb.citygml.common.xlink.DBXlinkSolidGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceDataToTexImage;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkTextureAssociation;
+import org.citydb.citygml.common.xlink.DBXlinkTextureCoordList;
+import org.citydb.citygml.common.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.common.xlink.DBXlinkTextureParam;
+import org.citydb.citygml.common.xlink.DBXlinkTextureParamEnum;
 import org.citydb.citygml.importer.database.xlink.resolver.DBXlinkResolverEnum;
 import org.citydb.citygml.importer.database.xlink.resolver.DBXlinkResolverManager;
 import org.citydb.citygml.importer.database.xlink.resolver.XlinkBasic;
@@ -92,7 +92,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<DBXlink> tmpXlinkPool,
-			UIDCacheManager uidCacheManager,
+			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
@@ -109,7 +109,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 				connection,
 				databaseAdapter,
 				tmpXlinkPool,
-				uidCacheManager,
+				idCacheManager,
 				cacheTableManager,
 				config,
 				eventDispatcher);

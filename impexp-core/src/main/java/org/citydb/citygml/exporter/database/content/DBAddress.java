@@ -27,8 +27,8 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import org.citydb.citygml.common.xal.AddressExportFactory;
-import org.citydb.citygml.common.xal.AddressObject;
+import org.citydb.citygml.exporter.util.AddressExportFactory;
+import org.citydb.citygml.exporter.util.AddressObject;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.AddressMode;

@@ -6,6 +6,7 @@ import org.citydb.citygml.importer.reader.FeatureReadException;
 import org.citydb.citygml.importer.reader.FeatureReader;
 import org.citydb.citygml.importer.reader.FeatureReaderFactory;
 import org.citydb.config.Config;
+import org.citydb.config.project.importer.CityGMLOptions;
 import org.citydb.log.Logger;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
@@ -51,25 +52,27 @@ public class CityGMLReaderFactory implements FeatureReaderFactory {
             throw new FeatureReadException("Failed to initialize CityGML input factory.", e);
         }
 
+        CityGMLOptions cityGMLOptions = config.getImportConfig().getCityGMLOptions();
+
         // prepare XML validation
-        if (config.getImportConfig().getXMLValidation().isSetUseXMLValidation()) {
+        if (cityGMLOptions.getXMLValidation().isSetUseXMLValidation()) {
             log.info("Applying XML validation to CityGML input features.");
 
             factory.setProperty(CityGMLInputFactory.USE_VALIDATION, true);
             factory.setProperty(CityGMLInputFactory.PARSE_SCHEMA, true);
 
             validationHandler = new ValidationErrorHandler();
-            validationHandler.setReportAllErrors(!config.getImportConfig().getXMLValidation().isSetReportOneErrorPerFeature());
+            validationHandler.setReportAllErrors(!cityGMLOptions.getXMLValidation().isSetReportOneErrorPerFeature());
             factory.setValidationEventHandler(validationHandler);
         }
 
         // build XSLT transformer chain
-        if (config.getImportConfig().getXSLTransformation().isEnabled()
-                && config.getImportConfig().getXSLTransformation().isSetStylesheets()) {
+        if (cityGMLOptions.getXSLTransformation().isEnabled()
+                && cityGMLOptions.getXSLTransformation().isSetStylesheets()) {
             try {
                 log.info("Applying XSL transformations to CityGML input features.");
 
-                List<String> stylesheets = config.getImportConfig().getXSLTransformation().getStylesheets();
+                List<String> stylesheets = cityGMLOptions.getXSLTransformation().getStylesheets();
                 SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
                 Templates[] templates = new Templates[stylesheets.size()];
 

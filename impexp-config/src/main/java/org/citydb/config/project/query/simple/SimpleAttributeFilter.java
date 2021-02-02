@@ -34,46 +34,46 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "SimpleAttributeFilterType", propOrder = {
-        "gmlIdFilter",
-        "gmlNameFilter",
+        "resourceIdFilter",
+        "nameFilter",
         "lineageFilter"
 })
 public class SimpleAttributeFilter {
-    @XmlElement(name = "gmlIds")
-    private ResourceIdOperator gmlIdFilter;
-    @XmlElement(name = "gmlName")
-    private LikeOperator gmlNameFilter;
+    @XmlElement(name = "resourceIds")
+    private ResourceIdOperator resourceIdFilter;
+    @XmlElement(name = "name")
+    private LikeOperator nameFilter;
     @XmlElement(name = "lineage")
     private LikeOperator lineageFilter;
 
     public SimpleAttributeFilter() {
-        gmlIdFilter = new ResourceIdOperator();
-        gmlNameFilter = new LikeOperator();
+        resourceIdFilter = new ResourceIdOperator();
+        nameFilter = new LikeOperator();
         lineageFilter = new LikeOperator();
     }
 
-    public ResourceIdOperator getGmlIdFilter() {
-        return gmlIdFilter;
+    public ResourceIdOperator getResourceIdFilter() {
+        return resourceIdFilter;
     }
 
-    public boolean isSetGmlIdFilter() {
-        return gmlIdFilter != null;
+    public boolean isSetResourceIdFilter() {
+        return resourceIdFilter != null;
     }
 
-    public void setGmlIdFilter(ResourceIdOperator gmlIdFilter) {
-        this.gmlIdFilter = gmlIdFilter;
+    public void setResourceIdFilter(ResourceIdOperator resourceIdFilter) {
+        this.resourceIdFilter = resourceIdFilter;
     }
 
-    public LikeOperator getGmlNameFilter() {
-        return gmlNameFilter;
+    public LikeOperator getNameFilter() {
+        return nameFilter;
     }
 
-    public boolean isSetGmlNameFilter() {
-        return gmlNameFilter != null;
+    public boolean isSetNameFilter() {
+        return nameFilter != null;
     }
 
-    public void setGmlNameFilter(LikeOperator gmlNameFilter) {
-        this.gmlNameFilter = gmlNameFilter;
+    public void setNameFilter(LikeOperator nameFilter) {
+        this.nameFilter = nameFilter;
     }
 
     public LikeOperator getLineageFilter() {

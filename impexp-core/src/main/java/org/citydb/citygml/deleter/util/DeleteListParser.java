@@ -46,7 +46,7 @@ public class DeleteListParser implements AutoCloseable {
 
     private String name;
     private int index = 1;
-    private IdType idType = IdType.GML_ID;
+    private IdType idType = IdType.RESOURCE_ID;
     private String delimiter = ",";
     private String commentStart = "#";
     private char quoteChar = '"';
@@ -58,7 +58,7 @@ public class DeleteListParser implements AutoCloseable {
     private String id;
 
     public enum IdType {
-        GML_ID,
+        RESOURCE_ID,
         DATABASE_ID
     }
 

@@ -9,21 +9,21 @@ public class CityModelEnvelopeMode {
     @XmlAttribute
     private Boolean useTileExtent;
     @XmlValue
-    private Boolean useEnvelope;
+    private boolean enabled;
 
     public boolean isUseTileExtent() {
         return useTileExtent != null ? useTileExtent : false;
     }
 
-    public void setUseTileExtent(boolean useTileExtent) {
+    public void setUseTileExtent(Boolean useTileExtent) {
         this.useTileExtent = useTileExtent;
     }
 
-    public boolean isUseEnvelope() {
-        return useEnvelope != null ? useEnvelope : false;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setUseEnvelope(boolean useEnvelope) {
-        this.useEnvelope = useEnvelope;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

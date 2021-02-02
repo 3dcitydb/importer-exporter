@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.xlink.DBXlink;
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.xlink.DBXlink;
+import org.citydb.citygml.common.xlink.DBXlinkTextureFile;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -72,7 +72,6 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.util.walker.FeatureWalker;
 
 import java.io.File;
@@ -99,8 +98,6 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 	private final List<Table> appearanceADEHookTables;
 	private final List<Table> surfaceDataADEHookTables;
-	private boolean appendOldGmlId;
-	private String gmlIdPrefix;
 
 	protected AbstractAppearanceExporter(boolean isGlobal, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(exporter);
@@ -116,12 +113,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		separator = new File(textureURI).isAbsolute() ? File.separator : "/";
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
-
-		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
-		if (!useXLink) {
-			appendOldGmlId = exporter.getExportConfig().getXlink().getFeature().isSetAppendId();
-			gmlIdPrefix = exporter.getExportConfig().getXlink().getFeature().getIdPrefix();
-		}
+		useXLink = exporter.getInternalConfig().isExportFeatureReferences();
 
 		table = new Table(TableEnum.APPEARANCE.getName(), schema);
 		Table appearToSurfaceData = new Table(TableEnum.APPEAR_TO_SURFACE_DATA.getName(), schema);
@@ -258,17 +250,14 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		int objectClassId = rs.getInt(8);
 		String gmlId = rs.getString(9);
 
+		boolean generateNewGmlId = false;
 		if (gmlId != null) {
 			// process xlink
-			if (exporter.lookupAndPutObjectUID(gmlId, surfaceDataId, objectClassId)) {
+			if (exporter.lookupAndPutObjectId(gmlId, surfaceDataId, objectClassId)) {
 				if (useXLink)
 					return new SurfaceDataProperty("#" + gmlId);
 				else {
-					String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
-					if (appendOldGmlId)
-						newGmlId = newGmlId + "-" + gmlId;
-
-					gmlId = newGmlId;
+					generateNewGmlId = true;
 				}
 			}
 		}
@@ -277,6 +266,10 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		if (surfaceData == null) {
 			exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, surfaceDataId) + " as surface data object.");
 			return empty;
+		}
+
+		if (generateNewGmlId) {
+			gmlId = exporter.generateFeatureGmlId(surfaceData, gmlId);
 		}
 
 		surfaceData.setId(gmlId);

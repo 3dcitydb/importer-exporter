@@ -27,8 +27,8 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkBasic;
+import org.citydb.citygml.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.config.Config;

@@ -27,25 +27,25 @@
  */
 package org.citydb.config.project.importer;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
 import org.citydb.config.project.common.AffineTransformation;
 import org.citydb.config.project.common.Path;
-import org.citydb.config.project.common.XSLTransformation;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "import")
 @XmlType(name = "ImportType", propOrder = {
         "filter",
         "continuation",
         "path",
-        "gmlId",
-        "address",
+        "generalOptions",
+        "resourceId",
         "appearances",
         "affineTransformation",
+        "cityGMLOptions",
+        "cityJSONOptions",
         "indexes",
-        "xmlValidation",
-        "xslTransformation",
         "importLog",
         "resources"
 })
@@ -53,27 +53,28 @@ public class ImportConfig {
     private ImportFilter filter;
     private Continuation continuation;
     private Path path;
-    private ImportGmlId gmlId;
-    private ImportAddress address;
+    @XmlElement(name = "general")
+    private GeneralOptions generalOptions;
+    private ImportResourceId resourceId;
     private ImportAppearance appearances;
     private AffineTransformation affineTransformation;
+    private CityGMLOptions cityGMLOptions;
+    private CityJSONOptions cityJSONOptions;
     private Index indexes;
-    private XMLValidation xmlValidation;
-    private XSLTransformation xslTransformation;
     private ImportLog importLog;
     private ImportResources resources;
 
     public ImportConfig() {
         continuation = new Continuation();
         path = new Path();
-        gmlId = new ImportGmlId();
-        address = new ImportAddress();
+        generalOptions = new GeneralOptions();
+        resourceId = new ImportResourceId();
         appearances = new ImportAppearance();
         filter = new ImportFilter();
         affineTransformation = new AffineTransformation();
+        cityGMLOptions = new CityGMLOptions();
+        cityJSONOptions = new CityJSONOptions();
         indexes = new Index();
-        xmlValidation = new XMLValidation();
-        xslTransformation = new XSLTransformation();
         importLog = new ImportLog();
         resources = new ImportResources();
     }
@@ -83,8 +84,9 @@ public class ImportConfig {
     }
 
     public void setContinuation(Continuation continuation) {
-        if (continuation != null)
+        if (continuation != null) {
             this.continuation = continuation;
+        }
     }
 
     public Path getPath() {
@@ -92,26 +94,29 @@ public class ImportConfig {
     }
 
     public void setPath(Path path) {
-        if (path != null)
+        if (path != null) {
             this.path = path;
+        }
     }
 
-    public ImportGmlId getGmlId() {
-        return gmlId;
+    public GeneralOptions getGeneralOptions() {
+        return generalOptions;
     }
 
-    public void setGmlId(ImportGmlId gmlId) {
-        if (gmlId != null)
-            this.gmlId = gmlId;
+    public void setGeneralOptions(GeneralOptions generalOptions) {
+        if (generalOptions != null) {
+            this.generalOptions = generalOptions;
+        }
     }
 
-    public ImportAddress getAddress() {
-        return address;
+    public ImportResourceId getResourceId() {
+        return resourceId;
     }
 
-    public void setAddress(ImportAddress address) {
-        if (address != null)
-            this.address = address;
+    public void setResourceId(ImportResourceId resourceId) {
+        if (resourceId != null) {
+            this.resourceId = resourceId;
+        }
     }
 
     public ImportAppearance getAppearances() {
@@ -119,8 +124,9 @@ public class ImportConfig {
     }
 
     public void setAppearances(ImportAppearance appearances) {
-        if (appearances != null)
+        if (appearances != null) {
             this.appearances = appearances;
+        }
     }
 
     public ImportFilter getFilter() {
@@ -128,8 +134,9 @@ public class ImportConfig {
     }
 
     public void setFilter(ImportFilter filter) {
-        if (filter != null)
+        if (filter != null) {
             this.filter = filter;
+        }
     }
 
     public Index getIndexes() {
@@ -137,26 +144,9 @@ public class ImportConfig {
     }
 
     public void setIndexes(Index indexes) {
-        if (indexes != null)
+        if (indexes != null) {
             this.indexes = indexes;
-    }
-
-    public XMLValidation getXMLValidation() {
-        return xmlValidation;
-    }
-
-    public void setXMLValidation(XMLValidation xmlValidation) {
-        if (xmlValidation != null)
-            this.xmlValidation = xmlValidation;
-    }
-
-    public XSLTransformation getXSLTransformation() {
-        return xslTransformation;
-    }
-
-    public void setXSLTransformation(XSLTransformation xslTransformation) {
-        if (xslTransformation != null)
-            this.xslTransformation = xslTransformation;
+        }
     }
 
     public AffineTransformation getAffineTransformation() {
@@ -164,8 +154,29 @@ public class ImportConfig {
     }
 
     public void setAffineTransformation(AffineTransformation affineTransformation) {
-        if (affineTransformation != null)
+        if (affineTransformation != null) {
             this.affineTransformation = affineTransformation;
+        }
+    }
+
+    public CityGMLOptions getCityGMLOptions() {
+        return cityGMLOptions;
+    }
+
+    public void setCityGMLOptions(CityGMLOptions cityGMLOptions) {
+        if (cityGMLOptions != null) {
+            this.cityGMLOptions = cityGMLOptions;
+        }
+    }
+
+    public CityJSONOptions getCityJSONOptions() {
+        return cityJSONOptions;
+    }
+
+    public void setCityJSONOptions(CityJSONOptions cityJSONOptions) {
+        if (cityJSONOptions != null) {
+            this.cityJSONOptions = cityJSONOptions;
+        }
     }
 
     public ImportLog getImportLog() {
@@ -173,8 +184,9 @@ public class ImportConfig {
     }
 
     public void setImportLog(ImportLog importLog) {
-        if (importLog != null)
+        if (importLog != null) {
             this.importLog = importLog;
+        }
     }
 
     public ImportResources getResources() {
@@ -182,8 +194,9 @@ public class ImportConfig {
     }
 
     public void setResources(ImportResources resources) {
-        if (resources != null)
+        if (resources != null) {
             this.resources = resources;
+        }
     }
 
 }

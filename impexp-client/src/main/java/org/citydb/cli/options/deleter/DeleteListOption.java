@@ -37,7 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class DeleteListOption implements CliOption {
-    enum Type {gml, db}
+    enum Type {resource, db}
 
     @CommandLine.Option(names = {"-f", "--delete-list"}, required = true,
             description = "Name of the CSV file containing the delete list.")
@@ -55,7 +55,7 @@ public class DeleteListOption implements CliOption {
             description = "Index of the id column (default: 1).")
     private Integer index;
 
-    @CommandLine.Option(names = {"-C", "--id-column-type"}, paramLabel = "<type>", defaultValue = "gml",
+    @CommandLine.Option(names = {"-C", "--id-column-type"}, paramLabel = "<type>", defaultValue = "resource",
             description = "Type of id column value: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Type type;
 
@@ -77,7 +77,7 @@ public class DeleteListOption implements CliOption {
 
     public DeleteListParser toDeleteListParser() {
         DeleteListParser parser = new DeleteListParser(file)
-                .withIdType(type == Type.db ? DeleteListParser.IdType.DATABASE_ID : DeleteListParser.IdType.GML_ID)
+                .withIdType(type == Type.db ? DeleteListParser.IdType.DATABASE_ID : DeleteListParser.IdType.RESOURCE_ID)
                 .withHeader(header)
                 .withDelimiter(delimiter)
                 .withQuoteChar(quote.charAt(0))

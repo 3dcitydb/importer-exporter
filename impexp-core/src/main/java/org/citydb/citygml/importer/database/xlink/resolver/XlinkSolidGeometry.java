@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkSolidGeometry;
+import org.citydb.citygml.common.xlink.DBXlinkSolidGeometry;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.log.Logger;
