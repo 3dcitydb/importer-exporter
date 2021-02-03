@@ -88,8 +88,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	private JButton browseButton;
 	private FilterPanel filterPanel;
 	private JButton exportButton;
-	private JButton switchFilterModeButton;
-	private boolean useSimpleFilter;
+	private JToggleButton simpleFilterButton;
+	private JToggleButton xmlQueryButton;
 
 	public ExportPanel(ViewController viewController, Config config) {
 		this.viewController = viewController;
@@ -104,7 +104,17 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		browseButton = new JButton();
 		filterPanel = new FilterPanel(viewController, config);
 		exportButton = new JButton();
-		switchFilterModeButton = new JButton();
+		simpleFilterButton = new JToggleButton();
+		xmlQueryButton = new JToggleButton();
+
+		JToolBar toolBar = new JToolBar();
+		toolBar.setBorder(BorderFactory.createEmptyBorder());
+		toolBar.add(simpleFilterButton);
+		toolBar.add(xmlQueryButton);
+
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(simpleFilterButton);
+		buttonGroup.add(xmlQueryButton);
 
 		browseButton.addActionListener(e -> saveFile(Language.I18N.getString("main.tabbedPane.export")));
 
@@ -135,7 +145,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridBagLayout());
 		buttonPanel.add(exportButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
-		buttonPanel.add(switchFilterModeButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
+		buttonPanel.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
 
 		add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
 		add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -145,31 +155,32 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		browseText.setDropTarget(dropTarget);
 		setDropTarget(dropTarget);
 
-		switchFilterModeButton.addActionListener(e -> switchFilterMode());
+		simpleFilterButton.addActionListener(e -> switchFilterMode());
+		xmlQueryButton.addActionListener(e -> switchFilterMode());
 	}
 
 	private void switchFilterMode() {
-		useSimpleFilter = !useSimpleFilter;
-		filterPanel.showFilterDialog(useSimpleFilter);
-		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
+		filterPanel.showFilterDialog(simpleFilterButton.isSelected());
 	}
 
 	public void doTranslation() {
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		exportButton.setText(Language.I18N.getString("export.button.export"));
-		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
+		simpleFilterButton.setText(Language.I18N.getString("filter.button.mode.simple"));
+		xmlQueryButton.setText(Language.I18N.getString("filter.button.mode.xml"));
 		filterPanel.doTranslation();
 	}
 
 	public void loadSettings() {
-		useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
 		filterPanel.loadSettings();
+		boolean useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
+		simpleFilterButton.setSelected(useSimpleFilter);
+		xmlQueryButton.setSelected(!useSimpleFilter);
 		filterPanel.showFilterDialog(useSimpleFilter);
-		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
 	}
 
 	public void setSettings() {
-		config.getExportConfig().setUseSimpleQuery(useSimpleFilter);
+		config.getExportConfig().setUseSimpleQuery(simpleFilterButton.isSelected());
 
 		try {
 			Paths.get(browseText.getText());
