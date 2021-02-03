@@ -83,7 +83,7 @@ public class SimpleQuery {
     protected CounterFilter counterFilter;
     @XmlElement(name = "lods")
     protected LodFilter lodFilter;
-    @XmlElement(name = "bbox", required = true)
+    @XmlElement(name = "bbox")
     private SimpleTiling bboxFilter;
 
     public SimpleQuery() {
