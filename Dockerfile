@@ -4,13 +4,15 @@
 ###############################################################################
 
 # Fetch & build stage #########################################################
-# Base image
-ARG buildstage_tag='11.0.9-slim'
-FROM openjdk:${buildstage_tag} AS buildstage
+# ARGS
+ARG BUILDER_IMAGE_TAG='11.0.10-jdk-slim'
+ARG RUNTIME_IMAGE_TAG='11.0.10-jre-slim'
 
-WORKDIR /build_tmp
+# Base image
+FROM openjdk:${BUILDER_IMAGE_TAG} AS builder
 
 # Copy source code
+WORKDIR /build_tmp
 COPY . ./
 
 # Build
@@ -30,12 +32,14 @@ RUN set -x && \
     /var/lib/apt/lists/*
 
 # Runtime stage ###############################################################
-ARG runtimestage_tag='11.0.9-jre-slim'
-FROM openjdk:11-jre-slim AS runtimestage
-COPY --from=buildstage /impexp /impexp
+# Base image
+FROM openjdk:${RUNTIME_IMAGE_TAG} AS runtime
 
+# copy from builder
 WORKDIR /impexp
+COPY --from=builder /impexp .
 
+# Set permissions and prepare /share directory
 RUN set -x && \
   mkdir -p /share/config /share/data && \
   chmod -v u+x /impexp/bin/* /impexp/contribs/collada2gltf/COLLADA2GLTF*linux/COLLADA2GLTF-bin && \
