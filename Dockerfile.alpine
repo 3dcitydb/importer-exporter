@@ -32,7 +32,7 @@ RUN set -x && \
     /var/lib/apt/lists/*
 
 # Runtime stage ###############################################################
-# Bse image
+# Base image
 FROM adoptopenjdk/openjdk11:${RUNTIME_IMAGE_TAG} AS runtime
 
 # copy from builder
