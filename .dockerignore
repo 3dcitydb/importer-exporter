@@ -1,0 +1,9 @@
+resources/
+.github/
+.gradle/
+.git/
+*/build/
+CHANGES.md
+LICENSE
+README.md
+docker-scripts/build.sh
