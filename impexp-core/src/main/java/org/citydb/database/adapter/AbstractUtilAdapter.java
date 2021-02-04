@@ -78,7 +78,7 @@ public abstract class AbstractUtilAdapter {
         srsDefMap = new ConcurrentHashMap<>();
     }
 
-    protected abstract void getCityDBVersion(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException;
+    protected abstract void getCityDBMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException;
     protected abstract void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException;
     protected abstract void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException;
     protected abstract void changeSrs(DatabaseSrs srs, boolean doTransform, String schema, Connection connection) throws SQLException;
@@ -100,7 +100,7 @@ public abstract class AbstractUtilAdapter {
 
             // get 3dcitydb specific meta data
             DatabaseMetaData metaData = new DatabaseMetaData(databaseAdapter.getConnectionDetails());
-            getCityDBVersion(metaData, schema, conn);
+            getCityDBMetaData(metaData, schema, conn);
             getDatabaseMetaData(metaData, schema, conn);
             metaData.setDatabaseProductName(vendorMetaData.getDatabaseProductName());
             metaData.setDatabaseProductVersion(vendorMetaData.getDatabaseProductVersion());

@@ -63,7 +63,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected void getCityDBVersion(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
+    protected void getCityDBMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
         try (Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery("select * from table(" + schema + "." +
                      databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.citydb_version") + ")")) {
