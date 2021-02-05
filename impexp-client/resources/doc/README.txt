@@ -81,7 +81,7 @@ third party applications.
 4. System requirements
 ----------------------
 
-* Java JRE or JDK >= 1.8
+* Java JRE or JDK >= 11
 * @citydbName@ version @citydbVersion@ on
   - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
   - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
@@ -91,7 +91,7 @@ providing appropriate Java support. It has been tested on the
 following platforms:
   - Microsoft Windows XP, Vista, Windows 7, 8, 10
   - Apple Mac OS X and macOS
-  - Ubuntu 9 - 18
+  - Ubuntu 9 - 20
 
 
 5. (Un)Installation
@@ -154,26 +154,17 @@ b) The @name@ also offers a
    - @cliName@.bat   (Microsoft Windows family)
    - @cliName@       (UNIX/Linux family, macOS)
 
-   To show the help message and all available options, simply type the
+   To show the help message and all available subcommands, simply type the
    following command:
 
-       @cliName@ -help
-
-   To run an operation without a graphical user interface, use the -shell
-   option and the option for the operation. For example, type the following
-   command to import a CityGML file:
-
-       @cliName@ -shell -import [-options] /path/to/CityGML.gml
-
-   To launch the graphical user interface, simply run the CLI script without
-   additional options.
+       @cliName@ --help
 
    PLEASE NOTE:
    The CLI scripts set the initial heap size of the Java Virtual Machine (JVM)
    to 1GB using the -Xms parameter of the JVM. This value has been chosen to
-   be reasonable for most platforms. Please edit the CLI scripts in case you
-   need to adapt the default values (e.g., in order to increase the available
-   main memory).
+   be reasonable for most scenarios. Please edit the CLI scripts in case you
+   need to adapt the default value. You can also use the environment variables
+   JAVA_OPTS and IMPEXP_OPTS to pass JVM options to CLI script.
 
 
 7. Documentation
