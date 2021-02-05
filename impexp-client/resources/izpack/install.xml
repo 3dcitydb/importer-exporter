@@ -41,7 +41,7 @@
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>
         </authors>
         <uninstaller write="yes" path="$INSTALL_PATH/uninstaller"/>
-        <javaversion>1.8</javaversion>
+        <javaversion>11</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>
     </info>
 
