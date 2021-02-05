@@ -10,7 +10,7 @@ subprojects {
     version '4.3.0'
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
         compileJava.options.encoding = 'UTF-8'
         withJavadocJar()
         withSourcesJar()
