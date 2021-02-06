@@ -137,7 +137,7 @@ public class ADEInfoOperation extends DatabaseOperationView {
 
         adeTable.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                if (e.getClickCount() == 2) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
                     infoListener.actionPerformed(new ActionEvent(adeTable, 1, "Info"));
                 }
             }
