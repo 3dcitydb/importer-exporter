@@ -96,8 +96,9 @@ public class SQLFilterView extends FilterView {
             component.revalidate();
             component.repaint();
 
-            if (!removeButton.isEnabled())
+            if (!removeButton.isEnabled()) {
                 removeButton.setEnabled(true);
+            }
         });
 
         removeButton.addActionListener(e -> {
@@ -110,8 +111,9 @@ public class SQLFilterView extends FilterView {
                 component.revalidate();
                 component.repaint();
 
-                if (additionalRows == 0)
+                if (additionalRows == 0) {
                     removeButton.setEnabled(false);
+                }
             }
         });
 
@@ -160,21 +162,23 @@ public class SQLFilterView extends FilterView {
         SimpleQuery query = simpleQuerySupplier.get();
 
         SelectOperator sql = query.getSQLFilter();
-        sqlText.setText(sql.getValue());
-
         additionalRows = sqlFilterComponentSupplier.get().getAdditionalRows();
+
         SwingUtilities.invokeLater(() -> {
+            Dimension size = scrollPane.getPreferredSize();
+            sqlText.setText(sql.getValue());
+
             if (additionalRows > 0) {
-                Dimension size = scrollPane.getPreferredSize();
                 size.height += additionalRows * rowHeight;
-
-                scrollPane.setPreferredSize(size);
-                component.revalidate();
-                component.repaint();
-            } else
+            } else {
                 additionalRows = 0;
+            }
 
-            removeButton.setEnabled(additionalRows > 0);
+            scrollPane.setPreferredSize(size);
+            component.revalidate();
+            component.repaint();
+
+            removeButton.setEnabled(addButton.isEnabled() && additionalRows > 0);
         });
     }
 
@@ -185,8 +189,9 @@ public class SQLFilterView extends FilterView {
         SelectOperator sql = query.getSQLFilter();
         sql.reset();
         String value = sqlText.getText().trim();
-        if (!value.isEmpty())
+        if (!value.isEmpty()) {
             sql.setValue(value.replaceAll(";", " "));
+        }
 
         sqlFilterComponentSupplier.get().setAdditionalRows(additionalRows);
     }

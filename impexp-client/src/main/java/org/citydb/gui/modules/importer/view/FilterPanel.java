@@ -172,7 +172,7 @@ public class FilterPanel extends JPanel {
 			bboxModePanel.setLayout(new GridBagLayout());
 			{
 				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 0));
+				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 0));
 				bboxPanel.addComponent(bboxModePanel, true);
 			}
 
