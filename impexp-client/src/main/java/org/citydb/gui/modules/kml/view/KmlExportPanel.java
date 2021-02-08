@@ -694,7 +694,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             // resource id
             if (query.isUseResourceIdFilter()
                     && !query.getResourceIdFilter().isSetResourceIds()) {
-                viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+                viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
                         Language.I18N.getString("common.dialog.error.incorrectData.id"));
                 return;
             }
@@ -727,7 +727,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 Double yMax = bbox.getUpperCorner().getY();
 
                 if (xMin == null || yMin == null || xMax == null || yMax == null) {
-                    viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+                    viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
                             Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
                     return;
                 }
@@ -735,7 +735,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
             // Feature classes check
             if (query.isUseTypeNames() && query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
-                viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+                viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
                         Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
                 return;
             }

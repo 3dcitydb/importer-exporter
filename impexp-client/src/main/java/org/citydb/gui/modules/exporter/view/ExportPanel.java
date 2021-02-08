@@ -220,7 +220,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					if (!attributeFilter.getResourceIdFilter().isSetResourceIds()
 							&& !attributeFilter.getNameFilter().isSetLiteral()
 							&& !attributeFilter.getLineageFilter().isSetLiteral()) {
-						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 								Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
 						return;
 					}
@@ -229,14 +229,14 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				// SQL filter
 				if (query.isUseSQLFilter()
 						&& !query.getSQLFilter().isSetValue()) {
-					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("export.dialog.error.incorrectData.sql"));
 					return;
 				}
 
 				// lod filter
 				if (query.isUseLodFilter() && !query.getLodFilter().isSetAnyLod()) {
-					viewController.errorMessage(Language.I18N.getString("export.dialog.error.lod"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("export.dialog.error.lod.noneSelected"));
 					return;
 				}
@@ -247,7 +247,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
 							|| (counterFilter.isSetCount() && counterFilter.getCount() < 0)
 							|| (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
-						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 								Language.I18N.getString("export.dialog.error.incorrectData.counter"));
 						return;
 					}
@@ -264,7 +264,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					Double yMax = bbox.getUpperCorner().getY();
 
 					if (xMin == null || yMin == null || xMax == null || yMax == null) {
-						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 								Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
 						return;
 					}
@@ -277,14 +277,14 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 
 				// feature types
 				if (query.isUseTypeNames() && query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
-					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
 					return;
 				}
 			} else {
 				QueryConfig query = config.getExportConfig().getQuery();
 				if (query.hasLocalProperty("unmarshallingFailed")) {
-					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("common.dialog.error.incorrectData.xmlQuery"));
 					return;
 				}

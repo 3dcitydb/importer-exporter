@@ -226,7 +226,7 @@ public class ImportPanel extends JPanel {
 			if (filter.isUseAttributeFilter()
 					&& !filter.getAttributeFilter().getResourceIdFilter().isSetResourceIds()
 					&& !filter.getAttributeFilter().getNameFilter().isSetLiteral()) {
-				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
+				viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 						Language.I18N.getString("common.dialog.error.incorrectData.attributes"));
 				return;
 			}
@@ -237,7 +237,7 @@ public class ImportPanel extends JPanel {
 				if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
 						|| (counterFilter.isSetCount() && counterFilter.getCount() < 0)
 						|| (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
-					viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("import.dialog.error.incorrectData.counter"));
 					return;
 				}
@@ -252,7 +252,7 @@ public class ImportPanel extends JPanel {
 				Double yMax = bbox.getUpperCorner().getY();
 
 				if (xMin == null || yMin == null || xMax == null || yMax == null) {
-					viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
 					return;
 				}
@@ -260,7 +260,7 @@ public class ImportPanel extends JPanel {
 
 			// feature types
 			if (filter.isUseTypeNames() && filter.getFeatureTypeFilter().getTypeNames().isEmpty()) {
-				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
+				viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 						Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
 				return;
 			}
