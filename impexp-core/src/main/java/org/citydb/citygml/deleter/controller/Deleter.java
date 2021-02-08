@@ -138,7 +138,15 @@ public class Deleter implements EventHandler {
 			InternalConfig internalConfig = new InternalConfig();
 			internalConfig.setMetadata(config.getDeleteConfig().getContinuation());
 
-			dbWorkerPool = createWorkerPool(bundledConnection, internalConfig, config, eventDispatcher);
+			// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
+			// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
+			// Hence, we use single thread to avoid this issue.
+			dbWorkerPool = new SingleWorkerPool<>(
+					"db_deleter_pool",
+					new DBDeleteWorkerFactory(bundledConnection, internalConfig, config, eventDispatcher),
+					300,
+					false);
+
 			dbWorkerPool.prestartCoreWorkers();
 			if (dbWorkerPool.getPoolSize() == 0) {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
@@ -191,7 +199,12 @@ public class Deleter implements EventHandler {
 
 		// show deleted features
 		if (!objectCounter.isEmpty()) {
-			log.info("Processed city objects:");
+			if (preview) {
+				log.info("The " + mode.value() + " operation would affect the following city objects:");
+			} else {
+				log.info((mode == DeleteMode.TERMINATE ? "Terminated" : "Deleted") + " city objects:");
+			}
+
 			Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
 			typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));
 		}
@@ -203,17 +216,6 @@ public class Deleter implements EventHandler {
 		}
 
 		return shouldRun;
-	}
-
-	protected WorkerPool<DBSplittingResult> createWorkerPool(ConnectionManager connectionManager, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
-		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
-		// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
-		// Hence, we use single thread to avoid this issue.
-		return new SingleWorkerPool<>(
-				"db_deleter_pool",
-				new DBDeleteWorkerFactory(connectionManager, internalConfig, config, eventDispatcher),
-				300,
-				false);
 	}
 
 	@Override

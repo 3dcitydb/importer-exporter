@@ -211,8 +211,9 @@ public class DBSplitter {
 						dbWorkerPool.addWork(splitter);
 					}
 				} while (rs.next() && shouldRun);
-			} else
+			} else {
 				log.info("No feature matches the request.");
+			}
 		}
 	}
 
