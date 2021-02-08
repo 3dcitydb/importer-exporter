@@ -202,9 +202,10 @@ public class MenuFile extends JMenu {
 		addSeparator();
 		add(exit);
 
-		openConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		saveConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		saveConfigAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+		openConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMaskEx()));
+		saveConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMaskEx()));
+		saveConfigAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMaskEx() | InputEvent.SHIFT_DOWN_MASK));
 
 		if (!config.getGuiConfig().getRecentlyUsedConfigFiles().isEmpty())
 			setLastUsedList();			

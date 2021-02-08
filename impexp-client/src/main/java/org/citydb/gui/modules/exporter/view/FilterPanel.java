@@ -127,8 +127,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 	private void initGui(ViewController viewController) {
 		useAttributeFilter = new JCheckBox();
 		useSQLFilter = new JCheckBox();
-		useCounterFilter = new JCheckBox();
 		useLodFilter = new JCheckBox();
+		useCounterFilter = new JCheckBox();
 		useBBoxFilter = new JCheckBox();
 		useFeatureFilter = new JCheckBox();
 
@@ -241,10 +241,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 				lods = new JCheckBox[5];
 				for (int lod = 0; lod < lods.length; lod++) {
 					lods[lod] = new JCheckBox("LoD" + lod);
-					content.add(lods[lod], GuiUtil.setConstraints(lod, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 15));
+					content.add(lods[lod], GuiUtil.setConstraints(lod, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 10));
 				}
 
-				content.add(lodModeLabel, GuiUtil.setConstraints(5, 0, 0, 0, GridBagConstraints.NONE, 0, 20, 0, 5));
+				content.add(lodModeLabel, GuiUtil.setConstraints(5, 0, 0, 0, GridBagConstraints.NONE, 0, 10, 0, 5));
 				content.add(lodMode, GuiUtil.setConstraints(6, 0, 0.5, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
 				content.add(lodDepthLabel, GuiUtil.setConstraints(7, 0, 0, 0, GridBagConstraints.NONE, 0, 20, 0, 5));
 				content.add(lodDepth, GuiUtil.setConstraints(8, 0, 0.5, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
@@ -281,8 +281,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 			bboxModePanel.setLayout(new GridBagLayout());
 			{
 				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 0));
-				bboxModePanel.add(bboxTiling, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
+				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 20, 0, 0));
+				bboxModePanel.add(bboxTiling, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 20, 0, 5));
 				bboxModePanel.add(tilingRowsText, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
 				bboxModePanel.add(tilingColumnsLabel, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
 				bboxModePanel.add(tilingColumnsText, GuiUtil.setConstraints(5, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
@@ -318,8 +318,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		useAttributeFilter.addItemListener(e -> setEnabledAttributeFilter());
 		useSQLFilter.addItemListener(e -> setEnabledSQLFilter());
-		useCounterFilter.addItemListener(e -> setEnabledCounterFilter());
 		useLodFilter.addItemListener(e -> setEnabledLodFilter());
+		useCounterFilter.addItemListener(e -> setEnabledCounterFilter());
 		useBBoxFilter.addItemListener(e -> setEnabledBBoxFilter());
 		useFeatureFilter.addItemListener(e -> setEnabledFeatureFilter());
 
@@ -530,8 +530,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		query.setUseAttributeFilter(useAttributeFilter.isSelected());
 		query.setUseSQLFilter(useSQLFilter.isSelected());
-		query.setUseCountFilter(useCounterFilter.isSelected());
 		query.setUseLodFilter(useLodFilter.isSelected());
+		query.setUseCountFilter(useCounterFilter.isSelected());
 		query.setUseBboxFilter(useBBoxFilter.isSelected());
 		query.setUseTypeNames(useFeatureFilter.isSelected());
 

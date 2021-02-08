@@ -893,7 +893,7 @@ public abstract class KmlGenericObject {
 
 	protected void addTexImageUri(long surfaceId, String texImageUri){
 		if (texImageUri != null) {
-			texImageUris.put(new Long(surfaceId), texImageUri);
+			texImageUris.put(surfaceId, texImageUri);
 		}
 	}
 

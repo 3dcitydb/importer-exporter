@@ -303,7 +303,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             tilingContent.add(automaticTilingRadioButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
             tilingContent.add(tileSizeText, GuiUtil.setConstraints(1, 0, 0.34, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
             tilingContent.add(tileSizeUnit, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-            tilingContent.add(manualTilingRadioButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
+            tilingContent.add(manualTilingRadioButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 20, 0, 5));
             tilingContent.add(rowsText, GuiUtil.setConstraints(4, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
             tilingContent.add(columnsLabel, GuiUtil.setConstraints(5, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
             tilingContent.add(columnsText, GuiUtil.setConstraints(6, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));

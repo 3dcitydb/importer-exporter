@@ -58,13 +58,13 @@ public class VertexInfo {
 		if (texCoords == null) {
 			texCoords = new HashMap<Long, TexCoords>();
 		}
-		texCoords.put(new Long(surfaceId), texCoordsForThisSurface);
+		texCoords.put(surfaceId, texCoordsForThisSurface);
 	}
 
 	protected TexCoords getTexCoords (long surfaceId) {
 		TexCoords value = null;
 		if (texCoords != null) {
-			value = texCoords.get(new Long(surfaceId));
+			value = texCoords.get(surfaceId);
 		}
 		return value;
 	}
