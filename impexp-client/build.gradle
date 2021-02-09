@@ -14,9 +14,9 @@ dependencies {
     api project(':impexp-core')
     api project(':impexp-client-common')
     api project(':impexp-kml-collada-plugin')
-    api 'com.formdev:flatlaf:1.0-rc2'
-    api 'com.formdev:flatlaf-extras:1.0-rc2'
-    api 'com.formdev:flatlaf-swingx:1.0-rc2'
+    api 'com.formdev:flatlaf:1.0-rc3'
+    api 'com.formdev:flatlaf-extras:1.0-rc3'
+    api 'com.formdev:flatlaf-swingx:1.0-rc3'
     api 'com.fifesoft:rsyntaxtextarea:3.1.2'
     api ('org.citydb:swingx-ws:1.1.4') {
         transitive = false
