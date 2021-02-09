@@ -37,10 +37,10 @@ import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
@@ -49,6 +49,8 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
+import org.citydb.event.global.StatusDialogMessage;
+import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
@@ -77,6 +79,8 @@ public class Deleter implements EventHandler {
 	private DBSplitter dbSplitter;
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
 	private BundledConnection bundledConnection;
+
+	private GlobalAppearanceCleaner globalAppearanceCleaner;
 
 	private volatile boolean shouldRun = true;
 	private DeleteException exception;
@@ -115,6 +119,7 @@ public class Deleter implements EventHandler {
 		try {
 			return process(queries, preview);
 		} finally {
+			objectCounter.clear();
 			eventDispatcher.removeEventHandler(this);
 		}
 	}
@@ -134,6 +139,17 @@ public class Deleter implements EventHandler {
 
 		bundledConnection = new BundledConnection();
 		try {
+			if (preview) {
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.preview"), this));
+				log.info("Running " + mode.value() + " in preview mode. Affected city objects will not be " +
+						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
+			} else {
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString(mode == DeleteMode.TERMINATE ?
+						"delete.dialog.title.terminate" :
+						"delete.dialog.title.delete"), this));
+				log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") + " city objects from database.");
+			}
+
 			// create internal config and set metadata
 			InternalConfig internalConfig = new InternalConfig();
 			internalConfig.setMetadata(config.getDeleteConfig().getContinuation());
@@ -150,13 +166,6 @@ public class Deleter implements EventHandler {
 			dbWorkerPool.prestartCoreWorkers();
 			if (dbWorkerPool.getPoolSize() == 0) {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
-			}
-
-			if (preview) {
-				log.info("Running " + mode.value() + " in preview mode. Affected city objects will not be " +
-						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
-			} else {
-				log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") + " city objects from database.");
 			}
 
 			while (shouldRun && queries.hasNext()) {
@@ -180,14 +189,14 @@ public class Deleter implements EventHandler {
 		} catch (Throwable e) {
 			throw new DeleteException("An unexpected error occurred.", e);
 		} finally {
+			if (dbWorkerPool != null) {
+				dbWorkerPool.shutdownNow();
+			}
+
 			try {
 				bundledConnection.close();
 			} catch (SQLException e) {
 				//
-			}
-
-			if (dbWorkerPool != null) {
-				dbWorkerPool.shutdownNow();
 			}
 
 			try {
@@ -195,20 +204,39 @@ public class Deleter implements EventHandler {
 			} catch (InterruptedException e) {
 				//
 			}
+		}
 
-			// show deleted features
-			if (!objectCounter.isEmpty()) {
-				if (preview) {
-					log.info("The " + mode.value() + " operation would affect the following city objects:");
+		if (shouldRun
+				&& config.getDeleteConfig().isCleanupGlobalAppearances()
+				&& !preview
+				&& !objectCounter.isEmpty()) {
+			try {
+				if (databaseAdapter.getUtil().containsGlobalAppearances()) {
+					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.cleanupGlobalAppearances"), this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+					log.info("Cleaning up unreferenced global appearances.");
+
+					globalAppearanceCleaner = new GlobalAppearanceCleaner();
+					int deleted = globalAppearanceCleaner.doCleanup();
+					log.info("Deleted global appearances: " + deleted);
 				} else {
-					log.info((mode == DeleteMode.TERMINATE ? "Terminated" : "Deleted") + " city objects:");
+					log.debug("The database does not contain global appearances.");
 				}
+			} catch (SQLException e) {
+				throw new DeleteException("Failed to query global appearances from database.", e);
+			}
+		}
 
-				Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
-				typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
+		// show deleted features
+		if (!objectCounter.isEmpty()) {
+			if (preview) {
+				log.info("The " + mode.value() + " operation would affect the following city objects:");
+			} else {
+				log.info((mode == DeleteMode.TERMINATE ? "Terminated" : "Deleted") + " city objects:");
 			}
 
-			objectCounter.clear();
+			Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
+			typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
 		}
 
 		if (shouldRun) {
@@ -245,6 +273,10 @@ public class Deleter implements EventHandler {
 
 				if (dbWorkerPool != null) {
 					dbWorkerPool.drainWorkQueue();
+				}
+
+				if (globalAppearanceCleaner != null) {
+					globalAppearanceCleaner.interrupt();
 				}
 			}
 		}

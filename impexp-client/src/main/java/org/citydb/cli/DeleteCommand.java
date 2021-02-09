@@ -30,6 +30,7 @@ package org.citydb.cli;
 
 import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.controller.Deleter;
+import org.citydb.cli.options.deleter.CleanupOption;
 import org.citydb.cli.options.deleter.DeleteListOption;
 import org.citydb.cli.options.deleter.QueryOption;
 import org.citydb.config.Config;
@@ -57,6 +58,9 @@ public class DeleteCommand extends CliCommand {
     @CommandLine.Option(names = {"-v", "--preview"},
             description = "Only check which top-level features would be affected, but that the features will not be deleted or terminated.")
     private boolean preview;
+
+    @CommandLine.ArgGroup(exclusive = false)
+    private CleanupOption cleanupOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
@@ -89,6 +93,11 @@ public class DeleteCommand extends CliCommand {
             config.getDeleteConfig().setMode(mode == Mode.terminate ?
                     DeleteMode.TERMINATE :
                     DeleteMode.DELETE);
+        }
+
+        // set cleanup option
+        if (cleanupOption != null) {
+            config.getDeleteConfig().setCleanupGlobalAppearances(cleanupOption.isCleanupGlobalAppearances());
         }
 
         try {

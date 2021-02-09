@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlType;
         "query",
         "simpleQuery",
         "mode",
+        "cleanupGlobalAppearances",
         "continuation"
 })
 public class DeleteConfig {
@@ -22,6 +23,7 @@ public class DeleteConfig {
     private SimpleQuery simpleQuery;
     @XmlElement(required = true)
     private DeleteMode mode = DeleteMode.DELETE;
+    private boolean cleanupGlobalAppearances;
     private Continuation continuation;
 
     public DeleteConfig() {
@@ -62,6 +64,14 @@ public class DeleteConfig {
 
     public void setMode(DeleteMode mode) {
         this.mode = mode;
+    }
+
+    public boolean isCleanupGlobalAppearances() {
+        return cleanupGlobalAppearances;
+    }
+
+    public void setCleanupGlobalAppearances(boolean cleanupGlobalAppearances) {
+        this.cleanupGlobalAppearances = cleanupGlobalAppearances;
     }
 
     public Continuation getContinuation() {
