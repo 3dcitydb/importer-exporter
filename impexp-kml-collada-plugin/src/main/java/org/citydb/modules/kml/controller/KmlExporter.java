@@ -718,7 +718,7 @@ public class KmlExporter implements EventHandler {
 		if (!totalObjectCounter.isEmpty()) {
 			log.info("Exported city objects:");
 			Map<String, Long> typeNames = Util.mapObjectCounter(totalObjectCounter, schemaMapping);					
-			typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));
+			typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
 		}
 
 		log.info("Processed geometry objects: " + geometryCounter);

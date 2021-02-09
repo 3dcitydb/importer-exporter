@@ -424,6 +424,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
             Array result = interruptableCallableStatement.getArray(1);
             return ((Object[]) result.getArray()).length;
         } catch (SQLException e) {
+            connection.rollback();
             if (!isInterrupted)
                 throw e;
         } finally {

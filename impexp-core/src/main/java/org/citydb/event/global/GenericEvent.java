@@ -66,7 +66,7 @@ public final class GenericEvent extends Event {
 		return !properties.isEmpty();
 	}
 	
-	public boolean isSetPropery(String key) {
+	public boolean isSetProperty(String key) {
 		return properties.containsKey(key);
 	}
 

@@ -390,6 +390,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
                     deleted++;
             }
         } catch (SQLException e) {
+            connection.rollback();
             if (!isInterrupted)
                 throw e;
         } finally {

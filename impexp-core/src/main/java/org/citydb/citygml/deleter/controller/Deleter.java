@@ -195,18 +195,20 @@ public class Deleter implements EventHandler {
 			} catch (InterruptedException e) {
 				//
 			}
-		}
 
-		// show deleted features
-		if (!objectCounter.isEmpty()) {
-			if (preview) {
-				log.info("The " + mode.value() + " operation would affect the following city objects:");
-			} else {
-				log.info((mode == DeleteMode.TERMINATE ? "Terminated" : "Deleted") + " city objects:");
+			// show deleted features
+			if (!objectCounter.isEmpty()) {
+				if (preview) {
+					log.info("The " + mode.value() + " operation would affect the following city objects:");
+				} else {
+					log.info((mode == DeleteMode.TERMINATE ? "Terminated" : "Deleted") + " city objects:");
+				}
+
+				Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
+				typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
 			}
 
-			Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
-			typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));
+			objectCounter.clear();
 		}
 
 		if (shouldRun) {
