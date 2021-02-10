@@ -2,12 +2,14 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply from: 'properties.gradle'
 
+version '4.3.0'
+
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
     group 'org.citydb'
-    version '4.3.0'
+    version getParent().version
 
     java {
         sourceCompatibility = JavaVersion.VERSION_11
