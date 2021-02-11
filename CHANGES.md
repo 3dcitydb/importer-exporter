@@ -5,17 +5,21 @@ Change Log
 
 * Completely redesigned command-line interface (CLI) to be able to invoke default import, export and delete operations
   without the need for passing an XML config file. [#147](https://github.com/3dcitydb/importer-exporter/pull/147)
-* CityJSON import (already working in `master`). [#88](https://github.com/3dcitydb/importer-exporter/issues/88)
-* CityJSON export. [#89](https://github.com/3dcitydb/importer-exporter/issues/89)
-* Added extension mechanism to KML/COLLADA/glTF-Exporter to support CityGML ADEs. [#124](https://github.com/3dcitydb/importer-exporter/pull/124)
-* Improved CityGML export performance (as much as 10-15 times faster in case the Importer/Exporter is not running on the same machine or in the same local network as the database server). [#126
-  ](https://github.com/3dcitydb/importer-exporter/pull/126), [#136](https://github.com/3dcitydb/importer-exporter/pull/136), [#137](https://github.com/3dcitydb/importer-exporter/pull/137)
+* CityJSON import (already working in `master`). [#88](https://github.com/3dcitydb/importer-exporter/issues/88),
+  [#92](https://github.com/3dcitydb/importer-exporter/pull/92)
+* CityJSON export. [#89](https://github.com/3dcitydb/importer-exporter/issues/89),
+  [#166](https://github.com/3dcitydb/importer-exporter/pull/166)
+* Added extension mechanism to KML/COLLADA/glTF exporter to support CityGML ADEs. [#124](https://github.com/3dcitydb/importer-exporter/pull/124)
+* Improved CityGML export performance (as much as 10-15 times faster in case the Importer/Exporter is not running on
+  the same machine or in the same local network as the database server). [#126](https://github.com/3dcitydb/importer-exporter/pull/126),
+  [#136](https://github.com/3dcitydb/importer-exporter/pull/136), [#137](https://github.com/3dcitydb/importer-exporter/pull/137)
 * Implemented a more modern GUI look&feel that scales better on HiDPI displays. [#149](https://github.com/3dcitydb/importer-exporter/pull/149)
 * Added explicit CLI script in addition to the start script for simplifying the use of Importer/Exporter CLI mode. [#123](https://github.com/3dcitydb/importer-exporter/pull/123)
 * Added support for importing and exporting arbitrary surfaces as exterior of solids. [#130](https://github.com/3dcitydb/importer-exporter/pull/130)
 * Enhanced LoD export filter with the option to only export the minimum or maximum LoD from the list of selected LoDs. [#133](https://github.com/3dcitydb/importer-exporter/pull/133)
 * Added support for exporting binary glTF and Draco compression in KML/COLLADA/glTF exports. [#142](https://github.com/3dcitydb/importer-exporter/pull/142)
 * Fixed bug in SQL query builder. [#122](https://github.com/3dcitydb/importer-exporter/pull/122)
+* Java 11 or higher is now mandatory to run the Importer/Exporter.
 * General tweaks, bugfixes, and code refactoring
 
 ### 4.2.3 - 2020-04-06
