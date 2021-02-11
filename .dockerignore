@@ -1,9 +1,21 @@
-resources/
+# git and github related files
 .github/
-.gradle/
 .git/
+.gitignore
+.gitattributes
+
+# Gradle & build output folder
+.gradle/
 */build/
+
+# Unused impexp stuff
+resources/
 CHANGES.md
 LICENSE
 README.md
+
+# Unused docker stuff
+.dockerignore
 docker-scripts/build.sh
+Dockerfile
+Dockerfile.alpine
