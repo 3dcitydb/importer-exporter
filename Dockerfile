@@ -35,15 +35,23 @@ RUN set -x && \
 # Base image
 FROM openjdk:${RUNTIME_IMAGE_TAG} AS runtime
 
+# Run as non-root user
+RUN set -x && \
+  groupadd --gid 1000 impexp && \
+  useradd --uid 1000 --gid 1000 impexp
+
+USER impexp
+
 # copy from builder
 WORKDIR /impexp
-COPY --from=builder /impexp .
+COPY --chown=impexp:impexp --from=builder /impexp .
 
-# Set permissions and prepare /share directory
+# Set permissions
 RUN set -x && \
-  mkdir -p /share/config /share/data && \
-  chmod -v u+x /impexp/bin/* /impexp/contribs/collada2gltf/COLLADA2GLTF*linux/COLLADA2GLTF-bin && \
-  ln -vs /impexp/bin/impexp /usr/bin/impexp
+  chmod -v a+x /impexp/bin/* \
+    /impexp/contribs/collada2gltf/COLLADA2GLTF*linux/COLLADA2GLTF-bin
+
+ENV PATH=/impexp/bin:$PATH
 
 ENTRYPOINT [ "bin/impexp-entrypoint.sh" ]
 
