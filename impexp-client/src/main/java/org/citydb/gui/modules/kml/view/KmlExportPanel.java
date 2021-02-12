@@ -28,7 +28,6 @@
 package org.citydb.gui.modules.kml.view;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.gui.kmlExporter.KmlExportGuiConfig;
@@ -42,8 +41,6 @@ import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.KmlTilingMode;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
-import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
-import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -51,24 +48,24 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
-import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.common.BlankNumberFormatter;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.modules.common.filter.AttributeFilterView;
+import org.citydb.gui.modules.common.filter.BoundingBoxFilterView;
+import org.citydb.gui.modules.common.filter.FeatureTypeFilterView;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.BridgeModule;
 import org.citygml4j.model.module.citygml.CityFurnitureModule;
-import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CityObjectGroupModule;
 import org.citygml4j.model.module.citygml.ReliefModule;
 import org.citygml4j.model.module.citygml.TunnelModule;
@@ -113,12 +110,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private TitledPanel featureFilterPanel;
 
     private JCheckBox useResourceIdFilter;
-    private JLabel resourceIdLabel;
-    private JTextField resourceIdText;
     private JCheckBox useBboxFilter;
-    private BoundingBoxPanel bboxComponent;
-
     private JCheckBox useTilingFilter;
+    private JCheckBox useFeatureFilter;
+
+    private AttributeFilterView attributeFilter;
+    private BoundingBoxFilterView bboxFilter;
+    private FeatureTypeFilterView featureTypeFilter;
+
     private JRadioButton automaticTilingRadioButton;
     private JRadioButton manualTilingRadioButton;
     private JFormattedTextField tileSizeText;
@@ -150,10 +149,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     private JComboBox<String> themeComboBox;
     private JButton fetchThemesButton;
 
-    private FeatureTypeTree featureTree;
-    private JPanel featureTreePanel;
-    private JCheckBox useFeatureFilter;
-
     private JButton exportButton;
 
     public KmlExportPanel(ViewController viewController, Config config) {
@@ -177,11 +172,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
         useResourceIdFilter = new JCheckBox();
         useBboxFilter = new JCheckBox();
-        resourceIdLabel = new JLabel();
-        resourceIdText = new JTextField();
-
-        bboxComponent = viewController.getComponentFactory().createBoundingBoxPanel();
         useTilingFilter = new JCheckBox();
+        useFeatureFilter = new JCheckBox();
+
         automaticTilingRadioButton = new JRadioButton();
         manualTilingRadioButton = new JRadioButton();
         tileSizeUnit = new JLabel("m");
@@ -233,16 +226,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         themeLabel = new JLabel();
 		themeComboBox = new JComboBox<>();
 		fetchThemesButton = new JButton();
-
-        useFeatureFilter = new JCheckBox();
-        featureTree = new FeatureTypeTree(CityGMLVersion.v2_0_0, e -> e instanceof ADEKmlExportExtension);
-        featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 1);
-
-        // get rid of standard icons
-        DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer) featureTree.getCellRenderer();
-        renderer.setLeafIcon(null);
-        renderer.setOpenIcon(null);
-        renderer.setClosedIcon(null);
 
         exportButton = new JButton();
 
@@ -317,42 +300,36 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             mainPanel.add(tilingPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            // resource id
-            JPanel resourceIdConent = new JPanel();
-            resourceIdConent.setLayout(new GridBagLayout());
-            resourceIdConent.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-            resourceIdConent.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            attributeFilter = new AttributeFilterView(() -> config.getKmlExportConfig().getQuery().getResourceIdFilter());
 
-                resourceIdPanel = new TitledPanel()
-                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/attribute.svg"))
+            resourceIdPanel = new TitledPanel()
+                    .withIcon(attributeFilter.getIcon())
                     .withToggleButton(useResourceIdFilter)
                     .withCollapseButton()
-                    .build(resourceIdConent);
+                    .build(attributeFilter.getViewComponent());
 
             mainPanel.add(resourceIdPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
             // bbox
+            bboxFilter = new BoundingBoxFilterView(viewController, () -> config.getKmlExportConfig().getQuery().getSpatialFilter());
+
             bboxPanel = new TitledPanel()
-                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/bbox.svg"))
+                    .withIcon(bboxFilter.getIcon())
                     .withToggleButton(useBboxFilter)
                     .withCollapseButton()
-                    .build(bboxComponent);
+                    .build(bboxFilter.getViewComponent());
 
             mainPanel.add(bboxPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            featureTreePanel = new JPanel();
-            featureTreePanel.setLayout(new GridBagLayout());
-            {
-                featureTreePanel.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-            }
+            featureTypeFilter = new FeatureTypeFilterView(() -> config.getKmlExportConfig().getQuery().getFeatureTypeFilter());
 
             featureFilterPanel = new TitledPanel()
-                    .withIcon(new FlatSVGIcon("org/citydb/gui/filter/featureType.svg"))
+                    .withIcon(featureTypeFilter.getIcon())
                     .withToggleButton(useFeatureFilter)
                     .withCollapseButton()
-                    .build(featureTreePanel);
+                    .build(featureTypeFilter.getViewComponent());
 
             mainPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
@@ -369,37 +346,24 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
         add(exportButton, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.NONE, 10, 10, 10, 10));
 
-        PopupMenuDecorator.getInstance().decorate(browseText, resourceIdText, tileSizeText, rowsText, columnsText,
-                footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText,
-                featureTree);
+        PopupMenuDecorator.getInstance().decorate(browseText, tileSizeText, rowsText, columnsText,
+                footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText);
         PopupMenuDecorator.getInstance().decorateAndGetCheckBoxGroup(footprintCheckbox, extrudedCheckbox,
                 geometryCheckbox, colladaCheckbox);
         PopupMenuDecorator.getInstance().decorateTitledPanelGroup(tilingPanel, resourceIdPanel, bboxPanel,
                 featureFilterPanel);
-
-        UIManager.addPropertyChangeListener(e -> {
-            if ("lookAndFeel".equals(e.getPropertyName())) {
-                SwingUtilities.invokeLater(this::updateComponentUI);
-            }
-        });
-
-        updateComponentUI();
-    }
-
-    private void updateComponentUI() {
-        featureTreePanel.setBorder(UIManager.getBorder("ScrollPane.border"));
     }
 
     public void doTranslation() {
         browseButton.setText(Language.I18N.getString("common.button.browse"));
-        resourceIdPanel.setTitle(Language.I18N.getString("filter.border.attributes"));
-        bboxPanel.setTitle(Language.I18N.getString("filter.border.boundingBox"));
         tilingPanel.setTitle(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
+        resourceIdPanel.setTitle(attributeFilter.getLocalizedTitle());
+        bboxPanel.setTitle(bboxFilter.getLocalizedTitle());
+        featureFilterPanel.setTitle(featureTypeFilter.getLocalizedTitle());
 
         manualTilingRadioButton.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
         columnsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.columns"));
         automaticTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.automatic"));
-        resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
 
         lodPanel.setTitle(Language.I18N.getString("kmlExport.label.fromLOD"));
         int selectedIndex = lodComboBox.getSelectedIndex();
@@ -425,9 +389,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
         themeLabel.setText(Language.I18N.getString("pref.kmlexport.label.theme"));
         fetchThemesButton.setText(Language.I18N.getString("common.button.query"));
-
-        featureFilterPanel.setTitle(Language.I18N.getString("filter.border.featureClass"));
         exportButton.setText(Language.I18N.getString("export.button.export"));
+
+        attributeFilter.doTranslation();
+        featureTypeFilter.doTranslation();
     }
 
     public void loadSettings() {
@@ -438,22 +403,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         useResourceIdFilter.setSelected(query.isUseResourceIdFilter());
         useBboxFilter.setSelected(query.isUseBboxFilter());
 
-        // feature type filter
-        FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
-        featureTree.getCheckingModel().clearChecking();
-        featureTree.setSelected(featureTypeFilter.getTypeNames());
-
-        // resource id filter
-        ResourceIdOperator resourceIdFilter = query.getResourceIdFilter();
-        resourceIdText.setText(String.join(",", resourceIdFilter.getResourceIds()));
-
-        // bbox filter
-        KmlTiling spatialFilter = query.getSpatialFilter();
-        BoundingBox bbox = spatialFilter.getExtent();
-        if (bbox != null)
-            bboxComponent.setBoundingBox(spatialFilter.getExtent());
-
         // tiling
+        KmlTiling spatialFilter = query.getSpatialFilter();
         useTilingFilter.setSelected(spatialFilter.getMode() != KmlTilingMode.NO_TILING);
         if (spatialFilter.getMode() == KmlTilingMode.MANUAL) {
             manualTilingRadioButton.setSelected(true);
@@ -464,6 +415,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         tileSizeText.setValue(spatialFilter.getTilingOptions().getAutoTileSideLength());
         rowsText.setValue(spatialFilter.getRows());
         columnsText.setValue(spatialFilter.getColumns());
+
+        attributeFilter.loadSettings();
+        bboxFilter.loadSettings();
+        featureTypeFilter.loadSettings();
 
         // display options
         KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
@@ -542,24 +497,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         query.setUseBboxFilter(useBboxFilter.isSelected());
         query.setUseTypeNames(useFeatureFilter.isSelected());
 
-        // feature type filter
-        FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
-        featureTypeFilter.reset();
-        featureTypeFilter.setTypeNames(featureTree.getSelectedTypeNames());
-
-        // resource id filter
-        ResourceIdOperator resourceIdFilter = query.getResourceIdFilter();
-        resourceIdFilter.reset();
-        if (resourceIdText.getText().trim().length() > 0) {
-            String trimmed = resourceIdText.getText().replaceAll("\\s+", "");
-            resourceIdFilter.setResourceIds(Util.string2string(trimmed, ","));
-        }
-
-        // bbox filter
-        KmlTiling spatialFilter = query.getSpatialFilter();
-        spatialFilter.setExtent(bboxComponent.getBoundingBox());
-
         // tiling
+        KmlTiling spatialFilter = query.getSpatialFilter();
         if (useTilingFilter.isSelected()) {
             if (manualTilingRadioButton.isSelected()) {
                 spatialFilter.setMode(KmlTilingMode.MANUAL);
@@ -583,6 +522,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         } catch (NumberFormatException e) {
             spatialFilter.setColumns(1);
         }
+
+        attributeFilter.setSettings();
+        bboxFilter.setSettings();
+        featureTypeFilter.setSettings();
 
         // display options
         KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
@@ -842,9 +785,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     }
 
     private void setFilterEnabledValues() {
-        resourceIdLabel.setEnabled(useResourceIdFilter.isSelected());
-        resourceIdText.setEnabled(useResourceIdFilter.isSelected());
-        bboxComponent.setEnabled(useBboxFilter.isSelected());
+        attributeFilter.setEnabled(useResourceIdFilter.isSelected());
+        bboxFilter.setEnabled(useBboxFilter.isSelected());
 
         automaticTilingRadioButton.setEnabled(useTilingFilter.isSelected());
         manualTilingRadioButton.setEnabled(useTilingFilter.isSelected());
@@ -885,6 +827,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         fetchThemesButton.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
         boolean enable = lodComboBox.getSelectedIndex() > 0;
+        FeatureTypeTree featureTree = featureTypeFilter.getFeatureTypeTree();
         featureTree.setPathEnabled("Bridge", BridgeModule.v2_0_0.getNamespaceURI(), enable);
         featureTree.setPathEnabled("CityFurniture", CityFurnitureModule.v2_0_0.getNamespaceURI(), enable);
         featureTree.setPathEnabled("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI(), enable);
@@ -896,14 +839,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     }
 
     private void setEnabledFeatureFilter() {
-        if (useFeatureFilter.isSelected()) {
-            featureTree.expandRow(0);
-        } else {
-            featureTree.collapseRow(0);
-            featureTree.setSelectionPath(null);
-        }
-
-        featureTree.setEnabled(useFeatureFilter.isSelected());
+        featureTypeFilter.setEnabled(useFeatureFilter.isSelected());
     }
 
     private void saveFile() {

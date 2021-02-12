@@ -54,7 +54,6 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
 
-@SuppressWarnings("serial")
 public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandler, BoundingBoxListener {
     private final Logger log = Logger.getInstance();
     private boolean isEnabled;
@@ -118,26 +117,26 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         toolBar.add(paste);
         toolBar.setFloatable(false);
 
-        actionPanel.add(toolBar, GuiUtil.setConstraints(0, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-        actionPanel.add(srsLabel, GuiUtil.setConstraints(3, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 30, 0, 5));
-        actionPanel.add(srsComboBox, GuiUtil.setConstraints(4, 0, 1.0, 1.0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+        actionPanel.add(toolBar, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+        actionPanel.add(srsLabel, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 30, 0, 5));
+        actionPanel.add(srsComboBox, GuiUtil.setConstraints(4, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
         srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
 
         // input fields
         JPanel inputFieldsPanel = new JPanel();
         inputFieldsPanel.setLayout(new GridBagLayout());
-        inputFieldsPanel.add(xminLabel, GuiUtil.setConstraints(0, 0, 0.0, 0.0, GridBagConstraints.NONE, 0, 0, 0, 5));
-        inputFieldsPanel.add(xmin, GuiUtil.setConstraints(1, 0, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-        inputFieldsPanel.add(xmaxLabel, GuiUtil.setConstraints(2,0, 0.0, 0.0, GridBagConstraints.NONE, 0, 10, 0, 5));
-        inputFieldsPanel.add(xmax, GuiUtil.setConstraints(3, 0, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-        inputFieldsPanel.add(yminLabel, GuiUtil.setConstraints(0, 1, 0.0, 0.0, GridBagConstraints.NONE, 5, 0, 0, 5));
-        inputFieldsPanel.add(ymin, GuiUtil.setConstraints(1, 1, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 5));
-        inputFieldsPanel.add(ymaxLabel, GuiUtil.setConstraints(2, 1, 0.0, 0.0, GridBagConstraints.NONE, 5, 10, 0, 5));
-        inputFieldsPanel.add(ymax, GuiUtil.setConstraints(3, 1, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+        inputFieldsPanel.add(xminLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 5));
+        inputFieldsPanel.add(xmin, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+        inputFieldsPanel.add(xmaxLabel, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.NONE, 0, 10, 0, 5));
+        inputFieldsPanel.add(xmax, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+        inputFieldsPanel.add(yminLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NONE, 5, 0, 0, 5));
+        inputFieldsPanel.add(ymin, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 5));
+        inputFieldsPanel.add(ymaxLabel, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.NONE, 5, 10, 0, 5));
+        inputFieldsPanel.add(ymax, GuiUtil.setConstraints(3, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
 
         setLayout(new GridBagLayout());
-        add(actionPanel, GuiUtil.setConstraints(0, 0, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-        add(inputFieldsPanel, GuiUtil.setConstraints(0, 1, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+        add(actionPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+        add(inputFieldsPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
 
         // popup menus
         PopupMenuDecorator popupMenuDecorator = PopupMenuDecorator.getInstance();
@@ -173,7 +172,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
     @Override
     public void addComponent(JComponent component, boolean indent) {
         int left = indent ? xminLabel.getPreferredSize().width + 10 : 0;
-        add(component, GuiUtil.setConstraints(0, 2, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 5, left, 0, 0));
+        add(component, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, left, 0, 0));
     }
 
     @Override

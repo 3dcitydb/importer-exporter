@@ -29,6 +29,7 @@
 package org.citydb.config.project.importer;
 
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.project.common.BoundingBoxFilter;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -37,7 +38,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SimpleBBOXFilterType", propOrder = {
         "extent"
 })
-public class SimpleBBOXOperator {
+public class SimpleBBOXOperator implements BoundingBoxFilter {
     @XmlAttribute(required = true)
     private SimpleBBOXMode mode = SimpleBBOXMode.BBOX;
     @XmlElement(required = true)
@@ -55,14 +56,17 @@ public class SimpleBBOXOperator {
         this.mode = mode;
     }
 
+    @Override
     public boolean isSetExtent() {
         return extent != null;
     }
 
+    @Override
     public BoundingBox getExtent() {
         return extent;
     }
 
+    @Override
     public void setExtent(BoundingBox extent) {
         this.extent = extent;
     }

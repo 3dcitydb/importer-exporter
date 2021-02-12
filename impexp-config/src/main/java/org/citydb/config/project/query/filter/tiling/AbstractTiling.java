@@ -28,6 +28,7 @@
 package org.citydb.config.project.query.filter.tiling;
 
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.project.common.BoundingBoxFilter;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
@@ -37,7 +38,7 @@ import javax.xml.bind.annotation.XmlType;
         "rows",
         "columns"
 })
-public abstract class AbstractTiling {
+public abstract class AbstractTiling implements BoundingBoxFilter {
     @XmlElement(required = true)
     private BoundingBox extent;
     @XmlElement(required = true, defaultValue = "1")
@@ -52,14 +53,17 @@ public abstract class AbstractTiling {
     public abstract AbstractTilingOptions getTilingOptions();
     public abstract boolean isSetTilingOptions();
 
+    @Override
     public boolean isSetExtent() {
         return extent != null;
     }
 
+    @Override
     public BoundingBox getExtent() {
         return extent;
     }
 
+    @Override
     public void setExtent(BoundingBox extent) {
         this.extent = extent;
     }

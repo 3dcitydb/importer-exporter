@@ -28,20 +28,11 @@
 
 package org.citydb.gui.modules.common.filter;
 
-import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.plugin.extension.view.View;
 
-import java.util.function.Supplier;
-
 public abstract class FilterView extends View {
-    final Supplier<SimpleQuery> simpleQuerySupplier;
-
     public abstract void doTranslation();
-    public abstract void setEnabled(boolean enable);
+    public abstract void setEnabled(boolean enabled);
     public abstract void loadSettings();
     public abstract void setSettings();
-
-    public FilterView(Supplier<SimpleQuery> simpleQuerySupplier) {
-        this.simpleQuerySupplier = simpleQuerySupplier;
-    }
 }

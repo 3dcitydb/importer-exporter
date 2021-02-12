@@ -107,6 +107,7 @@ import java.util.function.Supplier;
 public class XMLQueryView extends FilterView {
     private final Logger log = Logger.getInstance();
     private final ViewController viewController;
+    private final Supplier<SimpleQuery> simpleQuerySupplier;
     private final SchemaMapping schemaMapping;
     private final DatabaseConnectionPool connectionPool;
     private final Supplier<QueryConfig> queryConfigSupplier;
@@ -114,7 +115,6 @@ public class XMLQueryView extends FilterView {
 
     private JPanel component;
     private RSyntaxTextArea xmlText;
-
     private JButton newButton;
     private JButton duplicateButton;
     private JButton validateButton;
@@ -123,8 +123,8 @@ public class XMLQueryView extends FilterView {
                         Supplier<SimpleQuery> simpleQuerySupplier,
                         Supplier<QueryConfig> queryConfigSupplier,
                         Consumer<QueryConfig> queryConfigConsumer) {
-        super(simpleQuerySupplier);
         this.viewController = viewController;
+        this.simpleQuerySupplier = simpleQuerySupplier;
         this.queryConfigSupplier = queryConfigSupplier;
         this.queryConfigConsumer = queryConfigConsumer;
 
@@ -435,18 +435,6 @@ public class XMLQueryView extends FilterView {
     }
 
     @Override
-    public void doTranslation() {
-        newButton.setToolTipText(Language.I18N.getString("filter.label.xml.template"));
-        duplicateButton.setToolTipText(Language.I18N.getString("filter.label.xml.duplicate"));
-        validateButton.setToolTipText(Language.I18N.getString("filter.label.xml.validate"));
-    }
-
-    @Override
-    public void setEnabled(boolean enable) {
-
-    }
-
-    @Override
     public String getLocalizedTitle() {
         return null;
     }
@@ -467,6 +455,18 @@ public class XMLQueryView extends FilterView {
     }
 
     @Override
+    public void doTranslation() {
+        newButton.setToolTipText(Language.I18N.getString("filter.label.xml.template"));
+        duplicateButton.setToolTipText(Language.I18N.getString("filter.label.xml.duplicate"));
+        validateButton.setToolTipText(Language.I18N.getString("filter.label.xml.validate"));
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        // nothing to do
+    }
+
+    @Override
     public void loadSettings() {
         QueryConfig query = queryConfigSupplier.get();
         xmlText.setText(marshalQuery(query, ObjectRegistry.getInstance().getConfig().getNamespaceFilter()));
@@ -479,7 +479,8 @@ public class XMLQueryView extends FilterView {
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {
-        return srs.getSrid() == 0 || (connectionPool.isConnected()
+        return srs.getSrid() == 0
+                || (connectionPool.isConnected()
                 && srs.getSrid() == connectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
     }
 }

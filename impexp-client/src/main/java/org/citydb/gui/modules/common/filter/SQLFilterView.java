@@ -31,7 +31,6 @@ package org.citydb.gui.modules.common.filter;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.gui.components.SQLExportFilterComponent;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.RSyntaxTextAreaHelper;
@@ -45,6 +44,9 @@ import java.awt.*;
 import java.util.function.Supplier;
 
 public class SQLFilterView extends FilterView {
+    private final Supplier<SelectOperator> configSupplier;
+    private final Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier;
+
     private JPanel component;
     private RSyntaxTextArea sqlText;
     private RTextScrollPane scrollPane;
@@ -54,10 +56,8 @@ public class SQLFilterView extends FilterView {
     private int additionalRows;
     private int rowHeight;
 
-    private final Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier;
-
-    public SQLFilterView(Supplier<SimpleQuery> simpleQuerySupplier, Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier) {
-        super(simpleQuerySupplier);
+    public SQLFilterView(Supplier<SelectOperator> configSupplier, Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier) {
+        this.configSupplier = configSupplier;
         this.sqlFilterComponentSupplier = sqlFilterComponentSupplier;
         init();
     }
@@ -122,22 +122,6 @@ public class SQLFilterView extends FilterView {
     }
 
     @Override
-    public void doTranslation() {
-        addButton.setToolTipText(Language.I18N.getString("filter.label.sql.increase"));
-        removeButton.setToolTipText(Language.I18N.getString("filter.label.sql.decrease"));
-    }
-
-    @Override
-    public void setEnabled(boolean enable) {
-        scrollPane.getHorizontalScrollBar().setEnabled(enable);
-        scrollPane.getVerticalScrollBar().setEnabled(enable);
-        scrollPane.getViewport().getView().setEnabled(enable);
-
-        addButton.setEnabled(enable);
-        removeButton.setEnabled(enable && additionalRows > 0);
-    }
-
-    @Override
     public String getLocalizedTitle() {
         return Language.I18N.getString("filter.border.sql");
     }
@@ -154,14 +138,28 @@ public class SQLFilterView extends FilterView {
 
     @Override
     public Icon getIcon() {
-        return null;
+        return new FlatSVGIcon("org/citydb/gui/filter/sql.svg");
+    }
+
+    @Override
+    public void doTranslation() {
+        addButton.setToolTipText(Language.I18N.getString("filter.label.sql.increase"));
+        removeButton.setToolTipText(Language.I18N.getString("filter.label.sql.decrease"));
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        scrollPane.getHorizontalScrollBar().setEnabled(enabled);
+        scrollPane.getVerticalScrollBar().setEnabled(enabled);
+        scrollPane.getViewport().getView().setEnabled(enabled);
+
+        addButton.setEnabled(enabled);
+        removeButton.setEnabled(enabled && additionalRows > 0);
     }
 
     @Override
     public void loadSettings() {
-        SimpleQuery query = simpleQuerySupplier.get();
-
-        SelectOperator sql = query.getSQLFilter();
+        SelectOperator sql = configSupplier.get();
         additionalRows = sqlFilterComponentSupplier.get().getAdditionalRows();
 
         SwingUtilities.invokeLater(() -> {
@@ -184,9 +182,7 @@ public class SQLFilterView extends FilterView {
 
     @Override
     public void setSettings() {
-        SimpleQuery query = simpleQuerySupplier.get();
-
-        SelectOperator sql = query.getSQLFilter();
+        SelectOperator sql = configSupplier.get();
         sql.reset();
         String value = sqlText.getText().trim();
         if (!value.isEmpty()) {
