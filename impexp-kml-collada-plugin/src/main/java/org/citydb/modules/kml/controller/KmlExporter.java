@@ -289,7 +289,14 @@ public class KmlExporter implements EventHandler {
 			if (!queryConfig.isUseBboxFilter()) {
 				try {
 					log.info("Calculating the bounding box of matching top-level features...");
-					queryConfig.getSpatialFilter().setExtent(databaseAdapter.getUtil().calcBoundingBox(query, schemaMapping));
+					BoundingBox extent = databaseAdapter.getUtil().calcBoundingBox(query, schemaMapping);
+					if (extent == null) {
+						log.warn("The provided filter settings result in an empty bounding box.");
+						log.warn("Please check your filter settings or enter a bounding box manually.");
+						return false;
+					}
+
+					queryConfig.getSpatialFilter().setExtent(extent);
 					query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
 				} catch (SQLException | FilterException e) {
 					throw new QueryBuildException("Failed to calculate bounding box based on the non-spatial filter settings.", e);
