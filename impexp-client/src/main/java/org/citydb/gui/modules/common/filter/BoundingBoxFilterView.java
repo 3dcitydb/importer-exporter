@@ -3,7 +3,7 @@ package org.citydb.gui.modules.common.filter;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.common.BoundingBoxFilter;
+import org.citydb.config.project.common.BoundingBoxProvider;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 
@@ -12,11 +12,11 @@ import java.util.function.Supplier;
 
 public class BoundingBoxFilterView extends FilterView {
     private final ViewController viewController;
-    private final Supplier<BoundingBoxFilter> configSupplier;
+    private final Supplier<BoundingBoxProvider> configSupplier;
 
     private BoundingBoxPanel component;
 
-    public BoundingBoxFilterView(ViewController viewController, Supplier<BoundingBoxFilter> configSupplier) {
+    public BoundingBoxFilterView(ViewController viewController, Supplier<BoundingBoxProvider> configSupplier) {
         this.viewController = viewController;
         this.configSupplier = configSupplier;
         init();
@@ -58,7 +58,7 @@ public class BoundingBoxFilterView extends FilterView {
 
     @Override
     public void loadSettings() {
-        BoundingBoxFilter bboxFilter = configSupplier.get();
+        BoundingBoxProvider bboxFilter = configSupplier.get();
         BoundingBox bbox = bboxFilter.getExtent();
         if (bbox != null) {
             component.setBoundingBox(bboxFilter.getExtent());
@@ -67,7 +67,7 @@ public class BoundingBoxFilterView extends FilterView {
 
     @Override
     public void setSettings() {
-        BoundingBoxFilter bboxFilter = configSupplier.get();
+        BoundingBoxProvider bboxFilter = configSupplier.get();
         bboxFilter.setExtent(component.getBoundingBox());
     }
 

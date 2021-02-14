@@ -28,7 +28,7 @@
 package org.citydb.config.project.query.filter.tiling;
 
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.project.common.BoundingBoxFilter;
+import org.citydb.config.project.common.BoundingBoxProvider;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlType;
         "rows",
         "columns"
 })
-public abstract class AbstractTiling implements BoundingBoxFilter {
+public abstract class AbstractTiling implements BoundingBoxProvider {
     @XmlElement(required = true)
     private BoundingBox extent;
     @XmlElement(required = true, defaultValue = "1")

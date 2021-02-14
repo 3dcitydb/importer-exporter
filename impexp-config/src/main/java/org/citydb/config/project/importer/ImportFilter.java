@@ -58,7 +58,7 @@ public class ImportFilter {
     private SimpleAttributeFilter attributeFilter;
     @XmlElement(name = "limit")
     private CounterFilter counterFilter;
-    @XmlElement(name = "bbox", required = true)
+    @XmlElement(name = "bbox")
     private SimpleBBOXOperator bboxFilter;
 
     public ImportFilter() {
