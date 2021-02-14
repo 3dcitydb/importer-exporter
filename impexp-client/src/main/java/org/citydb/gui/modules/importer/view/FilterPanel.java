@@ -87,8 +87,8 @@ public class FilterPanel extends JPanel {
 		// layout
 		setLayout(new GridBagLayout());
 		{
-			attributeFilter = new AttributeFilterView(() -> config.getImportConfig().getFilter().getAttributeFilter().getResourceIdFilter())
-					.withNameFilter(() -> config.getImportConfig().getFilter().getAttributeFilter().getNameFilter());
+			attributeFilter = new AttributeFilterView()
+					.withNameFilter();
 
 			attributeFilterPanel = new TitledPanel()
 					.withIcon(attributeFilter.getIcon())
@@ -99,7 +99,7 @@ public class FilterPanel extends JPanel {
 			add(attributeFilterPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			counterFilter = new CounterFilterView(() -> config.getImportConfig().getFilter().getCounterFilter());
+			counterFilter = new CounterFilterView();
 
 			counterFilterPanel = new TitledPanel()
 					.withIcon(counterFilter.getIcon())
@@ -110,7 +110,7 @@ public class FilterPanel extends JPanel {
 			add(counterFilterPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			bboxFilter = new BoundingBoxFilterView(viewController, () -> config.getImportConfig().getFilter().getBboxFilter());
+			bboxFilter = new BoundingBoxFilterView(viewController);
 
 			JPanel bboxModePanel = new JPanel();
 			bboxModePanel.setLayout(new GridBagLayout());
@@ -129,7 +129,7 @@ public class FilterPanel extends JPanel {
 			add(bboxFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			featureTypeFilter = new FeatureTypeFilterView(() -> config.getImportConfig().getFilter().getFeatureTypeFilter());
+			featureTypeFilter = new FeatureTypeFilterView();
 
 			featureFilterPanel = new TitledPanel()
 					.withIcon(featureTypeFilter.getIcon())
@@ -202,10 +202,10 @@ public class FilterPanel extends JPanel {
 		setEnabledBBoxFilter();
 		setEnabledFeatureFilter();
 
-		attributeFilter.loadSettings();
-		counterFilter.loadSettings();
-		bboxFilter.loadSettings();
-		featureTypeFilter.loadSettings();
+		attributeFilter.loadSettings(filter.getAttributeFilter());
+		counterFilter.loadSettings(filter.getCounterFilter());
+		bboxFilter.loadSettings(filter.getBboxFilter().getExtent());
+		featureTypeFilter.loadSettings(filter.getFeatureTypeFilter());
 
 		// GUI specific settings
 		ImportGuiConfig guiConfig = config.getGuiConfig().getImportGuiConfig();
@@ -226,10 +226,10 @@ public class FilterPanel extends JPanel {
 		// bbox filter
 		filter.getBboxFilter().setMode(bboxOverlaps.isSelected() ? SimpleBBOXMode.BBOX : SimpleBBOXMode.WITHIN);
 
-		attributeFilter.setSettings();
-		counterFilter.setSettings();
-		bboxFilter.setSettings();
-		featureTypeFilter.setSettings();
+		filter.setAttributeFilter(attributeFilter.toSettings());
+		filter.setCounterFilter(counterFilter.toSettings());
+		filter.getBboxFilter().setExtent(bboxFilter.toSettings());
+		filter.setFeatureTypeFilter(featureTypeFilter.toSettings());
 
 		// GUI specific settings
 		ImportGuiConfig guiConfig = config.getGuiConfig().getImportGuiConfig();

@@ -300,7 +300,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             mainPanel.add(tilingPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            attributeFilter = new AttributeFilterView(() -> config.getKmlExportConfig().getQuery().getResourceIdFilter());
+            attributeFilter = new AttributeFilterView();
 
             resourceIdPanel = new TitledPanel()
                     .withIcon(attributeFilter.getIcon())
@@ -312,7 +312,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         }
         {
             // bbox
-            bboxFilter = new BoundingBoxFilterView(viewController, () -> config.getKmlExportConfig().getQuery().getSpatialFilter());
+            bboxFilter = new BoundingBoxFilterView(viewController);
 
             bboxPanel = new TitledPanel()
                     .withIcon(bboxFilter.getIcon())
@@ -323,7 +323,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             mainPanel.add(bboxPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            featureTypeFilter = new FeatureTypeFilterView(() -> config.getKmlExportConfig().getQuery().getFeatureTypeFilter());
+            featureTypeFilter = new FeatureTypeFilterView();
 
             featureFilterPanel = new TitledPanel()
                     .withIcon(featureTypeFilter.getIcon())
@@ -416,9 +416,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         rowsText.setValue(spatialFilter.getRows());
         columnsText.setValue(spatialFilter.getColumns());
 
-        attributeFilter.loadSettings();
-        bboxFilter.loadSettings();
-        featureTypeFilter.loadSettings();
+        attributeFilter.loadSettings(query.getResourceIdFilter(), null, null);
+        bboxFilter.loadSettings(query.getSpatialFilter().getExtent());
+        featureTypeFilter.loadSettings(featureTypeFilter.toSettings());
 
         // display options
         KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
@@ -523,9 +523,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             spatialFilter.setColumns(1);
         }
 
-        attributeFilter.setSettings();
-        bboxFilter.setSettings();
-        featureTypeFilter.setSettings();
+        query.setResourceIdFilter(attributeFilter.toSettings().getResourceIdFilter());
+        query.getSpatialFilter().setExtent(bboxFilter.toSettings());
+        query.setFeatureTypeFilter(featureTypeFilter.toSettings());
 
         // display options
         KmlExportConfig kmlExportConfig = config.getKmlExportConfig();

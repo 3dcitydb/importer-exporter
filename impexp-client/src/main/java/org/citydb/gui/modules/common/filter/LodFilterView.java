@@ -10,14 +10,11 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class LodFilterView extends FilterView {
-    private final Supplier<LodFilter> configSupplier;
-
+public class LodFilterView extends FilterView<LodFilter> {
     private JPanel component;
     private JCheckBox[] lods;
     private JLabel lodModeLabel;
@@ -25,8 +22,7 @@ public class LodFilterView extends FilterView {
     private JLabel lodDepthLabel;
     private JSpinner lodDepth;
 
-    public LodFilterView(Supplier<LodFilter> configSupplier) {
-        this.configSupplier = configSupplier;
+    public LodFilterView() {
         init();
     }
 
@@ -118,8 +114,7 @@ public class LodFilterView extends FilterView {
     }
 
     @Override
-    public void loadSettings() {
-        LodFilter lodFilter = configSupplier.get();
+    public void loadSettings(LodFilter lodFilter) {
         lodMode.setSelectedItem(lodFilter.getMode());
         for (int lod = 0; lod < lods.length; lod++) {
             lods[lod].setSelected(lodFilter.isSetLod(lod));
@@ -134,8 +129,8 @@ public class LodFilterView extends FilterView {
     }
 
     @Override
-    public void setSettings() {
-        LodFilter lodFilter = configSupplier.get();
+    public LodFilter toSettings() {
+        LodFilter lodFilter = new LodFilter();
         lodFilter.setMode(lodMode.getItemAt(lodMode.getSelectedIndex()));
         for (int lod = 0; lod < lods.length; lod++) {
             lodFilter.setLod(lod, lods[lod].isSelected());
@@ -153,5 +148,7 @@ public class LodFilterView extends FilterView {
                 lodFilter.setSearchDepth(1);
             }
         }
+
+        return lodFilter;
     }
 }

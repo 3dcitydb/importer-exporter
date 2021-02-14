@@ -19,26 +19,22 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.function.Supplier;
 
-public class FeatureTypeFilterView extends FilterView implements EventHandler {
-    private final Supplier<FeatureTypeFilter> configSupplier;
-
+public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> implements EventHandler {
     private JPanel component;
     private FeatureTypeTree featureTypeTree;
     private boolean enabled = true;
 
-    public FeatureTypeFilterView(Supplier<FeatureTypeFilter> configSupplier, CityGMLVersion version) {
-        this.configSupplier = configSupplier;
+    public FeatureTypeFilterView(CityGMLVersion version) {
         init(version);
     }
 
-    public FeatureTypeFilterView(Supplier<FeatureTypeFilter> configSupplier, CityGMLVersionType version) {
-        this(configSupplier, Util.toCityGMLVersion(version));
+    public FeatureTypeFilterView(CityGMLVersionType version) {
+        this(Util.toCityGMLVersion(version));
     }
 
-    public FeatureTypeFilterView(Supplier<FeatureTypeFilter> configSupplier) {
-        this(configSupplier, CityGMLVersionType.v2_0_0);
+    public FeatureTypeFilterView() {
+        this(CityGMLVersionType.v2_0_0);
     }
 
     public FeatureTypeFilterView adaptToCityGMLVersionChange(boolean adapt) {
@@ -127,17 +123,16 @@ public class FeatureTypeFilterView extends FilterView implements EventHandler {
     }
 
     @Override
-    public void loadSettings() {
-        FeatureTypeFilter featureTypeFilter = configSupplier.get();
+    public void loadSettings(FeatureTypeFilter featureTypeFilter) {
         featureTypeTree.getCheckingModel().clearChecking();
         featureTypeTree.setSelected(featureTypeFilter.getTypeNames());
     }
 
     @Override
-    public void setSettings() {
-        FeatureTypeFilter featureTypeFilter = configSupplier.get();
-        featureTypeFilter.reset();
+    public FeatureTypeFilter toSettings() {
+        FeatureTypeFilter featureTypeFilter = new FeatureTypeFilter();
         featureTypeFilter.setTypeNames(featureTypeTree.getSelectedTypeNames());
+        return featureTypeFilter;
     }
 
     @Override

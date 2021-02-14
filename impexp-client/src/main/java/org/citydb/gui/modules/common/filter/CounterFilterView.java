@@ -10,19 +10,15 @@ import org.citydb.gui.util.GuiUtil;
 import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.function.Supplier;
 
-public class CounterFilterView extends FilterView {
-    private final Supplier<CounterFilter> configSupplier;
-
+public class CounterFilterView extends FilterView<CounterFilter> {
     private JPanel component;
     private JLabel countLabel;
     private JLabel startIndexLabel;
     private JFormattedTextField countText;
     private JFormattedTextField startIndexText;
 
-    public CounterFilterView(Supplier<CounterFilter> configSupplier) {
-        this.configSupplier = configSupplier;
+    public CounterFilterView() {
         init();
     }
 
@@ -86,25 +82,27 @@ public class CounterFilterView extends FilterView {
     }
 
     @Override
-    public void loadSettings() {
-        CounterFilter counterFilter = configSupplier.get();
+    public void loadSettings(CounterFilter counterFilter) {
         countText.setValue(counterFilter.getCount());
         startIndexText.setValue(counterFilter.getStartIndex());
     }
 
     @Override
-    public void setSettings() {
-        CounterFilter counterFilter = configSupplier.get();
-        counterFilter.reset();
-        if (countText.isEditValid() && countText.getValue() != null)
+    public CounterFilter toSettings() {
+        CounterFilter counterFilter = new CounterFilter();
+        if (countText.isEditValid() && countText.getValue() != null) {
             counterFilter.setCount(((Number) countText.getValue()).longValue());
-        else
+        } else {
             counterFilter.setCount(null);
+        }
 
-        if (startIndexText.isEditValid() && startIndexText.getValue() != null)
+        if (startIndexText.isEditValid() && startIndexText.getValue() != null) {
             counterFilter.setStartIndex(((Number) startIndexText.getValue()).longValue());
-        else
+        } else {
             counterFilter.setStartIndex(null);
+        }
+
+        return counterFilter;
     }
 
 }

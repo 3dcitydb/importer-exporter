@@ -30,9 +30,9 @@ package org.citydb.gui.modules.common.filter;
 
 import org.citydb.plugin.extension.view.View;
 
-public abstract class FilterView extends View {
+public abstract class FilterView<T> extends View {
     public abstract void doTranslation();
     public abstract void setEnabled(boolean enabled);
-    public abstract void loadSettings();
-    public abstract void setSettings();
+    public abstract void loadSettings(T config);
+    public abstract T toSettings();
 }

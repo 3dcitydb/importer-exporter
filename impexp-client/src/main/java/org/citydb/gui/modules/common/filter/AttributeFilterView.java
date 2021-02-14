@@ -32,19 +32,15 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.function.Supplier;
 
-public class AttributeFilterView extends FilterView {
-    private final Supplier<ResourceIdOperator> resourceIdSupplier;
-    private Supplier<LikeOperator> nameSupplier;
-    private Supplier<LikeOperator> lineageSupplier;
-
+public class AttributeFilterView extends FilterView<SimpleAttributeFilter> {
     private JPanel component;
     private JLabel resourceIdLabel;
     private JTextField resourceIdText;
@@ -54,30 +50,30 @@ public class AttributeFilterView extends FilterView {
     private JTextField lineageText;
     private int row;
 
-    public AttributeFilterView(Supplier<ResourceIdOperator> resourceIdSupplier) {
-        this.resourceIdSupplier = resourceIdSupplier;
+    private boolean useNameFilter;
+    private boolean useLineageFilter;
+
+    public AttributeFilterView() {
         init();
     }
 
-    public AttributeFilterView withNameFilter(Supplier<LikeOperator> nameSupplier) {
-        this.nameSupplier = nameSupplier;
-
+    public AttributeFilterView withNameFilter() {
+        useNameFilter = true;
         nameLabel = new JLabel();
         nameText = new JTextField();
-        component.add(nameLabel, GuiUtil.setConstraints(0, ++row, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
-        component.add(nameText, GuiUtil.setConstraints(1, row, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+        component.add(nameLabel, GuiUtil.setConstraints(0, ++row, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
+        component.add(nameText, GuiUtil.setConstraints(1, row, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
         PopupMenuDecorator.getInstance().decorate(nameText);
 
         return this;
     }
 
-    public AttributeFilterView withLineageFilter(Supplier<LikeOperator> lineageSupplier) {
-        this.lineageSupplier = lineageSupplier;
-
+    public AttributeFilterView withLineageFilter() {
+        useLineageFilter = true;
         lineageLabel = new JLabel();
         lineageText = new JTextField();
-        component.add(lineageLabel, GuiUtil.setConstraints(0, ++row, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-        component.add(lineageText, GuiUtil.setConstraints(1, row, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+        component.add(lineageLabel, GuiUtil.setConstraints(0, ++row, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
+        component.add(lineageText, GuiUtil.setConstraints(1, row, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
         PopupMenuDecorator.getInstance().decorate(lineageText);
 
         return this;
@@ -90,8 +86,8 @@ public class AttributeFilterView extends FilterView {
         // resource id filter
         resourceIdLabel = new JLabel();
         resourceIdText = new JTextField();
-        component.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
-        component.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+        component.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+        component.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
         PopupMenuDecorator.getInstance().decorate(resourceIdText);
     }
 
@@ -99,11 +95,11 @@ public class AttributeFilterView extends FilterView {
     public void doTranslation() {
         resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
 
-        if (nameSupplier != null) {
+        if (useNameFilter) {
             nameLabel.setText(Language.I18N.getString("filter.label.name"));
         }
 
-        if (lineageSupplier != null) {
+        if (useLineageFilter) {
             lineageLabel.setText(Language.I18N.getString("filter.label.lineage"));
         }
     }
@@ -113,12 +109,12 @@ public class AttributeFilterView extends FilterView {
         resourceIdLabel.setEnabled(enabled);
         resourceIdText.setEnabled(enabled);
 
-        if (nameSupplier != null) {
+        if (useNameFilter) {
             nameLabel.setEnabled(enabled);
             nameText.setEnabled(enabled);
         }
 
-        if (lineageSupplier != null) {
+        if (useLineageFilter) {
             lineageLabel.setEnabled(enabled);
             lineageText.setEnabled(enabled);
         }
@@ -144,51 +140,49 @@ public class AttributeFilterView extends FilterView {
         return new FlatSVGIcon("org/citydb/gui/filter/attribute.svg");
     }
 
-    @Override
-    public void loadSettings() {
-        // resource id filter
-        ResourceIdOperator gmlIdFilter = resourceIdSupplier.get();
-        resourceIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
+    public void loadSettings(ResourceIdOperator resourceIdFilter, LikeOperator nameFilter, LikeOperator lineageFilter) {
+        resourceIdText.setText(String.join(",", resourceIdFilter.getResourceIds()));
 
-        // name
-        if (nameSupplier != null) {
-            LikeOperator gmlNameFilter = nameSupplier.get();
-            nameText.setText(gmlNameFilter.getLiteral());
+        if (useNameFilter) {
+            nameText.setText(nameFilter.getLiteral());
         }
 
-        // citydb:lineage
-        if (lineageSupplier != null) {
-            LikeOperator lineageFilter = lineageSupplier.get();
+        if (useLineageFilter) {
             lineageText.setText(lineageFilter.getLiteral());
         }
     }
 
     @Override
-    public void setSettings() {
-        // resource id filter
-        ResourceIdOperator gmlIdFilter = resourceIdSupplier.get();
-        gmlIdFilter.reset();
+    public void loadSettings(SimpleAttributeFilter attributeFilter) {
+        loadSettings(attributeFilter.getResourceIdFilter(),
+                attributeFilter.getNameFilter(),
+                attributeFilter.getLineageFilter());
+    }
+
+    @Override
+    public SimpleAttributeFilter toSettings() {
+        SimpleAttributeFilter attributeFilter = new SimpleAttributeFilter();
+
+        ResourceIdOperator resourceIdFilter = attributeFilter.getResourceIdFilter();
         if (!resourceIdText.getText().trim().isEmpty()) {
             String trimmed = resourceIdText.getText().replaceAll("\\s+", "");
-            gmlIdFilter.setResourceIds(Util.string2string(trimmed, ","));
+            resourceIdFilter.setResourceIds(Util.string2string(trimmed, ","));
         }
 
-        // name
-        if (nameSupplier != null) {
-            LikeOperator gmlNameFilter = nameSupplier.get();
-            gmlNameFilter.reset();
+        if (useNameFilter) {
+            LikeOperator nameFilter = attributeFilter.getNameFilter();
             if (!nameText.getText().trim().isEmpty()) {
-                gmlNameFilter.setLiteral(nameText.getText().trim());
+                nameFilter.setLiteral(nameText.getText().trim());
             }
         }
 
-        // citydb:lineage
-        if (lineageSupplier != null) {
-            LikeOperator lineageFilter = lineageSupplier.get();
-            lineageFilter.reset();
+        if (useLineageFilter) {
+            LikeOperator lineageFilter = attributeFilter.getLineageFilter();
             if (!lineageText.getText().trim().isEmpty()) {
                 lineageFilter.setLiteral(lineageText.getText().trim());
             }
         }
+
+        return attributeFilter;
     }
 }

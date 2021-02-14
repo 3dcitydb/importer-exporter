@@ -43,8 +43,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.function.Supplier;
 
-public class SQLFilterView extends FilterView {
-    private final Supplier<SelectOperator> configSupplier;
+public class SQLFilterView extends FilterView<SelectOperator> {
     private final Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier;
 
     private JPanel component;
@@ -56,8 +55,7 @@ public class SQLFilterView extends FilterView {
     private int additionalRows;
     private int rowHeight;
 
-    public SQLFilterView(Supplier<SelectOperator> configSupplier, Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier) {
-        this.configSupplier = configSupplier;
+    public SQLFilterView(Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier) {
         this.sqlFilterComponentSupplier = sqlFilterComponentSupplier;
         init();
     }
@@ -158,13 +156,12 @@ public class SQLFilterView extends FilterView {
     }
 
     @Override
-    public void loadSettings() {
-        SelectOperator sql = configSupplier.get();
+    public void loadSettings(SelectOperator selectOperator) {
         additionalRows = sqlFilterComponentSupplier.get().getAdditionalRows();
 
         SwingUtilities.invokeLater(() -> {
             Dimension size = scrollPane.getPreferredSize();
-            sqlText.setText(sql.getValue());
+            sqlText.setText(selectOperator.getValue());
 
             if (additionalRows > 0) {
                 size.height += additionalRows * rowHeight;
@@ -181,14 +178,14 @@ public class SQLFilterView extends FilterView {
     }
 
     @Override
-    public void setSettings() {
-        SelectOperator sql = configSupplier.get();
-        sql.reset();
+    public SelectOperator toSettings() {
+        SelectOperator selectOperator = new SelectOperator();
         String value = sqlText.getText().trim();
         if (!value.isEmpty()) {
-            sql.setValue(value.replaceAll(";", " "));
+            selectOperator.setValue(value.replaceAll(";", " "));
         }
 
         sqlFilterComponentSupplier.get().setAdditionalRows(additionalRows);
+        return selectOperator;
     }
 }

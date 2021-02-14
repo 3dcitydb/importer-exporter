@@ -101,17 +101,13 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class XMLQueryView extends FilterView {
+public class XMLQueryView extends FilterView<QueryConfig> {
     private final Logger log = Logger.getInstance();
     private final ViewController viewController;
-    private final Supplier<SimpleQuery> simpleQuerySupplier;
     private final SchemaMapping schemaMapping;
     private final DatabaseConnectionPool connectionPool;
-    private final Supplier<QueryConfig> queryConfigSupplier;
-    private final Consumer<QueryConfig> queryConfigConsumer;
 
     private JPanel component;
     private RSyntaxTextArea xmlText;
@@ -119,19 +115,21 @@ public class XMLQueryView extends FilterView {
     private JButton duplicateButton;
     private JButton validateButton;
 
-    public XMLQueryView(ViewController viewController,
-                        Supplier<SimpleQuery> simpleQuerySupplier,
-                        Supplier<QueryConfig> queryConfigSupplier,
-                        Consumer<QueryConfig> queryConfigConsumer) {
-        this.viewController = viewController;
-        this.simpleQuerySupplier = simpleQuerySupplier;
-        this.queryConfigSupplier = queryConfigSupplier;
-        this.queryConfigConsumer = queryConfigConsumer;
+    private Supplier<SimpleQuery> simpleQuerySupplier;
 
+    public XMLQueryView(ViewController viewController) {
+        this.viewController = viewController;
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
         connectionPool = DatabaseConnectionPool.getInstance();
 
         init();
+    }
+
+    public XMLQueryView withSimpleQuerySupplier(Supplier<SimpleQuery> simpleQuerySupplier) {
+        this.simpleQuerySupplier = simpleQuerySupplier;
+        duplicateButton.addActionListener(e -> SwingUtilities.invokeLater(this::setSimpleSettings));
+        duplicateButton.setVisible(true);
+        return this;
     }
 
     private void init() {
@@ -163,8 +161,8 @@ public class XMLQueryView extends FilterView {
         component.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.NONE, 0, 5, 0, 0));
 
         newButton.addActionListener(e -> SwingUtilities.invokeLater(this::setEmptyQuery));
-        duplicateButton.addActionListener(e -> SwingUtilities.invokeLater(this::setSimpleSettings));
         validateButton.addActionListener(e -> SwingUtilities.invokeLater(this::validate));
+        duplicateButton.setVisible(false);
 
         RSyntaxTextAreaHelper.installDefaultTheme(xmlText);
         PopupMenuDecorator.getInstance().decorate(xmlText);
@@ -467,15 +465,13 @@ public class XMLQueryView extends FilterView {
     }
 
     @Override
-    public void loadSettings() {
-        QueryConfig query = queryConfigSupplier.get();
-        xmlText.setText(marshalQuery(query, ObjectRegistry.getInstance().getConfig().getNamespaceFilter()));
+    public void loadSettings(QueryConfig queryConfig) {
+        xmlText.setText(marshalQuery(queryConfig, ObjectRegistry.getInstance().getConfig().getNamespaceFilter()));
     }
 
     @Override
-    public void setSettings() {
-        QueryConfig query = unmarshalQuery();
-        queryConfigConsumer.accept(query);
+    public QueryConfig toSettings() {
+        return unmarshalQuery();
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {

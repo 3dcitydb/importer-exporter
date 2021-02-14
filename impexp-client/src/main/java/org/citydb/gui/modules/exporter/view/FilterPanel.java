@@ -130,10 +130,8 @@ public class FilterPanel extends JPanel {
 		add(mainPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		JPanel guiPanel = new JPanel();
-		xmlQuery = new XMLQueryView(viewController,
-				() -> config.getExportConfig().getSimpleQuery(),
-				() -> config.getExportConfig().getQuery(),
-				(query) -> config.getExportConfig().setQuery(query));
+		xmlQuery = new XMLQueryView(viewController)
+				.withSimpleQuerySupplier(() -> config.getExportConfig().getSimpleQuery());
 		mainPanel.add(guiPanel, "simple");
 		mainPanel.add(xmlQuery.getViewComponent(), "advanced");
 
@@ -149,9 +147,9 @@ public class FilterPanel extends JPanel {
 			guiPanel.add(content, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, TitledPanel.BOTTOM, 0));
 		}
 		{
-			attributeFilter = new AttributeFilterView(() -> config.getExportConfig().getSimpleQuery().getAttributeFilter().getResourceIdFilter())
-					.withNameFilter(() -> config.getExportConfig().getSimpleQuery().getAttributeFilter().getNameFilter())
-					.withLineageFilter(() -> config.getExportConfig().getSimpleQuery().getAttributeFilter().getLineageFilter());
+			attributeFilter = new AttributeFilterView()
+					.withNameFilter()
+					.withLineageFilter();
 
 			attributeFilterPanel = new TitledPanel()
 					.withIcon(attributeFilter.getIcon())
@@ -162,8 +160,7 @@ public class FilterPanel extends JPanel {
 			guiPanel.add(attributeFilterPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			sqlFilter = new SQLFilterView(() -> config.getExportConfig().getSimpleQuery().getSQLFilter(),
-					() -> config.getGuiConfig().getExportGuiConfig().getSQLExportFilterComponent());
+			sqlFilter = new SQLFilterView(() -> config.getGuiConfig().getExportGuiConfig().getSQLExportFilterComponent());
 
 			sqlFilterPanel = new TitledPanel()
 					.withIcon(sqlFilter.getIcon())
@@ -174,7 +171,7 @@ public class FilterPanel extends JPanel {
 			guiPanel.add(sqlFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			lodFilter = new LodFilterView(() -> config.getExportConfig().getSimpleQuery().getLodFilter());
+			lodFilter = new LodFilterView();
 
 			lodFilterPanel = new TitledPanel()
 					.withIcon(lodFilter.getIcon())
@@ -185,7 +182,7 @@ public class FilterPanel extends JPanel {
 			guiPanel.add(lodFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			counterFilter = new CounterFilterView(() -> config.getExportConfig().getSimpleQuery().getCounterFilter());
+			counterFilter = new CounterFilterView();
 
 			counterFilterPanel = new TitledPanel()
 					.withIcon(counterFilter.getIcon())
@@ -196,7 +193,7 @@ public class FilterPanel extends JPanel {
 			guiPanel.add(counterFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			bboxFilter = new BoundingBoxFilterView(viewController, () -> config.getExportConfig().getSimpleQuery().getBboxFilter());
+			bboxFilter = new BoundingBoxFilterView(viewController);
 
 			JPanel bboxModePanel = new JPanel();
 			bboxModePanel.setLayout(new GridBagLayout());
@@ -219,8 +216,7 @@ public class FilterPanel extends JPanel {
 			guiPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 5, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			featureTypeFilter = new FeatureTypeFilterView(() -> config.getExportConfig().getSimpleQuery().getFeatureTypeFilter(),
-					config.getExportConfig().getSimpleQuery().getVersion())
+			featureTypeFilter = new FeatureTypeFilterView(config.getExportConfig().getSimpleQuery().getVersion())
 					.adaptToCityGMLVersionChange(true);
 
 			featureFilterPanel = new TitledPanel()
@@ -353,13 +349,13 @@ public class FilterPanel extends JPanel {
 		setEnabledBBoxFilter();
 		setEnabledFeatureFilter();
 
-		attributeFilter.loadSettings();
-		sqlFilter.loadSettings();
-		lodFilter.loadSettings();
-		counterFilter.loadSettings();
-		bboxFilter.loadSettings();
-		featureTypeFilter.loadSettings();
-		xmlQuery.loadSettings();
+		attributeFilter.loadSettings(query.getAttributeFilter());
+		sqlFilter.loadSettings(query.getSQLFilter());
+		lodFilter.loadSettings(query.getLodFilter());
+		counterFilter.loadSettings(query.getCounterFilter());
+		bboxFilter.loadSettings(query.getBboxFilter().getExtent());
+		featureTypeFilter.loadSettings(query.getFeatureTypeFilter());
+		xmlQuery.loadSettings(config.getExportConfig().getQuery());
 
 		// GUI specific settings
 		ExportGuiConfig guiConfig = config.getGuiConfig().getExportGuiConfig();
@@ -398,12 +394,12 @@ public class FilterPanel extends JPanel {
 		tiling.setRows(((Number) tilingRowsText.getValue()).intValue());
 		tiling.setColumns(((Number) tilingColumnsText.getValue()).intValue());
 
-		attributeFilter.setSettings();
-		sqlFilter.setSettings();
-		lodFilter.setSettings();
-		counterFilter.setSettings();
-		bboxFilter.setSettings();
-		featureTypeFilter.setSettings();
+		query.setAttributeFilter(attributeFilter.toSettings());
+		query.setSQLFilter(sqlFilter.toSettings());
+		query.setLodFilter(lodFilter.toSettings());
+		query.setCounterFilter(counterFilter.toSettings());
+		query.getBboxFilter().setExtent(bboxFilter.toSettings());
+		query.setFeatureTypeFilter(featureTypeFilter.toSettings());
 
 		// GUI specific settings
 		ExportGuiConfig guiConfig = config.getGuiConfig().getExportGuiConfig();
@@ -417,6 +413,6 @@ public class FilterPanel extends JPanel {
 
 	public void setSettings() {
 		setSimpleQuerySettings();
-		xmlQuery.setSettings();
+		config.getExportConfig().setQuery(xmlQuery.toSettings());
 	}
 }
