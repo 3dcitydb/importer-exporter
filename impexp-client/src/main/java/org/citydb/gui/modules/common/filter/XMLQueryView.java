@@ -282,7 +282,7 @@ public class XMLQueryView extends FilterView {
             BoundingBox envelope = simpleQuery.getBboxFilter().getExtent();
             if (envelope.getLowerCorner().isSetX() && envelope.getLowerCorner().isSetY()
                     && envelope.getUpperCorner().isSetX() && envelope.getUpperCorner().isSetY()) {
-                if (!isDefaultDatabaseSrs(envelope.getSrs()))
+                if (envelope.isSetSrs() && !isDefaultDatabaseSrs(envelope.getSrs()))
                     envelope.setSrs(envelope.getSrs().getSrid());
                 else
                     envelope.unsetSrs();
