@@ -92,6 +92,26 @@ public class AttributeFilterView extends FilterView<SimpleAttributeFilter> {
     }
 
     @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("filter.border.attributes");
+    }
+
+    @Override
+    public Component getViewComponent() {
+        return component;
+    }
+
+    @Override
+    public String getToolTip() {
+        return null;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return new FlatSVGIcon("org/citydb/gui/filter/attribute.svg");
+    }
+
+    @Override
     public void doTranslation() {
         resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
 
@@ -118,26 +138,6 @@ public class AttributeFilterView extends FilterView<SimpleAttributeFilter> {
             lineageLabel.setEnabled(enabled);
             lineageText.setEnabled(enabled);
         }
-    }
-
-    @Override
-    public String getLocalizedTitle() {
-        return Language.I18N.getString("filter.border.attributes");
-    }
-
-    @Override
-    public Component getViewComponent() {
-        return component;
-    }
-
-    @Override
-    public String getToolTip() {
-        return null;
-    }
-
-    @Override
-    public Icon getIcon() {
-        return new FlatSVGIcon("org/citydb/gui/filter/attribute.svg");
     }
 
     public void loadSettings(ResourceIdOperator resourceIdFilter, LikeOperator nameFilter, LikeOperator lineageFilter) {

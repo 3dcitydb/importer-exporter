@@ -76,7 +76,7 @@ public class LodFilterView extends FilterView<LodFilter> {
 
     @Override
     public Icon getIcon() {
-        return new FlatSVGIcon("org/citydb/gui/filter/counter.svg");
+        return new FlatSVGIcon("org/citydb/gui/filter/lod.svg");
     }
 
     @Override
