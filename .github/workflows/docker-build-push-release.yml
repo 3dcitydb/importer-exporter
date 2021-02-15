@@ -30,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v2.2.2
       with:
         push: true
-        tags: 3dcitydb/3dcitydb-impexp:${{ steps.release_version.outputs.version-without-v }}
+        tags: 3dcitydb/impexp:${{ steps.release_version.outputs.version-without-v }}
         build-args: |
           BUILDER_IMAGE_TAG=11.0.10-jdk-slim
           RUNTIME_IMAGE_TAG=11.0.10-jre-slim
