@@ -107,6 +107,7 @@ public class DeleteCommand extends CliCommand {
             } else {
                 // set user-defined query options
                 if (queryOption != null) {
+                    config.getDeleteConfig().setUseSimpleQuery(false);
                     config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
                 }
 
