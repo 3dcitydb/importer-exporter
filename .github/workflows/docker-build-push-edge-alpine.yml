@@ -37,4 +37,4 @@ jobs:
       run: echo ${{ steps.docker_build.outputs.digest }}
     -
       name: Run container
-      run: docker run -t --rm 3dcitydb/impexp:edge help | grep -i -E "Usage:"
+      run: docker run -t --rm 3dcitydb/impexp:edge-alpine help | grep -i -E "Usage:"
