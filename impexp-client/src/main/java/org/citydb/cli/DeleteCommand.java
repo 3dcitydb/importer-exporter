@@ -56,7 +56,7 @@ public class DeleteCommand extends CliCommand {
     private Mode mode;
 
     @CommandLine.Option(names = {"-v", "--preview"},
-            description = "Only check which top-level features would be affected, but that the features will not be deleted or terminated.")
+            description = "Run in preview mode. Affected city objects will be neither deleted nor terminated.")
     private boolean preview;
 
     @CommandLine.ArgGroup(exclusive = false)
@@ -100,20 +100,19 @@ public class DeleteCommand extends CliCommand {
             config.getDeleteConfig().setCleanupGlobalAppearances(cleanupOption.isCleanupGlobalAppearances());
         }
 
+        // set user-defined query options
+        if (queryOption != null) {
+            config.getDeleteConfig().setUseSimpleQuery(false);
+            config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
+        }
+
+        // set delete list options
+        if (deleteListOption != null) {
+            config.getDeleteConfig().setDeleteList(deleteListOption.toDeleteList());
+        }
+
         try {
-            Deleter deleter = new Deleter();
-            if (deleteListOption != null) {
-                deleter.doDelete(deleteListOption.toDeleteListParser(), preview);
-            } else {
-                // set user-defined query options
-                if (queryOption != null) {
-                    config.getDeleteConfig().setUseSimpleQuery(false);
-                    config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
-                }
-
-                deleter.doDelete(preview);
-            }
-
+            new Deleter().doDelete(preview);
             log.info("Database " + mode.name() + " successfully finished.");
         } catch (DeleteException e) {
             log.error(e.getMessage(), e.getCause());
@@ -124,13 +123,5 @@ public class DeleteCommand extends CliCommand {
         }
 
         return 0;
-    }
-
-    @Override
-    public void preprocess(CommandLine commandLine) {
-        if (queryOption != null && deleteListOption != null) {
-            throw new CommandLine.ParameterException(commandLine,
-                    "Error: Query options and delete file options are mutually exclusive (specify only one)");
-        }
     }
 }

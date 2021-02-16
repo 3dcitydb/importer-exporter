@@ -25,24 +25,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.citydb.config.project.deleter;
 
-package org.citydb.citygml.deleter.util;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
-public class DeleteListException extends Exception {
+@XmlType(name = "DeleteListIdType")
+@XmlEnum
+public enum DeleteListIdType {
+    @XmlEnumValue("resource")
+    RESOURCE_ID("resource"),
+    @XmlEnumValue("database")
+    DATABASE_ID("database");
 
-	public DeleteListException() {
-		super();
-	}
+    private final String value;
 
-	public DeleteListException(String message) {
-		super(message);
-	}
+    DeleteListIdType(String v) {
+        value = v;
+    }
 
-	public DeleteListException(Throwable cause) {
-		super(cause);
-	}
+    public String value() {
+        return value;
+    }
 
-	public DeleteListException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public static DeleteListIdType fromValue(String v) {
+        for (DeleteListIdType c : DeleteListIdType.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+
+        return RESOURCE_ID;
+    }
 }

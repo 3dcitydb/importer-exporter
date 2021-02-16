@@ -28,101 +28,63 @@
 
 package org.citydb.citygml.deleter.util;
 
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.query.Query;
+import org.citydb.config.project.deleter.DeleteList;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class DeleteListParser implements AutoCloseable {
-    private final Path file;
+    private final DeleteList deleteList;
+    private final BufferedReader reader;
 
-    private String name;
-    private int index = 1;
-    private IdType idType = IdType.RESOURCE_ID;
-    private String delimiter = ",";
-    private String commentStart = "#";
-    private char quoteChar = '"';
-    private boolean header = false;
-    private Charset encoding = StandardCharsets.UTF_8;
+    private final String name;
+    private final String delimiter;
+    private final String commentStart;
+    private final char quoteCharacter;
 
+    private int index;
+    private boolean header;
     private long currentLineNumber;
-    private BufferedReader reader;
     private String id;
 
-    public enum IdType {
-        RESOURCE_ID,
-        DATABASE_ID
+    public DeleteListParser(DeleteList deleteList) throws IOException {
+        this.deleteList = deleteList;
+
+        try {
+            reader = Files.newBufferedReader(Path.of(deleteList.getFile()), Charset.forName(deleteList.getEncoding()));
+        } catch (Exception e) {
+            throw new IOException("Failed to open delete list file.", e);
+        }
+
+        if (deleteList.getName() != null) {
+            name = deleteList.getName();
+            index = 1;
+            header = true;
+        } else {
+            name = null;
+            index = deleteList.getIndex();
+            header = deleteList.hasHeader();
+        }
+
+        delimiter = deleteList.getDelimiter();
+        commentStart = deleteList.getCommentStart();
+        String quoteCharacter = deleteList.getQuoteCharacter().trim();
+        this.quoteCharacter = !quoteCharacter.isEmpty() ? quoteCharacter.charAt(0) : '"';
     }
 
-    public DeleteListParser(Path file) {
-        this.file = file;
-    }
-
-    public Path getFile() {
-        return file;
+    public DeleteList getDeleteList() {
+        return deleteList;
     }
 
     public long getCurrentLineNumber() {
         return currentLineNumber;
     }
 
-    public DeleteListParser withIdColumn(String name) {
-        this.name = name;
-        header = true;
-        return this;
-    }
-
-    public DeleteListParser withIdColumn(int index) {
-        this.index = index;
-        return this;
-    }
-
-    public DeleteListParser withIdType(IdType idType) {
-        this.idType = idType;
-        return this;
-    }
-
-    public IdType getIdType() {
-        return idType;
-    }
-
-    public DeleteListParser withDelimiter(String delimiter) {
-        if (delimiter != null) {
-            this.delimiter = delimiter;
-        }
-
-        return this;
-    }
-
-    public DeleteListParser withCommentStart(String commentStart) {
-        this.commentStart = commentStart;
-        return this;
-    }
-
-    public DeleteListParser withQuoteChar(char quoteChar) {
-        this.quoteChar = quoteChar;
-        return this;
-    }
-
-    public DeleteListParser withHeader(boolean header) {
-        this.header = header;
-        return this;
-    }
-
-    public DeleteListParser withEncoding(Charset encoding) {
-        this.encoding = encoding;
-        return this;
-    }
-
-    public boolean hasNext() throws IOException {
+    public boolean hasNext() throws DeleteListException {
         if (id == null) {
             try {
                 id = nextId();
@@ -134,7 +96,7 @@ public class DeleteListParser implements AutoCloseable {
         return id != null;
     }
 
-    public String nextId() throws IOException {
+    public String nextId() throws DeleteListException {
         try {
             if (id == null) {
                 String line = readLine();
@@ -144,15 +106,15 @@ public class DeleteListParser implements AutoCloseable {
 
                 String[] columns = line.split(delimiter);
                 if (columns.length < index) {
-                    throw new IOException("Found " + columns.length + " columns in delete list but expected " +
+                    throw new DeleteListException("Found " + columns.length + " columns in delete list but expected " +
                             "the id value in column " + index + ".");
                 }
 
                 id = columns[index - 1].trim();
-                if (quoteChar != Character.MIN_VALUE
+                if (quoteCharacter != Character.MIN_VALUE
                         && id.length() > 1
-                        && id.charAt(0) == quoteChar
-                        && id.charAt(id.length() - 1) == quoteChar) {
+                        && id.charAt(0) == quoteCharacter
+                        && id.charAt(id.length() - 1) == quoteCharacter) {
                     id = id.substring(1, id.length() - 1);
                 }
             }
@@ -163,52 +125,46 @@ public class DeleteListParser implements AutoCloseable {
         }
     }
 
-    private String readLine() throws IOException {
-        if (reader == null) {
-            reader = Files.newBufferedReader(file, encoding);
-        }
+    private String readLine() throws DeleteListException {
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                ++currentLineNumber;
 
-        String line;
-        while ((line = reader.readLine()) != null) {
-            ++currentLineNumber;
+                if (commentStart == null || !line.startsWith(commentStart)) {
+                    if (header) {
+                        if (name != null) {
+                            boolean found = false;
+                            String[] columns = line.split(delimiter);
+                            for (int i = 0; i < columns.length; i++) {
+                                if (name.equalsIgnoreCase(columns[i])) {
+                                    index = i + 1;
+                                    found = true;
+                                    break;
+                                }
+                            }
 
-            if (commentStart == null || !line.startsWith(commentStart)) {
-                if (header) {
-                    if (name != null) {
-                        boolean found = false;
-                        String[] columns = line.split(delimiter);
-                        for (int i = 0; i < columns.length; i++) {
-                            if (name.equalsIgnoreCase(columns[i])) {
-                                index = i + 1;
-                                found = true;
-                                break;
+                            if (!found) {
+                                throw new DeleteListException("Failed to find a column named '" + name + "' " +
+                                        "in delete list (line " + currentLineNumber + ").");
                             }
                         }
 
-                        if (!found) {
-                            throw new DeleteListException("Failed to find a column named '" + name + "' " +
-                                    "in delete list (line " + currentLineNumber + ").");
-                        }
+                        header = false;
+                    } else {
+                        return line;
                     }
-
-                    header = false;
-                } else {
-                    return line;
                 }
             }
+
+            return null;
+        } catch (IOException e) {
+            throw new DeleteListException("Failed to parse the delete list.", e);
         }
-
-        return null;
-    }
-
-    public Iterator<Query> queryIterator(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) {
-        return new QueryIterator(this, schemaMapping, databaseAdapter);
     }
 
     @Override
     public void close() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
+        reader.close();
     }
 }

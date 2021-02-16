@@ -27,10 +27,15 @@
  */
 package org.citydb.citygml.deleter.controller;
 
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.model.CacheTableModel;
 import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.citygml.deleter.database.BundledConnection;
 import org.citydb.citygml.deleter.database.DBSplitter;
+import org.citydb.citygml.deleter.database.DeleteListImporter;
+import org.citydb.citygml.deleter.util.DeleteListException;
 import org.citydb.citygml.deleter.util.DeleteListParser;
 import org.citydb.citygml.deleter.util.InternalConfig;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
@@ -59,10 +64,9 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -94,37 +98,18 @@ public class Deleter implements EventHandler {
 	}
 
 	public boolean doDelete(boolean preview) throws DeleteException {
-		try {
-			// build query from configuration
-			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			Query query = config.getDeleteConfig().isUseSimpleQuery() ?
-					queryBuilder.buildQuery(config.getDeleteConfig().getSimpleQuery(), config.getNamespaceFilter()) :
-					queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
-
-			return doDelete(Collections.singletonList(query).iterator(), preview);
-		} catch (QueryBuildException e) {
-			throw new DeleteException("Failed to build the delete query expression.", e);
-		}
-	}
-
-	public boolean doDelete(DeleteListParser parser, boolean preview) throws DeleteException {
-		log.info("Using delete list from CSV file: " + parser.getFile());
-		return doDelete(parser.queryIterator(schemaMapping, databaseAdapter), preview);
-	}
-
-	private boolean doDelete(Iterator<Query> queries, boolean preview) throws DeleteException {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		try {
-			return process(queries, preview);
+			return process(preview);
 		} finally {
 			objectCounter.clear();
 			eventDispatcher.removeEventHandler(this);
 		}
 	}
 
-	private boolean process(Iterator<Query> queries, boolean preview) throws DeleteException {
+	private boolean process(boolean preview) throws DeleteException {
 		long start = System.currentTimeMillis();
 		DeleteMode mode = config.getDeleteConfig().getMode();
 
@@ -137,8 +122,49 @@ public class Deleter implements EventHandler {
 			}
 		}
 
-		bundledConnection = new BundledConnection();
+		// build query from configuration
+		Query query;
 		try {
+			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
+			query = config.getDeleteConfig().isUseSimpleQuery() ?
+					queryBuilder.buildQuery(config.getDeleteConfig().getSimpleQuery(), config.getNamespaceFilter()) :
+					queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
+		} catch (QueryBuildException e) {
+			throw new DeleteException("Failed to build the delete query expression.", e);
+		}
+
+		bundledConnection = new BundledConnection();
+		CacheTableManager cacheTableManager = null;
+		CacheTable cacheTable = null;
+
+		try {
+			if (config.getDeleteConfig().isSetDeleteList()) {
+				log.info("Loading delete list into temporary database table...");
+
+				DeleteListParser parser;
+				try {
+					parser = new DeleteListParser(config.getDeleteConfig().getDeleteList());
+				} catch (IOException e) {
+					throw new DeleteException("Failed to create delete list parser.", e);
+				}
+
+				// create instance of the cache table manager
+				try {
+					cacheTableManager = new CacheTableManager(1, config);
+					cacheTable = cacheTableManager.createCacheTableInDatabase(CacheTableModel.DELETE_LIST);
+				} catch (SQLException | IOException e) {
+					throw new DeleteException("Failed to initialize temporary delete list cache.", e);
+				}
+
+				// load delete list into database
+				try {
+					int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
+					new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser);
+				} catch (DeleteListException | SQLException e) {
+					throw new DeleteException("Failed to load delete list into temporary database table.", e);
+				}
+			}
+
 			if (preview) {
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.preview"), this));
 				log.info("Running " + mode.value() + " in preview mode. Affected city objects will not be " +
@@ -168,15 +194,19 @@ public class Deleter implements EventHandler {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
 			}
 
-			while (shouldRun && queries.hasNext()) {
-				// get database splitter and start query
-				try {
-					dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, queries.next(), config, eventDispatcher, preview);
-					dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
-					dbSplitter.startQuery();
-				} catch (SQLException | QueryBuildException e) {
-					throw new DeleteException("Failed to query the database.", e);
-				}
+			// get database splitter and start query
+			try {
+				dbSplitter = new DBSplitter(schemaMapping,
+						dbWorkerPool,
+						query,
+						cacheTable,
+						config,
+						eventDispatcher,
+						preview);
+				dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
+				dbSplitter.startQuery();
+			} catch (SQLException | QueryBuildException e) {
+				throw new DeleteException("Failed to query the database.", e);
 			}
 
 			try {
@@ -204,6 +234,17 @@ public class Deleter implements EventHandler {
 			} catch (InterruptedException e) {
 				//
 			}
+
+			if (cacheTableManager != null) {
+				try {
+					log.info("Cleaning temporary cache.");
+					cacheTableManager.dropAll();
+				} catch (SQLException e) {
+					setException("Failed to clean the temporary cache.", e);
+					shouldRun = false;
+				}
+			}
+
 		}
 
 		if (shouldRun
@@ -248,6 +289,12 @@ public class Deleter implements EventHandler {
 		return shouldRun;
 	}
 
+	private void setException(String message, Throwable cause) {
+		if (exception == null) {
+			exception = new DeleteException(message, cause);
+		}
+	}
+
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.OBJECT_COUNTER) {
@@ -264,7 +311,7 @@ public class Deleter implements EventHandler {
 
 				log.log(event.getLogLevelType(), event.getLogMessage());
 				if (event.getCause() != null) {
-					exception = new DeleteException("Aborting delete due to errors.", event.getCause());
+					setException("Aborting delete due to errors.", event.getCause());
 				}
 
 				if (dbSplitter != null) {

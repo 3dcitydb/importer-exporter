@@ -28,12 +28,12 @@
 
 package org.citydb.cli.options.deleter;
 
-import org.citydb.citygml.deleter.util.DeleteListParser;
+import org.citydb.config.project.deleter.DeleteList;
+import org.citydb.config.project.deleter.DeleteListIdType;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class DeleteListOption implements CliOption {
@@ -75,18 +75,20 @@ public class DeleteListOption implements CliOption {
             description = "Marker used to start a line comment (default: ${DEFAULT-VALUE}).")
     private String commentStart;
 
-    public DeleteListParser toDeleteListParser() {
-        DeleteListParser parser = new DeleteListParser(file)
-                .withIdType(type == Type.db ? DeleteListParser.IdType.DATABASE_ID : DeleteListParser.IdType.RESOURCE_ID)
-                .withHeader(header)
-                .withDelimiter(delimiter)
-                .withQuoteChar(quote.charAt(0))
-                .withCommentStart(commentStart)
-                .withEncoding(encoding != null ? Charset.forName(encoding) : StandardCharsets.UTF_8);
+    public DeleteList toDeleteList() {
+        DeleteList deleteList = new DeleteList();
 
-        return name != null ?
-                parser.withIdColumn(name) :
-                parser.withIdColumn(index != null ? index : 1);
+        deleteList.setFile(file.toAbsolutePath().toString());
+        deleteList.setIdType(type == Type.db ? DeleteListIdType.DATABASE_ID : DeleteListIdType.RESOURCE_ID);
+        deleteList.setHasHeader(header);
+        deleteList.setDelimiter(delimiter);
+        deleteList.setQuoteCharacter(quote);
+        deleteList.setCommentStart(commentStart);
+        deleteList.setEncoding(encoding);
+        deleteList.setName(name);
+        deleteList.setIndex(index != null ? index : 1);
+
+        return deleteList;
     }
 
     @Override
