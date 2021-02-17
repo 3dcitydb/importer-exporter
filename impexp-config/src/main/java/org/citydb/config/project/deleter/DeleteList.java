@@ -8,17 +8,18 @@ import java.nio.charset.StandardCharsets;
 public class DeleteList {
     @XmlElement(required = true)
     private String file;
-    private String name;
+    private String idColumnName;
     @XmlElement(defaultValue = "1")
-    private Integer index;
+    private Integer idColumnIndex;
     @XmlElement(defaultValue = "resource")
     private DeleteListIdType idType;
     @XmlElement(defaultValue = ",")
     private String delimiter;
     @XmlElement(defaultValue = "#")
-    private String commentStart;
+    private String commentCharacter;
     @XmlElement(defaultValue = "\"")
     private String quoteCharacter;
+    private String escapeCharacter;
     @XmlElement(name = "header", defaultValue = "false")
     private Boolean hasHeader;
     @XmlElement(defaultValue = "UTF-8")
@@ -32,20 +33,20 @@ public class DeleteList {
         this.file = file;
     }
 
-    public String getName() {
-        return name;
+    public String getIdColumnName() {
+        return idColumnName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setIdColumnName(String idColumnName) {
+        this.idColumnName = idColumnName;
     }
 
-    public int getIndex() {
-        return index != null && index > 0 ? index : 1;
+    public int getIdColumnIndex() {
+        return idColumnIndex != null && idColumnIndex > 0 ? idColumnIndex : 1;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
+    public void setIdColumnIndex(Integer idColumnIndex) {
+        this.idColumnIndex = idColumnIndex;
     }
 
     public DeleteListIdType getIdType() {
@@ -56,28 +57,36 @@ public class DeleteList {
         this.idType = idType;
     }
 
-    public String getDelimiter() {
-        return delimiter != null ? delimiter : ",";
+    public Character getDelimiter() {
+        return delimiter != null && !delimiter.isEmpty() ? delimiter.charAt(0) : ',';
     }
 
-    public void setDelimiter(String delimiter) {
-        this.delimiter = delimiter;
+    public void setDelimiter(Character delimiter) {
+        this.delimiter = delimiter != null ? delimiter.toString() : null;
     }
 
-    public String getCommentStart() {
-        return commentStart != null ? commentStart : "#";
+    public Character getCommentCharacter() {
+        return commentCharacter != null && !commentCharacter.isEmpty() ? commentCharacter.charAt(0) : '#';
     }
 
-    public void setCommentStart(String commentStart) {
-        this.commentStart = commentStart;
+    public void setCommentCharacter(Character commentCharacter) {
+        this.commentCharacter = commentCharacter != null ? commentCharacter.toString() : null;
     }
 
-    public String getQuoteCharacter() {
-        return quoteCharacter != null ? quoteCharacter : "\"";
+    public Character getQuoteCharacter() {
+        return quoteCharacter != null && !quoteCharacter.isEmpty() ? quoteCharacter.charAt(0) : '\"';
     }
 
-    public void setQuoteCharacter(String quoteCharacter) {
-        this.quoteCharacter = quoteCharacter;
+    public void setQuoteCharacter(Character quoteCharacter) {
+        this.quoteCharacter = quoteCharacter != null ? quoteCharacter.toString() : null;
+    }
+
+    public Character getEscapeCharacter() {
+        return escapeCharacter != null && !escapeCharacter.isEmpty() ? escapeCharacter.charAt(0) : null;
+    }
+
+    public void setEscapeCharacter(Character escapeCharacter) {
+        this.escapeCharacter = escapeCharacter != null ? escapeCharacter.toString() : null;
     }
 
     public boolean hasHeader() {

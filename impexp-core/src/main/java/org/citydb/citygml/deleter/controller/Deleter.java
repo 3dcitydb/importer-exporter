@@ -141,27 +141,26 @@ public class Deleter implements EventHandler {
 			if (config.getDeleteConfig().isSetDeleteList()) {
 				log.info("Loading delete list into temporary database table...");
 
-				DeleteListParser parser;
-				try {
-					parser = new DeleteListParser(config.getDeleteConfig().getDeleteList());
+				try (DeleteListParser parser = new DeleteListParser(config.getDeleteConfig().getDeleteList())) {
+					// create instance of the cache table manager
+					try {
+						cacheTableManager = new CacheTableManager(1, config);
+						cacheTable = cacheTableManager.createCacheTableInDatabase(CacheTableModel.DELETE_LIST);
+					} catch (SQLException e) {
+						throw new DeleteException("Failed to initialize temporary delete list cache.", e);
+					}
+
+					// load delete list into database
+					try {
+						int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
+						new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser);
+					} catch (DeleteListException e) {
+						throw new DeleteException("Failed to parse delete list.", e);
+					} catch (SQLException e) {
+						throw new DeleteException("Failed to load delete list into temporary database table.", e);
+					}
 				} catch (IOException e) {
 					throw new DeleteException("Failed to create delete list parser.", e);
-				}
-
-				// create instance of the cache table manager
-				try {
-					cacheTableManager = new CacheTableManager(1, config);
-					cacheTable = cacheTableManager.createCacheTableInDatabase(CacheTableModel.DELETE_LIST);
-				} catch (SQLException | IOException e) {
-					throw new DeleteException("Failed to initialize temporary delete list cache.", e);
-				}
-
-				// load delete list into database
-				try {
-					int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
-					new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser);
-				} catch (DeleteListException | SQLException e) {
-					throw new DeleteException("Failed to load delete list into temporary database table.", e);
 				}
 			}
 
