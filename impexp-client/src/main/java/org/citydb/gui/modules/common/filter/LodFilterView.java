@@ -47,7 +47,7 @@ public class LodFilterView extends FilterView<LodFilter> {
         }
 
         component.add(lodModeLabel, GuiUtil.setConstraints(5, 0, 0, 0, GridBagConstraints.NONE, 0, 10, 0, 5));
-        component.add(lodMode, GuiUtil.setConstraints(6, 0, 0.5, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+        component.add(lodMode, GuiUtil.setConstraints(6, 0, 0.5, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
         component.add(lodDepthLabel, GuiUtil.setConstraints(7, 0, 0, 0, GridBagConstraints.NONE, 0, 20, 0, 5));
         component.add(lodDepth, GuiUtil.setConstraints(8, 0, 0.5, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 
