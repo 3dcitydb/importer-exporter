@@ -27,9 +27,11 @@
  */
 package org.citydb.citygml.deleter.database;
 
+import org.citydb.citygml.common.cache.CacheTable;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.project.deleter.DeleteListIdType;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -56,7 +58,10 @@ import org.citydb.query.filter.selection.operator.comparison.NullOperator;
 import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.projection.Function;
 import org.citydb.sqlbuilder.select.projection.WildCardColumn;
 import org.citygml4j.model.module.citygml.CoreModule;
@@ -74,6 +79,7 @@ public class DBSplitter {
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
 	private final Query query;
 	private final Config config;
+	private final CacheTable cacheTable;
 	private final EventDispatcher eventDispatcher;
 
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -85,22 +91,26 @@ public class DBSplitter {
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
 
-	public DBSplitter(SchemaMapping schemaMapping,
-			WorkerPool<DBSplittingResult> dbWorkerPool, 
+	public DBSplitter(
+			SchemaMapping schemaMapping,
+			WorkerPool<DBSplittingResult> dbWorkerPool,
 			Query query,
+			CacheTable cacheTable,
 			Config config,
 			EventDispatcher eventDispatcher,
 			boolean preview) throws SQLException {
-		
 		this.schemaMapping = schemaMapping;
 		this.dbWorkerPool = dbWorkerPool;
 		this.query = query;
+		this.cacheTable = cacheTable;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 		this.preview = preview;
 
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		connection = DatabaseConnectionPool.getInstance().getConnection();
+		connection = cacheTable != null ?
+				cacheTable.getConnection() :
+				DatabaseConnectionPool.getInstance().getConnection();
 
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
@@ -132,8 +142,10 @@ public class DBSplitter {
 				}
 			}
 		} finally {
-			if (connection != null)
+			// do not close cache table connection
+			if (connection != null && cacheTable == null) {
 				connection.close();
+			}
 		}
 	}
 
@@ -164,6 +176,25 @@ public class DBSplitter {
 
 		// create query statement
 		Select select = builder.buildQuery(query);
+
+		// in case a delete list is used, join the temporary table holding the ids from the list
+		if (config.getDeleteConfig().isSetDeleteList() && cacheTable != null) {
+			ProjectionToken token = select.getProjection().stream()
+					.filter(v -> v instanceof Column && ((Column) v).getName().equals(MappingConstants.ID))
+					.findFirst()
+					.orElseThrow(() -> new QueryBuildException("Failed to build delete query due to unexpected SQL projection clause."));
+
+			String columnName = config.getDeleteConfig().getDeleteList().getIdType() == DeleteListIdType.DATABASE_ID ?
+					MappingConstants.ID :
+					MappingConstants.GMLID;
+
+			Table cityObject = ((Column) token).getTable();
+			Table table = new Table(cacheTable.getTableName(), builder.getBuildProperties().getAliasGenerator());
+			select.addJoin(JoinFactory.inner(table, columnName, ComparisonName.EQUAL_TO, cityObject.getColumn(columnName)));
+
+			log.debug("Creating indexes on temporary delete list table.");
+			cacheTable.createIndexes();
+		}
 
 		// calculate hits
 		long hits = 0;

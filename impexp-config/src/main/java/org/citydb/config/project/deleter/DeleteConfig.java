@@ -10,19 +10,21 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "delete")
 @XmlType(name = "DeleteType", propOrder = {
+        "mode",
         "query",
         "simpleQuery",
-        "mode",
+        "deleteList",
         "cleanupGlobalAppearances",
         "continuation"
 })
 public class DeleteConfig {
     @XmlAttribute
     private boolean useSimpleQuery = true;
-    private QueryConfig query;
-    private SimpleQuery simpleQuery;
     @XmlElement(required = true)
     private DeleteMode mode = DeleteMode.DELETE;
+    private QueryConfig query;
+    private SimpleQuery simpleQuery;
+    private DeleteList deleteList;
     private boolean cleanupGlobalAppearances;
     private Continuation continuation;
 
@@ -38,6 +40,14 @@ public class DeleteConfig {
 
     public void setUseSimpleQuery(boolean useSimpleQuery) {
         this.useSimpleQuery = useSimpleQuery;
+    }
+
+    public DeleteMode getMode() {
+        return mode != null ? mode : DeleteMode.DELETE;
+    }
+
+    public void setMode(DeleteMode mode) {
+        this.mode = mode;
     }
 
     public QueryConfig getQuery() {
@@ -58,12 +68,16 @@ public class DeleteConfig {
             this.simpleQuery = query;
     }
 
-    public DeleteMode getMode() {
-        return mode != null ? mode : DeleteMode.DELETE;
+    public boolean isSetDeleteList() {
+        return deleteList != null;
     }
 
-    public void setMode(DeleteMode mode) {
-        this.mode = mode;
+    public DeleteList getDeleteList() {
+        return deleteList;
+    }
+
+    public void setDeleteList(DeleteList deleteList) {
+        this.deleteList = deleteList;
     }
 
     public boolean isCleanupGlobalAppearances() {
