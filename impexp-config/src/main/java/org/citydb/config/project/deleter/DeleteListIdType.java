@@ -27,6 +27,8 @@
  */
 package org.citydb.config.project.deleter;
 
+import org.citydb.config.i18n.Language;
+
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
@@ -57,5 +59,18 @@ public enum DeleteListIdType {
         }
 
         return RESOURCE_ID;
+    }
+
+
+    @Override
+    public String toString() {
+        switch (this) {
+            case RESOURCE_ID:
+                return Language.I18N.getString("delete.list.id.resource");
+            case DATABASE_ID:
+                return Language.I18N.getString("delete.list.id.database");
+            default:
+                return "";
+        }
     }
 }

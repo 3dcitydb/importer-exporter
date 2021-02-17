@@ -107,6 +107,7 @@ public class DeleteCommand extends CliCommand {
         }
 
         // set delete list options
+        config.getDeleteConfig().setUseDeleteList(deleteListOption != null);
         if (deleteListOption != null) {
             config.getDeleteConfig().setDeleteList(deleteListOption.toDeleteList());
         }

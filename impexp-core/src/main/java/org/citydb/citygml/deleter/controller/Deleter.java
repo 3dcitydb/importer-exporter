@@ -138,7 +138,7 @@ public class Deleter implements EventHandler {
 		CacheTable cacheTable = null;
 
 		try {
-			if (config.getDeleteConfig().isSetDeleteList()) {
+			if (config.getDeleteConfig().isUseDeleteList() && config.getDeleteConfig().isSetDeleteList()) {
 				log.info("Loading delete list into temporary database table...");
 
 				try (DeleteListParser parser = new DeleteListParser(config.getDeleteConfig().getDeleteList())) {

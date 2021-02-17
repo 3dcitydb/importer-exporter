@@ -20,6 +20,8 @@ import javax.xml.bind.annotation.XmlType;
 public class DeleteConfig {
     @XmlAttribute
     private boolean useSimpleQuery = true;
+    @XmlAttribute
+    private boolean useDeleteList;
     @XmlElement(required = true)
     private DeleteMode mode = DeleteMode.DELETE;
     private QueryConfig query;
@@ -40,6 +42,14 @@ public class DeleteConfig {
 
     public void setUseSimpleQuery(boolean useSimpleQuery) {
         this.useSimpleQuery = useSimpleQuery;
+    }
+
+    public boolean isUseDeleteList() {
+        return useDeleteList;
+    }
+
+    public void setUseDeleteList(boolean useDeleteList) {
+        this.useDeleteList = useDeleteList;
     }
 
     public DeleteMode getMode() {
