@@ -41,6 +41,7 @@ import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.KmlTilingMode;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -102,14 +103,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     private JTextField browseText;
     private JButton browseButton;
 
-    private TitledPanel resourceIdPanel;
-    private TitledPanel bboxPanel;
+    private TitledPanel attributeFilterPanel;
+    private TitledPanel bboxFilterPanel;
     private TitledPanel tilingPanel;
     private TitledPanel lodPanel;
     private TitledPanel displayAsPanel;
 	private TitledPanel featureFilterPanel;
 
-    private JCheckBox useResourceIdFilter;
+    private JCheckBox useAttributeFilter;
     private JCheckBox useBboxFilter;
     private JCheckBox useTilingFilter;
     private JCheckBox useFeatureFilter;
@@ -170,7 +171,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         browsePanel.add(browseText, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
         browsePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
 
-        useResourceIdFilter = new JCheckBox();
+        useAttributeFilter = new JCheckBox();
         useBboxFilter = new JCheckBox();
         useTilingFilter = new JCheckBox();
         useFeatureFilter = new JCheckBox();
@@ -300,27 +301,29 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             mainPanel.add(tilingPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            attributeFilter = new AttributeFilterView();
+            attributeFilter = new AttributeFilterView()
+                    .withNameFilter()
+                    .withLineageFilter();
 
-            resourceIdPanel = new TitledPanel()
+            attributeFilterPanel = new TitledPanel()
                     .withIcon(attributeFilter.getIcon())
-                    .withToggleButton(useResourceIdFilter)
+                    .withToggleButton(useAttributeFilter)
                     .withCollapseButton()
                     .build(attributeFilter.getViewComponent());
 
-            mainPanel.add(resourceIdPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            mainPanel.add(attributeFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
             // bbox
             bboxFilter = new BoundingBoxFilterView(viewController);
 
-            bboxPanel = new TitledPanel()
+            bboxFilterPanel = new TitledPanel()
                     .withIcon(bboxFilter.getIcon())
                     .withToggleButton(useBboxFilter)
                     .withCollapseButton()
                     .build(bboxFilter.getViewComponent());
 
-            mainPanel.add(bboxPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            mainPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
             featureTypeFilter = new FeatureTypeFilterView();
@@ -350,15 +353,15 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText);
         PopupMenuDecorator.getInstance().decorateAndGetCheckBoxGroup(footprintCheckbox, extrudedCheckbox,
                 geometryCheckbox, colladaCheckbox);
-        PopupMenuDecorator.getInstance().decorateTitledPanelGroup(tilingPanel, resourceIdPanel, bboxPanel,
+        PopupMenuDecorator.getInstance().decorateTitledPanelGroup(tilingPanel, attributeFilterPanel, bboxFilterPanel,
                 featureFilterPanel);
     }
 
     public void doTranslation() {
         browseButton.setText(Language.I18N.getString("common.button.browse"));
         tilingPanel.setTitle(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
-        resourceIdPanel.setTitle(attributeFilter.getLocalizedTitle());
-        bboxPanel.setTitle(bboxFilter.getLocalizedTitle());
+        attributeFilterPanel.setTitle(attributeFilter.getLocalizedTitle());
+        bboxFilterPanel.setTitle(bboxFilter.getLocalizedTitle());
         featureFilterPanel.setTitle(featureTypeFilter.getLocalizedTitle());
 
         manualTilingRadioButton.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
@@ -400,7 +403,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
 
         useFeatureFilter.setSelected(query.isUseTypeNames());
-        useResourceIdFilter.setSelected(query.isUseResourceIdFilter());
+        useAttributeFilter.setSelected(query.isUseAttributeFilter());
         useBboxFilter.setSelected(query.isUseBboxFilter());
 
         // tiling
@@ -416,7 +419,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         rowsText.setValue(spatialFilter.getRows());
         columnsText.setValue(spatialFilter.getColumns());
 
-        attributeFilter.loadSettings(query.getResourceIdFilter(), null, null);
+        attributeFilter.loadSettings(query.getAttributeFilter());
         bboxFilter.loadSettings(query.getSpatialFilter().getExtent());
         featureTypeFilter.loadSettings(featureTypeFilter.toSettings());
 
@@ -477,8 +480,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         // GUI specific settings
         KmlExportGuiConfig guiConfig = config.getGuiConfig().getKmlExportGuiConfig();
         tilingPanel.setCollapsed(guiConfig.isCollapseTilingFilter());
-        resourceIdPanel.setCollapsed(guiConfig.isCollapseAttributeFilter());
-        bboxPanel.setCollapsed(guiConfig.isCollapseBoundingBoxFilter());
+        attributeFilterPanel.setCollapsed(guiConfig.isCollapseAttributeFilter());
+        bboxFilterPanel.setCollapsed(guiConfig.isCollapseBoundingBoxFilter());
         featureFilterPanel.setCollapsed(guiConfig.isCollapseFeatureTypeFilter());
     }
 
@@ -493,7 +496,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         // filter
         SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
 
-        query.setUseResourceIdFilter(useResourceIdFilter.isSelected());
+        query.setUseAttributeFilter(useAttributeFilter.isSelected());
         query.setUseBboxFilter(useBboxFilter.isSelected());
         query.setUseTypeNames(useFeatureFilter.isSelected());
 
@@ -523,7 +526,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             spatialFilter.setColumns(1);
         }
 
-        query.setResourceIdFilter(attributeFilter.toSettings().getResourceIdFilter());
+        query.setAttributeFilter(attributeFilter.toSettings());
         query.getSpatialFilter().setExtent(bboxFilter.toSettings());
         query.setFeatureTypeFilter(featureTypeFilter.toSettings());
 
@@ -582,8 +585,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         // GUI specific settings
         KmlExportGuiConfig guiConfig = config.getGuiConfig().getKmlExportGuiConfig();
         guiConfig.setCollapseTilingFilter(tilingPanel.isCollapsed());
-        guiConfig.setCollapseAttributeFilter(resourceIdPanel.isCollapsed());
-        guiConfig.setCollapseBoundingBoxFilter(bboxPanel.isCollapsed());
+        guiConfig.setCollapseAttributeFilter(attributeFilterPanel.isCollapsed());
+        guiConfig.setCollapseBoundingBoxFilter(bboxFilterPanel.isCollapsed());
         guiConfig.setCollapseFeatureTypeFilter(featureFilterPanel.isCollapsed());
     }
 
@@ -597,7 +600,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
         browseButton.addActionListener(e -> saveFile());
 
-        useResourceIdFilter.addItemListener(e -> setFilterEnabledValues());
+        useAttributeFilter.addItemListener(e -> setFilterEnabledValues());
         useBboxFilter.addItemListener(e -> setFilterEnabledValues());
         useTilingFilter.addItemListener(e -> setFilterEnabledValues());
         useFeatureFilter.addItemListener(e -> setEnabledFeatureFilter());
@@ -634,12 +637,16 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 return;
             }
 
-            // resource id
-            if (query.isUseResourceIdFilter()
-                    && !query.getResourceIdFilter().isSetResourceIds()) {
-                viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-                        Language.I18N.getString("common.dialog.error.incorrectData.id"));
-                return;
+            // attribute filter
+            if (query.isUseAttributeFilter()) {
+                SimpleAttributeFilter attributeFilter = query.getAttributeFilter();
+                if (!attributeFilter.getResourceIdFilter().isSetResourceIds()
+                        && !attributeFilter.getNameFilter().isSetLiteral()
+                        && !attributeFilter.getLineageFilter().isSetLiteral()) {
+                    viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                            Language.I18N.getString("common.dialog.error.incorrectData.attributes"));
+                    return;
+                }
             }
 
             // DisplayForms
@@ -785,7 +792,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     }
 
     private void setFilterEnabledValues() {
-        attributeFilter.setEnabled(useResourceIdFilter.isSelected());
+        attributeFilter.setEnabled(useAttributeFilter.isSelected());
         bboxFilter.setEnabled(useBboxFilter.isSelected());
 
         automaticTilingRadioButton.setEnabled(useTilingFilter.isSelected());

@@ -317,9 +317,39 @@ public class ConfigQueryBuilder {
 			}
 		}
 
-		// gml:id filter
-		if (queryConfig.isUseResourceIdFilter() && queryConfig.isSetResourceIdFilter() && queryConfig.getResourceIdFilter().isSetResourceIds()) {
-			query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getResourceIdFilter())));
+		// simple filter settings
+		List<Predicate> predicates = new ArrayList<>();
+
+		// attribute filter
+		if (queryConfig.isUseAttributeFilter() && queryConfig.isSetAttributeFilter()) {
+			SimpleAttributeFilter attributeFilter = queryConfig.getAttributeFilter();
+
+			// gml:id filter
+			if (attributeFilter.isSetResourceIdFilter() && attributeFilter.getResourceIdFilter().isSetResourceIds())
+				predicates.add(predicateBuilder.buildPredicate(attributeFilter.getResourceIdFilter()));
+
+			// gml:name filter
+			if (attributeFilter.isSetNameFilter() && attributeFilter.getNameFilter().isSetLiteral()) {
+				LikeOperator gmlNameFilter = attributeFilter.getNameFilter();
+				gmlNameFilter.setValueReference("gml:name");
+				predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
+			}
+
+			// citydb:lineage filter
+			if (attributeFilter.isSetLineageFilter() && attributeFilter.getLineageFilter().isSetLiteral()) {
+				LikeOperator lineageFilter = attributeFilter.getLineageFilter();
+				lineageFilter.setValueReference("citydb:lineage");
+				predicates.add(predicateBuilder.buildPredicate(lineageFilter));
+			}
+		}
+
+		if (!predicates.isEmpty()) {
+			try {
+				BinaryLogicalOperator predicate = new BinaryLogicalOperator(LogicalOperatorName.AND, predicates);
+				query.setSelection(new SelectionFilter(predicate));
+			} catch (FilterException e) {
+				throw new QueryBuildException("Failed to build the export filter.", e);
+			}
 		}
 
 		KmlTiling spatialFilter = queryConfig.getSpatialFilter();

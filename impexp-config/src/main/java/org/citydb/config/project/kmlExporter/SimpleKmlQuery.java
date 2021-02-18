@@ -27,8 +27,8 @@
  */
 package org.citydb.config.project.kmlExporter;
 
-import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -36,27 +36,27 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "SimpleKmlExportQueryType", propOrder = {
         "featureTypeFilter",
-        "resourceIdFilter",
+        "attributeFilter",
         "spatialFilter"
 })
 public class SimpleKmlQuery {
     @XmlAttribute
     private boolean useTypeNames;
     @XmlAttribute
-    private boolean useResourceIdFilter;
+    private boolean useAttributeFilter;
     @XmlAttribute
     private boolean useBboxFilter;
 
     @XmlElement(name = "typeNames")
     protected FeatureTypeFilter featureTypeFilter;
-    @XmlElement(name = "resourceIds")
-    private ResourceIdOperator resourceIdFilter;
+    @XmlElement(name = "attributes")
+    private SimpleAttributeFilter attributeFilter;
     @XmlElement(name = "bbox", required = true)
     private KmlTiling spatialFilter;
 
     public SimpleKmlQuery() {
         featureTypeFilter = new FeatureTypeFilter();
-        resourceIdFilter = new ResourceIdOperator();
+        attributeFilter = new SimpleAttributeFilter();
         spatialFilter = new KmlTiling();
     }
 
@@ -66,6 +66,22 @@ public class SimpleKmlQuery {
 
     public void setUseTypeNames(boolean useTypeNames) {
         this.useTypeNames = useTypeNames;
+    }
+
+    public boolean isUseAttributeFilter() {
+        return useAttributeFilter;
+    }
+
+    public void setUseAttributeFilter(boolean useAttributeFilter) {
+        this.useAttributeFilter = useAttributeFilter;
+    }
+
+    public boolean isUseBboxFilter() {
+        return useBboxFilter;
+    }
+
+    public void setUseBboxFilter(boolean useBboxFilter) {
+        this.useBboxFilter = useBboxFilter;
     }
 
     public FeatureTypeFilter getFeatureTypeFilter() {
@@ -80,32 +96,16 @@ public class SimpleKmlQuery {
         this.featureTypeFilter = featureTypeFilter;
     }
 
-    public boolean isUseResourceIdFilter() {
-        return useResourceIdFilter;
+    public SimpleAttributeFilter getAttributeFilter() {
+        return attributeFilter;
     }
 
-    public void setUseResourceIdFilter(boolean useResourceIdFilter) {
-        this.useResourceIdFilter = useResourceIdFilter;
+    public boolean isSetAttributeFilter() {
+        return attributeFilter != null;
     }
 
-    public ResourceIdOperator getResourceIdFilter() {
-        return resourceIdFilter;
-    }
-
-    public boolean isSetResourceIdFilter() {
-        return resourceIdFilter != null;
-    }
-
-    public void setResourceIdFilter(ResourceIdOperator resourceIdFilter) {
-        this.resourceIdFilter = resourceIdFilter;
-    }
-
-    public boolean isUseBboxFilter() {
-        return useBboxFilter;
-    }
-
-    public void setUseBboxFilter(boolean useBboxFilter) {
-        this.useBboxFilter = useBboxFilter;
+    public void setAttributeFilter(SimpleAttributeFilter attributeFilter) {
+        this.attributeFilter = attributeFilter;
     }
 
     public KmlTiling getSpatialFilter() {

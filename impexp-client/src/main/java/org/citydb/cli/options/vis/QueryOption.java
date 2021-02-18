@@ -30,6 +30,7 @@ package org.citydb.cli.options.vis;
 
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.ResourceIdOption;
 import org.citydb.plugin.cli.TypeNamesOption;
@@ -59,8 +60,10 @@ public class QueryOption implements CliOption {
         if (resourceIdOption != null) {
             ResourceIdOperator idOperator = resourceIdOption.toResourceIdOperator();
             if (idOperator != null) {
-                query.setUseResourceIdFilter(true);
-                query.setResourceIdFilter(idOperator);
+                query.setUseAttributeFilter(true);
+                SimpleAttributeFilter attributeFilter = new SimpleAttributeFilter();
+                attributeFilter.setResourceIdFilter(idOperator);
+                query.setAttributeFilter(attributeFilter);
             }
         }
 

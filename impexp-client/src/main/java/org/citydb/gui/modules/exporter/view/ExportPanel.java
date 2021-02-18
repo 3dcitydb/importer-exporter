@@ -221,7 +221,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 							&& !attributeFilter.getNameFilter().isSetLiteral()
 							&& !attributeFilter.getLineageFilter().isSetLiteral()) {
 						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-								Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
+								Language.I18N.getString("common.dialog.error.incorrectData.attributes"));
 						return;
 					}
 				}
