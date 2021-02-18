@@ -41,6 +41,9 @@ import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
+import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.event.Event;
@@ -58,6 +61,7 @@ import org.citydb.util.Util;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.datatype.DatatypeConstants;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -213,6 +217,31 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 
 			if (config.getExportConfig().isUseSimpleQuery()) {
 				SimpleQuery query = config.getExportConfig().getSimpleQuery();
+
+				// feature version filter
+				if (query.isUseFeatureVersionFilter()) {
+					SimpleFeatureVersionFilter featureVersionFilter = query.getFeatureVersionFilter();
+
+					if (featureVersionFilter.getMode() != SimpleFeatureVersionFilterMode.LATEST) {
+						if (!featureVersionFilter.isSetStartDate()) {
+							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+									Language.I18N.getString("export.dialog.error.featureVersion.startDate"));
+							return;
+						}
+
+						if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN) {
+							if (!featureVersionFilter.isSetEndDate()) {
+								viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+										Language.I18N.getString("export.dialog.error.featureVersion.endDate"));
+								return;
+							} else if (featureVersionFilter.getStartDate().compare(featureVersionFilter.getEndDate()) != DatatypeConstants.LESSER) {
+								viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+										Language.I18N.getString("export.dialog.error.featureVersion.range"));
+								return;
+							}
+						}
+					}
+				}
 
 				// attribute filter
 				if (query.isUseAttributeFilter()) {
