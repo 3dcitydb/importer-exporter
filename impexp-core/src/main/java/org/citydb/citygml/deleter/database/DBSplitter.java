@@ -179,21 +179,10 @@ public class DBSplitter {
 
 		// in case a delete list is used, join the temporary table holding the ids from the list
 		if (config.getDeleteConfig().isSetDeleteList() && cacheTable != null) {
-			ProjectionToken token = select.getProjection().stream()
-					.filter(v -> v instanceof Column && ((Column) v).getName().equals(MappingConstants.ID))
-					.findFirst()
-					.orElseThrow(() -> new QueryBuildException("Failed to build delete query due to unexpected SQL projection clause."));
-
-			String columnName = config.getDeleteConfig().getDeleteList().getIdType() == DeleteListIdType.DATABASE_ID ?
-					MappingConstants.ID :
-					MappingConstants.GMLID;
-
-			Table cityObject = ((Column) token).getTable();
-			Table table = new Table(cacheTable.getTableName(), builder.getBuildProperties().getAliasGenerator());
-			select.addJoin(JoinFactory.inner(table, columnName, ComparisonName.EQUAL_TO, cityObject.getColumn(columnName)));
-
 			log.debug("Creating indexes on temporary delete list table...");
 			cacheTable.createIndexes();
+
+			joinDeleteList(select);
 		}
 
 		// calculate hits
@@ -256,10 +245,29 @@ public class DBSplitter {
 		Select select = builder.buildQuery(hitsQuery)
 				.removeProjectionIf(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
 
+		if (config.getDeleteConfig().isSetDeleteList() && cacheTable != null) {
+			joinDeleteList(select);
+		}
+
 		select = new Select().addProjection(new Function("count", new WildCardColumn(new Table(select), false)));
 		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
 			 ResultSet rs = stmt.executeQuery()) {
 			return rs.next() ? rs.getLong(1) : 0;
 		}
+	}
+
+	private void joinDeleteList(Select select) throws QueryBuildException {
+		ProjectionToken token = select.getProjection().stream()
+				.filter(v -> v instanceof Column && ((Column) v).getName().equals(MappingConstants.ID))
+				.findFirst()
+				.orElseThrow(() -> new QueryBuildException("Failed to build delete query due to unexpected SQL projection clause."));
+
+		String columnName = config.getDeleteConfig().getDeleteList().getIdType() == DeleteListIdType.DATABASE_ID ?
+				MappingConstants.ID :
+				MappingConstants.GMLID;
+
+		Table cityObject = ((Column) token).getTable();
+		Table table = new Table(cacheTable.getTableName(), builder.getBuildProperties().getAliasGenerator());
+		select.addJoin(JoinFactory.inner(table, columnName, ComparisonName.EQUAL_TO, cityObject.getColumn(columnName)));
 	}
 }
