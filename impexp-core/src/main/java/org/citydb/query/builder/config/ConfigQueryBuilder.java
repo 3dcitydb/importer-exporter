@@ -193,48 +193,12 @@ public class ConfigQueryBuilder {
 
 		// feature version filter
 		if (queryConfig.isUseFeatureVersionFilter() && queryConfig.isSetFeatureVersionFilter()) {
-			SimpleFeatureVersionFilter featureVersionFilter = queryConfig.getFeatureVersionFilter();
-
-			if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
-				predicates.add(predicateBuilder.buildPredicate(new NullOperator("core:terminationDate")));
-			else if (featureVersionFilter.isSetStartDate()
-					&& (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
-					|| featureVersionFilter.isSetEndDate())) {
-				XMLGregorianCalendar creationDate = featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT ?
-						featureVersionFilter.getStartDate() :
-						featureVersionFilter.getEndDate();
-
-				predicates.add(predicateBuilder.buildPredicate(new AndOperator(
-						new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
-						new OrOperator(
-								new GreaterThanOperator("core:terminationDate", featureVersionFilter.getStartDate().toString()),
-								new NullOperator("core:terminationDate")
-						)
-				)));
-			}
+			buildFeatureVersionFilter(queryConfig.getFeatureVersionFilter(), predicates, predicateBuilder);
 		}
 
 		// attribute filter
 		if (queryConfig.isUseAttributeFilter() && queryConfig.isSetAttributeFilter()) {
-			SimpleAttributeFilter attributeFilter = queryConfig.getAttributeFilter();
-
-			// gml:id filter
-			if (attributeFilter.isSetResourceIdFilter() && attributeFilter.getResourceIdFilter().isSetResourceIds())
-				predicates.add(predicateBuilder.buildPredicate(attributeFilter.getResourceIdFilter()));
-
-			// gml:name filter
-			if (attributeFilter.isSetNameFilter() && attributeFilter.getNameFilter().isSetLiteral()) {
-				LikeOperator gmlNameFilter = attributeFilter.getNameFilter();
-				gmlNameFilter.setValueReference("gml:name");
-				predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
-			}
-
-			// citydb:lineage filter
-			if (attributeFilter.isSetLineageFilter() && attributeFilter.getLineageFilter().isSetLiteral()) {
-				LikeOperator lineageFilter = attributeFilter.getLineageFilter();
-				lineageFilter.setValueReference("citydb:lineage");
-				predicates.add(predicateBuilder.buildPredicate(lineageFilter));
-			}
+			buildAttributeFilter(queryConfig.getAttributeFilter(), predicates, predicateBuilder);
 		}
 
 		// SQL filter
@@ -322,48 +286,12 @@ public class ConfigQueryBuilder {
 
 		// feature version filter
 		if (queryConfig.isUseFeatureVersionFilter() && queryConfig.isSetFeatureVersionFilter()) {
-			SimpleFeatureVersionFilter featureVersionFilter = queryConfig.getFeatureVersionFilter();
-
-			if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
-				predicates.add(predicateBuilder.buildPredicate(new NullOperator("core:terminationDate")));
-			else if (featureVersionFilter.isSetStartDate()
-					&& (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
-					|| featureVersionFilter.isSetEndDate())) {
-				XMLGregorianCalendar creationDate = featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT ?
-						featureVersionFilter.getStartDate() :
-						featureVersionFilter.getEndDate();
-
-				predicates.add(predicateBuilder.buildPredicate(new AndOperator(
-						new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
-						new OrOperator(
-								new GreaterThanOperator("core:terminationDate", featureVersionFilter.getStartDate().toString()),
-								new NullOperator("core:terminationDate")
-						)
-				)));
-			}
+			buildFeatureVersionFilter(queryConfig.getFeatureVersionFilter(), predicates, predicateBuilder);
 		}
 
 		// attribute filter
 		if (queryConfig.isUseAttributeFilter() && queryConfig.isSetAttributeFilter()) {
-			SimpleAttributeFilter attributeFilter = queryConfig.getAttributeFilter();
-
-			// gml:id filter
-			if (attributeFilter.isSetResourceIdFilter() && attributeFilter.getResourceIdFilter().isSetResourceIds())
-				predicates.add(predicateBuilder.buildPredicate(attributeFilter.getResourceIdFilter()));
-
-			// gml:name filter
-			if (attributeFilter.isSetNameFilter() && attributeFilter.getNameFilter().isSetLiteral()) {
-				LikeOperator gmlNameFilter = attributeFilter.getNameFilter();
-				gmlNameFilter.setValueReference("gml:name");
-				predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
-			}
-
-			// citydb:lineage filter
-			if (attributeFilter.isSetLineageFilter() && attributeFilter.getLineageFilter().isSetLiteral()) {
-				LikeOperator lineageFilter = attributeFilter.getLineageFilter();
-				lineageFilter.setValueReference("citydb:lineage");
-				predicates.add(predicateBuilder.buildPredicate(lineageFilter));
-			}
+			buildAttributeFilter(queryConfig.getAttributeFilter(), predicates, predicateBuilder);
 		}
 
 		// SQL filter
@@ -397,5 +325,45 @@ public class ConfigQueryBuilder {
 		}
 
 		return query;
+	}
+
+	private void buildFeatureVersionFilter(SimpleFeatureVersionFilter filter, List<Predicate> predicates, PredicateBuilder builder) throws QueryBuildException {
+		if (filter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
+			predicates.add(builder.buildPredicate(new NullOperator("core:terminationDate")));
+		else if (filter.isSetStartDate()
+				&& (filter.getMode() == SimpleFeatureVersionFilterMode.AT
+				|| filter.isSetEndDate())) {
+			XMLGregorianCalendar creationDate = filter.getMode() == SimpleFeatureVersionFilterMode.AT ?
+					filter.getStartDate() :
+					filter.getEndDate();
+
+			predicates.add(builder.buildPredicate(new AndOperator(
+					new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
+					new OrOperator(
+							new GreaterThanOperator("core:terminationDate", filter.getStartDate().toString()),
+							new NullOperator("core:terminationDate")
+					)
+			)));
+		}
+	}
+
+	private void buildAttributeFilter(SimpleAttributeFilter filter, List<Predicate> predicates, PredicateBuilder builder) throws QueryBuildException {
+		// gml:id filter
+		if (filter.isSetResourceIdFilter() && filter.getResourceIdFilter().isSetResourceIds())
+			predicates.add(builder.buildPredicate(filter.getResourceIdFilter()));
+
+		// gml:name filter
+		if (filter.isSetNameFilter() && filter.getNameFilter().isSetLiteral()) {
+			LikeOperator gmlNameFilter = filter.getNameFilter();
+			gmlNameFilter.setValueReference("gml:name");
+			predicates.add(builder.buildPredicate(gmlNameFilter));
+		}
+
+		// citydb:lineage filter
+		if (filter.isSetLineageFilter() && filter.getLineageFilter().isSetLiteral()) {
+			LikeOperator lineageFilter = filter.getLineageFilter();
+			lineageFilter.setValueReference("citydb:lineage");
+			predicates.add(builder.buildPredicate(lineageFilter));
+		}
 	}
 }
