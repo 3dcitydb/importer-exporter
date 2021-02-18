@@ -296,7 +296,7 @@ public class KmlExporter implements EventHandler {
 						return false;
 					}
 
-					queryConfig.getSpatialFilter().setExtent(extent);
+					queryConfig.getBboxFilter().setExtent(extent);
 					query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
 				} catch (SQLException | FilterException e) {
 					throw new QueryBuildException("Failed to calculate bounding box based on the non-spatial filter settings.", e);
@@ -328,7 +328,7 @@ public class KmlExporter implements EventHandler {
 		if (!query.isSetTiling()) {
 			try {
 				// set default tiling
-				query.setTiling(new Tiling(config.getKmlExportConfig().getQuery().getSpatialFilter().getExtent(), 1, 1));
+				query.setTiling(new Tiling(config.getKmlExportConfig().getQuery().getBboxFilter().getExtent(), 1, 1));
 			} catch (FilterException e) {
 				throw new KmlExportException("Failed to build the internal fallback tiling.", e);
 			}

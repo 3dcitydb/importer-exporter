@@ -343,6 +343,12 @@ public class ConfigQueryBuilder {
 			}
 		}
 
+		// SQL filter
+		if (queryConfig.isUseSQLFilter() && queryConfig.isSetSQLFilter()) {
+			SelectOperatorBuilder selectOperatorBuilder = new SelectOperatorBuilder();
+			predicates.add(selectOperatorBuilder.buildSelectOperator(queryConfig.getSQLFilter()));
+		}
+
 		if (!predicates.isEmpty()) {
 			try {
 				BinaryLogicalOperator predicate = new BinaryLogicalOperator(LogicalOperatorName.AND, predicates);
@@ -352,7 +358,7 @@ public class ConfigQueryBuilder {
 			}
 		}
 
-		KmlTiling spatialFilter = queryConfig.getSpatialFilter();
+		KmlTiling spatialFilter = queryConfig.getBboxFilter();
 
 		// check bbox filter
 		if (queryConfig.isUseBboxFilter() && !spatialFilter.isSetExtent()) {

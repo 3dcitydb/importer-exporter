@@ -27,6 +27,7 @@
  */
 package org.citydb.config.project.kmlExporter;
 
+import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 
@@ -37,7 +38,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SimpleKmlExportQueryType", propOrder = {
         "featureTypeFilter",
         "attributeFilter",
-        "spatialFilter"
+        "sqlFilter",
+        "bboxFilter"
 })
 public class SimpleKmlQuery {
     @XmlAttribute
@@ -45,19 +47,24 @@ public class SimpleKmlQuery {
     @XmlAttribute
     private boolean useAttributeFilter;
     @XmlAttribute
+    private boolean useSQLFilter;
+    @XmlAttribute
     private boolean useBboxFilter;
 
     @XmlElement(name = "typeNames")
     protected FeatureTypeFilter featureTypeFilter;
     @XmlElement(name = "attributes")
     private SimpleAttributeFilter attributeFilter;
+    @XmlElement(name = "sql")
+    private SelectOperator sqlFilter;
     @XmlElement(name = "bbox", required = true)
-    private KmlTiling spatialFilter;
+    private KmlTiling bboxFilter;
 
     public SimpleKmlQuery() {
         featureTypeFilter = new FeatureTypeFilter();
         attributeFilter = new SimpleAttributeFilter();
-        spatialFilter = new KmlTiling();
+        sqlFilter = new SelectOperator();
+        bboxFilter = new KmlTiling();
     }
 
     public boolean isUseTypeNames() {
@@ -74,6 +81,14 @@ public class SimpleKmlQuery {
 
     public void setUseAttributeFilter(boolean useAttributeFilter) {
         this.useAttributeFilter = useAttributeFilter;
+    }
+
+    public boolean isUseSQLFilter() {
+        return useSQLFilter;
+    }
+
+    public void setUseSQLFilter(boolean useSQLFilter) {
+        this.useSQLFilter = useSQLFilter;
     }
 
     public boolean isUseBboxFilter() {
@@ -108,15 +123,27 @@ public class SimpleKmlQuery {
         this.attributeFilter = attributeFilter;
     }
 
-    public KmlTiling getSpatialFilter() {
-        return spatialFilter;
+    public SelectOperator getSQLFilter() {
+        return sqlFilter;
+    }
+
+    public boolean isSetSQLFilter() {
+        return sqlFilter != null;
+    }
+
+    public void setSQLFilter(SelectOperator sqlFilter) {
+        this.sqlFilter = sqlFilter;
+    }
+
+    public KmlTiling getBboxFilter() {
+        return bboxFilter;
     }
 
     public boolean isSetBboxFilter() {
-        return spatialFilter != null;
+        return bboxFilter != null;
     }
 
-    public void setSpatialFilter(KmlTiling spatialFilter) {
-        this.spatialFilter = spatialFilter;
+    public void setBboxFilter(KmlTiling bboxFilter) {
+        this.bboxFilter = bboxFilter;
     }
 }

@@ -36,7 +36,7 @@ import picocli.CommandLine;
 public class ColladaOption implements CliOption {
     enum Mode {none, basic, tpim, tpim_wo_rotation}
 
-    @CommandLine.Option(names = {"-s", "--double-sided"},
+    @CommandLine.Option(names = {"-B", "--double-sided"},
             description = "Force all surfaces to be double sided.")
     private boolean doubleSided;
 
