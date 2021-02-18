@@ -35,8 +35,8 @@ public class DeleteListImporter {
                     try {
                         ps.setLong(1, Long.parseLong(id));
                     } catch (NumberFormatException e) {
-                        throw new DeleteListException("Invalid database id in delete list: '" + id + "' " +
-                                "(line " + parser.getCurrentLineNumber() + ").", e);
+                        throw new DeleteListException("Invalid database ID: '" + id + "' (line " +
+                                parser.getCurrentLineNumber() + ") is not an integer.");
                     }
                 } else {
                     ps.setString(1, id);

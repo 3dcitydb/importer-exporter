@@ -192,7 +192,7 @@ public class DBSplitter {
 			Table table = new Table(cacheTable.getTableName(), builder.getBuildProperties().getAliasGenerator());
 			select.addJoin(JoinFactory.inner(table, columnName, ComparisonName.EQUAL_TO, cityObject.getColumn(columnName)));
 
-			log.debug("Creating indexes on temporary delete list table.");
+			log.debug("Creating indexes on temporary delete list table...");
 			cacheTable.createIndexes();
 		}
 

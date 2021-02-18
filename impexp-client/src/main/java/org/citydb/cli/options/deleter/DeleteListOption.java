@@ -68,11 +68,11 @@ public class DeleteListOption implements CliOption {
     private boolean header;
 
     @CommandLine.Option(names = "--quote", paramLabel = "<char>", defaultValue = "\"",
-            description = "Character used as quote (default: ${DEFAULT-VALUE}).")
+            description = "Character used to enclose the column values (default: ${DEFAULT-VALUE}).")
     private Character quote;
 
-    @CommandLine.Option(names = "--comment-marker", paramLabel = "<char>", defaultValue = "#",
-            description = "Marker used to start a line comment (default: ${DEFAULT-VALUE}).")
+    @CommandLine.Option(names = "--comment-marker", paramLabel = "<char>",
+            description = "Marker used to start a line comment.")
     private Character comment;
 
     @CommandLine.Option(names = "--escape", paramLabel = "<char>",

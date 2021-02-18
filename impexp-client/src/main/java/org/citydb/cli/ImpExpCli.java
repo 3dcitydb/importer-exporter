@@ -487,7 +487,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
             log.setFileLogLevel(logging.getFile().getLogLevel());
             if (log.appendLogFile(file, logging.getFile().getLogFileMode())) {
-                log.logToFile("*** Command line: " + commandLineString);
+                log.printToFile("*** Command line: " + commandLineString);
             } else {
                 logging.getFile().setActive(false);
                 logging.getFile().setUseAlternativeLogFile(false);

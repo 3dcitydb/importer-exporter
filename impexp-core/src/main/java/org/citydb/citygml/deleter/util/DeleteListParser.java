@@ -73,6 +73,10 @@ public class DeleteListParser implements AutoCloseable {
         return deleteList;
     }
 
+    public CSVParser getCSVParser() {
+        return parser;
+    }
+
     public long getCurrentLineNumber() {
         return parser.getCurrentLineNumber();
     }
@@ -89,13 +93,13 @@ public class DeleteListParser implements AutoCloseable {
                 return record.get(deleteList.getIdColumnName());
             } catch (Exception e) {
                 throw new DeleteListException("Failed to retrieve a column with name '" +
-                        deleteList.getIdColumnName() + "'.");
+                        deleteList.getIdColumnName() + "' in line " + getCurrentLineNumber() + ".");
             }
         } else {
             int index = deleteList.getIdColumnIndex() - 1;
             if (index >= record.size()) {
                 throw new DeleteListException("The ID column index " + deleteList.getIdColumnIndex() + " is out of " +
-                        "bounds. Only found " + record.size() + " columns in delete list.");
+                        "bounds. Only found " + record.size() + " columns in line " + getCurrentLineNumber() + ".");
             }
 
             return record.get(index);
