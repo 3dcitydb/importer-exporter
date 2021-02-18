@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlType;
         "sqlFilter"
 })
 public class KmlExportGuiConfig {
-    private boolean collapseFeatureVersionFilter = true;
+    private boolean collapseFeatureVersionFilter = false;
     private boolean collapseTilingFilter = true;
     private boolean collapseAttributeFilter = true;
     private boolean collapseSQLFilter = true;

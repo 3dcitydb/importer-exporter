@@ -47,7 +47,7 @@ public class SimpleKmlQuery {
     @XmlAttribute
     private boolean useTypeNames;
     @XmlAttribute
-    private boolean useFeatureVersionFilter;
+    private boolean useFeatureVersionFilter = true;
     @XmlAttribute
     private boolean useAttributeFilter;
     @XmlAttribute

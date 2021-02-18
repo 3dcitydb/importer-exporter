@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
         "sqlFilter"
 })
 public class ExportGuiConfig {
-    private boolean collapseFeatureVersionFilter = true;
+    private boolean collapseFeatureVersionFilter = false;
     private boolean collapseAttributeFilter = true;
     private boolean collapseSQLFilter = true;
     private boolean collapseLodFilter = true;
