@@ -5,6 +5,7 @@ import org.citydb.config.gui.components.SQLExportFilterComponent;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ExportGuiType", propOrder = {
+        "collapseFeatureVersionFilter",
         "collapseAttributeFilter",
         "collapseSQLFilter",
         "collapseLodFilter",
@@ -15,6 +16,7 @@ import javax.xml.bind.annotation.XmlType;
         "sqlFilter"
 })
 public class ExportGuiConfig {
+    private boolean collapseFeatureVersionFilter = true;
     private boolean collapseAttributeFilter = true;
     private boolean collapseSQLFilter = true;
     private boolean collapseLodFilter = true;
@@ -26,6 +28,14 @@ public class ExportGuiConfig {
 
     public ExportGuiConfig() {
         sqlFilter = new SQLExportFilterComponent();
+    }
+
+    public boolean isCollapseFeatureVersionFilter() {
+        return collapseFeatureVersionFilter;
+    }
+
+    public void setCollapseFeatureVersionFilter(boolean collapseFeatureVersionFilter) {
+        this.collapseFeatureVersionFilter = collapseFeatureVersionFilter;
     }
 
     public boolean isCollapseAttributeFilter() {
