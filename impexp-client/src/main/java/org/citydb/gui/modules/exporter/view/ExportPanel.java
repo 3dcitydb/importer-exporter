@@ -259,7 +259,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				if (query.isUseSQLFilter()
 						&& !query.getSQLFilter().isSetValue()) {
 					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-							Language.I18N.getString("common.dialog.error.incorrectData.sql"));
+							Language.I18N.getString("export.dialog.error.incorrectData.sql"));
 					return;
 				}
 

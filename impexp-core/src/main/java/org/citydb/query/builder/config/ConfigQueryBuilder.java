@@ -320,6 +320,29 @@ public class ConfigQueryBuilder {
 		// simple filter settings
 		List<Predicate> predicates = new ArrayList<>();
 
+		// feature version filter
+		if (queryConfig.isUseFeatureVersionFilter() && queryConfig.isSetFeatureVersionFilter()) {
+			SimpleFeatureVersionFilter featureVersionFilter = queryConfig.getFeatureVersionFilter();
+
+			if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
+				predicates.add(predicateBuilder.buildPredicate(new NullOperator("core:terminationDate")));
+			else if (featureVersionFilter.isSetStartDate()
+					&& (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
+					|| featureVersionFilter.isSetEndDate())) {
+				XMLGregorianCalendar creationDate = featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT ?
+						featureVersionFilter.getStartDate() :
+						featureVersionFilter.getEndDate();
+
+				predicates.add(predicateBuilder.buildPredicate(new AndOperator(
+						new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
+						new OrOperator(
+								new GreaterThanOperator("core:terminationDate", featureVersionFilter.getStartDate().toString()),
+								new NullOperator("core:terminationDate")
+						)
+				)));
+			}
+		}
+
 		// attribute filter
 		if (queryConfig.isUseAttributeFilter() && queryConfig.isSetAttributeFilter()) {
 			SimpleAttributeFilter attributeFilter = queryConfig.getAttributeFilter();

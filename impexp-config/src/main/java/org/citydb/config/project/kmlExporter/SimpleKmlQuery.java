@@ -30,6 +30,7 @@ package org.citydb.config.project.kmlExporter;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -37,6 +38,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "SimpleKmlExportQueryType", propOrder = {
         "featureTypeFilter",
+        "featureVersionFilter",
         "attributeFilter",
         "sqlFilter",
         "bboxFilter"
@@ -44,6 +46,8 @@ import javax.xml.bind.annotation.XmlType;
 public class SimpleKmlQuery {
     @XmlAttribute
     private boolean useTypeNames;
+    @XmlAttribute
+    private boolean useFeatureVersionFilter;
     @XmlAttribute
     private boolean useAttributeFilter;
     @XmlAttribute
@@ -53,6 +57,8 @@ public class SimpleKmlQuery {
 
     @XmlElement(name = "typeNames")
     protected FeatureTypeFilter featureTypeFilter;
+    @XmlElement(name = "featureVersion")
+    private SimpleFeatureVersionFilter featureVersionFilter;
     @XmlElement(name = "attributes")
     private SimpleAttributeFilter attributeFilter;
     @XmlElement(name = "sql")
@@ -62,6 +68,7 @@ public class SimpleKmlQuery {
 
     public SimpleKmlQuery() {
         featureTypeFilter = new FeatureTypeFilter();
+        featureVersionFilter = new SimpleFeatureVersionFilter();
         attributeFilter = new SimpleAttributeFilter();
         sqlFilter = new SelectOperator();
         bboxFilter = new KmlTiling();
@@ -73,6 +80,14 @@ public class SimpleKmlQuery {
 
     public void setUseTypeNames(boolean useTypeNames) {
         this.useTypeNames = useTypeNames;
+    }
+
+    public boolean isUseFeatureVersionFilter() {
+        return useFeatureVersionFilter;
+    }
+
+    public void setUseFeatureVersionFilter(boolean useFeatureVersionFilter) {
+        this.useFeatureVersionFilter = useFeatureVersionFilter;
     }
 
     public boolean isUseAttributeFilter() {
@@ -109,6 +124,18 @@ public class SimpleKmlQuery {
 
     public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
         this.featureTypeFilter = featureTypeFilter;
+    }
+
+    public SimpleFeatureVersionFilter getFeatureVersionFilter() {
+        return featureVersionFilter;
+    }
+
+    public boolean isSetFeatureVersionFilter() {
+        return featureVersionFilter != null;
+    }
+
+    public void setFeatureVersionFilter(SimpleFeatureVersionFilter featureVersionFilter) {
+        this.featureVersionFilter = featureVersionFilter;
     }
 
     public SimpleAttributeFilter getAttributeFilter() {
