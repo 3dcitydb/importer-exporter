@@ -42,10 +42,12 @@ import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.database.adapter.IndexStatusInfo;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
@@ -131,6 +133,21 @@ public class Deleter implements EventHandler {
 					queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
 		} catch (QueryBuildException e) {
 			throw new DeleteException("Failed to build the delete query expression.", e);
+		}
+
+		// check and log index status
+		try {
+			if (query.isSetSelection()
+					&& query.getSelection().containsSpatialOperators()
+					&& !databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {
+				throw new DeleteException(ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED, "Spatial indexes are not activated.");
+			}
+
+			for (IndexStatusInfo.IndexType type : IndexStatusInfo.IndexType.values()) {
+				databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
+			}
+		} catch (SQLException e) {
+			throw new DeleteException("Database error while querying index status.", e);
 		}
 
 		bundledConnection = new BundledConnection();
