@@ -18,8 +18,8 @@ dependencies {
     api 'org.apache.commons:commons-csv:1.8'
     api fileTree(dir: 'lib', include: '*.jar')
     implementation 'com.h2database:h2:1.4.200'
-    implementation 'org.apache.tomcat:tomcat-jdbc:9.0.36'
-    implementation 'org.apache.tomcat:tomcat-juli:9.0.36'
+    implementation 'org.apache.tomcat:tomcat-jdbc:9.0.41'
+    implementation 'org.apache.tomcat:tomcat-juli:9.0.41'
     implementation 'org.apache.commons:commons-compress:1.20'
 }
 
