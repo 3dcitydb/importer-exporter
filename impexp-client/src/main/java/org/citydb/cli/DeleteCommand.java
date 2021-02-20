@@ -30,11 +30,13 @@ package org.citydb.cli;
 
 import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.controller.Deleter;
+import org.citydb.citygml.deleter.util.DeleteListPreviewer;
 import org.citydb.cli.options.deleter.CleanupOption;
 import org.citydb.cli.options.deleter.DeleteListOption;
 import org.citydb.cli.options.deleter.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
+import org.citydb.config.project.deleter.DeleteList;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
@@ -77,6 +79,26 @@ public class DeleteCommand extends CliCommand {
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
 
+        // set delete list options
+        config.getDeleteConfig().setUseDeleteList(deleteListOption != null);
+        if (deleteListOption != null) {
+            DeleteList deleteList = deleteListOption.toDeleteList();
+            config.getDeleteConfig().setDeleteList(deleteList);
+
+            if (deleteListOption.isPreview()) {
+                try {
+                    DeleteListPreviewer.of(deleteList)
+                            .withNumberOfRecords(20)
+                            .printToConsole();
+                    log.info("Delete list preview successfully finished.");
+                    return 0;
+                } catch (Exception e) {
+                    log.error("Failed to create a preview of the delete list.", e);
+                    return 1;
+                }
+            }
+        }
+
         // connect to database
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
         DatabaseConnection connection = databaseOption != null ?
@@ -104,12 +126,6 @@ public class DeleteCommand extends CliCommand {
         if (queryOption != null) {
             config.getDeleteConfig().setUseSimpleQuery(false);
             config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
-        }
-
-        // set delete list options
-        config.getDeleteConfig().setUseDeleteList(deleteListOption != null);
-        if (deleteListOption != null) {
-            config.getDeleteConfig().setDeleteList(deleteListOption.toDeleteList());
         }
 
         try {

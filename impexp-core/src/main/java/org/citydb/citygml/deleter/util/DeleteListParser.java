@@ -28,9 +28,12 @@
 
 package org.citydb.citygml.deleter.util;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
+import com.univocity.parsers.common.ParsingContext;
+import com.univocity.parsers.common.ResultIterator;
+import com.univocity.parsers.common.record.Record;
+import com.univocity.parsers.csv.CsvFormat;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import org.citydb.config.project.deleter.DeleteList;
 
 import java.io.BufferedReader;
@@ -38,12 +41,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
 
 public class DeleteListParser implements AutoCloseable {
     private final DeleteList deleteList;
-    private final CSVParser parser;
-    private final Iterator<CSVRecord> iterator;
+    private final CsvParser parser;
+    private final ResultIterator<Record, ParsingContext> iterator;
 
     public DeleteListParser(DeleteList deleteList) throws IOException {
         this.deleteList = deleteList;
@@ -52,62 +54,76 @@ public class DeleteListParser implements AutoCloseable {
             BufferedReader reader = Files.newBufferedReader(Path.of(deleteList.getFile()),
                     Charset.forName(deleteList.getEncoding()));
 
-            boolean withHeader = deleteList.hasHeader() || deleteList.getIdColumnName() != null;
-
-            CSVFormat format = CSVFormat.DEFAULT
-                    .withHeader(withHeader ? new String[0] : null)
-                    .withDelimiter(deleteList.getDelimiter())
-                    .withCommentMarker(deleteList.getCommentCharacter())
-                    .withQuote(deleteList.getQuoteCharacter())
-                    .withEscape(deleteList.getEscapeCharacter())
-                    .withIgnoreHeaderCase();
-
-            parser = new CSVParser(reader, format);
-            iterator = parser.iterator();
+            parser = new CsvParser(defaultParserSettings(deleteList));
+            iterator = parser.iterateRecords(reader).iterator();
         } catch (Exception e) {
             throw new IOException("Failed to open delete list file.", e);
         }
+    }
+
+    public static CsvParserSettings defaultParserSettings(DeleteList deleteList) {
+        CsvParserSettings settings = new CsvParserSettings();
+        settings.setHeaderExtractionEnabled(deleteList.hasHeader() || deleteList.getIdColumnName() != null);
+        settings.setSkipEmptyLines(true);
+
+        CsvFormat format = settings.getFormat();
+        format.setDelimiter(deleteList.getDelimiter());
+        format.setQuote(deleteList.getQuoteCharacter());
+        format.setComment(deleteList.getCommentCharacter() != null ? deleteList.getCommentCharacter() : '\0');
+        format.setQuoteEscape(deleteList.getQuoteEscapeCharacter());
+
+        return settings;
     }
 
     public DeleteList getDeleteList() {
         return deleteList;
     }
 
-    public CSVParser getCSVParser() {
+    public CsvParser getCsvParser() {
         return parser;
     }
 
     public long getCurrentLineNumber() {
-        return parser.getCurrentLineNumber();
+        return parser.getContext() != null ? parser.getContext().currentLine() : 0;
     }
 
-    public boolean hasNext() throws DeleteListException {
+    public boolean hasNext() {
         return iterator.hasNext();
     }
 
     public String nextId() throws DeleteListException {
-        CSVRecord record = iterator.next();
+        try {
+            long lineNumber = parser.getContext().currentLine();
+            Record record = iterator.next();
 
-        if (deleteList.getIdColumnName() != null) {
-            try {
-                return record.get(deleteList.getIdColumnName());
-            } catch (Exception e) {
-                throw new DeleteListException("Failed to retrieve a column with name '" +
-                        deleteList.getIdColumnName() + "' in line " + getCurrentLineNumber() + ".");
-            }
-        } else {
-            int index = deleteList.getIdColumnIndex() - 1;
-            if (index >= record.size()) {
-                throw new DeleteListException("The ID column index " + deleteList.getIdColumnIndex() + " is out of " +
-                        "bounds. Only found " + record.size() + " columns in line " + getCurrentLineNumber() + ".");
-            }
+            if (deleteList.getIdColumnName() != null) {
+                if (!record.getMetaData().containsColumn(deleteList.getIdColumnName())) {
+                    throw new DeleteListException("Column name '" + deleteList.getIdColumnName() + "' not found " +
+                            "[line " + lineNumber + "]. Available columns are " +
+                            String.join(", ", record.getMetaData().headers()) + ".");
+                }
 
-            return record.get(index);
+                return record.getString(deleteList.getIdColumnName());
+            } else {
+                int index = deleteList.getIdColumnIndex() - 1;
+                int length = record.getValues().length;
+
+                if (index >= length) {
+                    throw new DeleteListException("Invalid column index " + deleteList.getIdColumnIndex() +
+                            " [line " + lineNumber + "]. Number of available columns is " + length + ".");
+                }
+
+                return record.getString(index);
+            }
+        } catch (DeleteListException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DeleteListException("An error occurred while parsing the delete list.", e);
         }
     }
 
     @Override
     public void close() throws IOException {
-        parser.close();
+        parser.stopParsing();
     }
 }

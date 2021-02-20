@@ -29,23 +29,26 @@ public class DeleteListImporter {
 
         try (PreparedStatement ps = cacheTable.getConnection().prepareStatement(sql)) {
             while (parser.hasNext()) {
+                long lineNumber = parser.getCurrentLineNumber();
                 String id = parser.nextId();
 
-                if (idType == DeleteListIdType.DATABASE_ID) {
-                    try {
-                        ps.setLong(1, Long.parseLong(id));
-                    } catch (NumberFormatException e) {
-                        throw new DeleteListException("Invalid database ID: '" + id + "' (line " +
-                                parser.getCurrentLineNumber() + ") is not an integer.");
+                if (id != null) {
+                    if (idType == DeleteListIdType.DATABASE_ID) {
+                        try {
+                            ps.setLong(1, Long.parseLong(id));
+                        } catch (NumberFormatException e) {
+                            throw new DeleteListException("Invalid database ID: '" + id + "' (line " +
+                                    lineNumber + ") is not an integer.");
+                        }
+                    } else {
+                        ps.setString(1, id);
                     }
-                } else {
-                    ps.setString(1, id);
-                }
 
-                ps.addBatch();
-                if (++batchCounter == maxBatchSize) {
-                    ps.executeBatch();
-                    batchCounter = 0;
+                    ps.addBatch();
+                    if (++batchCounter == maxBatchSize) {
+                        ps.executeBatch();
+                        batchCounter = 0;
+                    }
                 }
             }
 

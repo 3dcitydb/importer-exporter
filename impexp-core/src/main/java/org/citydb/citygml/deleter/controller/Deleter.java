@@ -156,7 +156,7 @@ public class Deleter implements EventHandler {
 
 		try {
 			if (config.getDeleteConfig().isUseDeleteList() && config.getDeleteConfig().isSetDeleteList()) {
-				log.info("Loading delete list into temporary database table...");
+				log.info("Using delete list '" + config.getDeleteConfig().getDeleteList().getFile() + "'.");
 
 				try (DeleteListParser parser = new DeleteListParser(config.getDeleteConfig().getDeleteList())) {
 					// create instance of the cache table manager
@@ -168,6 +168,8 @@ public class Deleter implements EventHandler {
 					}
 
 					// load delete list into database
+					log.info("Loading delete list into temporary database table...");
+
 					try {
 						int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
 						new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser);

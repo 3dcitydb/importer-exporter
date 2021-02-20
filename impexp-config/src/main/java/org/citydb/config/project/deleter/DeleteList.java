@@ -6,8 +6,9 @@ import java.nio.charset.StandardCharsets;
 
 @XmlType(name = "DeleteListType", propOrder = {})
 public class DeleteList {
-    public static final char DEFAULT_DELIMITER = ',';
+    public static final String DEFAULT_DELIMITER = ",";
     public static final char DEFAULT_QUOTE_CHARACTER = '"';
+    public static final char DEFAULT_COMMENT_CHARACTER = '#';
     public static final String DEFAULT_ENCODING = StandardCharsets.UTF_8.name();
 
     @XmlElement(required = true)
@@ -21,8 +22,8 @@ public class DeleteList {
     private String delimiter;
     @XmlElement(defaultValue = "\"")
     private String quoteCharacter;
+    private String quoteEscapeCharacter;
     private String commentCharacter;
-    private String escapeCharacter;
     @XmlElement(name = "header", defaultValue = "false")
     private Boolean hasHeader;
     @XmlElement(defaultValue = "UTF-8")
@@ -60,12 +61,16 @@ public class DeleteList {
         this.idType = idType;
     }
 
-    public Character getDelimiter() {
-        return delimiter != null && !delimiter.isEmpty() ? delimiter.charAt(0) : DEFAULT_DELIMITER;
+    public String getDelimiter() {
+        return delimiter != null && !delimiter.isEmpty() ? delimiter : DEFAULT_DELIMITER;
     }
 
     public void setDelimiter(Character delimiter) {
         this.delimiter = delimiter != null ? delimiter.toString() : null;
+    }
+
+    public void setDelimiter(String delimiter) {
+        this.delimiter = delimiter;
     }
 
     public Character getQuoteCharacter() {
@@ -84,12 +89,12 @@ public class DeleteList {
         this.commentCharacter = commentCharacter != null ? commentCharacter.toString() : null;
     }
 
-    public Character getEscapeCharacter() {
-        return escapeCharacter != null && !escapeCharacter.isEmpty() ? escapeCharacter.charAt(0) : null;
+    public Character getQuoteEscapeCharacter() {
+        return quoteEscapeCharacter != null && !quoteEscapeCharacter.isEmpty() ? quoteEscapeCharacter.charAt(0) : DEFAULT_QUOTE_CHARACTER;
     }
 
-    public void setEscapeCharacter(Character escapeCharacter) {
-        this.escapeCharacter = escapeCharacter != null ? escapeCharacter.toString() : null;
+    public void setQuoteEscapeCharacter(Character quoteEscapeCharacter) {
+        this.quoteEscapeCharacter = quoteEscapeCharacter != null ? quoteEscapeCharacter.toString() : null;
     }
 
     public boolean hasHeader() {

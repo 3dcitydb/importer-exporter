@@ -59,25 +59,34 @@ public class DeleteListOption implements CliOption {
             description = "Type of id column value: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Type type;
 
-    @CommandLine.Option(names = {"-D", "--delimiter"}, paramLabel = "<char>", defaultValue = ",",
-            description = "Delimiter used for separating values (default: ${DEFAULT-VALUE}).")
-    private Character delimiter;
-
     @CommandLine.Option(names = "--no-header", negatable = true, defaultValue = "true",
             description = "CSV file uses a header row (default: ${DEFAULT-VALUE}).")
     private boolean header;
 
-    @CommandLine.Option(names = "--quote", paramLabel = "<char>", defaultValue = "\"",
+    @CommandLine.Option(names = {"-D", "--delimiter"}, paramLabel = "<string>", defaultValue = ",",
+            description = "Delimiter used for separating values (default: ${DEFAULT-VALUE}).")
+    private String delimiter;
+
+    @CommandLine.Option(names = {"-Q", "--quote"}, paramLabel = "<char>", defaultValue = "\"",
             description = "Character used to enclose the column values (default: ${DEFAULT-VALUE}).")
     private Character quote;
 
-    @CommandLine.Option(names = "--comment-marker", paramLabel = "<char>",
-            description = "Marker used to start a line comment.")
-    private Character comment;
-
-    @CommandLine.Option(names = "--escape", paramLabel = "<char>",
-            description = "Character used for escaping the delimiter.")
+    @CommandLine.Option(names = "--quote-escape", paramLabel = "<char>", defaultValue = "\"",
+            description = "Character used for escaping quotes (default: ${DEFAULT-VALUE}).")
     private Character escape;
+
+    @CommandLine.Option(names = {"-M", "--comment-marker"}, paramLabel = "<char>", defaultValue = "#",
+            description = "Marker used to start a line comment (default: ${DEFAULT-VALUE}). " +
+                    "Use 'none' to disable comments.")
+    private String comment;
+
+    @CommandLine.Option(names = {"-w", "--delete-list-preview"},
+            description = "Print a preview of the delete list and exit.")
+    private boolean preview;
+
+    public boolean isPreview() {
+        return preview;
+    }
 
     public DeleteList toDeleteList() {
         DeleteList deleteList = new DeleteList();
@@ -90,8 +99,8 @@ public class DeleteListOption implements CliOption {
         deleteList.setDelimiter(delimiter);
         deleteList.setHasHeader(header);
         deleteList.setQuoteCharacter(quote);
-        deleteList.setCommentCharacter(comment);
-        deleteList.setEscapeCharacter(escape);
+        deleteList.setQuoteEscapeCharacter(escape);
+        deleteList.setCommentCharacter(comment != null && !comment.isEmpty() ? comment.charAt(0) : null);
 
         return deleteList;
     }
@@ -111,6 +120,13 @@ public class DeleteListOption implements CliOption {
         if (encoding != null && !Charset.isSupported(encoding)) {
             throw new CommandLine.ParameterException(commandLine,
                     "Error: The file encoding " + encoding + " is not supported");
+        }
+
+        if ("none".equals(comment)) {
+            comment = null;
+        } else if (comment != null && comment.length() > 1) {
+            throw new CommandLine.ParameterException(commandLine,
+                    "Invalid value for option '--comment-marker': '" + comment + "' is not a single character");
         }
     }
 }
