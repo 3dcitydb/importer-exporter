@@ -50,6 +50,7 @@ import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
+import org.citydb.ade.ADEExtension;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
@@ -150,6 +151,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -189,6 +191,12 @@ public class KmlExporter implements EventHandler {
 	public boolean doExport(Path outputFile) throws KmlExportException {
 		if (outputFile == null || outputFile.getFileName() == null) {
 			throw new KmlExportException("The output file '" + outputFile + "' is invalid.");
+		}
+
+		List<ADEExtension> unsupported = ADEKmlExportExtensionManager.getInstance().getUnsupportedADEExtensions();
+		if (!unsupported.isEmpty()) {
+			log.warn("The following CityGML ADEs are not supported by this VIS-Exporter:\n" +
+					Util.collection2string(unsupported.stream().map(ade -> ade.getMetadata().getName()).collect(Collectors.toList()), "\n"));
 		}
 
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
