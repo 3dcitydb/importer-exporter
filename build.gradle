@@ -2,7 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply from: 'properties.gradle'
 
-version '4.3.0-rc3'
+version '4.3.0-rc4'
 
 subprojects {
     apply plugin: 'java-library'
