@@ -112,6 +112,8 @@ public class DBSplitter {
 				cacheTable.getConnection() :
 				DatabaseConnectionPool.getInstance().getConnection();
 
+		connection.setAutoCommit(false);
+
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
 				databaseAdapter,
