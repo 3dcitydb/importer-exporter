@@ -35,11 +35,11 @@ import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -69,12 +69,7 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
     private JFormattedTextField endTime;
 
     public FeatureVersionFilterView() {
-        try {
-            datatypeFactory = DatatypeFactory.newInstance();
-        } catch (DatatypeConfigurationException e) {
-            throw new IllegalStateException("Failed to create a new instance of DatatypeFactory");
-        }
-
+        datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
         init();
     }
 

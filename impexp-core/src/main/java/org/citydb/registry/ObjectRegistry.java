@@ -36,6 +36,8 @@ import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.ade.ADEException;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,6 +53,7 @@ public class ObjectRegistry {
 		}
 	}
 
+	private final DatatypeFactory datatypeFactory;
 	private Map<String, Object> properties;
 	private Config config;
 	private EventDispatcher eventDispatcher;
@@ -59,7 +62,11 @@ public class ObjectRegistry {
 	private SchemaMapping schemaMapping;
 
 	private ObjectRegistry() {
-		// just to thwart instantiation
+		try {
+			datatypeFactory = DatatypeFactory.newInstance();
+		} catch (DatatypeConfigurationException e) {
+			throw new IllegalStateException("Failed to create a new instance of DatatypeFactory.", e);
+		}
 	}
 
 	public static synchronized ObjectRegistry getInstance() {
@@ -105,6 +112,10 @@ public class ObjectRegistry {
 		}
 
 		return config;
+	}
+
+	public DatatypeFactory getDatatypeFactory() {
+		return datatypeFactory;
 	}
 
 	public EventDispatcher getEventDispatcher() {
