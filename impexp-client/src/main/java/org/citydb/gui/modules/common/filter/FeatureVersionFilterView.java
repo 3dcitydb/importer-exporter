@@ -223,7 +223,7 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
             ZonedDateTime dateTime = featureVersionFilter.getStartDate().toGregorianCalendar().toZonedDateTime();
             Date date = Date.from(dateTime.toInstant());
             startDate.setDate(date);
-            startTime.setValue(!dateTime.toLocalTime().equals(LocalTime.MIN) ? date : null);
+            startTime.setValue(!dateTime.toLocalTime().equals(LocalTime.MAX.withNano(0)) ? date : null);
         } else {
             startDate.setDate(null);
             startTime.setValue(null);
@@ -233,7 +233,7 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
             ZonedDateTime dateTime = featureVersionFilter.getEndDate().toGregorianCalendar().toZonedDateTime();
             Date date = Date.from(dateTime.toInstant());
             endDate.setDate(date);
-            endTime.setValue(!dateTime.toLocalTime().equals(LocalTime.MIN) ? date : null);
+            endTime.setValue(!dateTime.toLocalTime().equals(LocalTime.MAX.withNano(0)) ? date : null);
         } else {
             endDate.setDate(null);
             endTime.setValue(null);
@@ -262,7 +262,7 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
             LocalDate localDate = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()).toLocalDate();
             LocalTime localTime = time != null ?
                     LocalDateTime.ofInstant(time.toInstant(), ZoneId.systemDefault()).toLocalTime() :
-                    LocalTime.MIN;
+                    LocalTime.MAX.withNano(0);
 
             ZonedDateTime dateTime = ZonedDateTime.of(localDate, localTime, ZoneId.systemDefault());
             return datatypeFactory.newXMLGregorianCalendar(
