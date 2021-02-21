@@ -27,11 +27,14 @@
  */
 package org.citydb.config.project.query.simple;
 
+import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlType(name = "SimpleAttributeFilterType", propOrder = {
         "resourceIdFilter",
@@ -88,4 +91,26 @@ public class SimpleAttributeFilter {
         this.lineageFilter = lineageFilter;
     }
 
+    public List<AbstractPredicate> toPredicates() {
+        List<AbstractPredicate> predicates = new ArrayList<>();
+
+        // gml:id filter
+        if (resourceIdFilter != null && resourceIdFilter.isSetResourceIds()) {
+            predicates.add(resourceIdFilter);
+        }
+
+        // gml:name filter
+        if (nameFilter != null && nameFilter.isSetLiteral()) {
+            nameFilter.setValueReference("gml:name");
+            predicates.add(nameFilter);
+        }
+
+        // citydb:lineage filter
+        if (lineageFilter != null && lineageFilter.isSetLiteral()) {
+            lineageFilter.setValueReference("citydb:lineage");
+            predicates.add(lineageFilter);
+        }
+
+        return predicates;
+    }
 }

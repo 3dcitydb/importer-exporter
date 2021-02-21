@@ -28,6 +28,13 @@
 
 package org.citydb.config.project.query.simple;
 
+import org.citydb.config.project.query.filter.selection.AbstractPredicate;
+import org.citydb.config.project.query.filter.selection.comparison.GreaterThanOperator;
+import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqualToOperator;
+import org.citydb.config.project.query.filter.selection.comparison.NullOperator;
+import org.citydb.config.project.query.filter.selection.logical.AndOperator;
+import org.citydb.config.project.query.filter.selection.logical.OrOperator;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
@@ -75,5 +82,25 @@ public class SimpleFeatureVersionFilter {
 
     public void setEndDate(XMLGregorianCalendar endDate) {
         this.endDate = endDate;
+    }
+
+    public AbstractPredicate toPredicate() {
+        if (mode == SimpleFeatureVersionFilterMode.LATEST) {
+            return new NullOperator("core:terminationDate");
+        } else if (startDate != null && (mode == SimpleFeatureVersionFilterMode.AT || endDate != null)) {
+            XMLGregorianCalendar creationDate = mode == SimpleFeatureVersionFilterMode.AT ?
+                    startDate :
+                    endDate;
+
+            return new AndOperator(
+                    new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
+                    new OrOperator(
+                            new GreaterThanOperator("core:terminationDate", startDate.toXMLFormat()),
+                            new NullOperator("core:terminationDate")
+                    )
+            );
+        }
+
+        return null;
     }
 }
