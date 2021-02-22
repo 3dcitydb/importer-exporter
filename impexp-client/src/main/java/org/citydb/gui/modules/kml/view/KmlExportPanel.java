@@ -28,6 +28,9 @@
 package org.citydb.gui.modules.kml.view;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import org.citydb.ade.ADEExtension;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.gui.kmlExporter.KmlExportGuiConfig;
@@ -53,6 +56,7 @@ import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.gui.components.common.BlankNumberFormatter;
 import org.citydb.gui.components.common.TitledPanel;
+import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -95,8 +99,10 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class KmlExportPanel extends JPanel implements EventHandler {
     private final Logger log = Logger.getInstance();
@@ -360,7 +366,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             mainPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 5, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            featureTypeFilter = new FeatureTypeFilterView();
+            featureTypeFilter = new FeatureTypeFilterView(e -> e instanceof ADEKmlExportExtension);
 
             featureFilterPanel = new TitledPanel()
                     .withIcon(featureTypeFilter.getIcon())
@@ -850,6 +856,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 return;
             }
 
+            // warn the non-supported CityGML ADEs
+            if (showADEWarningDialog() != JOptionPane.OK_OPTION) {
+                log.warn("Database export canceled.");
+                return;
+            }
+
             viewController.setStatusText(Language.I18N.getString("main.status.kmlExport.label"));
             log.info("Initializing database export...");
 
@@ -1044,4 +1056,25 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         }
     }
 
+    private int showADEWarningDialog() {
+        int selectedOption = JOptionPane.OK_OPTION;
+        List<ADEExtension> unsupported = ADEKmlExportExtensionManager.getInstance().getUnsupportedADEExtensions();
+
+        if (config.getGuiConfig().getKmlExportGuiConfig().isShowKmlExportUnsupportedADEWarning() && !unsupported.isEmpty()) {
+            String formattedMessage = MessageFormat.format(Language.I18N.getString("kmlExport.dialog.warn.ade.unsupported"),
+                    Util.collection2string(unsupported.stream().map(ade -> ade.getMetadata().getName()).collect(Collectors.toList()), "<br>"));
+
+            ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
+                    .withParentComponent(viewController.getTopFrame())
+                    .withTitle(Language.I18N.getString("common.dialog.warning.title"))
+                    .withOptionType(JOptionPane.YES_NO_OPTION)
+                    .withMessageType(JOptionPane.WARNING_MESSAGE)
+                    .addMessage(formattedMessage);
+
+            selectedOption = dialog.show();
+            config.getGuiConfig().getKmlExportGuiConfig().setShowKmlExportUnsupportedADEWarning(dialog.keepShowingDialog());
+        }
+
+        return selectedOption;
+    }
 }

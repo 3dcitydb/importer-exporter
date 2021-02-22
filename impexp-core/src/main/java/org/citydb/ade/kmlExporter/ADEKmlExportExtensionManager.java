@@ -35,6 +35,9 @@ import org.citydb.config.project.kmlExporter.ADEPreferences;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.registry.ObjectRegistry;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class ADEKmlExportExtensionManager {
 	private static ADEKmlExportExtensionManager instance;
 
@@ -50,6 +53,12 @@ public class ADEKmlExportExtensionManager {
 			return ((ADEKmlExportExtension) extension);
 
 		return null;
+	}
+
+	public List<ADEExtension> getUnsupportedADEExtensions() {
+		return ADEExtensionManager.getInstance().getEnabledExtensions()
+				.stream().filter(ade -> getADEKmlExportExtension(ade) == null)
+				.collect(Collectors.toList());
 	}
 
 	public ADEPreference getPreference(Config config, FeatureType featureType) {

@@ -1,6 +1,7 @@
 package org.citydb.gui.modules.common.filter;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import org.citydb.ade.ADEExtension;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
@@ -19,14 +20,27 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Predicate;
 
 public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> implements EventHandler {
     private JPanel component;
     private FeatureTypeTree featureTypeTree;
     private boolean enabled = true;
 
+    public FeatureTypeFilterView(CityGMLVersion version, Predicate<ADEExtension> adeFilter) {
+        init(version, adeFilter);
+    }
+
+    public FeatureTypeFilterView(CityGMLVersionType version, Predicate<ADEExtension> adeFilter) {
+        this(Util.toCityGMLVersion(version), adeFilter);
+    }
+
+    public FeatureTypeFilterView(Predicate<ADEExtension> adeFilter) {
+        this(CityGMLVersion.v2_0_0, adeFilter);
+    }
+
     public FeatureTypeFilterView(CityGMLVersion version) {
-        init(version);
+        this(version, e -> true);
     }
 
     public FeatureTypeFilterView(CityGMLVersionType version) {
@@ -34,7 +48,7 @@ public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> impleme
     }
 
     public FeatureTypeFilterView() {
-        this(CityGMLVersionType.v2_0_0);
+        this(CityGMLVersion.v2_0_0);
     }
 
     public FeatureTypeFilterView adaptToCityGMLVersionChange(boolean adapt) {
@@ -52,11 +66,11 @@ public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> impleme
         return featureTypeTree;
     }
 
-    private void init(CityGMLVersion version) {
+    private void init(CityGMLVersion version, Predicate<ADEExtension> adeFilter) {
         component = new JPanel();
         component.setLayout(new GridBagLayout());
 
-        featureTypeTree = new FeatureTypeTree(version);
+        featureTypeTree = new FeatureTypeTree(version, adeFilter);
         featureTypeTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 1);
 
         // get rid of standard icons
