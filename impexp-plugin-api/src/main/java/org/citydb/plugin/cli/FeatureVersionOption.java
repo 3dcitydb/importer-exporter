@@ -23,8 +23,9 @@ public class FeatureVersionOption implements CliOption {
     private Version version;
 
     @CommandLine.Option(names = {"-R", "--feature-version-timestamp"}, paramLabel = "<timestamp[,timestamp]>",
-            description = "Timestamp given as date <YYYY-MM-DD> or date-time <YYYY-MM-DDThh:mm:ss>. " +
-                    "Use one timestamp with 'at' and two timestamps defining a time range with 'between'.")
+            description = "Timestamp given as date <YYYY-MM-DD> or date-time <YYYY-MM-DDThh:mm:ss[(+|-)hh:mm]> with " +
+                    "optional UTC offset. Use one timestamp with 'at' and two timestamps defining a time range " +
+                    "with 'between'.")
     private String timestamp;
 
     private OffsetDateTime startDateTime;
@@ -105,7 +106,8 @@ public class FeatureVersionOption implements CliOption {
                     }
                 } catch (DateTimeParseException e) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "A feature version timestamp must be in YYYY-MM-DD[Thh:mm:ss] format but was '" + timestamp + "'");
+                            "A feature version timestamp must be in YYYY-MM-DD or YYYY-MM-DDThh:mm:ss[(+|-)hh:mm] " +
+                                    "format but was '" + timestamps[i] + "'");
                 }
             }
         } else {
