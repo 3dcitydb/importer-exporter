@@ -29,6 +29,7 @@ package org.citydb.gui.modules.kml.view;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.ade.ADEExtension;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
@@ -97,7 +98,6 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -366,7 +366,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             mainPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 5, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            featureTypeFilter = new FeatureTypeFilterView();
+            featureTypeFilter = new FeatureTypeFilterView(e -> e instanceof ADEKmlExportExtension);
 
             featureFilterPanel = new TitledPanel()
                     .withIcon(featureTypeFilter.getIcon())
