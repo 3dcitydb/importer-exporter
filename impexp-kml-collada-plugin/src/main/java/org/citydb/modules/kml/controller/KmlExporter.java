@@ -195,7 +195,7 @@ public class KmlExporter implements EventHandler {
 
 		List<ADEExtension> unsupported = ADEKmlExportExtensionManager.getInstance().getUnsupportedADEExtensions();
 		if (!unsupported.isEmpty()) {
-			log.warn("The following CityGML ADEs are not supported by this VIS-Exporter:\n" +
+			log.warn("The following CityGML ADEs are not supported by this VIS Exporter:\n" +
 					Util.collection2string(unsupported.stream().map(ade -> ade.getMetadata().getName()).collect(Collectors.toList()), "\n"));
 		}
 
