@@ -296,12 +296,12 @@ public class KmlExporter implements EventHandler {
 			// calculate extent if the bbox filter is disabled
 			if (!queryConfig.isUseBboxFilter()) {
 				try {
-					log.info("Calculating the bounding box of matching top-level features...");
+					log.info("Calculating bounding box...");
 					BoundingBox extent = databaseAdapter.getUtil().calcBoundingBox(query, schemaMapping);
 					if (extent == null) {
-						log.warn("The provided filter settings result in an empty bounding box.");
-						log.warn("Please check your filter settings or enter a bounding box manually.");
-						return false;
+						log.info("Empty bounding box calculated.");
+						log.info("No top-level feature will be exported.");
+						return true;
 					}
 
 					queryConfig.getBboxFilter().setExtent(extent);
