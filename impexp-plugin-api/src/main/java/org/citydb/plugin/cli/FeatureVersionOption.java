@@ -24,7 +24,7 @@ public class FeatureVersionOption implements CliOption {
 
     @CommandLine.Option(names = {"-R", "--feature-version-timestamp"}, paramLabel = "<timestamp[,timestamp]>",
             description = "Timestamp given as date <YYYY-MM-DD> or date-time <YYYY-MM-DDThh:mm:ss>. " +
-                    "Use one timestamp with 'at' and two defining a time range with 'between'.")
+                    "Use one timestamp with 'at' and two timestamps defining a time range with 'between'.")
     private String timestamp;
 
     private OffsetDateTime startDateTime;
@@ -65,7 +65,7 @@ public class FeatureVersionOption implements CliOption {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: The feature version '" + version + "' does not take a timestamp");
             } else {
-                // no filter is required to query all feature versions
+                // no filter required to query all feature versions
                 return;
             }
         }
@@ -83,7 +83,7 @@ public class FeatureVersionOption implements CliOption {
 
             if (version == Version.at && timestamps.length != 1) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "Error: The feature version '" + version + "' requires a timestamp");
+                        "Error: The feature version '" + version + "' requires only one timestamp");
             } else if (version == Version.between && timestamps.length != 2) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: The feature version '" + version + "' requires two timestamps defining a time range");

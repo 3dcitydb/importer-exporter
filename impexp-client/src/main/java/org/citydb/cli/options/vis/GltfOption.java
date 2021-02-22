@@ -60,7 +60,7 @@ public class GltfOption implements CliOption {
             description = "Output meshes using Draco compression (requires glTF version 2.0).")
     private boolean dracoCompression;
 
-    @CommandLine.Option(names = {"-r", "--remove-collada"},
+    @CommandLine.Option(names = {"-m", "--remove-collada"},
             description = "Only keep glTF and remove the COLLADA output.")
     private boolean removeCollada;
 

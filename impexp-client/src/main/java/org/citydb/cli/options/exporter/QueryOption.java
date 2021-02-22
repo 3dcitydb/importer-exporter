@@ -106,9 +106,9 @@ public class QueryOption implements CliOption {
 
             if (featureVersionOption != null) {
                 DatatypeFactory datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
-                SimpleFeatureVersionFilter filter = featureVersionOption.toFeatureVersionFilter(datatypeFactory);
-                if (filter != null) {
-                    AbstractPredicate predicate = filter.toPredicate();
+                SimpleFeatureVersionFilter versionFilter = featureVersionOption.toFeatureVersionFilter(datatypeFactory);
+                if (versionFilter != null) {
+                    AbstractPredicate predicate = versionFilter.toPredicate();
                     if (predicate != null) {
                         predicates.add(predicate);
                     }
