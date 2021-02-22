@@ -36,21 +36,28 @@ import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.logical.AndOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.CounterOption;
 import org.citydb.plugin.cli.DatabaseIdOption;
+import org.citydb.plugin.cli.FeatureVersionOption;
 import org.citydb.plugin.cli.ResourceIdOption;
 import org.citydb.plugin.cli.SQLSelectOption;
 import org.citydb.plugin.cli.TypeNamesOption;
 import org.citydb.plugin.cli.XMLQueryOption;
+import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
+import javax.xml.datatype.DatatypeFactory;
 import java.util.ArrayList;
 import java.util.List;
 
 public class QueryOption implements CliOption {
     @CommandLine.ArgGroup(exclusive = false)
     private TypeNamesOption typeNamesOption;
+
+    @CommandLine.ArgGroup(exclusive = false)
+    private FeatureVersionOption featureVersionOption;
 
     @CommandLine.ArgGroup
     private ResourceIdOption resourceIdOption;
@@ -72,6 +79,7 @@ public class QueryOption implements CliOption {
 
     public QueryConfig toQueryConfig() {
         if (typeNamesOption != null
+                || featureVersionOption != null
                 || resourceIdOption != null
                 || databaseIdOption != null
                 || boundingBoxOption != null
@@ -82,6 +90,17 @@ public class QueryOption implements CliOption {
 
             if (typeNamesOption != null) {
                 queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
+            }
+
+            if (featureVersionOption != null) {
+                DatatypeFactory datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
+                SimpleFeatureVersionFilter versionFilter = featureVersionOption.toFeatureVersionFilter(datatypeFactory);
+                if (versionFilter != null) {
+                    AbstractPredicate predicate = versionFilter.toPredicate();
+                    if (predicate != null) {
+                        predicates.add(predicate);
+                    }
+                }
             }
 
             if (resourceIdOption != null) {
@@ -136,6 +155,9 @@ public class QueryOption implements CliOption {
             if (typeNamesOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --type-name and --xml-query are mutually exclusive (specify only one)");
+            } else if (featureVersionOption != null) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: --feature-version and --xml-query are mutually exclusive (specify only one)");
             } else if (resourceIdOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --gml-id and --xml-query are mutually exclusive (specify only one)");
@@ -158,6 +180,10 @@ public class QueryOption implements CliOption {
 
         if (typeNamesOption != null) {
             typeNamesOption.preprocess(commandLine);
+        }
+
+        if (featureVersionOption != null) {
+            featureVersionOption.preprocess(commandLine);
         }
 
         if (databaseIdOption != null) {
