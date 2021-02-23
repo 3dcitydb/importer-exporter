@@ -32,8 +32,6 @@ import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
 import picocli.CommandLine;
 
-import java.util.Objects;
-
 public class DatabaseOption implements CliOption {
     enum Type {postgresql, oracle}
 
@@ -78,7 +76,11 @@ public class DatabaseOption implements CliOption {
     }
 
     public int getPort() {
-        return Objects.requireNonNullElseGet(port, () -> type == Type.oracle ? 1521 : 5432);
+        if (port == null) {
+            return type == Type.oracle ? 1521 : 5432;
+        } else {
+            return port;
+        }
     }
 
     public String getUser() {

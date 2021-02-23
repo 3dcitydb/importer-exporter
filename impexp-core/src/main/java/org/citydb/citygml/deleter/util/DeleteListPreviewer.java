@@ -7,7 +7,7 @@ import org.citydb.log.Logger;
 
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,7 +49,7 @@ public class DeleteListPreviewer {
         settings.setEmptyValue("");
 
         CsvParser parser = new CsvParser(settings);
-        parser.beginParsing(Files.newBufferedReader(Path.of(deleteList.getFile()),
+        parser.beginParsing(Files.newBufferedReader(Paths.get(deleteList.getFile()),
                 Charset.forName(deleteList.getEncoding())));
 
         String[] row;
@@ -94,15 +94,15 @@ public class DeleteListPreviewer {
         });
 
         // print header line
-        log.printToConsole(" ".repeat(lineNumberWidth + 1) +
+        log.printToConsole(repeat(' ', lineNumberWidth + 1) +
                 IntStream.range(0, columnWidths.length).boxed()
                         .map(i -> String.format("%-" + columnWidths[i] + "s", headerNames.get(i)))
                         .collect(Collectors.joining(" | ")));
 
         // print header underline
-        log.printToConsole(" ".repeat(lineNumberWidth + 1) +
+        log.printToConsole(repeat(' ', lineNumberWidth + 1) +
                 IntStream.range(0, columnWidths.length).boxed()
-                        .map(i -> "-".repeat(columnWidths[i]))
+                        .map(i -> repeat('-', columnWidths[i]))
                         .collect(Collectors.joining("-+-")));
 
         // print records
@@ -113,5 +113,11 @@ public class DeleteListPreviewer {
                             .map(j -> String.format("%-" + columnWidths[j] + "s", record.get(j)))
                             .collect(Collectors.joining(" | ")));
         }
+    }
+
+    private String repeat(char c, int count) {
+        char[] value = new char[count];
+        Arrays.fill(value, c);
+        return new String(value);
     }
 }

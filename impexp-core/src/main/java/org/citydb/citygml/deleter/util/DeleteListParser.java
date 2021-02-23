@@ -40,7 +40,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class DeleteListParser implements AutoCloseable {
     private final DeleteList deleteList;
@@ -51,7 +51,7 @@ public class DeleteListParser implements AutoCloseable {
         this.deleteList = deleteList;
 
         try {
-            BufferedReader reader = Files.newBufferedReader(Path.of(deleteList.getFile()),
+            BufferedReader reader = Files.newBufferedReader(Paths.get(deleteList.getFile()),
                     Charset.forName(deleteList.getEncoding()));
 
             parser = new CsvParser(defaultParserSettings(deleteList));
