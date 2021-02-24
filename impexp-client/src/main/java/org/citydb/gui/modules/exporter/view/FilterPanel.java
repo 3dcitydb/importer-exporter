@@ -233,7 +233,7 @@ public class FilterPanel extends JPanel {
 		}
 		{
 			featureTypeFilter = new FeatureTypeFilterView(config.getExportConfig().getSimpleQuery().getVersion())
-					.adaptToCityGMLVersionChange(true);
+					.adaptToCityGMLVersionChange(v -> config.getExportConfig().getSimpleQuery().setFeatureTypeFilter(v));
 
 			featureFilterPanel = new TitledPanel()
 					.withIcon(featureTypeFilter.getIcon())

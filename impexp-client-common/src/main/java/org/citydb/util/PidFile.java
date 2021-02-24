@@ -30,6 +30,7 @@ package org.citydb.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,7 +48,11 @@ public class PidFile {
     }
 
     public static PidFile create(Path path, boolean deleteOnExit) throws IOException {
-        return create(path, deleteOnExit, ProcessHandle.current().pid());
+        // TODO: Java 8 hack for getting the process ID.
+        // change when updating to Java 9 or higher
+        String processName = ManagementFactory.getRuntimeMXBean().getName();
+        int pid = Integer.parseInt(processName.substring(0, processName.indexOf('@')));
+        return create(path, deleteOnExit, pid);
     }
 
     public static PidFile create(Path path, boolean deleteOnExit, long pid) throws IOException {

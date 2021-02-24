@@ -51,6 +51,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -171,7 +172,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 				log.debug(work.getObjectType() + " (ID = " + objectId + ") is already deleted.");
 			}
 
-			Map<Integer, Long> objectCounter = Map.of(work.getObjectType().getObjectClassId(), 1L);
+			Map<Integer, Long> objectCounter = Collections.singletonMap(work.getObjectType().getObjectClassId(), 1L);
 			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel, this));
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));

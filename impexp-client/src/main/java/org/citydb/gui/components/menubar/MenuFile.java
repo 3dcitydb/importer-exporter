@@ -203,9 +203,9 @@ public class MenuFile extends JMenu {
 		add(exit);
 
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		openConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMaskEx()));
-		saveConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMaskEx()));
-		saveConfigAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMaskEx() | InputEvent.SHIFT_DOWN_MASK));
+		openConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMask()));
+		saveConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask()));
+		saveConfigAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask() | InputEvent.SHIFT_DOWN_MASK));
 
 		if (!config.getGuiConfig().getRecentlyUsedConfigFiles().isEmpty())
 			setLastUsedList();			
