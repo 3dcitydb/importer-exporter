@@ -6,7 +6,6 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
 import org.citydb.event.Event;
-import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.PropertyChangeEvent;
@@ -20,12 +19,14 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> implements EventHandler {
     private JPanel component;
     private FeatureTypeTree featureTypeTree;
     private boolean enabled = true;
+    private Consumer<FeatureTypeFilter> featureTypeFilterConsumer;
 
     public FeatureTypeFilterView(CityGMLVersion version, Predicate<ADEExtension> adeFilter) {
         init(version, adeFilter);
@@ -51,14 +52,9 @@ public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> impleme
         this(CityGMLVersion.v2_0_0);
     }
 
-    public FeatureTypeFilterView adaptToCityGMLVersionChange(boolean adapt) {
-        EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-        if (adapt) {
-            eventDispatcher.addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);
-        } else {
-            eventDispatcher.removeEventHandler(this);
-        }
-
+    public FeatureTypeFilterView adaptToCityGMLVersionChange(Consumer<FeatureTypeFilter> featureTypeFilterConsumer) {
+        this.featureTypeFilterConsumer = featureTypeFilterConsumer;
+        ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);
         return this;
     }
 
@@ -154,6 +150,7 @@ public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> impleme
         PropertyChangeEvent e = (PropertyChangeEvent)event;
         if (e.getPropertyName().equals("citygml.version")) {
             featureTypeTree.updateCityGMLVersion((CityGMLVersion) e.getNewValue(), enabled);
+            featureTypeFilterConsumer.accept(toSettings());
         }
     }
 }
