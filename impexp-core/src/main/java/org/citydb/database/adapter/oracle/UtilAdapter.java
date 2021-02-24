@@ -43,13 +43,7 @@ import org.citydb.database.connection.DatabaseMetaData.Versioning;
 import org.citydb.database.version.DatabaseVersion;
 import org.citydb.util.Util;
 
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Struct;
+import java.sql.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -285,6 +279,46 @@ public class UtilAdapter extends AbstractUtilAdapter {
             }
 
             isInterrupted = false;
+        }
+
+        return bbox;
+    }
+
+    @Override
+    protected BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException {
+        BoundingBox bbox = null;
+
+        try (PreparedStatement pStmt = connection.prepareStatement("SELECT envelope FROM " + schema + ".cityobject WHERE id = ?")) {
+            pStmt.setLong(1, objectId);
+
+            try (ResultSet rs = pStmt.executeQuery()) {
+                if (rs.next()) {
+                    Object geomObject = rs.getObject(1);
+
+                    if (rs.wasNull() || !onlyIfNull) {
+                        try (CallableStatement cStmt = connection.prepareCall("{? = call " +
+                                databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobject") + "(?,1)}")) {
+                            cStmt.registerOutParameter(1, databaseAdapter.getGeometryConverter().getNullGeometryType(), databaseAdapter.getGeometryConverter().getNullGeometryTypeName());
+                            cStmt.setObject(2, objectId, Types.INTEGER);
+                            cStmt.executeUpdate();
+                            geomObject = cStmt.getObject(1);
+                        }
+                    }
+
+                    if (geomObject instanceof Struct) {
+                        JGeometry jGeom = JGeometry.loadJS((Struct) geomObject);
+                        double[] points = jGeom.getOrdinatesArray();
+
+                        double xMin = points[0];
+                        double yMin = points[1];
+                        double xMax = points[6];
+                        double yMax = points[7];
+
+                        bbox = new BoundingBox(new Position(xMin, yMin), new Position(xMax, yMax));
+                        bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
+                    }
+                }
+            }
         }
 
         return bbox;

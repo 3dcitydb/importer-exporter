@@ -298,7 +298,10 @@ public class KmlExporter implements EventHandler {
 				try {
 					log.info("Calculating bounding box...");
 					BoundingBox extent = databaseAdapter.getUtil().calcBoundingBox(query, schemaMapping);
-					if (extent == null) {
+					if (extent == null || (extent.getLowerCorner().getX() == Double.MAX_VALUE &&
+							extent.getLowerCorner().getY() == Double.MAX_VALUE &&
+							extent.getUpperCorner().getX() == -Double.MAX_VALUE &&
+							extent.getUpperCorner().getY() == -Double.MAX_VALUE)) {
 						log.info("Empty bounding box calculated.");
 						log.info("No top-level feature will be exported.");
 						return true;
@@ -306,7 +309,7 @@ public class KmlExporter implements EventHandler {
 
 					queryConfig.getBboxFilter().setExtent(extent);
 					query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
-				} catch (SQLException | FilterException e) {
+				} catch (SQLException e) {
 					throw new QueryBuildException("Failed to calculate bounding box based on the non-spatial filter settings.", e);
 				}
 			}

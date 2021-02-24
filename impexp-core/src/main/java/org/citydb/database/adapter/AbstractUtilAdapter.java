@@ -44,9 +44,11 @@ import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.BuildProperties;
 import org.citydb.query.builder.sql.SQLQueryBuilder;
-import org.citydb.query.filter.FilterException;
+import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.sqlbuilder.select.projection.WildCardColumn;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -62,6 +64,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public abstract class AbstractUtilAdapter {
     protected final AbstractDatabaseAdapter databaseAdapter;
@@ -85,6 +88,7 @@ public abstract class AbstractUtilAdapter {
     protected abstract String[] createDatabaseReport(String schema, Connection connection) throws SQLException;
     protected abstract BoundingBox calcBoundingBox(String schema, List<Integer> classIds, Connection connection) throws SQLException;
     protected abstract BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException;
+    protected abstract BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException;
     protected abstract GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException;
     protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;
     protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException;
@@ -187,7 +191,10 @@ public abstract class AbstractUtilAdapter {
         }
     }
 
-    public BoundingBox calcBoundingBox(Query query, SchemaMapping schemaMapping) throws QueryBuildException, SQLException, FilterException {
+    public BoundingBox calcBoundingBox(Query query, SchemaMapping schemaMapping) throws SQLException, QueryBuildException {
+        Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
+        Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
+        int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid();
         BoundingBox bbox = null;
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
@@ -199,30 +206,117 @@ public abstract class AbstractUtilAdapter {
             Table table = new Table(select);
             select = new Select().addProjection(databaseAdapter.getSQLAdapter().getAggregateExtentFunction(table.getColumn(MappingConstants.ENVELOPE)));
 
-            try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, conn);
-                 ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Object extentObj = rs.getObject(1);
-                    if (!rs.wasNull()) {
-                        GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
+            try {
+                interruptablePreparedStatement = databaseAdapter.getSQLAdapter().prepareStatement(select, conn);
+                try (ResultSet rs = interruptablePreparedStatement.executeQuery()) {
+                    if (rs.next()) {
+                        Object extentObj = rs.getObject(1);
+                        if (!rs.wasNull()) {
+                            GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
 
-                        DatabaseSrs targetSrs = query.getTargetSrs();
-                        if (targetSrs != null && extent.getSrid() != targetSrs.getSrid()) {
-                            extent = transform(extent, targetSrs).toEnvelope();
+                            DatabaseSrs targetSrs = query.getTargetSrs();
+                            if (targetSrs != null && targetSrs.isSupported() && extent.getSrid() != targetSrs.getSrid()) {
+                                extent = transform(extent, targetSrs).toEnvelope();
+                            }
+                            srid = extent.getSrid();
+
+                            double[] coordinates = extent.getCoordinates(0);
+                            lowerCorner.setX(coordinates[0]);
+                            lowerCorner.setY(coordinates[1]);
+                            upperCorner.setX(coordinates[3]);
+                            upperCorner.setY(coordinates[4]);
+                        }
+                    }
+
+                    if (!isInterrupted) {
+                        bbox = new BoundingBox(lowerCorner, upperCorner);
+                        bbox.setSrs(srid);
+                    }
+                }
+            } catch (SQLException e) {
+                if (!isInterrupted)
+                    throw e;
+            } finally {
+                if (interruptablePreparedStatement != null) {
+                    interruptablePreparedStatement.close();
+                    interruptablePreparedStatement = null;
+                }
+
+                isInterrupted = false;
+            }
+        }
+
+        return bbox;
+    }
+
+    public BoundingBox createBoundingBoxes(Query query, SchemaMapping schemaMapping, boolean onlyIfNull, Consumer<Integer> counter) throws SQLException, QueryBuildException {
+        BoundingBox bbox = new BoundingBox(
+                new Position(Double.MAX_VALUE, Double.MAX_VALUE),
+                new Position(-Double.MAX_VALUE, -Double.MAX_VALUE)
+        );
+        bbox.setSrs(query.getTargetSrs());
+
+        String schema = databaseAdapter.getConnectionDetails().getSchema();
+
+        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
+            conn.setAutoCommit(false);
+
+            SQLQueryBuilder builder = new SQLQueryBuilder(
+                    schemaMapping,
+                    databaseAdapter,
+                    BuildProperties.defaults().addProjectionColumn(MappingConstants.ID));
+            Select select = builder.buildQuery(query);
+
+            long hits = getNumberMatched(query, builder, conn);
+            if (hits > 0) {
+                counter.accept((int) hits);
+
+                try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, conn);
+                     ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        if (isInterrupted) {
+                            return null;
                         }
 
-                        double[] coordinates = extent.getCoordinates(0);
-                        bbox = new BoundingBox(
-                            new Position(coordinates[0], coordinates[1]),
-                            new Position(coordinates[3], coordinates[4])
-                        );
-                        bbox.setSrs(extent.getSrid());
+                        long objectId = rs.getLong(1);
+                        BoundingBox objBbox = createBoundingBox(schema, objectId, onlyIfNull, conn);
+                        if (objBbox != null) {
+                            DatabaseSrs sourceSrs = objBbox.getSrs();
+                            DatabaseSrs targetSrs = query.getTargetSrs();
+
+                            if (sourceSrs != null && targetSrs != null && targetSrs.isSupported() && sourceSrs.getSrid() != targetSrs.getSrid()) {
+                                objBbox = transform2D(objBbox, sourceSrs, targetSrs);
+                            }
+                            bbox.update(objBbox);
+                        }
+
+                        counter.accept(-1);
                     }
+
+                    conn.commit();
+                } catch (SQLException e) {
+                    conn.rollback();
+                    throw e;
+                } finally {
+                    isInterrupted = false;
                 }
             }
         }
 
         return bbox;
+    }
+
+    private long getNumberMatched(Query query, SQLQueryBuilder builder, Connection conn) throws SQLException, QueryBuildException {
+        Query hitsQuery = new Query(query);
+
+        Select select = builder.buildQuery(hitsQuery)
+                .removeProjectionIf(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
+
+        select = new Select().addProjection(new Function("count", new WildCardColumn(new Table(select), false)));
+        try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, conn);
+             ResultSet rs = stmt.executeQuery()) {
+            return rs.next() ? rs.getLong(1) : 0;
+        }
     }
 
     public BoundingBox createBoundingBoxes(List<Integer> objectClassIds, boolean onlyIfNull) throws SQLException {

@@ -44,13 +44,7 @@ import org.postgis.Geometry;
 import org.postgis.PGbox2d;
 import org.postgis.PGgeometry;
 
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.List;
 
 public class UtilAdapter extends AbstractUtilAdapter {
@@ -272,6 +266,45 @@ public class UtilAdapter extends AbstractUtilAdapter {
             }
 
             isInterrupted = false;
+        }
+
+        return bbox;
+    }
+
+    @Override
+    protected BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException {
+        BoundingBox bbox = null;
+
+        try (PreparedStatement pStmt = connection.prepareStatement("SELECT envelope FROM " + schema + ".cityobject WHERE id = ?")) {
+            pStmt.setLong(1, objectId);
+
+            try (ResultSet rs = pStmt.executeQuery()) {
+                if (rs.next()) {
+                    Object geomObject = rs.getObject(1);
+
+                    if (rs.wasNull() || !onlyIfNull) {
+                        try (CallableStatement cStmt = connection.prepareCall("{? = call " +
+                                databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobject") + "(?,1)}")) {
+                            cStmt.registerOutParameter(1, databaseAdapter.getGeometryConverter().getNullGeometryType());
+                            cStmt.setObject(2, objectId, Types.INTEGER);
+                            cStmt.executeUpdate();
+                            geomObject = cStmt.getObject(1);
+                        }
+                    }
+
+                    if (geomObject instanceof PGgeometry) {
+                        Geometry geom = ((PGgeometry) geomObject).getGeometry();
+
+                        double xMin = geom.getPoint(0).x;
+                        double yMin = geom.getPoint(0).y;
+                        double xMax = geom.getPoint(2).x;
+                        double yMax = geom.getPoint(2).y;
+
+                        bbox = new BoundingBox(new Position(xMin, yMin), new Position(xMax, yMax));
+                        bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
+                    }
+                }
+            }
         }
 
         return bbox;
