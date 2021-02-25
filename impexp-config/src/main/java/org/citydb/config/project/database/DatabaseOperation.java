@@ -27,14 +27,14 @@
  */
 package org.citydb.config.project.database;
 
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
+import org.citygml4j.model.module.citygml.CoreModule;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
-
-import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
-import org.citygml4j.model.module.citygml.CoreModule;
 
 @XmlType(name = "DatabaseOperationType", propOrder = {
         "lastUsed",
@@ -57,6 +57,7 @@ public class DatabaseOperation {
     private SimpleFeatureVersionFilter featureVersionFilter;
 
     public DatabaseOperation() {
+        featureVersionFilter = new SimpleFeatureVersionFilter();
     }
 
     public DatabaseOperationType lastUsed() {
@@ -116,7 +117,8 @@ public class DatabaseOperation {
     }
 
     public void setFeatureVersionFilter(SimpleFeatureVersionFilter featureVersionFilter) {
-        this.featureVersionFilter = featureVersionFilter;
+        if (featureVersionFilter != null) {
+            this.featureVersionFilter = featureVersionFilter;
+        }
     }
-
 }
