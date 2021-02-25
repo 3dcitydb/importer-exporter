@@ -41,10 +41,16 @@ import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.DatabaseMetaData;
 import org.citydb.database.connection.DatabaseMetaData.Versioning;
 import org.citydb.database.version.DatabaseVersion;
-import org.citydb.util.Util;
 
-import java.sql.*;
-import java.util.List;
+import java.sql.Array;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Struct;
+import java.sql.Types;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UtilAdapter extends AbstractUtilAdapter {
@@ -128,21 +134,21 @@ public class UtilAdapter extends AbstractUtilAdapter {
     @Override
     public void changeSrs(DatabaseSrs srs, boolean doTransform, String schema, Connection connection) throws SQLException {
         try {
-            interruptableCallableStatement = connection.prepareCall("{call " +
+            interruptibleCallableStatement = connection.prepareCall("{call " +
                     databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.change_schema_srid") +
                     "(?, ?, ?)}");
 
-            interruptableCallableStatement.setInt(1, srs.getSrid());
-            interruptableCallableStatement.setString(2, srs.getGMLSrsName());
-            interruptableCallableStatement.setInt(3, doTransform ? 1 : 0);
-            interruptableCallableStatement.execute();
+            interruptibleCallableStatement.setInt(1, srs.getSrid());
+            interruptibleCallableStatement.setString(2, srs.getGMLSrsName());
+            interruptibleCallableStatement.setInt(3, doTransform ? 1 : 0);
+            interruptibleCallableStatement.execute();
         } catch (SQLException e) {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
+            if (interruptibleCallableStatement != null) {
+                interruptibleCallableStatement.close();
+                interruptibleCallableStatement = null;
             }
 
             isInterrupted = false;
@@ -152,20 +158,20 @@ public class UtilAdapter extends AbstractUtilAdapter {
     @Override
     protected String[] createDatabaseReport(String schema, Connection connection) throws SQLException {
         try {
-            interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "(?)}");
-            interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, schema + ".STRARRAY");
-            interruptableCallableStatement.setString(2, schema);
-            interruptableCallableStatement.executeUpdate();
+            interruptibleCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "(?)}");
+            interruptibleCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, schema + ".STRARRAY");
+            interruptibleCallableStatement.setString(2, schema);
+            interruptibleCallableStatement.executeUpdate();
 
-            Array result = interruptableCallableStatement.getArray(1);
+            Array result = interruptibleCallableStatement.getArray(1);
             return (String[]) result.getArray();
         } catch (SQLException e) {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
+            if (interruptibleCallableStatement != null) {
+                interruptibleCallableStatement.close();
+                interruptibleCallableStatement = null;
             }
 
             isInterrupted = false;
@@ -175,117 +181,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected BoundingBox calcBoundingBox(String schema, List<Integer> objectClassIds, Connection connection) throws SQLException {
-        StringBuilder query = new StringBuilder()
-                .append("select sdo_aggr_mbr(").append(schema).append(".citydb_util.to_2d(ENVELOPE, (select srid from ")
-                .append(schema).append(".database_srs))) from ").append(schema)
-                .append(".CITYOBJECT where ENVELOPE is not NULL");
-
-        if (!objectClassIds.isEmpty())
-            query.append(" and OBJECTCLASS_ID in (").append(Util.collection2string(objectClassIds, ", ")).append(") ");
-
-        Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
-        Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
-        BoundingBox bbox = null;
-
-        try {
-            interruptablePreparedStatement = connection.prepareStatement(query.toString());
-
-            try (ResultSet rs = interruptablePreparedStatement.executeQuery()) {
-                if (rs.next()) {
-                    Struct struct = (Struct) rs.getObject(1);
-                    if (!rs.wasNull() && struct != null) {
-                        JGeometry jGeom = JGeometry.loadJS(struct);
-                        double[] points = jGeom.getOrdinatesArray();
-
-                        lowerCorner.setX(points[0]);
-                        lowerCorner.setY(points[1]);
-                        if (points.length >= 4) {
-                            upperCorner.setX(points[2]);
-                            upperCorner.setY(points[3]);
-                        } else {
-                            upperCorner.setX(points[0]);
-                            upperCorner.setY(points[1]);
-                        }
-                    }
-                }
-
-                if (!isInterrupted)
-                    bbox = new BoundingBox(lowerCorner, upperCorner);
-            }
-        } catch (SQLException e) {
-            if (!isInterrupted)
-                throw e;
-        } finally {
-            if (interruptablePreparedStatement != null) {
-                interruptablePreparedStatement.close();
-                interruptablePreparedStatement = null;
-            }
-
-            isInterrupted = false;
-        }
-
-        return bbox;
-    }
-
-    @Override
-    protected BoundingBox createBoundingBoxes(List<Integer> objectClassIds, boolean onlyIfNull, Connection connection) throws SQLException {
-        BoundingBox bbox = null;
-
-        try {
-            for (Integer classId : objectClassIds) {
-                String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobjects") + "(?,1,?)}";
-                interruptableCallableStatement = connection.prepareCall(call);
-                interruptableCallableStatement.registerOutParameter(1, databaseAdapter.getGeometryConverter().getNullGeometryType(), databaseAdapter.getGeometryConverter().getNullGeometryTypeName());
-                interruptableCallableStatement.setInt(2, classId);
-                interruptableCallableStatement.setInt(3, onlyIfNull ? 1 : 0);
-                interruptableCallableStatement.executeUpdate();
-
-                Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
-                Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
-
-                Object geomObject = interruptableCallableStatement.getObject(1);
-                if (geomObject instanceof Struct) {
-                    JGeometry jGeom = JGeometry.loadJS((Struct) geomObject);
-                    double[] points = jGeom.getOrdinatesArray();
-                    double xmin, ymin, xmax, ymax;
-
-                    xmin = points[0];
-                    ymin = points[1];
-                    xmax = points[6];
-                    ymax = points[7];
-
-                    lowerCorner.setX(xmin);
-                    lowerCorner.setY(ymin);
-                    upperCorner.setX(xmax);
-                    upperCorner.setY(ymax);
-                }
-
-                if (!isInterrupted) {
-                    if (bbox == null)
-                        bbox = new BoundingBox(lowerCorner, upperCorner);
-                    else
-                        bbox.update(lowerCorner, upperCorner);
-                }
-            }
-
-        } catch (SQLException e) {
-            if (!isInterrupted)
-                throw e;
-        } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
-            }
-
-            isInterrupted = false;
-        }
-
-        return bbox;
-    }
-
-    @Override
-    protected BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException {
+    public BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException {
         BoundingBox bbox = null;
 
         try (PreparedStatement pStmt = connection.prepareStatement("SELECT envelope FROM " + schema + ".cityobject WHERE id = ?")) {
@@ -328,20 +224,20 @@ public class UtilAdapter extends AbstractUtilAdapter {
     protected IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException {
         try {
             String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName(operation) + "(?)}";
-            interruptableCallableStatement = connection.prepareCall(call);
-            interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, schema + ".STRARRAY");
-            interruptableCallableStatement.setString(2, schema);
-            interruptableCallableStatement.executeUpdate();
+            interruptibleCallableStatement = connection.prepareCall(call);
+            interruptibleCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, schema + ".STRARRAY");
+            interruptibleCallableStatement.setString(2, schema);
+            interruptibleCallableStatement.executeUpdate();
 
-            Array result = interruptableCallableStatement.getArray(1);
+            Array result = interruptibleCallableStatement.getArray(1);
             return IndexStatusInfo.createFromDatabaseQuery((String[]) result.getArray(), type);
         } catch (SQLException e) {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
+            if (interruptibleCallableStatement != null) {
+                interruptibleCallableStatement.close();
+                interruptibleCallableStatement = null;
             }
 
             isInterrupted = false;
@@ -451,20 +347,20 @@ public class UtilAdapter extends AbstractUtilAdapter {
     protected int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException {
         try {
             String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.cleanup_appearances") + "()";
-            interruptableCallableStatement = connection.prepareCall(call);
-            interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, schema + ".ID_ARRAY");
-            interruptableCallableStatement.execute();
+            interruptibleCallableStatement = connection.prepareCall(call);
+            interruptibleCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, schema + ".ID_ARRAY");
+            interruptibleCallableStatement.execute();
 
-            Array result = interruptableCallableStatement.getArray(1);
+            Array result = interruptibleCallableStatement.getArray(1);
             return ((Object[]) result.getArray()).length;
         } catch (SQLException e) {
             connection.rollback();
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
+            if (interruptibleCallableStatement != null) {
+                interruptibleCallableStatement.close();
+                interruptibleCallableStatement = null;
             }
 
             isInterrupted = false;

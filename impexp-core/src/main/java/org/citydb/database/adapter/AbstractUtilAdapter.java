@@ -44,11 +44,8 @@ import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.BuildProperties;
 import org.citydb.query.builder.sql.SQLQueryBuilder;
-import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.projection.Function;
-import org.citydb.sqlbuilder.select.projection.WildCardColumn;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -64,15 +61,14 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 public abstract class AbstractUtilAdapter {
     protected final AbstractDatabaseAdapter databaseAdapter;
     protected final ConcurrentHashMap<Integer, DatabaseSrs> srsInfoMap;
     private final ConcurrentHashMap<Integer, CoordinateReferenceSystem> srsDefMap;
 
-    protected CallableStatement interruptableCallableStatement;
-    protected PreparedStatement interruptablePreparedStatement;
+    protected CallableStatement interruptibleCallableStatement;
+    protected PreparedStatement interruptiblePreparedStatement;
     protected volatile boolean isInterrupted;
 
     protected AbstractUtilAdapter(AbstractDatabaseAdapter databaseAdapter) {
@@ -86,15 +82,13 @@ public abstract class AbstractUtilAdapter {
     protected abstract void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException;
     protected abstract void changeSrs(DatabaseSrs srs, boolean doTransform, String schema, Connection connection) throws SQLException;
     protected abstract String[] createDatabaseReport(String schema, Connection connection) throws SQLException;
-    protected abstract BoundingBox calcBoundingBox(String schema, List<Integer> classIds, Connection connection) throws SQLException;
-    protected abstract BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException;
-    protected abstract BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException;
     protected abstract GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException;
     protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;
     protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException;
     protected abstract boolean updateTableStats(IndexType type, String schema, Connection connection) throws SQLException;
     protected abstract boolean containsGlobalAppearances(Connection connection) throws SQLException;
     protected abstract int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException;
+    public abstract BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException;
     public abstract DatabaseSrs getWGS843D();
 
     public DatabaseMetaData getDatabaseInfo(String schema) throws SQLException {
@@ -181,16 +175,6 @@ public abstract class AbstractUtilAdapter {
         }
     }
 
-    public BoundingBox calcBoundingBox(List<Integer> objectClassIds) throws SQLException {
-        String schema = databaseAdapter.getConnectionDetails().getSchema();
-
-        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            BoundingBox bbox = calcBoundingBox(schema, objectClassIds, conn);
-            bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
-            return bbox;
-        }
-    }
-
     public BoundingBox calcBoundingBox(Query query, SchemaMapping schemaMapping) throws SQLException, QueryBuildException {
         Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
         Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
@@ -202,24 +186,31 @@ public abstract class AbstractUtilAdapter {
                     schemaMapping,
                     databaseAdapter,
                     BuildProperties.defaults().addProjectionColumn(MappingConstants.ENVELOPE));
-            Select select = builder.buildQuery(query);
-            Table table = new Table(select);
-            select = new Select().addProjection(databaseAdapter.getSQLAdapter().getAggregateExtentFunction(table.getColumn(MappingConstants.ENVELOPE)));
+
+            Table table = new Table(builder.buildQuery(query));
+            Select select = new Select().addProjection(databaseAdapter.getSQLAdapter()
+                    .getAggregateExtentFunction(table.getColumn(MappingConstants.ENVELOPE)));
 
             try {
-                interruptablePreparedStatement = databaseAdapter.getSQLAdapter().prepareStatement(select, conn);
-                try (ResultSet rs = interruptablePreparedStatement.executeQuery()) {
+                interruptiblePreparedStatement = databaseAdapter.getSQLAdapter().prepareStatement(select, conn);
+                try (ResultSet rs = interruptiblePreparedStatement.executeQuery()) {
                     if (rs.next()) {
                         Object extentObj = rs.getObject(1);
                         if (!rs.wasNull()) {
                             GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
 
                             DatabaseSrs targetSrs = query.getTargetSrs();
-                            if (targetSrs != null && targetSrs.isSupported() && extent.getSrid() != targetSrs.getSrid()) {
-                                extent = transform(extent, targetSrs).toEnvelope();
+                            if (targetSrs != null
+                                    && targetSrs.isSupported()
+                                    && extent.getSrid() != targetSrs.getSrid()) {
+                                try {
+                                    extent = transform(extent, targetSrs).toEnvelope();
+                                } catch (SQLException e) {
+                                    //
+                                }
                             }
-                            srid = extent.getSrid();
 
+                            srid = extent.getSrid();
                             double[] coordinates = extent.getCoordinates(0);
                             lowerCorner.setX(coordinates[0]);
                             lowerCorner.setY(coordinates[1]);
@@ -237,9 +228,9 @@ public abstract class AbstractUtilAdapter {
                 if (!isInterrupted)
                     throw e;
             } finally {
-                if (interruptablePreparedStatement != null) {
-                    interruptablePreparedStatement.close();
-                    interruptablePreparedStatement = null;
+                if (interruptiblePreparedStatement != null) {
+                    interruptiblePreparedStatement.close();
+                    interruptiblePreparedStatement = null;
                 }
 
                 isInterrupted = false;
@@ -249,94 +240,10 @@ public abstract class AbstractUtilAdapter {
         return bbox;
     }
 
-    public BoundingBox createBoundingBoxes(Query query, SchemaMapping schemaMapping, boolean onlyIfNull, Consumer<Integer> counter) throws SQLException, QueryBuildException {
-        BoundingBox bbox = new BoundingBox(
-                new Position(Double.MAX_VALUE, Double.MAX_VALUE),
-                new Position(-Double.MAX_VALUE, -Double.MAX_VALUE)
-        );
-        bbox.setSrs(query.getTargetSrs());
-
-        String schema = databaseAdapter.getConnectionDetails().getSchema();
-
-        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            conn.setAutoCommit(false);
-
-            SQLQueryBuilder builder = new SQLQueryBuilder(
-                    schemaMapping,
-                    databaseAdapter,
-                    BuildProperties.defaults().addProjectionColumn(MappingConstants.ID));
-            Select select = builder.buildQuery(query);
-
-            long hits = getNumberMatched(query, builder, conn);
-            if (hits > 0) {
-                counter.accept((int) hits);
-
-                try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, conn);
-                     ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        if (isInterrupted) {
-                            return null;
-                        }
-
-                        long objectId = rs.getLong(1);
-                        BoundingBox objBbox = createBoundingBox(schema, objectId, onlyIfNull, conn);
-                        if (objBbox != null) {
-                            DatabaseSrs sourceSrs = objBbox.getSrs();
-                            DatabaseSrs targetSrs = query.getTargetSrs();
-
-                            if (sourceSrs != null && targetSrs != null && targetSrs.isSupported() && sourceSrs.getSrid() != targetSrs.getSrid()) {
-                                objBbox = transform2D(objBbox, sourceSrs, targetSrs);
-                            }
-                            bbox.update(objBbox);
-                        }
-
-                        counter.accept(-1);
-                    }
-
-                    conn.commit();
-                } catch (SQLException e) {
-                    conn.rollback();
-                    throw e;
-                } finally {
-                    isInterrupted = false;
-                }
-            }
+    public BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull) throws SQLException {
+        try (Connection connection = databaseAdapter.connectionPool.getConnection()) {
+            return createBoundingBox(schema, objectId, onlyIfNull, connection);
         }
-
-        return bbox;
-    }
-
-    private long getNumberMatched(Query query, SQLQueryBuilder builder, Connection conn) throws SQLException, QueryBuildException {
-        Query hitsQuery = new Query(query);
-
-        Select select = builder.buildQuery(hitsQuery)
-                .removeProjectionIf(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
-
-        select = new Select().addProjection(new Function("count", new WildCardColumn(new Table(select), false)));
-        try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, conn);
-             ResultSet rs = stmt.executeQuery()) {
-            return rs.next() ? rs.getLong(1) : 0;
-        }
-    }
-
-    public BoundingBox createBoundingBoxes(List<Integer> objectClassIds, boolean onlyIfNull) throws SQLException {
-        BoundingBox bbox = null;
-
-        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                bbox = createBoundingBoxes(objectClassIds, onlyIfNull, conn);
-                bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
-                conn.commit();
-                return bbox;
-            } catch (SQLException e) {
-                conn.rollback();
-                if (!isInterrupted)
-                    throw e;
-            }
-        }
-
-        return bbox;
     }
 
     public IndexStatusInfo dropSpatialIndexes() throws SQLException {
@@ -407,22 +314,22 @@ public abstract class AbstractUtilAdapter {
         boolean isIndexed = false;
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            interruptableCallableStatement = conn.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_idx.index_status") + "(?, ?, ?)}");
+            interruptibleCallableStatement = conn.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_idx.index_status") + "(?, ?, ?)}");
 
-            interruptableCallableStatement.setString(2, tableName);
-            interruptableCallableStatement.setString(3, columnName);
-            interruptableCallableStatement.setString(4, schema);
-            interruptableCallableStatement.registerOutParameter(1, Types.VARCHAR);
-            interruptableCallableStatement.executeUpdate();
+            interruptibleCallableStatement.setString(2, tableName);
+            interruptibleCallableStatement.setString(3, columnName);
+            interruptibleCallableStatement.setString(4, schema);
+            interruptibleCallableStatement.registerOutParameter(1, Types.VARCHAR);
+            interruptibleCallableStatement.executeUpdate();
 
-            isIndexed = interruptableCallableStatement.getString(1).equals("VALID");
+            isIndexed = interruptibleCallableStatement.getString(1).equals("VALID");
         } catch (SQLException e) {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
+            if (interruptibleCallableStatement != null) {
+                interruptibleCallableStatement.close();
+                interruptibleCallableStatement = null;
             }
 
             isInterrupted = false;
@@ -518,15 +425,15 @@ public abstract class AbstractUtilAdapter {
         isInterrupted = true;
 
         try {
-            if (interruptableCallableStatement != null)
-                interruptableCallableStatement.cancel();
+            if (interruptibleCallableStatement != null)
+                interruptibleCallableStatement.cancel();
         } catch (SQLException e) {
             //
         }
 
         try {
-            if (interruptablePreparedStatement != null)
-                interruptablePreparedStatement.cancel();
+            if (interruptiblePreparedStatement != null)
+                interruptiblePreparedStatement.cancel();
         } catch (SQLException e) {
             //
         }
