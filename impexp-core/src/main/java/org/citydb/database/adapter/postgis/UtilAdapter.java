@@ -39,19 +39,17 @@ import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.DatabaseMetaData;
 import org.citydb.database.connection.DatabaseMetaData.Versioning;
 import org.citydb.database.version.DatabaseVersion;
-import org.citydb.util.Util;
 import org.postgis.Geometry;
-import org.postgis.PGbox2d;
 import org.postgis.PGgeometry;
 
 import java.sql.Array;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.List;
 
 public class UtilAdapter extends AbstractUtilAdapter {
     private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4326, "", "", "", DatabaseSrsType.GEOGRAPHIC2D, true);
@@ -130,22 +128,22 @@ public class UtilAdapter extends AbstractUtilAdapter {
     @Override
     public void changeSrs(DatabaseSrs srs, boolean doTransform, String schema, Connection connection) throws SQLException {
         try {
-            interruptableCallableStatement = connection.prepareCall("{call " +
+            interruptibleCallableStatement = connection.prepareCall("{call " +
                     databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.change_schema_srid") +
                     "(?, ?, ?, ?)}");
 
-            interruptableCallableStatement.setInt(1, srs.getSrid());
-            interruptableCallableStatement.setString(2, srs.getGMLSrsName());
-            interruptableCallableStatement.setInt(3, doTransform ? 1 : 0);
-            interruptableCallableStatement.setString(4, schema);
-            interruptableCallableStatement.execute();
+            interruptibleCallableStatement.setInt(1, srs.getSrid());
+            interruptibleCallableStatement.setString(2, srs.getGMLSrsName());
+            interruptibleCallableStatement.setInt(3, doTransform ? 1 : 0);
+            interruptibleCallableStatement.setString(4, schema);
+            interruptibleCallableStatement.execute();
         } catch (SQLException e) {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
+            if (interruptibleCallableStatement != null) {
+                interruptibleCallableStatement.close();
+                interruptibleCallableStatement = null;
             }
 
             isInterrupted = false;
@@ -155,20 +153,20 @@ public class UtilAdapter extends AbstractUtilAdapter {
     @Override
     protected String[] createDatabaseReport(String schema, Connection connection) throws SQLException {
         try {
-            interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "(?)}");
-            interruptableCallableStatement.registerOutParameter(1, Types.ARRAY);
-            interruptableCallableStatement.setString(2, schema);
-            interruptableCallableStatement.executeUpdate();
+            interruptibleCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "(?)}");
+            interruptibleCallableStatement.registerOutParameter(1, Types.ARRAY);
+            interruptibleCallableStatement.setString(2, schema);
+            interruptibleCallableStatement.executeUpdate();
 
-            Array result = interruptableCallableStatement.getArray(1);
+            Array result = interruptibleCallableStatement.getArray(1);
             return (String[]) result.getArray();
         } catch (SQLException e) {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
+            if (interruptibleCallableStatement != null) {
+                interruptibleCallableStatement.close();
+                interruptibleCallableStatement = null;
             }
 
             isInterrupted = false;
@@ -178,100 +176,39 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected BoundingBox calcBoundingBox(String schema, List<Integer> objectClassIds, Connection connection) throws SQLException {
-        StringBuilder query = new StringBuilder()
-                .append("select ST_Extent(envelope) from ").append(schema)
-                .append(".cityobject where envelope is not null");
-
-        if (!objectClassIds.isEmpty())
-            query.append(" and OBJECTCLASS_ID in (").append(Util.collection2string(objectClassIds, ", ")).append(") ");
-
-        Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
-        Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
+    public BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException {
         BoundingBox bbox = null;
 
-        try {
-            interruptablePreparedStatement = connection.prepareStatement(query.toString());
+        try (PreparedStatement pStmt = connection.prepareStatement("SELECT envelope FROM " + schema + ".cityobject WHERE id = ?")) {
+            pStmt.setLong(1, objectId);
 
-            try (ResultSet rs = interruptablePreparedStatement.executeQuery()) {
+            try (ResultSet rs = pStmt.executeQuery()) {
                 if (rs.next()) {
-                    PGbox2d geom = (PGbox2d) rs.getObject(1);
-                    if (!rs.wasNull() && geom != null) {
-                        lowerCorner.setX(geom.getLLB().x);
-                        lowerCorner.setY(geom.getLLB().y);
-                        upperCorner.setX(geom.getURT().x);
-                        upperCorner.setY(geom.getURT().y);
+                    Object geomObject = rs.getObject(1);
+
+                    if (rs.wasNull() || !onlyIfNull) {
+                        try (CallableStatement cStmt = connection.prepareCall("{? = call " +
+                                databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobject") + "(?,1)}")) {
+                            cStmt.registerOutParameter(1, databaseAdapter.getGeometryConverter().getNullGeometryType());
+                            cStmt.setObject(2, objectId, Types.INTEGER);
+                            cStmt.executeUpdate();
+                            geomObject = cStmt.getObject(1);
+                        }
+                    }
+
+                    if (geomObject instanceof PGgeometry) {
+                        Geometry geom = ((PGgeometry) geomObject).getGeometry();
+
+                        double xMin = geom.getPoint(0).x;
+                        double yMin = geom.getPoint(0).y;
+                        double xMax = geom.getPoint(2).x;
+                        double yMax = geom.getPoint(2).y;
+
+                        bbox = new BoundingBox(new Position(xMin, yMin), new Position(xMax, yMax));
+                        bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
                     }
                 }
-
-                if (!isInterrupted)
-                    bbox = new BoundingBox(lowerCorner, upperCorner);
             }
-        } catch (SQLException e) {
-            if (!isInterrupted)
-                throw e;
-        } finally {
-            if (interruptablePreparedStatement != null) {
-                interruptablePreparedStatement.close();
-                interruptablePreparedStatement = null;
-            }
-
-            isInterrupted = false;
-        }
-
-        return bbox;
-    }
-
-    @Override
-    protected BoundingBox createBoundingBoxes(List<Integer> objectClassIds, boolean onlyIfNull, Connection connection) throws SQLException {
-        BoundingBox bbox = null;
-
-        try {
-            for (Integer classId : objectClassIds) {
-                String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobjects") + "(?,1,?)}";
-                interruptableCallableStatement = connection.prepareCall(call);
-                interruptableCallableStatement.registerOutParameter(1, databaseAdapter.getGeometryConverter().getNullGeometryType());
-                interruptableCallableStatement.setInt(2, classId);
-                interruptableCallableStatement.setInt(3, onlyIfNull ? 1 : 0);
-                interruptableCallableStatement.executeUpdate();
-
-                Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
-                Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
-
-                Object geomObject = interruptableCallableStatement.getObject(1);
-                if (geomObject instanceof PGgeometry) {
-                    Geometry geom = ((PGgeometry) geomObject).getGeometry();
-                    double xmin, ymin, xmax, ymax;
-
-                    xmin = geom.getPoint(0).x;
-                    ymin = geom.getPoint(0).y;
-                    xmax = geom.getPoint(2).x;
-                    ymax = geom.getPoint(2).y;
-
-                    lowerCorner.setX(xmin);
-                    lowerCorner.setY(ymin);
-                    upperCorner.setX(xmax);
-                    upperCorner.setY(ymax);
-                }
-
-                if (!isInterrupted) {
-                    if (bbox == null)
-                        bbox = new BoundingBox(lowerCorner, upperCorner);
-                    else
-                        bbox.update(lowerCorner, upperCorner);
-                }
-            }
-
-        } catch (SQLException e) {
-            if (!isInterrupted)
-                throw e;
-        } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
-            }
-
-            isInterrupted = false;
         }
 
         return bbox;
@@ -281,20 +218,20 @@ public class UtilAdapter extends AbstractUtilAdapter {
     protected IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException {
         try {
             String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName(operation) + "(?)}";
-            interruptableCallableStatement = connection.prepareCall(call);
-            interruptableCallableStatement.registerOutParameter(1, Types.ARRAY);
-            interruptableCallableStatement.setString(2, schema);
-            interruptableCallableStatement.executeUpdate();
+            interruptibleCallableStatement = connection.prepareCall(call);
+            interruptibleCallableStatement.registerOutParameter(1, Types.ARRAY);
+            interruptibleCallableStatement.setString(2, schema);
+            interruptibleCallableStatement.executeUpdate();
 
-            Array result = interruptableCallableStatement.getArray(1);
+            Array result = interruptibleCallableStatement.getArray(1);
             return IndexStatusInfo.createFromDatabaseQuery((String[]) result.getArray(), type);
         } catch (SQLException e) {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
+            if (interruptibleCallableStatement != null) {
+                interruptibleCallableStatement.close();
+                interruptibleCallableStatement = null;
             }
 
             isInterrupted = false;
@@ -314,9 +251,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
                     String tableName = rs.getString(1);
                     String attributeName = rs.getString(2);
 
-                    interruptablePreparedStatement = connection.prepareStatement("VACUUM ANALYZE " +
+                    interruptiblePreparedStatement = connection.prepareStatement("VACUUM ANALYZE " +
                             schema + "." + tableName + " (" + attributeName + ")");
-                    interruptablePreparedStatement.executeUpdate();
+                    interruptiblePreparedStatement.executeUpdate();
                 }
 
                 return true;
@@ -325,9 +262,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptablePreparedStatement != null) {
-                interruptablePreparedStatement.close();
-                interruptablePreparedStatement = null;
+            if (interruptiblePreparedStatement != null) {
+                interruptiblePreparedStatement.close();
+                interruptiblePreparedStatement = null;
             }
 
             isInterrupted = false;
@@ -394,9 +331,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptablePreparedStatement != null) {
-                interruptablePreparedStatement.close();
-                interruptablePreparedStatement = null;
+            if (interruptiblePreparedStatement != null) {
+                interruptiblePreparedStatement.close();
+                interruptiblePreparedStatement = null;
             }
 
             isInterrupted = false;

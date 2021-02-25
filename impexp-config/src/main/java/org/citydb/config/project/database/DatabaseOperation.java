@@ -27,18 +27,22 @@
  */
 package org.citydb.config.project.database;
 
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
+import org.citygml4j.model.module.citygml.CoreModule;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
-
-import org.citygml4j.model.module.citygml.CoreModule;
 
 @XmlType(name = "DatabaseOperationType", propOrder = {
         "lastUsed",
         "boundingBoxTypeName",
         "boundingBoxSrs",
         "spatialIndex",
-        "normalIndex"
+        "normalIndex",
+        "featureVersionFilter"
 })
 public class DatabaseOperation {
     private DatabaseOperationType lastUsed = DatabaseOperationType.REPORT;
@@ -47,8 +51,13 @@ public class DatabaseOperation {
     private DatabaseSrs boundingBoxSrs = DatabaseSrs.createDefaultSrs();
     private boolean spatialIndex;
     private boolean normalIndex;
+    @XmlAttribute
+    private boolean useFeatureVersionFilter = true;
+    @XmlElement(name = "featureVersion")
+    private SimpleFeatureVersionFilter featureVersionFilter;
 
     public DatabaseOperation() {
+        featureVersionFilter = new SimpleFeatureVersionFilter();
     }
 
     public DatabaseOperationType lastUsed() {
@@ -91,4 +100,25 @@ public class DatabaseOperation {
         this.normalIndex = normalIndex;
     }
 
+    public boolean isUseFeatureVersionFilter() {
+        return useFeatureVersionFilter;
+    }
+
+    public void setUseFeatureVersionFilter(boolean useFeatureVersionFilter) {
+        this.useFeatureVersionFilter = useFeatureVersionFilter;
+    }
+
+    public SimpleFeatureVersionFilter getFeatureVersionFilter() {
+        return featureVersionFilter;
+    }
+
+    public boolean isSetFeatureVersionFilter() {
+        return featureVersionFilter != null;
+    }
+
+    public void setFeatureVersionFilter(SimpleFeatureVersionFilter featureVersionFilter) {
+        if (featureVersionFilter != null) {
+            this.featureVersionFilter = featureVersionFilter;
+        }
+    }
 }
