@@ -177,8 +177,10 @@ public class SQLAdapter extends AbstractSQLAdapter {
 
     @Override
     public String getHierarchicalGeometryQuery() {
-        return "select sg.*, LEVEL from " + databaseAdapter.getConnectionDetails().getSchema() +
-                ".SURFACE_GEOMETRY sg start with sg.ID=? connect by prior sg.ID=sg.PARENT_ID";
+        return "select sg.id, sg.gmlid, sg.parent_id, sg.root_id, sg.is_solid, sg.is_composite, sg.is_triangulated, " +
+                "sg.is_xlink, sg.is_reverse, sg.geometry, sg.implicit_geometry, sg.solid_geometry, sg.cityobject_id, " +
+                "level from " + databaseAdapter.getConnectionDetails().getSchema() +
+                ".surface_geometry sg start with sg.id=? connect by prior sg.id=sg.parent_id";
     }
 
     @Override
