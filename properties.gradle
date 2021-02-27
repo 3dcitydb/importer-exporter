@@ -29,4 +29,10 @@ ext {
 
     // documentation
     docUrl = 'https://3dcitydb-docs.readthedocs.io/en/release-v4.2.3/'
+
+    // submodules
+    citydbBranch = 'master'
+    webMapBranch = 'master'
+    adePluginBranch = 'master'
+    spshgPluginBranch = 'master'
 }

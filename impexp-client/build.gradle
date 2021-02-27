@@ -99,6 +99,66 @@ application {
     }
 }
 
+// build 3dcitydb submodule
+task set3DCityDBGitBranch(type: Exec) {
+    commandLine 'git', 'submodule', 'set-branch', '--branch', project.citydbBranch, '--', "$rootDir/resources/3dcitydb"
+}
+
+task update3DCityDBGitSubmodule(type: Exec, dependsOn: set3DCityDBGitBranch) {
+    commandLine 'git', 'submodule', 'update', '--init', '--remote', "$rootDir/resources/3dcitydb"
+}
+
+task build3DCityDB(type: GradleBuild, dependsOn: update3DCityDBGitSubmodule) {
+    tasks = ['clean', 'installDist']
+    buildFile = "$rootDir/resources/3dcitydb/build.gradle"
+    outputs.dir "$rootDir/resources/3dcitydb/build/install/3dcitydb"
+}
+
+// build 3dcitydb-web-map submodule
+task setWebMapGitBranch(type: Exec) {
+    commandLine 'git', 'submodule', 'set-branch', '--branch', project.webMapBranch, '--', "$rootDir/resources/3dcitydb-web-map"
+}
+
+task updateWebMapGitSubmodule(type: Exec, dependsOn: setWebMapGitBranch) {
+    commandLine 'git', 'submodule', 'update', '--init', '--remote', "$rootDir/resources/3dcitydb-web-map"
+}
+
+task buildWebMap(type: Zip, dependsOn: updateWebMapGitSubmodule) {
+    from "$rootDir/resources/3dcitydb-web-map"
+    archiveFileName = '3dcitydb-web-map.zip'
+    destinationDirectory = file("$buildDir/tmp/3dcitydb-web-map")
+}
+
+// build plugin-ade-manager submodule
+task setADEManagerPluginGitBranch(type: Exec) {
+    commandLine 'git', 'submodule', 'set-branch', '--branch', project.adePluginBranch, '--', "$rootDir/resources/plugins/plugin-ade-manager"
+}
+
+task updateADEManagerPluginGitSubmodule(type: Exec, dependsOn: setADEManagerPluginGitBranch) {
+    commandLine 'git', 'submodule', 'update', '--init', '--remote', "$rootDir/resources/plugins/plugin-ade-manager"
+}
+
+task buildADEManagerPlugin(type: GradleBuild, dependsOn: updateADEManagerPluginGitSubmodule) {
+    tasks = ['clean', 'installDist']
+    buildFile = "$rootDir/resources/plugins/plugin-ade-manager/build.gradle"
+    outputs.dir "$rootDir/resources/plugins/plugin-ade-manager/build/install"
+}
+
+// build plugin-spreadsheet-generator submodule
+task setSpreadsheetGeneratorPluginGitBranch(type: Exec) {
+    commandLine 'git', 'submodule', 'set-branch', '--branch', project.spshgPluginBranch, '--', "$rootDir/resources/plugins/plugin-spreadsheet-generator"
+}
+
+task updateSpreadsheetGeneratorPluginGitSubmodule(type: Exec, dependsOn: setSpreadsheetGeneratorPluginGitBranch) {
+    commandLine 'git', 'submodule', 'update', '--init', '--remote', "$rootDir/resources/plugins/plugin-spreadsheet-generator"
+}
+
+task buildSpreadsheetGeneratorPlugin(type: GradleBuild, dependsOn: updateSpreadsheetGeneratorPluginGitSubmodule) {
+    tasks = ['clean', 'installDist']
+    buildFile = "$rootDir/resources/plugins/plugin-spreadsheet-generator/build.gradle"
+    outputs.dir "$rootDir/resources/plugins/plugin-spreadsheet-generator/build/install"
+}
+
 distributions {
     main {
         distributionBaseName = project.appName
@@ -115,16 +175,17 @@ distributions {
                 ])
             }
             into('3dcitydb') {
-                from "$rootDir/resources/3dcitydb"
+                from build3DCityDB.outputs
             }
             into('3d-web-map-client') {
-                from "$rootDir/resources/3d-web-map-client"
+                from buildWebMap.outputs
             }
             into('contribs') {
                 from 'contribs'
             }
             into('plugins') {
-                from "$rootDir/resources/plugins"
+                from buildADEManagerPlugin.outputs
+                from buildSpreadsheetGeneratorPlugin.outputs
             }
             into('templates') {
                 from "$rootDir/resources/templates"
@@ -148,11 +209,11 @@ distributions {
             with distributions.main.contents
             exclude ('*.bat', 'collada2gltf/*osx*', 'collada2gltf/*windows*')
             exclude {
-                it.getFile().compareTo(file("$rootDir/resources/plugins/plugin-ade-manager")) == 0 ||
-                it.getFile().getParentFile().compareTo(file("$rootDir/resources/3dcitydb")) == 0 ||
                 it.getFile().getParentFile().compareTo(file("$rootDir/resources/samples")) == 0 ||
                 it.getFile().getParentFile().compareTo(file("$rootDir/resources/templates")) == 0 ||
-                it.getFile().getParentFile().compareTo(file("$rootDir/resources/3d-web-map-client")) == 0
+                it.getFile().getParentFile().compareTo(file("$rootDir/resources/3dcitydb-web-map")) == 0 ||
+                it.getFile().getParentFile().compareTo(file("$rootDir/resources/3dcitydb/build/install/3dcitydb")) == 0 ||
+                it.getFile().getParentFile().compareTo(file("$rootDir/resources/plugins/plugin-ade-manager/build/install")) == 0
             }
         }
     }
