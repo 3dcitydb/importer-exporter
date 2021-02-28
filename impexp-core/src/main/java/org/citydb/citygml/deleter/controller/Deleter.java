@@ -85,9 +85,7 @@ public class Deleter implements EventHandler {
 	private DBSplitter dbSplitter;
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
 	private BundledConnection bundledConnection;
-
 	private GlobalAppearanceCleaner globalAppearanceCleaner;
-
 	private volatile boolean shouldRun = true;
 	private DeleteException exception;
 
@@ -150,7 +148,7 @@ public class Deleter implements EventHandler {
 			throw new DeleteException("Database error while querying index status.", e);
 		}
 
-		bundledConnection = new BundledConnection();
+		bundledConnection = new BundledConnection().withSingleConnection(true);
 		CacheTableManager cacheTableManager = null;
 		CacheTable cacheTable = null;
 
@@ -232,6 +230,26 @@ public class Deleter implements EventHandler {
 			} catch (InterruptedException e) {
 				throw new DeleteException("Failed to shutdown worker pools.", e);
 			}
+
+			if (shouldRun
+					&& config.getDeleteConfig().isCleanupGlobalAppearances()
+					&& !preview) {
+				try {
+					if (databaseAdapter.getUtil().containsGlobalAppearances()) {
+						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.cleanupGlobalAppearances"), this));
+						eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+						log.info("Cleaning up unreferenced global appearances.");
+
+						globalAppearanceCleaner = new GlobalAppearanceCleaner(bundledConnection, databaseAdapter);
+						int deleted = globalAppearanceCleaner.doCleanup();
+						log.info("Deleted global appearances: " + deleted);
+					} else {
+						log.debug("The database does not contain global appearances.");
+					}
+				} catch (SQLException e) {
+					throw new DeleteException("Failed to query global appearances from database.", e);
+				}
+			}
 		} catch (DeleteException e) {
 			throw e;
 		} catch (Throwable e) {
@@ -261,28 +279,6 @@ public class Deleter implements EventHandler {
 					setException("Failed to clean the temporary cache.", e);
 					shouldRun = false;
 				}
-			}
-
-		}
-
-		if (shouldRun
-				&& config.getDeleteConfig().isCleanupGlobalAppearances()
-				&& !preview
-				&& !objectCounter.isEmpty()) {
-			try {
-				if (databaseAdapter.getUtil().containsGlobalAppearances()) {
-					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.cleanupGlobalAppearances"), this));
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
-					log.info("Cleaning up unreferenced global appearances.");
-
-					globalAppearanceCleaner = new GlobalAppearanceCleaner();
-					int deleted = globalAppearanceCleaner.doCleanup();
-					log.info("Deleted global appearances: " + deleted);
-				} else {
-					log.debug("The database does not contain global appearances.");
-				}
-			} catch (SQLException e) {
-				throw new DeleteException("Failed to query global appearances from database.", e);
 			}
 		}
 

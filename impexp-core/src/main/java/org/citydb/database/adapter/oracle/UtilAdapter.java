@@ -344,7 +344,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException {
+    public int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException {
         try {
             String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.cleanup_appearances") + "()";
             interruptibleCallableStatement = connection.prepareCall(call);

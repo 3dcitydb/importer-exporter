@@ -35,34 +35,64 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class BundledConnection implements ConnectionManager {
+	private final ReentrantLock lock = new ReentrantLock();
 	private final List<Connection> connections;
 	private final DatabaseConnectionPool connectionPool;
-	private final boolean autoCommit;
 
+	private boolean singleConnection;
+	private boolean autoCommit;
 	private volatile boolean shouldRollback = false;
 	
-	public BundledConnection(boolean autoCommit) {
-		this.autoCommit = autoCommit;
+	public BundledConnection() {
 		connections = Collections.synchronizedList(new ArrayList<>());
 		connectionPool = DatabaseConnectionPool.getInstance();
 	}
 
-	public BundledConnection() {
-		this(false);
+	public boolean isSingleConnection() {
+		return singleConnection;
+	}
+
+	public BundledConnection withSingleConnection(boolean singleConnection) {
+		this.singleConnection = singleConnection;
+		return this;
+	}
+
+	public boolean isAutoCommit() {
+		return autoCommit;
+	}
+
+	public BundledConnection withAutoCommit(boolean autoCommit) {
+		this.autoCommit = autoCommit;
+		return this;
 	}
 
 	public boolean isShouldRollback() {
 		return shouldRollback;
 	}
 
-	public void setShouldRollback(boolean shouldRollback) {
+	public BundledConnection setShouldRollback(boolean shouldRollback) {
 		this.shouldRollback = shouldRollback;
+		return this;
 	}
 
 	@Override
 	public Connection getConnection() throws SQLException {
+		if (singleConnection) {
+			lock.lock();
+			try {
+				return connections.isEmpty() ? newConnection() : connections.get(0);
+			} finally {
+				lock.unlock();
+			}
+		} else {
+			return newConnection();
+		}
+	}
+
+	private Connection newConnection() throws SQLException {
 		Connection connection = connectionPool.getConnection();
 		connection.setAutoCommit(autoCommit);
 		connections.add(connection);
@@ -72,10 +102,11 @@ public class BundledConnection implements ConnectionManager {
 	public void close() throws SQLException {
 		try {
 			for (Connection connection : connections) {
-				if (!autoCommit && shouldRollback)
+				if (!autoCommit && shouldRollback) {
 					connection.rollback();
-				else
+				} else {
 					connection.commit();
+				}
 
 				connection.close();
 			}

@@ -87,7 +87,7 @@ public abstract class AbstractUtilAdapter {
     protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException;
     protected abstract boolean updateTableStats(IndexType type, String schema, Connection connection) throws SQLException;
     protected abstract boolean containsGlobalAppearances(Connection connection) throws SQLException;
-    protected abstract int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException;
+    public abstract int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException;
     public abstract BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException;
     public abstract DatabaseSrs getWGS843D();
 
