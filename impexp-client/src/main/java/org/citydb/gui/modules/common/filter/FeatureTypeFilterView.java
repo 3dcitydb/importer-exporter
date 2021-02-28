@@ -36,10 +36,6 @@ public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> impleme
         this(Util.toCityGMLVersion(version), adeFilter);
     }
 
-    public FeatureTypeFilterView(Predicate<ADEExtension> adeFilter) {
-        this(CityGMLVersion.v2_0_0, adeFilter);
-    }
-
     public FeatureTypeFilterView(CityGMLVersion version) {
         this(version, e -> true);
     }
@@ -48,8 +44,12 @@ public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> impleme
         this(Util.toCityGMLVersion(version));
     }
 
+    public FeatureTypeFilterView(Predicate<ADEExtension> adeFilter) {
+        this((CityGMLVersion) null, adeFilter);
+    }
+
     public FeatureTypeFilterView() {
-        this(CityGMLVersion.v2_0_0);
+        this((CityGMLVersion) null);
     }
 
     public FeatureTypeFilterView adaptToCityGMLVersionChange(Consumer<FeatureTypeFilter> featureTypeFilterConsumer) {

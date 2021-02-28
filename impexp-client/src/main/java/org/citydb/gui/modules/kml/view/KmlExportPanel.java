@@ -75,6 +75,7 @@ import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.BridgeModule;
 import org.citygml4j.model.module.citygml.CityFurnitureModule;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CityObjectGroupModule;
 import org.citygml4j.model.module.citygml.ReliefModule;
 import org.citygml4j.model.module.citygml.TunnelModule;
@@ -366,7 +367,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             mainPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 5, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            featureTypeFilter = new FeatureTypeFilterView(e -> e instanceof ADEKmlExportExtension);
+            featureTypeFilter = new FeatureTypeFilterView(CityGMLVersion.v2_0_0,
+                    e -> e instanceof ADEKmlExportExtension);
 
             featureFilterPanel = new TitledPanel()
                     .withIcon(featureTypeFilter.getIcon())
