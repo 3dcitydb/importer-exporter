@@ -90,6 +90,7 @@ public class DBSplitter {
 
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
+	private PreparedStatement previewStmt;
 
 	public DBSplitter(
 			SchemaMapping schemaMapping,
@@ -131,6 +132,14 @@ public class DBSplitter {
 	public void shutdown() {
 		shouldRun = false;
 		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+
+		if (previewStmt != null) {
+			try {
+				previewStmt.cancel();
+			} catch (SQLException e) {
+				//
+			}
+		}
 	}
 
 	public void startQuery() throws SQLException, QueryBuildException {
@@ -207,19 +216,29 @@ public class DBSplitter {
 				.addGroupBy(objectClassIdColumn);
 
 		// issue query
-		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
-			 ResultSet rs = stmt.executeQuery()) {
-			Map<Integer, Long> objectCounter = new HashMap<>();
-			while (rs.next()) {
-				long count = rs.getLong(1);
-				int objectClassId = rs.getInt(2);
-				objectCounter.put(objectClassId, count);
-			}
+		try {
+			previewStmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+			try (ResultSet rs = previewStmt.executeQuery()) {
+				Map<Integer, Long> objectCounter = new HashMap<>();
+				while (rs.next()) {
+					long count = rs.getLong(1);
+					int objectClassId = rs.getInt(2);
+					objectCounter.put(objectClassId, count);
+				}
 
-			if (!objectCounter.isEmpty()) {
-				eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, this));
-			} else {
-				log.info("No feature matches the request.");
+				if (!objectCounter.isEmpty()) {
+					eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, this));
+				} else {
+					log.info("No feature matches the request.");
+				}
+			}
+		} catch (SQLException e) {
+			if (shouldRun) {
+				throw e;
+			}
+		} finally {
+			if (previewStmt != null) {
+				previewStmt.close();
 			}
 		}
 	}
