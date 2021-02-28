@@ -70,7 +70,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class DBSplitter {
@@ -187,6 +187,44 @@ public class DBSplitter {
 			joinDeleteList(select);
 		}
 
+		if (preview) {
+			doPreview(select);
+		} else {
+			doDelete(query, select);
+		}
+	}
+
+	private void doPreview(Select select) throws SQLException, QueryBuildException {
+		ProjectionToken token = select.getProjection().stream()
+				.filter(v -> v instanceof Column && ((Column) v).getName().equals(MappingConstants.ID))
+				.findFirst()
+				.orElseThrow(() -> new QueryBuildException("Failed to build delete query due to unexpected SQL projection clause."));
+
+		Column objectClassIdColumn = ((Column) token).getTable().getColumn(MappingConstants.OBJECTCLASS_ID);
+		select.unsetProjection()
+				.unsetOrderBy()
+				.addProjection(new Function("count", (Column) token), objectClassIdColumn)
+				.addGroupBy(objectClassIdColumn);
+
+		// issue query
+		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+			 ResultSet rs = stmt.executeQuery()) {
+			Map<Integer, Long> objectCounter = new HashMap<>();
+			while (rs.next()) {
+				long count = rs.getLong(1);
+				int objectClassId = rs.getInt(2);
+				objectCounter.put(objectClassId, count);
+			}
+
+			if (!objectCounter.isEmpty()) {
+				eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, this));
+			} else {
+				log.info("No feature matches the request.");
+			}
+		}
+	}
+
+	private void doDelete(Query query, Select select) throws SQLException, QueryBuildException {
 		// calculate hits
 		long hits = 0;
 		if (calculateNumberMatched) {
@@ -224,14 +262,8 @@ public class DBSplitter {
 						continue;
 					}
 
-					if (preview) {
-						Map<Integer, Long> objectCounter = Collections.singletonMap(objectClassId, 1L);
-						eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, this));
-					} else {
-						// set initial context...
-						DBSplittingResult splitter = new DBSplittingResult(id, objectType);
-						dbWorkerPool.addWork(splitter);
-					}
+					DBSplittingResult splitter = new DBSplittingResult(id, objectType);
+					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
 			} else {
 				log.info("No feature matches the request.");
