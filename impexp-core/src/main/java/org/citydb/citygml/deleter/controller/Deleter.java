@@ -33,8 +33,8 @@ import org.citydb.citygml.common.cache.model.CacheTableModel;
 import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.citygml.deleter.database.BundledConnection;
-import org.citydb.citygml.deleter.database.DBSplitter;
 import org.citydb.citygml.deleter.database.DeleteListImporter;
+import org.citydb.citygml.deleter.database.DeleteManager;
 import org.citydb.citygml.deleter.util.DeleteListException;
 import org.citydb.citygml.deleter.util.DeleteListParser;
 import org.citydb.citygml.deleter.util.InternalConfig;
@@ -82,7 +82,7 @@ public class Deleter implements EventHandler {
 	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private final Map<Integer, Long> objectCounter;
 
-	private DBSplitter dbSplitter;
+	private DeleteManager deleteManager;
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
 	private BundledConnection bundledConnection;
 	private GlobalAppearanceCleaner globalAppearanceCleaner;
@@ -212,15 +212,17 @@ public class Deleter implements EventHandler {
 
 			// get database splitter and start query
 			try {
-				dbSplitter = new DBSplitter(schemaMapping,
+				deleteManager = new DeleteManager(bundledConnection,
+						schemaMapping,
 						dbWorkerPool,
 						query,
 						cacheTable,
+						internalConfig,
 						config,
 						eventDispatcher,
 						preview);
-				dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
-				dbSplitter.startQuery();
+				deleteManager.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
+				deleteManager.deleteObjects();
 			} catch (SQLException | QueryBuildException e) {
 				throw new DeleteException("Failed to query the database.", e);
 			}
@@ -328,8 +330,8 @@ public class Deleter implements EventHandler {
 					setException("Aborting delete due to errors.", event.getCause());
 				}
 
-				if (dbSplitter != null) {
-					dbSplitter.shutdown();
+				if (deleteManager != null) {
+					deleteManager.shutdown();
 				}
 
 				if (dbWorkerPool != null) {
