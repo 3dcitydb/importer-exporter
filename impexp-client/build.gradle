@@ -100,11 +100,7 @@ application {
 }
 
 // build 3dcitydb submodule
-task set3DCityDBGitBranch(type: Exec) {
-    commandLine 'git', 'submodule', 'set-branch', '--branch', project.citydbBranch, '--', "$rootDir/resources/3dcitydb"
-}
-
-task update3DCityDBGitSubmodule(type: Exec, dependsOn: set3DCityDBGitBranch) {
+task update3DCityDBGitSubmodule(type: Exec) {
     commandLine 'git', 'submodule', 'update', '--init', '--remote', "$rootDir/resources/3dcitydb"
 }
 
@@ -115,11 +111,7 @@ task build3DCityDB(type: GradleBuild, dependsOn: update3DCityDBGitSubmodule) {
 }
 
 // build 3dcitydb-web-map submodule
-task setWebMapGitBranch(type: Exec) {
-    commandLine 'git', 'submodule', 'set-branch', '--branch', project.webMapBranch, '--', "$rootDir/resources/3dcitydb-web-map"
-}
-
-task updateWebMapGitSubmodule(type: Exec, dependsOn: setWebMapGitBranch) {
+task updateWebMapGitSubmodule(type: Exec) {
     commandLine 'git', 'submodule', 'update', '--init', '--remote', "$rootDir/resources/3dcitydb-web-map"
 }
 
@@ -130,11 +122,7 @@ task buildWebMap(type: Zip, dependsOn: updateWebMapGitSubmodule) {
 }
 
 // build plugin-ade-manager submodule
-task setADEManagerPluginGitBranch(type: Exec) {
-    commandLine 'git', 'submodule', 'set-branch', '--branch', project.adePluginBranch, '--', "$rootDir/resources/plugins/plugin-ade-manager"
-}
-
-task updateADEManagerPluginGitSubmodule(type: Exec, dependsOn: setADEManagerPluginGitBranch) {
+task updateADEManagerPluginGitSubmodule(type: Exec) {
     commandLine 'git', 'submodule', 'update', '--init', '--remote', "$rootDir/resources/plugins/plugin-ade-manager"
 }
 
@@ -145,11 +133,7 @@ task buildADEManagerPlugin(type: GradleBuild, dependsOn: updateADEManagerPluginG
 }
 
 // build plugin-spreadsheet-generator submodule
-task setSpreadsheetGeneratorPluginGitBranch(type: Exec) {
-    commandLine 'git', 'submodule', 'set-branch', '--branch', project.spshgPluginBranch, '--', "$rootDir/resources/plugins/plugin-spreadsheet-generator"
-}
-
-task updateSpreadsheetGeneratorPluginGitSubmodule(type: Exec, dependsOn: setSpreadsheetGeneratorPluginGitBranch) {
+task updateSpreadsheetGeneratorPluginGitSubmodule(type: Exec) {
     commandLine 'git', 'submodule', 'update', '--init', '--remote', "$rootDir/resources/plugins/plugin-spreadsheet-generator"
 }
 
