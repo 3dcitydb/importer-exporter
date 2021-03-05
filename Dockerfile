@@ -53,7 +53,7 @@ RUN set -x && \
 
 ENV PATH=/impexp/bin:$PATH
 
-ENTRYPOINT [ "bin/impexp-entrypoint.sh" ]
+ENTRYPOINT [ "impexp-entrypoint.sh" ]
 
 # Labels ######################################################################
 LABEL maintainer="Bruno Willenborg"
