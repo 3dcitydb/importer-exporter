@@ -195,7 +195,7 @@ distributions {
             exclude {
                 it.getFile().getParentFile().compareTo(file("$rootDir/resources/samples")) == 0 ||
                 it.getFile().getParentFile().compareTo(file("$rootDir/resources/templates")) == 0 ||
-                it.getFile().getParentFile().compareTo(file("$rootDir/resources/3dcitydb-web-map")) == 0 ||
+                it.getFile().getParentFile().compareTo(file("$buildDir/tmp/3dcitydb-web-map")) == 0 ||
                 it.getFile().getParentFile().compareTo(file("$rootDir/resources/3dcitydb/build/install/3dcitydb")) == 0 ||
                 it.getFile().getParentFile().compareTo(file("$rootDir/resources/plugins/plugin-ade-manager/build/install")) == 0
             }
