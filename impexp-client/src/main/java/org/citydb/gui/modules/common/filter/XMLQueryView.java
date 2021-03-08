@@ -101,37 +101,35 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class XMLQueryView extends FilterView {
+public class XMLQueryView extends FilterView<QueryConfig> {
     private final Logger log = Logger.getInstance();
     private final ViewController viewController;
     private final SchemaMapping schemaMapping;
     private final DatabaseConnectionPool connectionPool;
-    private final Supplier<QueryConfig> queryConfigSupplier;
-    private final Consumer<QueryConfig> queryConfigConsumer;
 
     private JPanel component;
     private RSyntaxTextArea xmlText;
-
     private JButton newButton;
     private JButton duplicateButton;
     private JButton validateButton;
 
-    public XMLQueryView(ViewController viewController,
-                        Supplier<SimpleQuery> simpleQuerySupplier,
-                        Supplier<QueryConfig> queryConfigSupplier,
-                        Consumer<QueryConfig> queryConfigConsumer) {
-        super(simpleQuerySupplier);
-        this.viewController = viewController;
-        this.queryConfigSupplier = queryConfigSupplier;
-        this.queryConfigConsumer = queryConfigConsumer;
+    private Supplier<SimpleQuery> simpleQuerySupplier;
 
+    public XMLQueryView(ViewController viewController) {
+        this.viewController = viewController;
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
         connectionPool = DatabaseConnectionPool.getInstance();
 
         init();
+    }
+
+    public XMLQueryView withSimpleQuerySupplier(Supplier<SimpleQuery> simpleQuerySupplier) {
+        this.simpleQuerySupplier = simpleQuerySupplier;
+        duplicateButton.addActionListener(e -> SwingUtilities.invokeLater(this::setSimpleSettings));
+        duplicateButton.setVisible(true);
+        return this;
     }
 
     private void init() {
@@ -163,8 +161,8 @@ public class XMLQueryView extends FilterView {
         component.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.NONE, 0, 5, 0, 0));
 
         newButton.addActionListener(e -> SwingUtilities.invokeLater(this::setEmptyQuery));
-        duplicateButton.addActionListener(e -> SwingUtilities.invokeLater(this::setSimpleSettings));
         validateButton.addActionListener(e -> SwingUtilities.invokeLater(this::validate));
+        duplicateButton.setVisible(false);
 
         RSyntaxTextAreaHelper.installDefaultTheme(xmlText);
         PopupMenuDecorator.getInstance().decorate(xmlText);
@@ -282,7 +280,7 @@ public class XMLQueryView extends FilterView {
             BoundingBox envelope = simpleQuery.getBboxFilter().getExtent();
             if (envelope.getLowerCorner().isSetX() && envelope.getLowerCorner().isSetY()
                     && envelope.getUpperCorner().isSetX() && envelope.getUpperCorner().isSetY()) {
-                if (!isDefaultDatabaseSrs(envelope.getSrs()))
+                if (envelope.isSetSrs() && !isDefaultDatabaseSrs(envelope.getSrs()))
                     envelope.setSrs(envelope.getSrs().getSrid());
                 else
                     envelope.unsetSrs();
@@ -435,18 +433,6 @@ public class XMLQueryView extends FilterView {
     }
 
     @Override
-    public void doTranslation() {
-        newButton.setToolTipText(Language.I18N.getString("filter.label.xml.template"));
-        duplicateButton.setToolTipText(Language.I18N.getString("filter.label.xml.duplicate"));
-        validateButton.setToolTipText(Language.I18N.getString("filter.label.xml.validate"));
-    }
-
-    @Override
-    public void setEnabled(boolean enable) {
-
-    }
-
-    @Override
     public String getLocalizedTitle() {
         return null;
     }
@@ -467,19 +453,30 @@ public class XMLQueryView extends FilterView {
     }
 
     @Override
-    public void loadSettings() {
-        QueryConfig query = queryConfigSupplier.get();
-        xmlText.setText(marshalQuery(query, ObjectRegistry.getInstance().getConfig().getNamespaceFilter()));
+    public void doTranslation() {
+        newButton.setToolTipText(Language.I18N.getString("filter.label.xml.template"));
+        duplicateButton.setToolTipText(Language.I18N.getString("filter.label.xml.duplicate"));
+        validateButton.setToolTipText(Language.I18N.getString("filter.label.xml.validate"));
     }
 
     @Override
-    public void setSettings() {
-        QueryConfig query = unmarshalQuery();
-        queryConfigConsumer.accept(query);
+    public void setEnabled(boolean enabled) {
+        // nothing to do
+    }
+
+    @Override
+    public void loadSettings(QueryConfig queryConfig) {
+        xmlText.setText(marshalQuery(queryConfig, ObjectRegistry.getInstance().getConfig().getNamespaceFilter()));
+    }
+
+    @Override
+    public QueryConfig toSettings() {
+        return unmarshalQuery();
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {
-        return srs.getSrid() == 0 || (connectionPool.isConnected()
+        return srs.getSrid() == 0
+                || (connectionPool.isConnected()
                 && srs.getSrid() == connectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
     }
 }

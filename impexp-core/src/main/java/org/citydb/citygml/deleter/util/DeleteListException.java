@@ -28,7 +28,7 @@
 
 package org.citydb.citygml.deleter.util;
 
-public class DeleteListException extends RuntimeException {
+public class DeleteListException extends Exception {
 
 	public DeleteListException() {
 		super();

@@ -46,7 +46,8 @@ public enum CacheTableModel {
 	LIBRARY_OBJECT("LO"),
 	DEPRECATED_MATERIAL("DP"),
 	GROUP_TO_CITYOBJECT("GTC"),
-	GLOBAL_APPEARANCE("GA");
+	GLOBAL_APPEARANCE("GA"),
+	DELETE_LIST("DEL");
 
 	private final String value;
 

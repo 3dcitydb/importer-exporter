@@ -49,8 +49,8 @@ import org.citydb.query.filter.selection.operator.comparison.BinaryComparisonOpe
 import org.citydb.query.filter.selection.operator.comparison.ComparisonFactory;
 import org.citydb.query.filter.selection.operator.comparison.LikeOperator;
 import org.citydb.query.filter.selection.operator.comparison.NullOperator;
+import org.citydb.registry.ObjectRegistry;
 
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -61,12 +61,7 @@ public class ComparisonOperatorBuilder {
 	
 	protected ComparisonOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder) {
 		this.valueReferenceBuilder = valueReferenceBuilder;
-
-		try {
-			datatypeFactory = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
-			throw new RuntimeException("Failed to initialize datatype factory.", e);
-		}
+		datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
 	}
 
 	protected Predicate buildComparisonOperator(org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator operatorConfig) throws QueryBuildException {

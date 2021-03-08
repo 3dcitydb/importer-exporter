@@ -104,7 +104,8 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		properties.setUsername(connection.getUser());
 		properties.setPassword(connection.getPassword());
 		properties.setName(poolName);
-		properties.setDefaultAutoCommit(true);
+		properties.setDefaultAutoCommit(false);
+		properties.setRollbackOnReturn(true);
 
 		// set user-definable pool properties	
 		if (connection.getMaxActive() != null) properties.setMaxActive(connection.getMaxActive());

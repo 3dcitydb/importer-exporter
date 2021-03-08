@@ -46,7 +46,7 @@ import java.nio.file.Path;
 
 @CommandLine.Command(
         name = "export",
-        description = "Exports data in CityGML format.",
+        description = "Exports data in CityGML or CityJSON format.",
         versionProvider = ImpExpCli.class
 )
 public class ExportCommand extends CliCommand {

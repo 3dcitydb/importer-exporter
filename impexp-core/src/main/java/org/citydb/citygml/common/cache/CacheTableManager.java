@@ -48,12 +48,12 @@ public class CacheTableManager {
 	private final Connection cacheConnection;
 	private final Config config;
 
+	private final ConcurrentHashMap<CacheTableModel, CacheTable> cacheTables;
+	private final ConcurrentHashMap<CacheTableModel, BranchCacheTable> branchCacheTables;
+
 	private String cacheDir;
 	private AbstractDatabaseAdapter databaseAdapter;
 	private Connection databaseConnection;
-
-	private ConcurrentHashMap<CacheTableModel, CacheTable> cacheTables;
-	private ConcurrentHashMap<CacheTableModel, BranchCacheTable> branchCacheTables;
 
 	public CacheTableManager(int concurrencyLevel, Config config) throws SQLException, IOException {
 		if (config.getGlobalConfig().getCache().isUseDatabase()) {
@@ -165,6 +165,7 @@ public class CacheTableManager {
 			branchCacheTables.clear();
 
 			try {
+				cacheConnection.rollback();
 				cacheConnection.close();
 			} catch (SQLException e) {
 				//
@@ -172,7 +173,10 @@ public class CacheTableManager {
 
 			if (databaseConnection != null) {
 				try {
-					databaseConnection.close();
+					if (databaseConnection != cacheConnection) {
+						databaseConnection.rollback();
+						databaseConnection.close();
+					}
 				} catch (SQLException e) {
 					//
 				} finally {

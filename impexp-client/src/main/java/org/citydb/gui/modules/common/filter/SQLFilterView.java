@@ -31,7 +31,6 @@ package org.citydb.gui.modules.common.filter;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.gui.components.SQLExportFilterComponent;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.RSyntaxTextAreaHelper;
@@ -44,7 +43,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.function.Supplier;
 
-public class SQLFilterView extends FilterView {
+public class SQLFilterView extends FilterView<SelectOperator> {
+    private final Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier;
+
     private JPanel component;
     private RSyntaxTextArea sqlText;
     private RTextScrollPane scrollPane;
@@ -54,10 +55,7 @@ public class SQLFilterView extends FilterView {
     private int additionalRows;
     private int rowHeight;
 
-    private final Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier;
-
-    public SQLFilterView(Supplier<SimpleQuery> simpleQuerySupplier, Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier) {
-        super(simpleQuerySupplier);
+    public SQLFilterView(Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier) {
         this.sqlFilterComponentSupplier = sqlFilterComponentSupplier;
         init();
     }
@@ -96,8 +94,9 @@ public class SQLFilterView extends FilterView {
             component.revalidate();
             component.repaint();
 
-            if (!removeButton.isEnabled())
+            if (!removeButton.isEnabled()) {
                 removeButton.setEnabled(true);
+            }
         });
 
         removeButton.addActionListener(e -> {
@@ -110,29 +109,14 @@ public class SQLFilterView extends FilterView {
                 component.revalidate();
                 component.repaint();
 
-                if (additionalRows == 0)
+                if (additionalRows == 0) {
                     removeButton.setEnabled(false);
+                }
             }
         });
 
         RSyntaxTextAreaHelper.installDefaultTheme(sqlText);
         PopupMenuDecorator.getInstance().decorate(sqlText);
-    }
-
-    @Override
-    public void doTranslation() {
-        addButton.setToolTipText(Language.I18N.getString("filter.label.sql.increase"));
-        removeButton.setToolTipText(Language.I18N.getString("filter.label.sql.decrease"));
-    }
-
-    @Override
-    public void setEnabled(boolean enable) {
-        scrollPane.getHorizontalScrollBar().setEnabled(enable);
-        scrollPane.getVerticalScrollBar().setEnabled(enable);
-        scrollPane.getViewport().getView().setEnabled(enable);
-
-        addButton.setEnabled(enable);
-        removeButton.setEnabled(enable && additionalRows > 0);
     }
 
     @Override
@@ -152,42 +136,56 @@ public class SQLFilterView extends FilterView {
 
     @Override
     public Icon getIcon() {
-        return null;
+        return new FlatSVGIcon("org/citydb/gui/filter/sql.svg");
     }
 
     @Override
-    public void loadSettings() {
-        SimpleQuery query = simpleQuerySupplier.get();
+    public void doTranslation() {
+        addButton.setToolTipText(Language.I18N.getString("filter.label.sql.increase"));
+        removeButton.setToolTipText(Language.I18N.getString("filter.label.sql.decrease"));
+    }
 
-        SelectOperator sql = query.getSQLFilter();
-        sqlText.setText(sql.getValue());
+    @Override
+    public void setEnabled(boolean enabled) {
+        scrollPane.getHorizontalScrollBar().setEnabled(enabled);
+        scrollPane.getVerticalScrollBar().setEnabled(enabled);
+        scrollPane.getViewport().getView().setEnabled(enabled);
 
+        addButton.setEnabled(enabled);
+        removeButton.setEnabled(enabled && additionalRows > 0);
+    }
+
+    @Override
+    public void loadSettings(SelectOperator selectOperator) {
         additionalRows = sqlFilterComponentSupplier.get().getAdditionalRows();
+
         SwingUtilities.invokeLater(() -> {
+            Dimension size = scrollPane.getPreferredSize();
+            sqlText.setText(selectOperator.getValue());
+
             if (additionalRows > 0) {
-                Dimension size = scrollPane.getPreferredSize();
                 size.height += additionalRows * rowHeight;
-
-                scrollPane.setPreferredSize(size);
-                component.revalidate();
-                component.repaint();
-            } else
+            } else {
                 additionalRows = 0;
+            }
 
-            removeButton.setEnabled(additionalRows > 0);
+            scrollPane.setPreferredSize(size);
+            component.revalidate();
+            component.repaint();
+
+            removeButton.setEnabled(addButton.isEnabled() && additionalRows > 0);
         });
     }
 
     @Override
-    public void setSettings() {
-        SimpleQuery query = simpleQuerySupplier.get();
-
-        SelectOperator sql = query.getSQLFilter();
-        sql.reset();
+    public SelectOperator toSettings() {
+        SelectOperator selectOperator = new SelectOperator();
         String value = sqlText.getText().trim();
-        if (!value.isEmpty())
-            sql.setValue(value.replaceAll(";", " "));
+        if (!value.isEmpty()) {
+            selectOperator.setValue(value.replaceAll(";", " "));
+        }
 
         sqlFilterComponentSupplier.get().setAdditionalRows(additionalRows);
+        return selectOperator;
     }
 }

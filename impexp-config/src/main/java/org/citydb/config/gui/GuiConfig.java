@@ -27,7 +27,6 @@
  */
 package org.citydb.config.gui;
 
-import org.citydb.config.gui.components.SQLExportFilterComponent;
 import org.citydb.config.gui.database.DatabaseGuiConfig;
 import org.citydb.config.gui.exporter.ExportGuiConfig;
 import org.citydb.config.gui.importer.ImportGuiConfig;

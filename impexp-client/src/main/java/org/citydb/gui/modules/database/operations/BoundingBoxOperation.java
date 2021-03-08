@@ -31,38 +31,64 @@ import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.geometry.Position;
+import org.citydb.config.gui.database.DatabaseGuiConfig;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.database.DatabaseOperation;
 import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.config.project.exporter.SimpleQuery;
+import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.AbstractPathElement;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
+import org.citydb.event.global.ProgressBarEventType;
+import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.dialog.StatusDialog;
+import org.citydb.gui.modules.common.filter.FeatureVersionFilterView;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
+import org.citydb.query.Query;
+import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.builder.config.ConfigQueryBuilder;
+import org.citydb.query.builder.sql.BuildProperties;
+import org.citydb.query.builder.sql.SQLQueryBuilder;
 import org.citydb.registry.ObjectRegistry;
+import org.citydb.sqlbuilder.schema.Column;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.ProjectionToken;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.sqlbuilder.select.projection.WildCardColumn;
 import org.citygml4j.model.module.citygml.CoreModule;
 
 import javax.swing.*;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.namespace.QName;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BoundingBoxOperation extends DatabaseOperationView {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
-	private final DatabaseOperationsPanel parent;
 	private final ViewController viewController;
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final SchemaMapping schemaMapping;
@@ -77,8 +103,13 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	private JButton createMissingButton;
 	private JButton calculateButton;
 
+	private JCheckBox useFeatureVersionFilter;
+	private TitledPanel featureVersionPanel;
+	private FeatureVersionFilterView featureVersionFilter;
+
 	private final FeatureType cityObject;
 	private boolean isCreateBboxSupported;
+	private volatile boolean shouldRun;
 
 	private enum BoundingBoxMode {
 		FULL,
@@ -86,7 +117,6 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	}
 
 	public BoundingBoxOperation(DatabaseOperationsPanel parent, Config config) {
-		this.parent = parent;
 		this.config = config;
 		
 		viewController = parent.getViewController();
@@ -123,9 +153,18 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		createBboxPanel.add(createMissingButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		createBboxPanel.add(createAllButton, GuiUtil.setConstraints(0, 1, 0, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
 
-		component.add(calcBboxPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 15, 0, 0, 0));
-		component.add(createBboxPanel, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 15, 20, 0, 0));
-		component.add(calculateButton, GuiUtil.setConstraints(0, 2, 2, 1, 0, 0, GridBagConstraints.NONE, 15, 0, 10, 0));
+		useFeatureVersionFilter = new JCheckBox();
+		featureVersionFilter = new FeatureVersionFilterView();
+		featureVersionPanel = new TitledPanel()
+				.withIcon(featureVersionFilter.getIcon())
+				.withCollapseButton()
+				.withToggleButton(useFeatureVersionFilter)
+				.build(featureVersionFilter.getViewComponent());
+
+		component.add(calcBboxPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 15, 0, 0, 0));
+		component.add(createBboxPanel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 15, 20, 0, 0));
+		component.add(featureVersionPanel, GuiUtil.setConstraints(0, 1, 2, 1, 0, 0, GridBagConstraints.BOTH, 15, 0, 0, 0));
+		component.add(calculateButton, GuiUtil.setConstraints(0, 2, 2, 1, 0, 0, GridBagConstraints.NONE, 5, 0, 10, 0));
 
 		featureComboBox.addItemListener(e -> {
 			if (e.getStateChange() == ItemEvent.SELECTED)
@@ -152,6 +191,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				return null;
 			}
 		}.execute());
+
+		useFeatureVersionFilter.addActionListener(e -> setEnabledFeatureVersionFilter(true));
 	}
 
 	@Override
@@ -185,6 +226,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		createAllButton.setText(Language.I18N.getString("db.button.setbbox.all"));
 		createMissingButton.setText(Language.I18N.getString("db.button.setbbox.missing"));
 		calculateButton.setText(Language.I18N.getString("db.button.bbox"));
+		featureVersionPanel.setTitle(featureVersionFilter.getLocalizedTitle());
 	}
 
 	@Override
@@ -194,15 +236,18 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		bboxPanel.setEnabled(enable);
 		calculateButton.setEnabled(enable);
 		setEnabledBoundingBoxCalculation(enable);
+		featureVersionPanel.setEnabled(enable);
+		setEnabledFeatureVersionFilter(enable);
 	}
 
 	public void setEnabledBoundingBoxCalculation(boolean enable) {
 		if (enable) {
-			FeatureType selected = (FeatureType)featureComboBox.getSelectedItem();
-			if (selected != null) {		
-				ADEExtension extension = adeManager.getExtensionByObjectClassId(selected.getObjectClassId());
-				if (extension != null)
+			FeatureType featureType = (FeatureType) featureComboBox.getSelectedItem();
+			if (featureType != null) {
+				ADEExtension extension = adeManager.getExtensionByObjectClassId(featureType.getObjectClassId());
+				if (extension != null) {
 					enable = false;
+				}
 			}
 		}
 
@@ -210,19 +255,69 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		createMissingButton.setEnabled(enable && isCreateBboxSupported);
 	}
 
+	private void setEnabledFeatureVersionFilter(boolean enable) {
+		featureVersionFilter.setEnabled(enable && useFeatureVersionFilter.isSelected());
+	}
+
 	@Override
 	public void loadSettings() {
-		FeatureType featureType = schemaMapping.getFeatureType(config.getDatabaseConfig().getOperation().getBoundingBoxTypeName());
+		DatabaseOperation databaseOperation = config.getDatabaseConfig().getOperation();
+		FeatureType featureType = schemaMapping.getFeatureType(databaseOperation.getBoundingBoxTypeName());
 		featureComboBox.setSelectedItem(featureType != null ? featureType : cityObject);
-		bboxPanel.getSrsComboBox().setSelectedItem(config.getDatabaseConfig().getOperation().getBoundingBoxSrs());
+		bboxPanel.getSrsComboBox().setSelectedItem(databaseOperation.getBoundingBoxSrs());
+		useFeatureVersionFilter.setSelected(databaseOperation.isUseFeatureVersionFilter());
+		featureVersionFilter.loadSettings(databaseOperation.getFeatureVersionFilter());
+
+		DatabaseGuiConfig guiConfig = config.getGuiConfig().getDatabaseGuiConfig();
+		featureVersionPanel.setCollapsed(guiConfig.isCollapseFeatureVersionFilter());
 	}
 
 	@Override
 	public void setSettings() {
-		FeatureType featureType = (FeatureType)featureComboBox.getSelectedItem();
-		QName typeName = new QName(featureType.getSchema().getNamespaces().get(0).getURI(), featureType.getPath());		
-		config.getDatabaseConfig().getOperation().setBoundingBoxTypeName((typeName));
-		config.getDatabaseConfig().getOperation().setBoundingBoxSrs(bboxPanel.getSrsComboBox().getSelectedItem());
+		DatabaseOperation databaseOperation = config.getDatabaseConfig().getOperation();
+		FeatureType featureType = featureComboBox.getSelectedItem() != null ?
+				(FeatureType) featureComboBox.getSelectedItem() :
+				cityObject;
+
+		QName typeName = new QName(featureType.getSchema().getNamespaces().get(0).getURI(), featureType.getPath());
+		databaseOperation.setBoundingBoxTypeName((typeName));
+		databaseOperation.setBoundingBoxSrs(bboxPanel.getSrsComboBox().getSelectedItem());
+		databaseOperation.setUseFeatureVersionFilter(useFeatureVersionFilter.isSelected());
+		databaseOperation.setFeatureVersionFilter(featureVersionFilter.toSettings());
+
+		DatabaseGuiConfig guiConfig = config.getGuiConfig().getDatabaseGuiConfig();
+		guiConfig.setCollapseFeatureVersionFilter(featureVersionPanel.isCollapsed());
+	}
+
+	private boolean checkSettings() {
+		DatabaseOperation databaseOperation = config.getDatabaseConfig().getOperation();
+
+		// feature version filter
+		if (databaseOperation.isUseFeatureVersionFilter()) {
+			SimpleFeatureVersionFilter featureVersionFilter = databaseOperation.getFeatureVersionFilter();
+
+			if (featureVersionFilter.getMode() != SimpleFeatureVersionFilterMode.LATEST) {
+				if (!featureVersionFilter.isSetStartDate()) {
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+							Language.I18N.getString("export.dialog.error.featureVersion.startDate"));
+					return false;
+				}
+
+				if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN) {
+					if (!featureVersionFilter.isSetEndDate()) {
+						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+								Language.I18N.getString("export.dialog.error.featureVersion.endDate"));
+						return false;
+					} else if (featureVersionFilter.getStartDate().compare(featureVersionFilter.getEndDate()) != DatatypeConstants.LESSER) {
+						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+								Language.I18N.getString("export.dialog.error.featureVersion.range"));
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 
 	private void calcBoundingBox() {
@@ -231,6 +326,12 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 		try {
 			viewController.clearConsole();
+			setSettings();
+
+			if (!checkSettings()) {
+				return;
+			}
+
 			viewController.setStatusText(Language.I18N.getString("main.status.database.bbox.label"));
 
 			log.info("Calculating bounding box...");			
@@ -251,61 +352,46 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			});
 
 			try {
-				FeatureType featureType = (FeatureType)featureComboBox.getSelectedItem();
-				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(getObjectClassIds(featureType, true));
+				FeatureType featureType = featureComboBox.getSelectedItem() != null ?
+						(FeatureType) featureComboBox.getSelectedItem() :
+						cityObject;
+
+				Query query = buildQuery(featureType);
+				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(query, schemaMapping);
 
 				if (bbox != null) {
-					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 
-							bbox.getLowerCorner().getY() != Double.MAX_VALUE &&
-							bbox.getUpperCorner().getX() != -Double.MAX_VALUE && 
-							bbox.getUpperCorner().getY() != -Double.MAX_VALUE) {
-
-						DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
-						DatabaseSrs targetSrs = bboxPanel.getSrsComboBox().getSelectedItem();
-
-						if (targetSrs.isSupported() && targetSrs.getSrid() != dbSrs.getSrid()) {
-							try {
-								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transform2D(bbox, dbSrs, targetSrs);
-							} catch (SQLException e) {
-								//
-							}					
-						}
-
-						bboxPanel.setBoundingBox(bbox);	
+					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE
+							&& bbox.getLowerCorner().getY() != Double.MAX_VALUE
+							&& bbox.getUpperCorner().getX() != -Double.MAX_VALUE
+							&& bbox.getUpperCorner().getY() != -Double.MAX_VALUE) {
+						bboxPanel.setBoundingBox(bbox);
 						BoundingBoxClipboardHandler.getInstance().putBoundingBox(bbox);
-						log.info("Bounding box for " + featureType + " features successfully calculated.");							
+						log.info("Bounding box for " + featureType + " features successfully calculated.");
 					} else {
 						bboxPanel.clearBoundingBox();
 						log.warn("The bounding box could not be calculated.");
-						log.warn("Either the database does not contain " + featureType + " features or their ENVELOPE attribute is not set.");
+						log.warn("Either the database does not contain valid " + featureType + " features or their ENVELOPE attribute is not set.");
 					}
-
-				} else
+				} else {
 					log.warn("Calculation of bounding box aborted.");
+				}
 
 				SwingUtilities.invokeLater(bboxDialog::dispose);
-
-			} catch (SQLException sqlEx) {
+			} catch (SQLException | QueryBuildException e) {
 				SwingUtilities.invokeLater(bboxDialog::dispose);
 
 				bboxPanel.clearBoundingBox();
 
-				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Language.I18N.getString("db.dialog.error.bbox");
-				Object[] args = new Object[]{ sqlExMsg };
-				String result = MessageFormat.format(text, args);
-
 				JOptionPane.showMessageDialog(
-						viewController.getTopFrame(), 
-						result, 
+						viewController.getTopFrame(),
+						MessageFormat.format(Language.I18N.getString("db.dialog.error.bbox"), e.getMessage().trim()),
 						Language.I18N.getString("common.dialog.error.db.title"),
 						JOptionPane.ERROR_MESSAGE);
 
-				log.error("SQL error: " + sqlExMsg);
+				log.error("Failed to calculate bounding box.", e);
 			} finally {		
 				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}
-
 		} finally {
 			lock.unlock();
 		}
@@ -317,88 +403,141 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 		try {
 			viewController.clearConsole();
+			setSettings();
+
+			if (!checkSettings()) {
+				return;
+			}
+
 			viewController.setStatusText(Language.I18N.getString("main.status.database.setbbox.label"));
 
-			FeatureType featureType = (FeatureType)featureComboBox.getSelectedItem();			
-			if (mode == BoundingBoxMode.FULL)
-				log.info("Recreating all bounding boxes for " + featureType + " features...");
-			else
-				log.info("Creating missing bounding boxes for " + featureType + " features...");
+			FeatureType featureType = featureComboBox.getSelectedItem() != null ?
+					(FeatureType) featureComboBox.getSelectedItem() :
+					cityObject;
 
-			if (featureType == cityObject && !adeManager.getEnabledExtensions().isEmpty())
+			if (mode == BoundingBoxMode.FULL) {
+				log.info("Recreating all bounding boxes for " + featureType + " features...");
+			} else {
+				log.info("Creating missing bounding boxes for " + featureType + " features...");
+			}
+
+			if (featureType == cityObject && !adeManager.getEnabledExtensions().isEmpty()) {
 				log.warn("NOTE: This operation does not work on ADE features.");
-			
+			}
+
+			EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(),
 					Language.I18N.getString("db.dialog.setbbox.window"), 
 					Language.I18N.getString("db.dialog.setbbox.title"), 
 					null,
 					Language.I18N.getString("db.dialog.setbbox.details"), 
-					true);
+					true,
+					eventDispatcher);
 
-			bboxDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
-					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
+			shouldRun = true;
+			bboxDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(() -> shouldRun = false));
 
 			SwingUtilities.invokeLater(() -> {
 				bboxDialog.setLocationRelativeTo(viewController.getTopFrame());
 				bboxDialog.setVisible(true);
 			});
 
-			try {
-				List<Integer> objectClassIds = getObjectClassIds(featureType, false);
-				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(objectClassIds, mode == BoundingBoxMode.PARTIAL);
+			String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
+			try (Connection connection = dbConnectionPool.getConnection()) {
+				connection.setAutoCommit(false);
 
-				if (bbox != null) {
-					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 
-							bbox.getLowerCorner().getY() != Double.MAX_VALUE &&
-							bbox.getUpperCorner().getX() != -Double.MAX_VALUE && 
-							bbox.getUpperCorner().getY() != -Double.MAX_VALUE) {
+				Query query = buildQuery(featureType);
+				SQLQueryBuilder builder = new SQLQueryBuilder(
+						schemaMapping,
+						dbConnectionPool.getActiveDatabaseAdapter(),
+						BuildProperties.defaults().addProjectionColumn(MappingConstants.ID));
 
-						DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
-						DatabaseSrs targetSrs = bboxPanel.getSrsComboBox().getSelectedItem();
+				Select select = builder.buildQuery(query);
+				if (mode == BoundingBoxMode.PARTIAL) {
+					ProjectionToken token = select.getProjection().stream()
+							.filter(v -> v instanceof Column && ((Column) v).getName().equals(MappingConstants.ID))
+							.findFirst()
+							.orElseThrow(() -> new QueryBuildException("Failed to build query due to unexpected SQL projection clause."));
 
-						if (targetSrs.isSupported() && targetSrs.getSrid() != dbSrs.getSrid()) {
+					select.addSelection(ComparisonFactory.isNull(((Column) token).getTable().getColumn(MappingConstants.ENVELOPE)));
+				}
+
+				BoundingBox bbox = new BoundingBox(
+						new Position(Double.MAX_VALUE, Double.MAX_VALUE),
+						new Position(-Double.MAX_VALUE, -Double.MAX_VALUE),
+						query.getTargetSrs()
+				);
+
+				long hits = getNumberMatched(select, connection);
+				if (hits > 0) {
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
+
+					try (PreparedStatement stmt = dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().prepareStatement(select, connection);
+						 ResultSet rs = stmt.executeQuery()) {
+						while (shouldRun && rs.next()) {
+							long objectId = rs.getLong(1);
+							BoundingBox extent = dbConnectionPool.getActiveDatabaseAdapter().getUtil()
+									.createBoundingBox(schema, objectId, mode == BoundingBoxMode.PARTIAL, connection);
+
+							bbox.update(extent);
+							eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+						}
+					} catch (SQLException e) {
+						connection.rollback();
+						throw e;
+					}
+				}
+
+				if (shouldRun) {
+					connection.commit();
+
+					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE
+							&& bbox.getLowerCorner().getY() != Double.MAX_VALUE
+							&& bbox.getUpperCorner().getX() != -Double.MAX_VALUE
+							&& bbox.getUpperCorner().getY() != -Double.MAX_VALUE) {
+						DatabaseSrs sourceSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
+						DatabaseSrs targetSrs = query.getTargetSrs();
+
+						if (targetSrs != null
+								&& targetSrs.isSupported()
+								&& targetSrs.getSrid() != sourceSrs.getSrid()) {
 							try {
-								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transform2D(bbox, dbSrs, targetSrs);
+								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transform2D(bbox, sourceSrs, targetSrs);
 							} catch (SQLException e) {
 								//
-							}					
+							}
 						}
 
-						bboxPanel.setBoundingBox(bbox);	
+						bboxPanel.setBoundingBox(bbox);
 						BoundingBoxClipboardHandler.getInstance().putBoundingBox(bbox);
-						log.info("Bounding box for " + featureType + " features successfully created.");							
+						log.info("Bounding box for " + featureType + " features successfully created.");
 					} else {
 						bboxPanel.clearBoundingBox();
 						log.warn("The bounding boxes could not be created.");
-						log.warn("Check whether the database contains " + featureType + " features" + (mode == BoundingBoxMode.PARTIAL ? " with missing bounding boxes." : "."));
+						log.warn("Check whether the database contains valid " + featureType + " features" +
+								(mode == BoundingBoxMode.PARTIAL ? " with missing bounding boxes." : "."));
 					}
-
-				} else
+				} else {
 					log.warn("Creation of bounding boxes aborted.");
+					connection.rollback();
+				}
 
 				SwingUtilities.invokeLater(bboxDialog::dispose);
-
-			} catch (SQLException sqlEx) {
+			} catch (SQLException | QueryBuildException e) {
 				SwingUtilities.invokeLater(bboxDialog::dispose);
 
 				bboxPanel.clearBoundingBox();
 
-				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Language.I18N.getString("db.dialog.error.setbbox");
-				Object[] args = new Object[]{ sqlExMsg };
-				String result = MessageFormat.format(text, args);
-
 				JOptionPane.showMessageDialog(
-						viewController.getTopFrame(), 
-						result, 
+						viewController.getTopFrame(),
+						MessageFormat.format(Language.I18N.getString("db.dialog.error.setbbox"), e.getMessage().trim()),
 						Language.I18N.getString("common.dialog.error.db.title"),
 						JOptionPane.ERROR_MESSAGE);
 
-				log.error("SQL error: " + sqlExMsg);
+				log.error("Failed to create bounding boxes.", e);
 			} finally {		
 				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}
-
 		} finally {
 			lock.unlock();
 		}
@@ -409,33 +548,54 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		
 		featureComboBox.addItem(cityObject);
 		schemaMapping.listTopLevelFeatureTypes(true).stream()
-		.sorted(Comparator.comparing(AbstractPathElement::getPath))
+		.sorted(Comparator.comparing(AbstractPathElement::toString))
 		.forEach(featureType -> {
 			ADEExtension extension = adeManager.getExtensionByObjectClassId(featureType.getObjectClassId());
 			if (extension == null || extension.isEnabled())
 				featureComboBox.addItem(featureType);			
 		});
 	}
-	
-	private List<Integer> getObjectClassIds(FeatureType featureType, boolean fanOutCityObject) {
-		List<Integer> objectClassIds = new ArrayList<>();
-		if (featureType == cityObject) {
-			if (fanOutCityObject) {
-				for (FeatureType topLevelType : schemaMapping.listTopLevelFeatureTypes(true))
-					objectClassIds.add(topLevelType.getObjectClassId());
-			} else
-				objectClassIds.add(0);
-		} else 
-			objectClassIds.add(featureType.getObjectClassId());
 
-		return objectClassIds;
+	private Query buildQuery(FeatureType featureType) throws QueryBuildException {
+		SimpleQuery simpleQuery = new SimpleQuery();
+
+		// set target reference system
+		simpleQuery.setTargetSrs(bboxPanel.getSrsComboBox().getSelectedItem());
+
+		// set feature type filter
+		simpleQuery.setUseTypeNames(true);
+		FeatureTypeFilter featureTypeFilter = new FeatureTypeFilter();
+
+		QName typeName = new QName(featureType.getSchema().getNamespaces().get(0).getURI(), featureType.getPath());
+		featureTypeFilter.addTypeName(typeName);
+		simpleQuery.setFeatureTypeFilter(featureTypeFilter);
+
+		// set feature version filter
+		simpleQuery.setUseFeatureVersionFilter(config.getDatabaseConfig().getOperation().isUseFeatureVersionFilter());
+		simpleQuery.setFeatureVersionFilter(config.getDatabaseConfig().getOperation().getFeatureVersionFilter());
+
+		// build query according to the above two filters
+		ConfigQueryBuilder builder = new ConfigQueryBuilder(schemaMapping, dbConnectionPool.getActiveDatabaseAdapter());
+		return builder.buildQuery(simpleQuery, config.getNamespaceFilter());
+	}
+
+	private long getNumberMatched(Select select, Connection conn) throws SQLException {
+		Select hitsQuery = new Select(select)
+				.unsetOrderBy()
+				.removeProjectionIf(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
+
+		hitsQuery = new Select().addProjection(new Function("count", new WildCardColumn(new Table(hitsQuery), false)));
+		try (PreparedStatement stmt = dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().prepareStatement(hitsQuery, conn);
+			 ResultSet rs = stmt.executeQuery()) {
+			return rs.next() ? rs.getLong(1) : 0;
+		}
 	}
 
 	@Override
 	public void handleDatabaseConnectionStateEvent(DatabaseConnectionStateEvent event) {
-		if (event.wasConnected())
+		if (event.wasConnected()) {
 			bboxPanel.clearBoundingBox();
-		else {
+		} else {
 			isCreateBboxSupported = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
 			SwingUtilities.invokeLater(() -> {
 				FeatureType selected = (FeatureType)featureComboBox.getSelectedItem();
@@ -444,5 +604,4 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			});
 		}
 	}
-
 }

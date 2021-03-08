@@ -42,6 +42,8 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.database.DatabaseController;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -58,6 +60,7 @@ import org.citydb.util.Util;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.datatype.DatatypeConstants;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -88,8 +91,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	private JButton browseButton;
 	private FilterPanel filterPanel;
 	private JButton exportButton;
-	private JButton switchFilterModeButton;
-	private boolean useSimpleFilter;
+	private JToggleButton simpleFilterButton;
+	private JToggleButton xmlQueryButton;
 
 	public ExportPanel(ViewController viewController, Config config) {
 		this.viewController = viewController;
@@ -104,7 +107,18 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		browseButton = new JButton();
 		filterPanel = new FilterPanel(viewController, config);
 		exportButton = new JButton();
-		switchFilterModeButton = new JButton();
+		simpleFilterButton = new JToggleButton();
+		xmlQueryButton = new JToggleButton();
+
+		JToolBar toolBar = new JToolBar();
+		toolBar.setBorder(BorderFactory.createEmptyBorder());
+		toolBar.setFloatable(false);
+		toolBar.add(simpleFilterButton);
+		toolBar.add(xmlQueryButton);
+
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(simpleFilterButton);
+		buttonGroup.add(xmlQueryButton);
 
 		browseButton.addActionListener(e -> saveFile(Language.I18N.getString("main.tabbedPane.export")));
 
@@ -135,7 +149,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridBagLayout());
 		buttonPanel.add(exportButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
-		buttonPanel.add(switchFilterModeButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
+		buttonPanel.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
 
 		add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
 		add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -145,31 +159,32 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		browseText.setDropTarget(dropTarget);
 		setDropTarget(dropTarget);
 
-		switchFilterModeButton.addActionListener(e -> switchFilterMode());
+		simpleFilterButton.addActionListener(e -> switchFilterMode());
+		xmlQueryButton.addActionListener(e -> switchFilterMode());
 	}
 
 	private void switchFilterMode() {
-		useSimpleFilter = !useSimpleFilter;
-		filterPanel.showFilterDialog(useSimpleFilter);
-		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
+		filterPanel.showFilterDialog(simpleFilterButton.isSelected());
 	}
 
 	public void doTranslation() {
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		exportButton.setText(Language.I18N.getString("export.button.export"));
-		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
+		simpleFilterButton.setText(Language.I18N.getString("filter.button.mode.simple"));
+		xmlQueryButton.setText(Language.I18N.getString("filter.button.mode.xml"));
 		filterPanel.doTranslation();
 	}
 
 	public void loadSettings() {
-		useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
 		filterPanel.loadSettings();
+		boolean useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
+		simpleFilterButton.setSelected(useSimpleFilter);
+		xmlQueryButton.setSelected(!useSimpleFilter);
 		filterPanel.showFilterDialog(useSimpleFilter);
-		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
 	}
 
 	public void setSettings() {
-		config.getExportConfig().setUseSimpleQuery(useSimpleFilter);
+		config.getExportConfig().setUseSimpleQuery(simpleFilterButton.isSelected());
 
 		try {
 			Paths.get(browseText.getText());
@@ -202,14 +217,39 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			if (config.getExportConfig().isUseSimpleQuery()) {
 				SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
+				// feature version filter
+				if (query.isUseFeatureVersionFilter()) {
+					SimpleFeatureVersionFilter featureVersionFilter = query.getFeatureVersionFilter();
+
+					if (featureVersionFilter.getMode() != SimpleFeatureVersionFilterMode.LATEST) {
+						if (!featureVersionFilter.isSetStartDate()) {
+							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+									Language.I18N.getString("export.dialog.error.featureVersion.startDate"));
+							return;
+						}
+
+						if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN) {
+							if (!featureVersionFilter.isSetEndDate()) {
+								viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+										Language.I18N.getString("export.dialog.error.featureVersion.endDate"));
+								return;
+							} else if (featureVersionFilter.getStartDate().compare(featureVersionFilter.getEndDate()) != DatatypeConstants.LESSER) {
+								viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+										Language.I18N.getString("export.dialog.error.featureVersion.range"));
+								return;
+							}
+						}
+					}
+				}
+
 				// attribute filter
 				if (query.isUseAttributeFilter()) {
 					SimpleAttributeFilter attributeFilter = query.getAttributeFilter();
 					if (!attributeFilter.getResourceIdFilter().isSetResourceIds()
 							&& !attributeFilter.getNameFilter().isSetLiteral()
 							&& !attributeFilter.getLineageFilter().isSetLiteral()) {
-						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-								Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
+						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+								Language.I18N.getString("common.dialog.error.incorrectData.attributes"));
 						return;
 					}
 				}
@@ -217,14 +257,14 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				// SQL filter
 				if (query.isUseSQLFilter()
 						&& !query.getSQLFilter().isSetValue()) {
-					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("export.dialog.error.incorrectData.sql"));
 					return;
 				}
 
 				// lod filter
 				if (query.isUseLodFilter() && !query.getLodFilter().isSetAnyLod()) {
-					viewController.errorMessage(Language.I18N.getString("export.dialog.error.lod"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("export.dialog.error.lod.noneSelected"));
 					return;
 				}
@@ -235,7 +275,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
 							|| (counterFilter.isSetCount() && counterFilter.getCount() < 0)
 							|| (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
-						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 								Language.I18N.getString("export.dialog.error.incorrectData.counter"));
 						return;
 					}
@@ -252,7 +292,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					Double yMax = bbox.getUpperCorner().getY();
 
 					if (xMin == null || yMin == null || xMax == null || yMax == null) {
-						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 								Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
 						return;
 					}
@@ -265,14 +305,14 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 
 				// feature types
 				if (query.isUseTypeNames() && query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
-					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
 					return;
 				}
 			} else {
 				QueryConfig query = config.getExportConfig().getQuery();
 				if (query.hasLocalProperty("unmarshallingFailed")) {
-					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 							Language.I18N.getString("common.dialog.error.incorrectData.xmlQuery"));
 					return;
 				}

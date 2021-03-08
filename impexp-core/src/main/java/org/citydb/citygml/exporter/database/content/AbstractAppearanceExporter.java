@@ -126,7 +126,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 				surfaceData.getColumn("id"), surfaceData.getColumn("objectclass_id"), surfaceData.getColumn("gmlid"), surfaceData.getColumn("name"), surfaceData.getColumn("name_codespace"), surfaceData.getColumn("description"),
 				surfaceData.getColumn("is_front"), surfaceData.getColumn("x3d_shininess"), surfaceData.getColumn("x3d_transparency"), surfaceData.getColumn("x3d_ambient_intensity"),
 				surfaceData.getColumn("x3d_specular_color"), surfaceData.getColumn("x3d_diffuse_color"), surfaceData.getColumn("x3d_emissive_color"), surfaceData.getColumn("x3d_is_smooth"),
-				surfaceData.getColumn("tex_image_id"), new Function("coalesce", new Function(getLength, texImage.getColumn("tex_image_data")), new IntegerLiteral(0)),
+				surfaceData.getColumn("tex_image_id"), new Function("coalesce", new Function(getLength, texImage.getColumn("tex_image_data")), new IntegerLiteral(-1)),
 				texImage.getColumn("tex_image_uri"), texImage.getColumn("tex_mime_type"), texImage.getColumn("tex_mime_type_codespace"),
 				new Function("lower", surfaceData.getColumn("tex_texture_type")), new Function("lower", surfaceData.getColumn("tex_wrap_mode")),
 				surfaceData.getColumn("tex_border_color"), surfaceData.getColumn("gt_prefer_worldfile"), surfaceData.getColumn("gt_orientation"),
@@ -335,7 +335,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 			long texImageId = rs.getLong(21);			
 			if (texImageId != 0) {
-				long dbImageSize = rs.getLong(22);
+				long imageSize = rs.getLong(22);
 
 				String imageURI = rs.getString(23);
 				if (uniqueFileNames) {
@@ -351,7 +351,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 				// export texture image from database
 				if (exportTextureImage && (uniqueFileNames || !texImageIds.contains(texImageId))) {
-					if (dbImageSize > 0) {
+					if (imageSize > 0) {
 						DBXlinkTextureFile xlink = new DBXlinkTextureFile(
 								texImageId,
 								fileName);
@@ -361,7 +361,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 						else
 							abstractTexture.setLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK, xlink);
 
-					} else {
+					} else if (imageSize == 0) {
 						log.warn(exporter.getObjectSignature(objectClassId, surfaceDataId) +
 								": Skipping 0 byte texture file '" + imageURI + "'.");
 					}

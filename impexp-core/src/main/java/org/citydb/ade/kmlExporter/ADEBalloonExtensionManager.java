@@ -32,6 +32,8 @@ import org.citydb.ade.ADEExtensionManager;
 import org.citydb.registry.ObjectRegistry;
 
 import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ADEBalloonExtensionManager {
 	private static ADEBalloonExtensionManager instance;
@@ -49,7 +51,13 @@ public class ADEBalloonExtensionManager {
 			return ((ADEBalloonExtension) extension);
 
 		return null;
-}
+	}
+
+	public List<ADEExtension> getUnsupportedADEExtensions() {
+		return ADEExtensionManager.getInstance().getEnabledExtensions()
+				.stream().filter(ade -> getBalloonExtension(ade) == null)
+				.collect(Collectors.toList());
+	}
 
 	public synchronized ADEBalloonManager getBalloonManager(ADEExtension adeExtension) {
 		ADEBalloonManager adeBalloonManager = null;

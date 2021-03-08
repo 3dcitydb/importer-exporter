@@ -154,7 +154,7 @@ public abstract class AbstractPathElement {
 		if (!schema.isSetXMLPrefix())
 			schema.generateXMLPrefix();
 		
-		return new StringBuilder(schema.getXMLPrefix()).append(":").append(path).toString();
+		return schema.getXMLPrefix() + ":" + path;
 	}
 	
 }

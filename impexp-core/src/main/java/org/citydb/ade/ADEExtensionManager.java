@@ -290,7 +290,7 @@ public class ADEExtensionManager {
 			for (Entry<String, List<ADEExtensionException>> entry : exceptions.entrySet()) {
 				log.error("Failed to initialize the ADE extension " + entry.getKey());
 				for (ADEExtensionException e : entry.getValue()) {
-					log.error("Cause: " + e.getMessage(), e);
+					log.error("Caused by: " + e.getMessage(), e.getCause());
 				}
 			}
 		}

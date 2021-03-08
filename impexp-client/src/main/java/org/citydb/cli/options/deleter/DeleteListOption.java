@@ -28,12 +28,12 @@
 
 package org.citydb.cli.options.deleter;
 
-import org.citydb.citygml.deleter.util.DeleteListParser;
+import org.citydb.config.project.deleter.DeleteList;
+import org.citydb.config.project.deleter.DeleteListIdType;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class DeleteListOption implements CliOption {
@@ -59,34 +59,50 @@ public class DeleteListOption implements CliOption {
             description = "Type of id column value: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Type type;
 
-    @CommandLine.Option(names = {"-D", "--delimiter"}, paramLabel = "<char>", defaultValue = ",",
-            description = "Delimiter to use for splitting lines (default: ${DEFAULT-VALUE}).")
-    private String delimiter;
-
     @CommandLine.Option(names = "--no-header", negatable = true, defaultValue = "true",
             description = "CSV file uses a header row (default: ${DEFAULT-VALUE}).")
     private boolean header;
 
-    @CommandLine.Option(names = "--quote", paramLabel = "<char>", defaultValue = "\"",
-            description = "Character used as quote (default: ${DEFAULT-VALUE}).")
-    private String quote;
+    @CommandLine.Option(names = {"-D", "--delimiter"}, paramLabel = "<string>", defaultValue = ",",
+            description = "Delimiter used for separating values (default: ${DEFAULT-VALUE}).")
+    private String delimiter;
 
-    @CommandLine.Option(names = "--comment-start", paramLabel = "<marker>", defaultValue = "#",
-            description = "Marker used to start a line comment (default: ${DEFAULT-VALUE}).")
-    private String commentStart;
+    @CommandLine.Option(names = {"-Q", "--quote"}, paramLabel = "<char>", defaultValue = "\"",
+            description = "Character used to enclose the column values (default: ${DEFAULT-VALUE}).")
+    private Character quote;
 
-    public DeleteListParser toDeleteListParser() {
-        DeleteListParser parser = new DeleteListParser(file)
-                .withIdType(type == Type.db ? DeleteListParser.IdType.DATABASE_ID : DeleteListParser.IdType.RESOURCE_ID)
-                .withHeader(header)
-                .withDelimiter(delimiter)
-                .withQuoteChar(quote.charAt(0))
-                .withCommentStart(commentStart)
-                .withEncoding(encoding != null ? Charset.forName(encoding) : StandardCharsets.UTF_8);
+    @CommandLine.Option(names = "--quote-escape", paramLabel = "<char>", defaultValue = "\"",
+            description = "Character used for escaping quotes (default: ${DEFAULT-VALUE}).")
+    private Character escape;
 
-        return name != null ?
-                parser.withIdColumn(name) :
-                parser.withIdColumn(index != null ? index : 1);
+    @CommandLine.Option(names = {"-M", "--comment-marker"}, paramLabel = "<char>", defaultValue = "#",
+            description = "Marker used to start a line comment (default: ${DEFAULT-VALUE}). " +
+                    "Use 'none' to disable comments.")
+    private String comment;
+
+    @CommandLine.Option(names = {"-w", "--delete-list-preview"},
+            description = "Print a preview of the delete list and exit.")
+    private boolean preview;
+
+    public boolean isPreview() {
+        return preview;
+    }
+
+    public DeleteList toDeleteList() {
+        DeleteList deleteList = new DeleteList();
+
+        deleteList.setFile(file.toAbsolutePath().toString());
+        deleteList.setEncoding(encoding);
+        deleteList.setIdColumnName(name);
+        deleteList.setIdColumnIndex(index != null ? index : 1);
+        deleteList.setIdType(type == Type.db ? DeleteListIdType.DATABASE_ID : DeleteListIdType.RESOURCE_ID);
+        deleteList.setDelimiter(delimiter);
+        deleteList.setHasHeader(header);
+        deleteList.setQuoteCharacter(quote);
+        deleteList.setQuoteEscapeCharacter(escape);
+        deleteList.setCommentCharacter(comment != null && !comment.isEmpty() ? comment.charAt(0) : null);
+
+        return deleteList;
     }
 
     @Override
@@ -106,9 +122,11 @@ public class DeleteListOption implements CliOption {
                     "Error: The file encoding " + encoding + " is not supported");
         }
 
-        if (quote != null && quote.length() > 1) {
+        if ("none".equals(comment)) {
+            comment = null;
+        } else if (comment != null && comment.length() > 1) {
             throw new CommandLine.ParameterException(commandLine,
-                    "Error: --quote must be a single character but was '" + quote + "'");
+                    "Invalid value for option '--comment-marker': '" + comment + "' is not a single character");
         }
     }
 }

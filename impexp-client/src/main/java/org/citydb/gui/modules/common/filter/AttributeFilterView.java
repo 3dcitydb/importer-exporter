@@ -28,75 +28,67 @@
 
 package org.citydb.gui.modules.common.filter;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.function.Supplier;
 
-public class AttributeFilterView extends FilterView {
+public class AttributeFilterView extends FilterView<SimpleAttributeFilter> {
     private JPanel component;
-
     private JLabel resourceIdLabel;
     private JTextField resourceIdText;
     private JLabel nameLabel;
     private JTextField nameText;
     private JLabel lineageLabel;
     private JTextField lineageText;
+    private int row;
 
-    public AttributeFilterView(Supplier<SimpleQuery> simpleQuerySupplier) {
-        super(simpleQuerySupplier);
+    private boolean useNameFilter;
+    private boolean useLineageFilter;
+
+    public AttributeFilterView() {
         init();
+    }
+
+    public AttributeFilterView withNameFilter() {
+        useNameFilter = true;
+        nameLabel = new JLabel();
+        nameText = new JTextField();
+        component.add(nameLabel, GuiUtil.setConstraints(0, ++row, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
+        component.add(nameText, GuiUtil.setConstraints(1, row, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+        PopupMenuDecorator.getInstance().decorate(nameText);
+
+        return this;
+    }
+
+    public AttributeFilterView withLineageFilter() {
+        useLineageFilter = true;
+        lineageLabel = new JLabel();
+        lineageText = new JTextField();
+        component.add(lineageLabel, GuiUtil.setConstraints(0, ++row, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
+        component.add(lineageText, GuiUtil.setConstraints(1, row, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+        PopupMenuDecorator.getInstance().decorate(lineageText);
+
+        return this;
     }
 
     private void init() {
         component = new JPanel();
         component.setLayout(new GridBagLayout());
 
+        // resource id filter
         resourceIdLabel = new JLabel();
         resourceIdText = new JTextField();
-        nameLabel = new JLabel();
-        nameText = new JTextField();
-        lineageLabel = new JLabel();
-        lineageText = new JTextField();
-
-        // resource id filter
-        component.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
-        component.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
-
-        // name filter
-        component.add(nameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
-        component.add(nameText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
-
-        // citydb:lineage filter
-        component.add(lineageLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-        component.add(lineageText, GuiUtil.setConstraints(1, 2, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-
-        PopupMenuDecorator.getInstance().decorate(nameText, resourceIdText, lineageText);
-    }
-
-
-    @Override
-    public void doTranslation() {
-        resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
-        nameLabel.setText(Language.I18N.getString("filter.label.name"));
-        lineageLabel.setText(Language.I18N.getString("filter.label.lineage"));
-    }
-
-    @Override
-    public void setEnabled(boolean enable) {
-        resourceIdLabel.setEnabled(enable);
-        resourceIdText.setEnabled(enable);
-        nameLabel.setEnabled(enable);
-        nameText.setEnabled(enable);
-        lineageLabel.setEnabled(enable);
-        lineageText.setEnabled(enable);
+        component.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+        component.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+        PopupMenuDecorator.getInstance().decorate(resourceIdText);
     }
 
     @Override
@@ -116,48 +108,81 @@ public class AttributeFilterView extends FilterView {
 
     @Override
     public Icon getIcon() {
-        return null;
+        return new FlatSVGIcon("org/citydb/gui/filter/attribute.svg");
     }
 
     @Override
-    public void loadSettings() {
-        SimpleQuery query = simpleQuerySupplier.get();
+    public void doTranslation() {
+        resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
 
-        // resource id filter
-        ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getResourceIdFilter();
-        resourceIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
-
-        // name
-        LikeOperator gmlNameFilter = query.getAttributeFilter().getNameFilter();
-        nameText.setText(gmlNameFilter.getLiteral());
-
-        // citydb:lineage
-        LikeOperator lineageFilter = query.getAttributeFilter().getLineageFilter();
-        lineageText.setText(lineageFilter.getLiteral());
-    }
-
-    @Override
-    public void setSettings() {
-        SimpleQuery query = simpleQuerySupplier.get();
-
-        // resource id filter
-        ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getResourceIdFilter();
-        gmlIdFilter.reset();
-        if (!resourceIdText.getText().trim().isEmpty()) {
-            String trimmed = resourceIdText.getText().replaceAll("\\s+", "");
-            gmlIdFilter.setResourceIds(Util.string2string(trimmed, ","));
+        if (useNameFilter) {
+            nameLabel.setText(Language.I18N.getString("filter.label.name"));
         }
 
-        // name
-        LikeOperator gmlNameFilter = query.getAttributeFilter().getNameFilter();
-        gmlNameFilter.reset();
-        if (!nameText.getText().trim().isEmpty())
-            gmlNameFilter.setLiteral(nameText.getText().trim());
+        if (useLineageFilter) {
+            lineageLabel.setText(Language.I18N.getString("filter.label.lineage"));
+        }
+    }
 
-        // citydb:lineage
-        LikeOperator lineageFilter = query.getAttributeFilter().getLineageFilter();
-        lineageFilter.reset();
-        if (!lineageText.getText().trim().isEmpty())
-            lineageFilter.setLiteral(lineageText.getText().trim());
+    @Override
+    public void setEnabled(boolean enabled) {
+        resourceIdLabel.setEnabled(enabled);
+        resourceIdText.setEnabled(enabled);
+
+        if (useNameFilter) {
+            nameLabel.setEnabled(enabled);
+            nameText.setEnabled(enabled);
+        }
+
+        if (useLineageFilter) {
+            lineageLabel.setEnabled(enabled);
+            lineageText.setEnabled(enabled);
+        }
+    }
+
+    public void loadSettings(ResourceIdOperator resourceIdFilter, LikeOperator nameFilter, LikeOperator lineageFilter) {
+        resourceIdText.setText(String.join(",", resourceIdFilter.getResourceIds()));
+
+        if (useNameFilter) {
+            nameText.setText(nameFilter.getLiteral());
+        }
+
+        if (useLineageFilter) {
+            lineageText.setText(lineageFilter.getLiteral());
+        }
+    }
+
+    @Override
+    public void loadSettings(SimpleAttributeFilter attributeFilter) {
+        loadSettings(attributeFilter.getResourceIdFilter(),
+                attributeFilter.getNameFilter(),
+                attributeFilter.getLineageFilter());
+    }
+
+    @Override
+    public SimpleAttributeFilter toSettings() {
+        SimpleAttributeFilter attributeFilter = new SimpleAttributeFilter();
+
+        ResourceIdOperator resourceIdFilter = attributeFilter.getResourceIdFilter();
+        if (!resourceIdText.getText().trim().isEmpty()) {
+            String trimmed = resourceIdText.getText().replaceAll("\\s+", "");
+            resourceIdFilter.setResourceIds(Util.string2string(trimmed, ","));
+        }
+
+        if (useNameFilter) {
+            LikeOperator nameFilter = attributeFilter.getNameFilter();
+            if (!nameText.getText().trim().isEmpty()) {
+                nameFilter.setLiteral(nameText.getText().trim());
+            }
+        }
+
+        if (useLineageFilter) {
+            LikeOperator lineageFilter = attributeFilter.getLineageFilter();
+            if (!lineageText.getText().trim().isEmpty()) {
+                lineageFilter.setLiteral(lineageText.getText().trim());
+            }
+        }
+
+        return attributeFilter;
     }
 }

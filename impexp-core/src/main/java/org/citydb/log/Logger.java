@@ -106,11 +106,11 @@ public class Logger {
 		}
 
 		if (fileLevel.ordinal() >= level.ordinal()) {
-			logToFile(msg);
+			printToFile(msg);
 		}
 	}
 
-	public void logToFile(String msg) {
+	public void printToFile(String msg) {
 		if (logToFile && writer != null) {
 			try {
 				writer.write(msg);
@@ -162,12 +162,15 @@ public class Logger {
 		log(LogLevel.ERROR, msg, e);
 	}
 
-	public void print(String msg) {
+	public void printToConsole(String msg) {
 		if (logToConsole) {
 			consoleLogger.log(msg);
 		}
+	}
 
-		logToFile(msg);
+	public void print(String msg) {
+		printToConsole(msg);
+		printToFile(msg);
 	}
 
 	public void logStackTrace(Throwable t) {
@@ -198,7 +201,7 @@ public class Logger {
 							StandardOpenOption.APPEND);
 
 			logToFile = true;
-			logToFile("*** Starting new log file session on " + LocalDateTime.now()
+			printToFile("*** Starting new log file session on " + LocalDateTime.now()
 					.withNano(0)
 					.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 

@@ -29,6 +29,8 @@ package org.citydb.gui.modules.database.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
+import org.citydb.ade.ADEExtension;
+import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.i18n.Language;
 import org.citydb.database.schema.mapping.AbstractType;
 import org.citydb.database.schema.mapping.AppSchema;
@@ -39,6 +41,7 @@ import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
+import org.citygml4j.builder.cityjson.extension.CityJSONExtension;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;
@@ -96,7 +99,7 @@ public class ADEInfoDialog extends JDialog {
             JScrollPane descriptionPane = new JScrollPane(descriptionText);
             descriptionPane.setMinimumSize(descriptionPane.getPreferredSize());
 
-            JLabel cityGMLLabel = new JLabel("CityGML");
+            JLabel cityGMLLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.encoding"));
             JPanel cityGMLPanel = new JPanel();
             cityGMLPanel.setLayout(new OverlayLayout(cityGMLPanel));
             {
@@ -110,11 +113,18 @@ public class ADEInfoDialog extends JDialog {
 
                 int i = 0;
                 for (CityGMLVersion cityGMLVersion : CityGMLVersion.getInstances()) {
-                    JCheckBox versionCheck = new JCheckBox(cityGMLVersion.toString());
+                    JCheckBox versionCheck = new JCheckBox("CityGML " + cityGMLVersion.toString());
                     versionCheck.setSelected(adeSchema.getSchemas().stream().anyMatch(s -> s.isAvailableForCityGML(cityGMLVersion)));
                     content.add(versionCheck, GuiUtil.setConstraints(i++, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 10));
                 }
 
+                JCheckBox cityJSONExtension = new JCheckBox("CityJSON 1.0");
+                ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionById(adeInfo.getId());
+                cityJSONExtension.setSelected(adeExtension != null
+                        && adeExtension.getADEContexts().stream()
+                        .allMatch(adeContext -> adeContext instanceof CityJSONExtension));
+
+                content.add(cityJSONExtension, GuiUtil.setConstraints(i++, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 10));
                 content.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(i, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
                 cityGMLPanel.add(content);
             }

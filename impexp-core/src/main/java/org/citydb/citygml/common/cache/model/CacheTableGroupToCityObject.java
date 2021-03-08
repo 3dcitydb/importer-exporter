@@ -48,7 +48,7 @@ public class CacheTableGroupToCityObject extends AbstractCacheTableModel {
     public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GROUP_ID) " + properties);
-            stmt.executeUpdate("create index idx1_" + tableName + " on " + tableName + " (IS_PARENT) " + properties);
+            stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (IS_PARENT) " + properties);
         }
     }
 

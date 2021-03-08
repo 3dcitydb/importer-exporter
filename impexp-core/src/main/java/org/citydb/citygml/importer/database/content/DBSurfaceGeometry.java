@@ -100,6 +100,7 @@ public class DBSurfaceGeometry implements DBImporter {
 	private final boolean importAppearance;
 	private final int nullGeometryType;
 	private final String nullGeometryTypeName;
+	private final int isXlinkValue;
 
 	private int dbSrid;
     private boolean applyTransformation;
@@ -117,6 +118,10 @@ public class DBSurfaceGeometry implements DBImporter {
         nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
         nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
         String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+
+        isXlinkValue = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 1, 0) >= 0 ?
+                XlinkType.LOCAL.value() :
+                XlinkType.GLOBAL.value();
 
         String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
         if (gmlIdCodespace != null)
@@ -164,7 +169,7 @@ public class DBSurfaceGeometry implements DBImporter {
             if (geometry.isSetId())
                 geometry.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, geometry.getId());
 
-            return doImport(geometry, id, 0, id, false, XlinkType.NONE, false, cityObjectId);
+            return doImport(geometry, id, 0, id, false, false, false, cityObjectId);
         } finally {
             ids.clear();
         }
@@ -189,19 +194,19 @@ public class DBSurfaceGeometry implements DBImporter {
         }
     }
 
-    private void doImport(AbstractGeometry geometry, long parentId, long rootId, boolean reverse, XlinkType xlinkType, boolean isCopy, long cityObjectId) throws CityGMLImportException, SQLException {
+    private void doImport(AbstractGeometry geometry, long parentId, long rootId, boolean reverse, boolean isXlink, boolean isCopy, long cityObjectId) throws CityGMLImportException, SQLException {
         long id = geometry instanceof OrientableSurface ? parentId : ids.next();
-        doImport(geometry, id, parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+        doImport(geometry, id, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
     }
 
-    private long doImport(AbstractGeometry geometry, long id, long parentId, long rootId, boolean reverse, XlinkType xlinkType, boolean isCopy, long cityObjectId) throws CityGMLImportException, SQLException {
+    private long doImport(AbstractGeometry geometry, long id, long parentId, long rootId, boolean reverse, boolean isXlink, boolean isCopy, long cityObjectId) throws CityGMLImportException, SQLException {
         importer.updateGeometryCounter(geometry.getGMLClass());
 
         if (!isCopy)
             isCopy = geometry.hasLocalProperty(CoreConstants.GEOMETRY_ORIGINAL);
 
-        if (xlinkType == XlinkType.NONE && geometry.hasLocalProperty(CoreConstants.GEOMETRY_XLINK))
-            xlinkType = XlinkType.LOCAL;
+        if (!isXlink)
+            isXlink = geometry.hasLocalProperty(CoreConstants.GEOMETRY_XLINK);
 
         // gml:id handling
         String origGmlId, gmlId;
@@ -301,7 +306,7 @@ public class DBSurfaceGeometry implements DBImporter {
                     psGeomElem.setInt(5, 0);
                     psGeomElem.setInt(6, 0);
                     psGeomElem.setInt(7, 0);
-                    psGeomElem.setInt(8, xlinkType.value());
+                    psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
                     psGeomElem.setInt(9, reverse ? 1 : 0);
                     psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
 
@@ -375,7 +380,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						}
 					}
 
-					doImport(surface, parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+					doImport(surface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -445,7 +450,7 @@ public class DBSurfaceGeometry implements DBImporter {
                     // mapping target
                     mapping = surface.getId();
 
-					doImport(surface, parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+					doImport(surface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 				} else {
                     String href = property.getHref();
                     if (href != null && href.length() != 0) {
@@ -477,7 +482,7 @@ public class DBSurfaceGeometry implements DBImporter {
             psGeomElem.setInt(5, 0);
             psGeomElem.setInt(6, 1);
             psGeomElem.setInt(7, 0);
-            psGeomElem.setInt(8, xlinkType.value());
+            psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
             psGeomElem.setInt(9, reverse ? 1 : 0);
             psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
             psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
@@ -502,7 +507,7 @@ public class DBSurfaceGeometry implements DBImporter {
             if (compositeSurface.isSetSurfaceMember()) {
                 for (SurfaceProperty property : compositeSurface.getSurfaceMember()) {
                     if (property.isSetSurface()) {
-						doImport(property.getSurface(), parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+						doImport(property.getSurface(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                     } else {
                         String href = property.getHref();
                         if (href != null && href.length() != 0)
@@ -526,7 +531,7 @@ public class DBSurfaceGeometry implements DBImporter {
             psGeomElem.setInt(5, 0);
             psGeomElem.setInt(6, 0);
             psGeomElem.setInt(7, 1);
-            psGeomElem.setInt(8, xlinkType.value());
+            psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
             psGeomElem.setInt(9, reverse ? 1 : 0);
             psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
             psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
@@ -554,7 +559,7 @@ public class DBSurfaceGeometry implements DBImporter {
                     for (Triangle triangle : property.getTriangle()) {
                         Polygon polygon = new Polygon();
                         polygon.setExterior(triangle.getExterior());
-                        doImport(polygon, parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+                        doImport(polygon, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                     }
                 }
             }
@@ -578,7 +583,7 @@ public class DBSurfaceGeometry implements DBImporter {
 				psGeomElem.setInt(5, 0);
 				psGeomElem.setInt(6, 1);
 				psGeomElem.setInt(7, 0);
-				psGeomElem.setInt(8, xlinkType.value());
+				psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
 				psGeomElem.setInt(9, reverse ? 1 : 0);
 				psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
 				psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
@@ -621,7 +626,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						polygon.setInterior(polygonPatch.getInterior());
 					}
 
-					doImport(polygon, parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+					doImport(polygon, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 				}
 			}
 		}
@@ -640,7 +645,7 @@ public class DBSurfaceGeometry implements DBImporter {
             psGeomElem.setInt(5, 1);
             psGeomElem.setInt(6, 0);
             psGeomElem.setInt(7, 0);
-            psGeomElem.setInt(8, xlinkType.value());
+            psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
             psGeomElem.setInt(9, reverse ? 1 : 0);
             psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
             psGeomElem.setNull(12, nullGeometryType, nullGeometryTypeName);
@@ -683,7 +688,7 @@ public class DBSurfaceGeometry implements DBImporter {
             if (solid.isSetExterior()) {
                 SurfaceProperty property = solid.getExterior();
                 if (property.isSetSurface()) {
-                    doImport(property.getSurface(), parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+                    doImport(property.getSurface(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                 } else {
                     String href = property.getHref();
                     if (href != null && href.length() != 0)
@@ -712,7 +717,7 @@ public class DBSurfaceGeometry implements DBImporter {
             psGeomElem.setInt(5, 1);
             psGeomElem.setInt(6, 1);
             psGeomElem.setInt(7, 0);
-            psGeomElem.setInt(8, xlinkType.value());
+            psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
             psGeomElem.setInt(9, reverse ? 1 : 0);
             psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
             psGeomElem.setNull(12, nullGeometryType, nullGeometryTypeName);
@@ -755,7 +760,7 @@ public class DBSurfaceGeometry implements DBImporter {
             if (compositeSolid.isSetSolidMember()) {
                 for (SolidProperty property : compositeSolid.getSolidMember()) {
                     if (property.isSetSolid()) {
-                        doImport(property.getSolid(), parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+                        doImport(property.getSolid(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                     } else {
                         String href = property.getHref();
                         if (href != null && href.length() != 0)
@@ -779,7 +784,7 @@ public class DBSurfaceGeometry implements DBImporter {
             psGeomElem.setInt(5, 0);
             psGeomElem.setInt(6, 0);
             psGeomElem.setInt(7, 0);
-            psGeomElem.setInt(8, xlinkType.value());
+            psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
             psGeomElem.setInt(9, reverse ? 1 : 0);
             psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
             psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
@@ -804,7 +809,7 @@ public class DBSurfaceGeometry implements DBImporter {
             if (multiPolygon.isSetPolygonMember()) {
                 for (PolygonProperty property : multiPolygon.getPolygonMember()) {
                     if (property.isSetPolygon()) {
-                        doImport(property.getPolygon(), parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+                        doImport(property.getPolygon(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                     } else {
                         String href = property.getHref();
                         if (href != null && href.length() != 0)
@@ -828,7 +833,7 @@ public class DBSurfaceGeometry implements DBImporter {
             psGeomElem.setInt(5, 0);
             psGeomElem.setInt(6, 0);
             psGeomElem.setInt(7, 0);
-            psGeomElem.setInt(8, xlinkType.value());
+            psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
             psGeomElem.setInt(9, reverse ? 1 : 0);
             psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
             psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
@@ -853,7 +858,7 @@ public class DBSurfaceGeometry implements DBImporter {
             if (multiSurface.isSetSurfaceMember()) {
                 for (SurfaceProperty property : multiSurface.getSurfaceMember()) {
                     if (property.isSetSurface()) {
-						doImport(property.getSurface(), parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+						doImport(property.getSurface(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                     } else {
                         String href = property.getHref();
                         if (href != null && href.length() != 0)
@@ -867,7 +872,7 @@ public class DBSurfaceGeometry implements DBImporter {
                 SurfaceArrayProperty property = multiSurface.getSurfaceMembers();
                 if (property.isSetSurface()) {
                     for (AbstractSurface abstractSurface : property.getSurface())
-						doImport(abstractSurface, parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+						doImport(abstractSurface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                 }
             }
         }
@@ -886,7 +891,7 @@ public class DBSurfaceGeometry implements DBImporter {
             psGeomElem.setInt(5, 0);
             psGeomElem.setInt(6, 0);
             psGeomElem.setInt(7, 0);
-            psGeomElem.setInt(8, xlinkType.value());
+            psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
             psGeomElem.setInt(9, reverse ? 1 : 0);
             psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
             psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
@@ -911,7 +916,7 @@ public class DBSurfaceGeometry implements DBImporter {
             if (multiSolid.isSetSolidMember()) {
                 for (SolidProperty property : multiSolid.getSolidMember()) {
                     if (property.isSetSolid()) {
-                        doImport(property.getSolid(), parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+                        doImport(property.getSolid(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                     } else {
                         String href = property.getHref();
                         if (href != null && href.length() != 0)
@@ -925,7 +930,7 @@ public class DBSurfaceGeometry implements DBImporter {
                 SolidArrayProperty property = multiSolid.getSolidMembers();
                 if (property.isSetSolid()) {
                     for (AbstractSolid abstractSolid : property.getSolid())
-                        doImport(abstractSolid, parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+                        doImport(abstractSolid, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                 }
             }
         }
@@ -935,7 +940,7 @@ public class DBSurfaceGeometry implements DBImporter {
             Logger.getInstance().warn(importer.getObjectSignature(geometry) + ": Unsupported geometry. Trying to map to a MultiSurface geometry.");
             MultiSurface multiSurface = geometryConverter.convertToMultiSurface(geometry);
             if (!multiSurface.getSurfaceMember().isEmpty())
-                doImport(multiSurface, id, parentId, rootId, reverse, xlinkType, isCopy, cityObjectId);
+                doImport(multiSurface, id, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
             else {
                 importer.logOrThrowErrorMessage("Failed to map " + importer.getObjectSignature(geometry) + " to a MultiSurface geometry.");
                 return 0;

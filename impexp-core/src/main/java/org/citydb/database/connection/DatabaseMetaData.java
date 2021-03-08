@@ -39,18 +39,13 @@ public class DatabaseMetaData {
 	private final Logger log = Logger.getInstance();
 	private final DatabaseConnectionDetails connectionDetails;
 
-	// database related information
 	private DatabaseVersion cityDBVersion;
 	private String databaseProductName;
 	private String databaseProductString;
 	private int databaseMajorVersion;
 	private int databaseMinorVersion;
-
-	// 3DCityDB related information
-	private DatabaseSrs srs =  DatabaseSrs.createDefaultSrs();
+	private DatabaseSrs srs = DatabaseSrs.createDefaultSrs();
 	private Versioning versioning = Versioning.OFF;
-
-	// ADE metadata
 	private List<ADEMetadata> ades;
 
 	public DatabaseMetaData(DatabaseConnectionDetails connectionDetails) {

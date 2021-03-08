@@ -167,7 +167,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 	public void updateFeatureTracker(KmlSplittingResult work) {
 		Long counter = objectCounter.get(work.getObjectClassId());
 		if (counter == null)
-			objectCounter.put(work.getObjectClassId(), new Long(1));
+			objectCounter.put(work.getObjectClassId(), 1L);
 		else
 			objectCounter.put(work.getObjectClassId(), counter + 1);		
 

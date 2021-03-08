@@ -59,7 +59,7 @@ public class SimpleQuery {
     @XmlAttribute
     private boolean useTypeNames;
     @XmlAttribute
-    private boolean useFeatureVersionFilter;
+    private boolean useFeatureVersionFilter = true;
     @XmlAttribute
     private boolean useAttributeFilter;
     @XmlAttribute

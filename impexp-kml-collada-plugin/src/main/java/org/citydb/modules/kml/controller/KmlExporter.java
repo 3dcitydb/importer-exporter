@@ -50,6 +50,7 @@ import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
+import org.citydb.ade.ADEExtension;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
@@ -150,6 +151,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -189,6 +191,12 @@ public class KmlExporter implements EventHandler {
 	public boolean doExport(Path outputFile) throws KmlExportException {
 		if (outputFile == null || outputFile.getFileName() == null) {
 			throw new KmlExportException("The output file '" + outputFile + "' is invalid.");
+		}
+
+		List<ADEExtension> unsupported = ADEKmlExportExtensionManager.getInstance().getUnsupportedADEExtensions();
+		if (!unsupported.isEmpty()) {
+			log.warn("The following CityGML ADEs are not supported by this VIS Exporter:\n" +
+					Util.collection2string(unsupported.stream().map(ade -> ade.getMetadata().getName()).collect(Collectors.toList()), "\n"));
 		}
 
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
@@ -288,10 +296,20 @@ public class KmlExporter implements EventHandler {
 			// calculate extent if the bbox filter is disabled
 			if (!queryConfig.isUseBboxFilter()) {
 				try {
-					log.info("Calculating the bounding box of matching top-level features...");
-					queryConfig.getSpatialFilter().setExtent(databaseAdapter.getUtil().calcBoundingBox(query, schemaMapping));
+					log.info("Calculating bounding box...");
+					BoundingBox extent = databaseAdapter.getUtil().calcBoundingBox(query, schemaMapping);
+					if (extent == null || (extent.getLowerCorner().getX() == Double.MAX_VALUE &&
+							extent.getLowerCorner().getY() == Double.MAX_VALUE &&
+							extent.getUpperCorner().getX() == -Double.MAX_VALUE &&
+							extent.getUpperCorner().getY() == -Double.MAX_VALUE)) {
+						log.info("Empty bounding box calculated.");
+						log.info("No top-level feature will be exported.");
+						return true;
+					}
+
+					queryConfig.getBboxFilter().setExtent(extent);
 					query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
-				} catch (SQLException | FilterException e) {
+				} catch (SQLException e) {
 					throw new QueryBuildException("Failed to calculate bounding box based on the non-spatial filter settings.", e);
 				}
 			}
@@ -321,7 +339,7 @@ public class KmlExporter implements EventHandler {
 		if (!query.isSetTiling()) {
 			try {
 				// set default tiling
-				query.setTiling(new Tiling(config.getKmlExportConfig().getQuery().getSpatialFilter().getExtent(), 1, 1));
+				query.setTiling(new Tiling(config.getKmlExportConfig().getQuery().getBboxFilter().getExtent(), 1, 1));
 			} catch (FilterException e) {
 				throw new KmlExportException("Failed to build the internal fallback tiling.", e);
 			}
@@ -718,7 +736,7 @@ public class KmlExporter implements EventHandler {
 		if (!totalObjectCounter.isEmpty()) {
 			log.info("Exported city objects:");
 			Map<String, Long> typeNames = Util.mapObjectCounter(totalObjectCounter, schemaMapping);					
-			typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));
+			typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
 		}
 
 		log.info("Processed geometry objects: " + geometryCounter);

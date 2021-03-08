@@ -35,6 +35,9 @@ import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.plugin.PluginManager;
+import org.citydb.plugin.extension.config.ConfigExtension;
+import org.citydb.plugin.extension.config.PluginConfigEvent;
 
 import javax.swing.*;
 import java.util.List;
@@ -87,6 +90,11 @@ public class MenuView extends JMenu {
 
 			// replace existing GUI configuration with defaults
 			config.setGuiConfig(new GuiConfig());
+
+			// fire event to external plugins
+			for (ConfigExtension<?> plugin : PluginManager.getInstance().getExternalPlugins(ConfigExtension.class)) {
+				plugin.handleEvent(PluginConfigEvent.RESET_GUI_VIEW);
+			}
 
 			config.getGuiConfig().setRecentlyUsedConfigFiles(recentlyUsedProjects);
 			config.getGuiConfig().getAppearance().setTheme(theme);

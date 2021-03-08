@@ -584,7 +584,7 @@ public class Exporter implements EventHandler {
                 if (!objectCounter.isEmpty()) {
                     log.info("Exported city objects:");
                     Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
-                    typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));
+                    typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
                 }
 
                 // show processed geometries

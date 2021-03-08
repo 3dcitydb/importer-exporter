@@ -51,7 +51,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.OffsetDateTime;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -166,18 +166,18 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			}
 
 			if (deletedObjectId == objectId) {
-				log.debug(work.getObjectType().getPath() + " (ID = " + objectId + ") " +
-						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted.") + ".");
-				Map<Integer, Long> objectCounter = new HashMap<>();
-				objectCounter.put(work.getObjectType().getObjectClassId(), 1L);
-				eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel, this));
+				log.debug(work.getObjectType() + " (ID = " + objectId + ") " +
+						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
 			} else {
-				log.debug(work.getObjectType().getPath() + " (ID = " + objectId + ") is already deleted.");
+				log.debug(work.getObjectType() + " (ID = " + objectId + ") is already deleted.");
 			}
+
+			Map<Integer, Long> objectCounter = Collections.singletonMap(work.getObjectType().getObjectClassId(), 1L);
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel, this));
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 		} catch (SQLException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to " + mode.value() + " " + work.getObjectType().getPath() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to " + mode.value() + " " + work.getObjectType() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel, this));
 		} catch (Throwable e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during " + mode.value() + ".", LogLevel.ERROR, e, eventChannel, this));
 		} finally {

@@ -30,10 +30,13 @@ package org.citydb.cli;
 
 import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.controller.Deleter;
+import org.citydb.citygml.deleter.util.DeleteListPreviewer;
+import org.citydb.cli.options.deleter.CleanupOption;
 import org.citydb.cli.options.deleter.DeleteListOption;
 import org.citydb.cli.options.deleter.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
+import org.citydb.config.project.deleter.DeleteList;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
@@ -55,8 +58,11 @@ public class DeleteCommand extends CliCommand {
     private Mode mode;
 
     @CommandLine.Option(names = {"-v", "--preview"},
-            description = "Only check which top-level features would be affected, but that the features will not be deleted or terminated.")
+            description = "Run in preview mode. Affected city objects will be neither deleted nor terminated.")
     private boolean preview;
+
+    @CommandLine.ArgGroup(exclusive = false)
+    private CleanupOption cleanupOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
@@ -72,6 +78,26 @@ public class DeleteCommand extends CliCommand {
     @Override
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
+
+        // set delete list options
+        config.getDeleteConfig().setUseDeleteList(deleteListOption != null);
+        if (deleteListOption != null) {
+            DeleteList deleteList = deleteListOption.toDeleteList();
+            config.getDeleteConfig().setDeleteList(deleteList);
+
+            if (deleteListOption.isPreview()) {
+                try {
+                    DeleteListPreviewer.of(deleteList)
+                            .withNumberOfRecords(20)
+                            .printToConsole();
+                    log.info("Delete list preview successfully finished.");
+                    return 0;
+                } catch (Exception e) {
+                    log.error("Failed to create a preview of the delete list.", e);
+                    return 1;
+                }
+            }
+        }
 
         // connect to database
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
@@ -91,19 +117,19 @@ public class DeleteCommand extends CliCommand {
                     DeleteMode.DELETE);
         }
 
+        // set cleanup option
+        if (cleanupOption != null) {
+            config.getDeleteConfig().setCleanupGlobalAppearances(cleanupOption.isCleanupGlobalAppearances());
+        }
+
+        // set user-defined query options
+        if (queryOption != null) {
+            config.getDeleteConfig().setUseSimpleQuery(false);
+            config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
+        }
+
         try {
-            Deleter deleter = new Deleter();
-            if (deleteListOption != null) {
-                deleter.doDelete(deleteListOption.toDeleteListParser(), preview);
-            } else {
-                // set user-defined query options
-                if (queryOption != null) {
-                    config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
-                }
-
-                deleter.doDelete(preview);
-            }
-
+            new Deleter().doDelete(preview);
             log.info("Database " + mode.name() + " successfully finished.");
         } catch (DeleteException e) {
             log.error(e.getMessage(), e.getCause());
@@ -114,13 +140,5 @@ public class DeleteCommand extends CliCommand {
         }
 
         return 0;
-    }
-
-    @Override
-    public void preprocess(CommandLine commandLine) {
-        if (queryOption != null && deleteListOption != null) {
-            throw new CommandLine.ParameterException(commandLine,
-                    "Error: Query options and delete file options are mutually exclusive (specify only one)");
-        }
     }
 }

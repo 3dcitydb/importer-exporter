@@ -72,6 +72,7 @@ import org.citydb.modules.kml.util.AffineTransformer;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.query.Query;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 import org.citydb.textureAtlas.image.ImageReader;
 import org.citydb.textureAtlas.model.TextureImage;
@@ -127,7 +128,6 @@ import org.w3c.dom.Element;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3f;
 import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -156,6 +156,7 @@ import java.util.StringTokenizer;
 
 public abstract class KmlGenericObject {
 	private final Logger log = Logger.getInstance();
+	private final DatatypeFactory datatypeFactory;
 	protected final int GEOMETRY_AMOUNT_WARNING = 10000;
 	private final double TOLERANCE = Math.pow(10, -7);
 	private final double PRECISION = Math.pow(10, 7);
@@ -219,7 +220,6 @@ public abstract class KmlGenericObject {
 			BalloonTemplateHandler balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
 			Config config) {
-
 		this.connection = connection;
 		this.query = query;
 		this.kmlExporterManager = kmlExporterManager;
@@ -229,11 +229,12 @@ public abstract class KmlGenericObject {
 		this.balloonTemplateHandler = balloonTemplateHandler;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
-
 		this.databaseAdapter = databaseAdapter;
+
 		geometryConverterAdapter = databaseAdapter.getGeometryConverter();
 		dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
 
+		datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
 		dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 		defaultX3dMaterial = new X3DMaterial();
@@ -331,13 +332,11 @@ public abstract class KmlGenericObject {
 		surfaceInfos.put(surfaceId, surfaceInfo);
 	}
 
-	public COLLADA generateColladaTree() throws DatatypeConfigurationException{
-
+	public COLLADA generateColladaTree() {
 		ObjectFactory colladaFactory = new ObjectFactory();
 
 		// java and XML...
-		DatatypeFactory df = DatatypeFactory.newInstance();
-		XMLGregorianCalendar xmlGregorianCalendar = df.newXMLGregorianCalendar(new GregorianCalendar());
+		XMLGregorianCalendar xmlGregorianCalendar = datatypeFactory.newXMLGregorianCalendar(new GregorianCalendar());
 		xmlGregorianCalendar.setTimezone(DatatypeConstants.FIELD_UNDEFINED);
 
 		COLLADA	collada = colladaFactory.createCOLLADA();
@@ -893,7 +892,7 @@ public abstract class KmlGenericObject {
 
 	protected void addTexImageUri(long surfaceId, String texImageUri){
 		if (texImageUri != null) {
-			texImageUris.put(new Long(surfaceId), texImageUri);
+			texImageUris.put(surfaceId, texImageUri);
 		}
 	}
 

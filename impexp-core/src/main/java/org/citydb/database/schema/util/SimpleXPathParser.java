@@ -54,9 +54,9 @@ import org.citydb.query.filter.selection.expression.LiteralType;
 import org.citydb.query.filter.selection.expression.LongLiteral;
 import org.citydb.query.filter.selection.expression.StringLiteral;
 import org.citydb.query.filter.selection.expression.TimestampLiteral;
+import org.citydb.registry.ObjectRegistry;
 
 import javax.xml.XMLConstants;
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -96,12 +96,7 @@ public class SimpleXPathParser {
 		kindTest = Pattern.compile(kindTest_, Pattern.UNICODE_CHARACTER_CLASS);
 		functionCallTest = Pattern.compile(functionCall_, Pattern.UNICODE_CHARACTER_CLASS);
 		stringLiteralTest = Pattern.compile(stringLiteral_, Pattern.UNICODE_CHARACTER_CLASS);
-
-		try {
-			datatypeFactory = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
-			throw new RuntimeException("Failed to initialize datatype factory.", e);
-		}
+		datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
 	}
 
 	public SchemaPath parse(String xpath, FeatureType rootNode, NamespaceContext namespaceContext) throws XPathException, InvalidSchemaPathException {

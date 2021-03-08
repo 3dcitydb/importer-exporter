@@ -90,6 +90,7 @@ public class KmlSplitter {
 
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
+		connection.setAutoCommit(false);
 		dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();		
 		schema = databaseAdapter.getConnectionDetails().getSchema();
 

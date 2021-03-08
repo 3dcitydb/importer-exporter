@@ -46,7 +46,6 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
-import org.citydb.plugin.InternalPlugin;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.cli.StartupProgressListener;
@@ -142,9 +141,6 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         for (Plugin plugin : pluginManager.getPlugins()) {
             if (plugin instanceof ViewExtension) {
                 ((ViewExtension) plugin).initViewExtension(impExpGui, locale);
-                if (!hideSplash && !(plugin instanceof InternalPlugin)) {
-                    splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
-                }
             }
         }
     }

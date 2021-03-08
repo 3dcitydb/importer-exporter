@@ -27,20 +27,27 @@
  */
 package org.citydb.citygml.deleter.controller;
 
+import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.common.cache.CacheTableManager;
+import org.citydb.citygml.common.cache.model.CacheTableModel;
 import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.citygml.deleter.database.BundledConnection;
-import org.citydb.citygml.deleter.database.DBSplitter;
+import org.citydb.citygml.deleter.database.DeleteListImporter;
+import org.citydb.citygml.deleter.database.DeleteManager;
+import org.citydb.citygml.deleter.util.DeleteListException;
 import org.citydb.citygml.deleter.util.DeleteListParser;
 import org.citydb.citygml.deleter.util.InternalConfig;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.exception.ErrorCode;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.ConnectionManager;
+import org.citydb.database.adapter.IndexStatusInfo;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
@@ -49,6 +56,8 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
+import org.citydb.event.global.StatusDialogMessage;
+import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
@@ -57,10 +66,9 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,10 +82,10 @@ public class Deleter implements EventHandler {
 	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private final Map<Integer, Long> objectCounter;
 
-	private DBSplitter dbSplitter;
+	private DeleteManager deleteManager;
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
 	private BundledConnection bundledConnection;
-
+	private GlobalAppearanceCleaner globalAppearanceCleaner;
 	private volatile boolean shouldRun = true;
 	private DeleteException exception;
 
@@ -90,36 +98,18 @@ public class Deleter implements EventHandler {
 	}
 
 	public boolean doDelete(boolean preview) throws DeleteException {
-		try {
-			// build query from configuration
-			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			Query query = config.getDeleteConfig().isUseSimpleQuery() ?
-					queryBuilder.buildQuery(config.getDeleteConfig().getSimpleQuery(), config.getNamespaceFilter()) :
-					queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
-
-			return doDelete(Collections.singletonList(query).iterator(), preview);
-		} catch (QueryBuildException e) {
-			throw new DeleteException("Failed to build the delete query expression.", e);
-		}
-	}
-
-	public boolean doDelete(DeleteListParser parser, boolean preview) throws DeleteException {
-		log.info("Using delete list from CSV file: " + parser.getFile());
-		return doDelete(parser.queryIterator(schemaMapping, databaseAdapter), preview);
-	}
-
-	private boolean doDelete(Iterator<Query> queries, boolean preview) throws DeleteException {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		try {
-			return process(queries, preview);
+			return process(preview);
 		} finally {
+			objectCounter.clear();
 			eventDispatcher.removeEventHandler(this);
 		}
 	}
 
-	private boolean process(Iterator<Query> queries, boolean preview) throws DeleteException {
+	private boolean process(boolean preview) throws DeleteException {
 		long start = System.currentTimeMillis();
 		DeleteMode mode = config.getDeleteConfig().getMode();
 
@@ -132,34 +122,109 @@ public class Deleter implements EventHandler {
 			}
 		}
 
-		bundledConnection = new BundledConnection();
+		// build query from configuration
+		Query query;
 		try {
+			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
+			query = config.getDeleteConfig().isUseSimpleQuery() ?
+					queryBuilder.buildQuery(config.getDeleteConfig().getSimpleQuery(), config.getNamespaceFilter()) :
+					queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
+		} catch (QueryBuildException e) {
+			throw new DeleteException("Failed to build the delete query expression.", e);
+		}
+
+		// check and log index status
+		try {
+			if (query.isSetSelection()
+					&& query.getSelection().containsSpatialOperators()
+					&& !databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {
+				throw new DeleteException(ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED, "Spatial indexes are not activated.");
+			}
+
+			for (IndexStatusInfo.IndexType type : IndexStatusInfo.IndexType.values()) {
+				databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
+			}
+		} catch (SQLException e) {
+			throw new DeleteException("Database error while querying index status.", e);
+		}
+
+		bundledConnection = new BundledConnection().withSingleConnection(true);
+		CacheTableManager cacheTableManager = null;
+		CacheTable cacheTable = null;
+
+		try {
+			if (config.getDeleteConfig().isUseDeleteList() && config.getDeleteConfig().isSetDeleteList()) {
+				log.info("Using delete list '" + config.getDeleteConfig().getDeleteList().getFile() + "'.");
+
+				try (DeleteListParser parser = new DeleteListParser(config.getDeleteConfig().getDeleteList())) {
+					// create instance of the cache table manager
+					try {
+						cacheTableManager = new CacheTableManager(1, config);
+						cacheTable = cacheTableManager.createCacheTableInDatabase(CacheTableModel.DELETE_LIST);
+					} catch (SQLException e) {
+						throw new DeleteException("Failed to initialize temporary delete list cache.", e);
+					}
+
+					// load delete list into database
+					log.info("Loading delete list into temporary database table...");
+
+					try {
+						int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
+						new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser);
+					} catch (DeleteListException e) {
+						throw new DeleteException("Failed to parse delete list.", e);
+					} catch (SQLException e) {
+						throw new DeleteException("Failed to load delete list into temporary database table.", e);
+					}
+				} catch (IOException e) {
+					throw new DeleteException("Failed to create delete list parser.", e);
+				}
+			}
+
+			if (preview) {
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.preview"), this));
+				log.info("Running " + mode.value() + " in preview mode. Affected city objects will not be " +
+						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
+			} else {
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString(mode == DeleteMode.TERMINATE ?
+						"delete.dialog.title.terminate" :
+						"delete.dialog.title.delete"), this));
+				log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") + " city objects from database.");
+			}
+
 			// create internal config and set metadata
 			InternalConfig internalConfig = new InternalConfig();
 			internalConfig.setMetadata(config.getDeleteConfig().getContinuation());
 
-			dbWorkerPool = createWorkerPool(bundledConnection, internalConfig, config, eventDispatcher);
+			// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
+			// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
+			// Hence, we use single thread to avoid this issue.
+			dbWorkerPool = new SingleWorkerPool<>(
+					"db_deleter_pool",
+					new DBDeleteWorkerFactory(bundledConnection, internalConfig, config, eventDispatcher),
+					300,
+					false);
+
 			dbWorkerPool.prestartCoreWorkers();
 			if (dbWorkerPool.getPoolSize() == 0) {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
 			}
 
-			if (preview) {
-				log.info("Running " + mode.value() + " in preview mode. Affected city objects will not be " +
-						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
-			} else {
-				log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") + " city objects from database.");
-			}
-
-			while (shouldRun && queries.hasNext()) {
-				// get database splitter and start query
-				try {
-					dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, queries.next(), config, eventDispatcher, preview);
-					dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
-					dbSplitter.startQuery();
-				} catch (SQLException | QueryBuildException e) {
-					throw new DeleteException("Failed to query the database.", e);
-				}
+			// get database splitter and start query
+			try {
+				deleteManager = new DeleteManager(bundledConnection,
+						schemaMapping,
+						dbWorkerPool,
+						query,
+						cacheTable,
+						internalConfig,
+						config,
+						eventDispatcher,
+						preview);
+				deleteManager.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
+				deleteManager.deleteObjects();
+			} catch (SQLException | QueryBuildException e) {
+				throw new DeleteException("Failed to query the database.", e);
 			}
 
 			try {
@@ -167,19 +232,39 @@ public class Deleter implements EventHandler {
 			} catch (InterruptedException e) {
 				throw new DeleteException("Failed to shutdown worker pools.", e);
 			}
+
+			if (shouldRun
+					&& config.getDeleteConfig().isCleanupGlobalAppearances()
+					&& !preview) {
+				try {
+					if (databaseAdapter.getUtil().containsGlobalAppearances()) {
+						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.cleanupGlobalAppearances"), this));
+						eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+						log.info("Cleaning up unreferenced global appearances.");
+
+						globalAppearanceCleaner = new GlobalAppearanceCleaner(bundledConnection, databaseAdapter);
+						int deleted = globalAppearanceCleaner.doCleanup();
+						log.info("Deleted global appearances: " + deleted);
+					} else {
+						log.debug("The database does not contain global appearances.");
+					}
+				} catch (SQLException e) {
+					throw new DeleteException("Failed to query global appearances from database.", e);
+				}
+			}
 		} catch (DeleteException e) {
 			throw e;
 		} catch (Throwable e) {
 			throw new DeleteException("An unexpected error occurred.", e);
 		} finally {
+			if (dbWorkerPool != null) {
+				dbWorkerPool.shutdownNow();
+			}
+
 			try {
 				bundledConnection.close();
 			} catch (SQLException e) {
 				//
-			}
-
-			if (dbWorkerPool != null) {
-				dbWorkerPool.shutdownNow();
 			}
 
 			try {
@@ -187,16 +272,31 @@ public class Deleter implements EventHandler {
 			} catch (InterruptedException e) {
 				//
 			}
-		}
 
-		// show deleted features
-		if (!objectCounter.isEmpty()) {
-			log.info("Processed city objects:");
-			Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
-			typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));
+			if (cacheTableManager != null) {
+				try {
+					log.info("Cleaning temporary cache.");
+					cacheTableManager.dropAll();
+				} catch (SQLException e) {
+					setException("Failed to clean the temporary cache.", e);
+					shouldRun = false;
+				}
+			}
 		}
 
 		if (shouldRun) {
+			// show deleted features
+			if (!objectCounter.isEmpty()) {
+				if (preview) {
+					log.info("The " + mode.value() + " operation would affect the following city objects:");
+				} else {
+					log.info((mode == DeleteMode.TERMINATE ? "Terminated" : "Deleted") + " city objects:");
+				}
+
+				Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
+				typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
+			}
+
 			log.info("Total processing time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 		} else if (exception != null) {
 			throw exception;
@@ -205,15 +305,10 @@ public class Deleter implements EventHandler {
 		return shouldRun;
 	}
 
-	protected WorkerPool<DBSplittingResult> createWorkerPool(ConnectionManager connectionManager, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
-		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
-		// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
-		// Hence, we use single thread to avoid this issue.
-		return new SingleWorkerPool<>(
-				"db_deleter_pool",
-				new DBDeleteWorkerFactory(connectionManager, internalConfig, config, eventDispatcher),
-				300,
-				false);
+	private void setException(String message, Throwable cause) {
+		if (exception == null) {
+			exception = new DeleteException(message, cause);
+		}
 	}
 
 	@Override
@@ -232,15 +327,19 @@ public class Deleter implements EventHandler {
 
 				log.log(event.getLogLevelType(), event.getLogMessage());
 				if (event.getCause() != null) {
-					exception = new DeleteException("Aborting delete due to errors.", event.getCause());
+					setException("Aborting delete due to errors.", event.getCause());
 				}
 
-				if (dbSplitter != null) {
-					dbSplitter.shutdown();
+				if (deleteManager != null) {
+					deleteManager.shutdown();
 				}
 
 				if (dbWorkerPool != null) {
 					dbWorkerPool.drainWorkQueue();
+				}
+
+				if (globalAppearanceCleaner != null) {
+					globalAppearanceCleaner.interrupt();
 				}
 			}
 		}
