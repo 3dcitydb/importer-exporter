@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class Tiling extends AbstractTiling {
     @XmlElements({
-            @XmlElement(name = "cityGMLTilingOptions", type = SimpleTilingOptions.class),
+            @XmlElement(name = "tilingOptions", type = SimpleTilingOptions.class),
             @XmlElement(name = "kmlTilingOptions", type = KmlTilingOptions.class)
     })
     private AbstractTilingOptions tilingOptions;

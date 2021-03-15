@@ -669,7 +669,7 @@
       <xs:extension base="tns:AbstractTilingType">
         <xs:sequence>
           <xs:choice minOccurs="0">
-            <xs:element name="cityGMLTilingOptions" type="tns:CityGMLTilingOptionsType"/>
+            <xs:element name="tilingOptions" type="tns:CityGMLTilingOptionsType"/>
             <xs:element name="kmlTilingOptions" type="tns:KmlTilingOptionsType"/>
           </xs:choice>
         </xs:sequence>
