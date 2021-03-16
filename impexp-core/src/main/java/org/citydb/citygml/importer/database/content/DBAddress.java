@@ -33,6 +33,7 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.file.InputFile;
 import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.module.xal.XALModuleType;
@@ -68,8 +69,10 @@ public class DBAddress implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		importXALSource = config.getImportConfig().getCityGMLOptions().isImportXalAddress();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+		importXALSource = config.getImportConfig().getCityGMLOptions().isImportXalAddress()
+				&& importer.getInternalConfig().getInputFile().getMediaType().equals(InputFile.APPLICATION_XML);
+
 		hasGmlIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
 		replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
 		String gmlIdCodespace = null;

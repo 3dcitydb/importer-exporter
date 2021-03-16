@@ -44,7 +44,6 @@ import javax.xml.bind.annotation.XmlType;
         "generalOptions",
         "continuation",
         "cityObjectGroup",
-        "address",
         "appearances",
         "metadataProvider",
         "cityGMLOptions",
@@ -61,7 +60,6 @@ public class ExportConfig {
     private GeneralOptions generalOptions;
     private Continuation continuation;
     private ExportCityObjectGroup cityObjectGroup;
-    private ExportAddress address;
     private ExportAppearance appearances;
     private String metadataProvider;
     private CityGMLOptions cityGMLOptions;
@@ -75,7 +73,6 @@ public class ExportConfig {
         generalOptions = new GeneralOptions();
         continuation = new Continuation();
         cityObjectGroup = new ExportCityObjectGroup();
-        address = new ExportAddress();
         appearances = new ExportAppearance();
         cityGMLOptions = new CityGMLOptions();
         cityJSONOptions = new CityJSONOptions();
@@ -137,16 +134,6 @@ public class ExportConfig {
     public void setContinuation(Continuation continuation) {
         if (continuation != null) {
             this.continuation = continuation;
-        }
-    }
-
-    public ExportAddress getAddress() {
-        return address;
-    }
-
-    public void setAddress(ExportAddress address) {
-        if (address != null) {
-            this.address = address;
         }
     }
 

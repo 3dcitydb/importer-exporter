@@ -44,10 +44,12 @@ public class CityGMLOptions {
     private boolean prettyPrint = true;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private LinkedHashMap<String, Namespace> namespaces;
+    private ExportAddress address;
     private XLink xlink;
     private XSLTransformation xslTransformation;
 
     public CityGMLOptions() {
+        address = new ExportAddress();
         xlink = new XLink();
         xslTransformation = new XSLTransformation();
     }
@@ -88,6 +90,16 @@ public class CityGMLOptions {
         namespaces.stream()
                 .filter(Namespace::isSetURI)
                 .forEach(v -> this.namespaces.put(v.getURI(), v));
+    }
+
+    public ExportAddress getAddress() {
+        return address;
+    }
+
+    public void setAddress(ExportAddress address) {
+        if (address != null) {
+            this.address = address;
+        }
     }
 
     public XLink getXlink() {

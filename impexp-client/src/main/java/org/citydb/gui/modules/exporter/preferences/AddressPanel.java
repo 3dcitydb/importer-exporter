@@ -51,7 +51,7 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		ExportAddress address = config.getExportConfig().getAddress();
+		ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
 		
 		if (exportDB.isSelected() && address.getMode() != AddressMode.DB) return true;
 		if (exportXAL.isSelected() && address.getMode() != AddressMode.XAL) return true;
@@ -86,7 +86,7 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		ExportAddress address = config.getExportConfig().getAddress();
+		ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
 		
 		address.setMode(exportDB.isSelected() ? AddressMode.DB : AddressMode.XAL);
 		address.setUseFallback(exportFallback.isSelected());
@@ -94,13 +94,11 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		ExportAddress address = config.getExportConfig().getAddress();
-		
-		switch (address.getMode()) {
-		case XAL:
+		ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
+
+		if (address.getMode() == AddressMode.XAL) {
 			exportXAL.setSelected(true);
-			break;
-		default:
+		} else {
 			exportDB.setSelected(true);
 		}
 		

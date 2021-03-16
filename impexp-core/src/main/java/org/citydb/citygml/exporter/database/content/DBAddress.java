@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
+import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AddressExportFactory;
 import org.citydb.citygml.exporter.util.AddressObject;
-import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.AddressMode;
 import org.citydb.database.schema.TableEnum;
@@ -63,7 +63,7 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 		select = addProjection(new Select(), table, "");
 		adeHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, table);
 
-		factory = new AddressExportFactory(exporter.getExportConfig());
+		factory = new AddressExportFactory(exporter.getInternalConfig().getOutputFormat(), exporter.getExportConfig());
 		gmlConverter = exporter.getGMLConverter();
 	}
 
