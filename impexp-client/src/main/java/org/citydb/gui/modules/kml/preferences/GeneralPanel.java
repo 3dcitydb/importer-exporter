@@ -337,6 +337,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		scaleTexImagesCheckbox.addActionListener(e -> scaleFactorSpinner.setEnabled(scaleTexImagesCheckbox.isSelected()));
 		groupObjectsCheckbox.addActionListener(e -> groupSizeText.setEnabled(groupObjectsCheckbox.isSelected()));
 		oneObjectPerRegion.addActionListener(e -> setEnabledKmlRegionComponents());
+		viewRefreshMode.addActionListener(e -> setEnabledViewRefreshTime());
 	}
 
 	private void excludeGltfAndKMZ(boolean deactivateKmz) {
@@ -515,8 +516,13 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		visibleFromText.setEnabled(oneObjectPerRegion.isSelected());
 		visibleFromPixels.setEnabled(oneObjectPerRegion.isSelected());
 		viewRefreshTimeLabel.setEnabled(oneObjectPerRegion.isSelected());
-		viewRefreshTimeText.setEnabled(oneObjectPerRegion.isSelected());
-		viewRefreshTimeSeconds.setEnabled(oneObjectPerRegion.isSelected());
+		setEnabledViewRefreshTime();
+	}
+
+	private void setEnabledViewRefreshTime() {
+		boolean onStop = ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshMode.getSelectedItem());
+		viewRefreshTimeText.setEnabled(oneObjectPerRegion.isSelected() && onStop);
+		viewRefreshTimeSeconds.setEnabled(oneObjectPerRegion.isSelected() && onStop);
 	}
 	
 	private void browseGltfConverterFile(String title) {
