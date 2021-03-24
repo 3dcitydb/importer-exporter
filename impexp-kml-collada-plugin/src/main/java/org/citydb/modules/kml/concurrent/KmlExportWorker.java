@@ -374,7 +374,8 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 				}
 
 				objectGroupCounter.merge(objectClass, 1, Integer::sum);
-				if (objectGroupCounter.get(objectClass) == config.getKmlExportConfig().getColladaOptions().getGroupSize()) {
+				if (!config.getKmlExportConfig().getColladaOptions().isGroupObjects()
+						|| objectGroupCounter.get(objectClass) == config.getKmlExportConfig().getColladaOptions().getGroupSize()) {
 					sendGroupToFile(currentObjectGroup);
 					objectGroup.put(objectClass, null);
 					objectGroupCounter.put(objectClass, 0);
