@@ -33,9 +33,9 @@ import org.citydb.config.project.database.DatabaseType;
 import picocli.CommandLine;
 
 public class DatabaseOption implements CliOption {
-    enum Type {postgresql, oracle}
+    enum Type {PostgreSQL, Oracle}
 
-    @CommandLine.Option(names = {"-T", "--db-type"}, paramLabel = "<database>", defaultValue = "postgresql",
+    @CommandLine.Option(names = {"-T", "--db-type"}, paramLabel = "<database>", defaultValue = "PostgreSQL",
             description = "Database type: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Type type;
 
@@ -64,7 +64,7 @@ public class DatabaseOption implements CliOption {
     private String password;
 
     public DatabaseType getType() {
-        return type == Type.oracle ? DatabaseType.ORACLE : DatabaseType.POSTGIS;
+        return type == Type.Oracle ? DatabaseType.ORACLE : DatabaseType.POSTGIS;
     }
 
     public String getName() {
@@ -77,7 +77,7 @@ public class DatabaseOption implements CliOption {
 
     public int getPort() {
         if (port == null) {
-            return type == Type.oracle ? 1521 : 5432;
+            return type == Type.Oracle ? 1521 : 5432;
         } else {
             return port;
         }
