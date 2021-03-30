@@ -171,15 +171,13 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
             }
         }
 
-        // enable window decorations
-        JFrame.setDefaultLookAndFeelDecorated(true);
-        JDialog.setDefaultLookAndFeelDecorated(true);
-
         // set UI defaults
         int offset = Math.max(16 - UIManager.getIcon("CheckBox.icon").getIconWidth(), 0);
         int iconTextGap = UIManager.getInt("CheckBox.iconTextGap") + offset;
         UIManager.put("CheckBox.iconTextGap", iconTextGap);
         UIManager.put("RadioButton.iconTextGap", iconTextGap);
+        UIManager.put("TitlePane.unifiedBackground", true);
+        UIManager.put("TitlePane.centerTitleIfMenuBarEmbedded", false);
 
         // splash screen
         if (!hideSplash) {
