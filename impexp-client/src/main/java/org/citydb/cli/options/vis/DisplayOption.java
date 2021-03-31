@@ -39,9 +39,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class DisplayOption implements CliOption {
-    @CommandLine.Option(names = {"-D", "--display-mode"}, split = ",", paramLabel = "<mode[=pixels]>",
+    @CommandLine.Option(names = {"-D", "--display-form"}, split = ",", paramLabel = "<form[=pixels]>",
             required = true, mapFallbackValue = "0",
-            description = "Display mode: collada, geometry, extruded, footprint. Optionally specify the visibility " +
+            description = "Display form: collada, geometry, extruded, footprint. Optionally specify the visibility " +
                     "in terms of screen pixels (default: ${MAP-FALLBACK-VALUE}).")
     private Map<Mode, Integer> modes;
 

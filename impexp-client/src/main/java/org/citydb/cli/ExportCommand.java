@@ -51,7 +51,7 @@ import java.nio.file.Path;
         versionProvider = ImpExpCli.class
 )
 public class ExportCommand extends CliCommand {
-    enum CompressedFormat {CityGML, CityJSON}
+    enum CompressedFormat {citygml, cityjson}
 
     @CommandLine.Option(names = {"-o", "--output"}, required = true,
             description = "Name of the output file.")
@@ -118,7 +118,7 @@ public class ExportCommand extends CliCommand {
         exportConfig.getGeneralOptions().setFileEncoding(encoding);
 
         if (compressedFormat != null) {
-            exportConfig.getGeneralOptions().setCompressedOutputFormat(compressedFormat == CompressedFormat.CityJSON ?
+            exportConfig.getGeneralOptions().setCompressedOutputFormat(compressedFormat == CompressedFormat.cityjson ?
                     OutputFormat.CITYJSON :
                     OutputFormat.CITYGML);
         }
