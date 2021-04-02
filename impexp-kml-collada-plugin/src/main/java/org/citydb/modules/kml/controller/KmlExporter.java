@@ -252,7 +252,7 @@ public class KmlExporter implements EventHandler {
 			throw new KmlExportException("Failed to retrieve status of spatial indexes.", e);
 		}
 
-		// check whether the selected theme existed in the database, just for Building Class...
+		// check whether the selected theme existed in the database
 		String selectedTheme = config.getKmlExportConfig().getAppearanceTheme();
 		if (!selectedTheme.equals(KmlExportConfig.THEME_NONE)) {
 			try {
