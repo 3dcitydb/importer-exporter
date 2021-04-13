@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api 'org.citygml4j:citygml4j:2.11.3-b20210129.0027'
+    api 'org.citygml4j:citygml4j:2.11.3'
 }
 
 bintray {

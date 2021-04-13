@@ -7,7 +7,7 @@ dependencies {
     api project(':impexp-plugin-api')
     api 'org.citydb:sqlbuilder:2.2.1'
     api 'org.citydb:3dcitydb-ade-citygml4j:1.1.1'
-    api 'org.citygml4j:citygml4j:2.11.3-b20210129.0027'
+    api 'org.citygml4j:citygml4j:2.11.3'
     api 'org.geotools:gt-epsg-extension:23.1'
     api 'org.geotools:gt-epsg-hsql:23.1'
     api 'org.geotools:gt-referencing:23.1'
