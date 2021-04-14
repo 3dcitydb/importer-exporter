@@ -25,7 +25,7 @@ subprojects {
         maven {
             url 'https://dl.bintray.com/3dcitydb/maven'
         }
-        jcenter()
+        mavenCentral()
     }
 
     task processLicense(type: Copy) {
