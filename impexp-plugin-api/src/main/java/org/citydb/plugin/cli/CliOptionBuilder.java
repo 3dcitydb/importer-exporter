@@ -78,7 +78,7 @@ public class CliOptionBuilder {
 
                     PathMatcher matcher = FileSystems.getDefault().getPathMatcher(glob.toString().replace("\\", "\\\\"));
                     try (Stream<Path> stream = Files.walk(path)) {
-                        stream.forEach(p -> {
+                        stream.filter(Files::isRegularFile).forEach(p -> {
                             if (matcher.matches(p.toAbsolutePath().normalize())) {
                                 inputFiles.add(p);
                             }
