@@ -42,8 +42,9 @@ public class ImportLogger {
 	private final LocalDateTime date = LocalDateTime.now();
 	private final Path logFile;
 	private final BufferedWriter writer;
+	private String inputFile = "";
 
-	public ImportLogger(Path logFile, Path importFile, DatabaseConnection connection) throws IOException {
+	public ImportLogger(Path logFile, DatabaseConnection connection) throws IOException {
 		Path defaultDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
 		if (logFile.toAbsolutePath().normalize().startsWith(defaultDir)) {
 			Files.createDirectories(defaultDir);
@@ -57,19 +58,22 @@ public class ImportLogger {
 
 		this.logFile = logFile;
 		writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8);
-		writeHeader(importFile, connection);
+		writeHeader(connection);
 	}
 
 	public Path getLogFilePath() {
 		return logFile;
 	}
 
-	private void writeHeader(Path fileName, DatabaseConnection connection) throws IOException {
+	public void setInputFile(Path inputFile) {
+		this.inputFile = inputFile != null ? inputFile.toAbsolutePath().toString() : "";
+	}
+
+	private void writeHeader(DatabaseConnection connection) throws IOException {
 		writer.write('#' + getClass().getPackage().getImplementationTitle() +
 				", version \"" + getClass().getPackage().getImplementationVersion() + "\"");
 		writer.newLine();
 		writer.write("#Imported top-level features from file: ");
-		writer.write(fileName.toAbsolutePath().toString());
 		writer.newLine();
 		writer.write("#Database connection string: ");
 		writer.write(connection.toConnectString());
@@ -77,7 +81,7 @@ public class ImportLogger {
 		writer.write("#Timestamp: ");
 		writer.write(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 		writer.newLine();
-		writer.write("FEATURE_TYPE,CITYOBJECT_ID,GMLID_IN_FILE");
+		writer.write("FEATURE_TYPE,CITYOBJECT_ID,GMLID_IN_FILE,INPUT_FILE");
 		writer.newLine();
 	}
 
@@ -89,7 +93,7 @@ public class ImportLogger {
 	}
 	
 	public void write(ImportLogEntry entry) throws IOException {
-		writer.write(entry.type + "," + entry.id + "," + entry.gmlId + System.lineSeparator());
+		writer.write(entry.type + "," + entry.id + "," + entry.gmlId + "," + inputFile + System.lineSeparator());
 	}
 
 	public String getDefaultLogFileName() {
