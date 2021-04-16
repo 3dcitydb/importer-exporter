@@ -27,8 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import org.citydb.ade.ADEExtension;
-import org.citydb.ade.ADEExtensionManager;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
@@ -57,13 +55,10 @@ public abstract class AbstractTypeExporter implements DBExporter {
 			if (tableNames != null) {
 				tables = new ArrayList<>();
 				for (String tableName : tableNames) {
-					ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByTableName(tableName);
-					if (adeExtension.isEnabled()) {
-						Table table = new Table(tableName, exporter.getDatabaseAdapter().getConnectionDetails().getSchema());
-						tables.add(table);
-						select.addProjection(table.getColumn("id", table.getAlias() + table.getName()))
-								.addJoin(JoinFactory.left(table, "id", ComparisonName.EQUAL_TO, fromTable.getColumn("id")));
-					}
+					Table table = new Table(tableName, exporter.getDatabaseAdapter().getConnectionDetails().getSchema());
+					tables.add(table);
+					select.addProjection(table.getColumn("id", table.getAlias() + table.getName()))
+							.addJoin(JoinFactory.left(table, "id", ComparisonName.EQUAL_TO, fromTable.getColumn("id")));
 				}
 			}
 		}

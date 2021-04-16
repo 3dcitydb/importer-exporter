@@ -891,16 +891,24 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 		for (FeatureType featureType : schemaMapping.listFeatureTypesByTable(table.getName(), true)) {
 			// skip ADE features - we do not support ADEs of ADEs
-			if (adeManager.getExtensionByObjectClassId(featureType.getObjectClassId()) != null)
+			if (adeManager.getExtensionByObjectClassId(featureType.getObjectClassId()) != null) {
 				continue;
+			}
 
 			for (AbstractProperty property : featureType.listProperties(false, true)) {
 				if (property instanceof InjectedProperty) {
-					String adeHookTable = ((InjectedProperty)property).getBaseJoin().getTable();
-					if (adeHookTables == null)
-						adeHookTables = new HashSet<>();
+					String adeHookTable = ((InjectedProperty) property).getBaseJoin().getTable();
 
-					adeHookTables.add(adeHookTable);						
+					ADEExtension extension = adeManager.getExtensionByTableName(adeHookTable);
+					if (extension == null || !extension.isEnabled()) {
+						continue;
+					}
+
+					if (adeHookTables == null) {
+						adeHookTables = new HashSet<>();
+					}
+
+					adeHookTables.add(adeHookTable);
 				}
 			}
 		}
