@@ -4,6 +4,7 @@ import org.citydb.ImpExpException;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.controller.Importer;
 import org.citydb.cli.options.importer.FilterOption;
+import org.citydb.cli.options.importer.MetadataOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.importer.ImportConfig;
@@ -41,6 +42,9 @@ public class ImportCommand extends CliCommand {
 
     @CommandLine.ArgGroup
     private ThreadPoolOption threadPoolOption;
+
+    @CommandLine.ArgGroup(exclusive = false, heading = "Metadata options:%n")
+    private MetadataOption metadataOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Import filter options:%n")
     private FilterOption filterOption;
@@ -106,6 +110,10 @@ public class ImportCommand extends CliCommand {
         if (importLogFile != null) {
             importConfig.getImportLog().setLogFile(importLogFile.toAbsolutePath().toString());
             importConfig.getImportLog().setLogImportedFeatures(true);
+        }
+
+        if (metadataOption != null) {
+            importConfig.setContinuation(metadataOption.toContinuation());
         }
 
         if (filterOption != null) {
