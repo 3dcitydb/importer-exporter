@@ -214,27 +214,26 @@ public class DeleteManager {
 		// get affected city objects
 		Map<Integer, Long> counter = null;
 		long hits = 0;
-		if (calculateNumberMatched || preview) {
+		if (calculateNumberMatched || preview || config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
 			log.debug("Calculating the number of matching top-level features...");
 			counter = getNumberMatched(select);
 			hits = counter.values().stream().mapToLong(Long::longValue).sum();
+
+			if (hits > 0) {
+				log.info("Found " + hits + " top-level feature(s) matching the request.");
+			} else {
+				log.info("No top-level feature matches the query expression.");
+				return;
+			}
 		}
 
-		if (hits > 0) {
-			if (calculateNumberMatched) {
-				log.info("Found " + hits + " top-level feature(s) matching the request.");
-			}
-
-			if (preview) {
-				eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
-			} else if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
-				doTerminate(select);
-				eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
-			} else {
-				doDelete(select, hits);
-			}
+		if (preview) {
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
+		} else if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
+			doTerminate(select);
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
 		} else {
-			log.info("No feature matches the request.");
+			doDelete(select, hits);
 		}
 	}
 
@@ -256,6 +255,8 @@ public class DeleteManager {
 					DBSplittingResult splitter = new DBSplittingResult(id, objectType);
 					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
+			} else {
+				log.info("No top-level feature matches the query expression.");
 			}
 		}
 	}
