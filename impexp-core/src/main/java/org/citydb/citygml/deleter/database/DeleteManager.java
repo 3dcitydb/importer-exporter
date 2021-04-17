@@ -28,8 +28,8 @@
 package org.citydb.citygml.deleter.database;
 
 import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.deleter.util.DeleteLogger;
 import org.citydb.citygml.deleter.util.InternalConfig;
-import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.deleter.DeleteListIdType;
@@ -73,6 +73,7 @@ import org.citydb.sqlbuilder.update.Update;
 import org.citydb.sqlbuilder.update.UpdateToken;
 import org.citygml4j.model.module.citygml.CoreModule;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -91,6 +92,7 @@ public class DeleteManager {
 	private final Query query;
 	private final Config config;
 	private final CacheTable cacheTable;
+	private final DeleteLogger deleteLogger;
 	private final InternalConfig internalConfig;
 	private final EventDispatcher eventDispatcher;
 
@@ -110,6 +112,7 @@ public class DeleteManager {
 			WorkerPool<DBSplittingResult> dbWorkerPool,
 			Query query,
 			CacheTable cacheTable,
+			DeleteLogger deleteLogger,
 			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher,
@@ -119,6 +122,7 @@ public class DeleteManager {
 		this.dbWorkerPool = dbWorkerPool;
 		this.query = query;
 		this.cacheTable = cacheTable;
+		this.deleteLogger = deleteLogger;
 		this.internalConfig = internalConfig;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -134,7 +138,7 @@ public class DeleteManager {
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
 				databaseAdapter,
-				BuildProperties.defaults());
+				BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID));
 	}
 
 	public boolean isCalculateNumberMatched() {
@@ -158,7 +162,7 @@ public class DeleteManager {
 		}
 	}
 
-	public void deleteObjects() throws SQLException, QueryBuildException {
+	public void deleteObjects() throws SQLException, IOException, QueryBuildException {
 		try {
 			process();
 			if (shouldRun) {
@@ -176,7 +180,7 @@ public class DeleteManager {
 		}
 	}
 
-	private void process() throws SQLException, QueryBuildException {
+	private void process() throws SQLException, IOException, QueryBuildException {
 		if (!shouldRun)
 			return;
 
@@ -245,6 +249,7 @@ public class DeleteManager {
 				do {
 					long id = rs.getLong("id");
 					int objectClassId = rs.getInt("objectclass_id");
+					String gmlId = rs.getString("gmlid");
 
 					AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
 					if (objectType == null) {
@@ -252,7 +257,7 @@ public class DeleteManager {
 						continue;
 					}
 
-					DBSplittingResult splitter = new DBSplittingResult(id, objectType);
+					DBSplittingResult splitter = new DBSplittingResult(id, objectType, gmlId);
 					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
 			} else {
@@ -261,7 +266,23 @@ public class DeleteManager {
 		}
 	}
 
-	private void doTerminate(Select select) throws SQLException {
+	private void doTerminate(Select select) throws SQLException, IOException {
+		if (deleteLogger != null) {
+			try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+				 ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					long id = rs.getLong("id");
+					int objectClassId = rs.getInt("objectclass_id");
+					String gmlId = rs.getString("gmlid");
+					AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
+
+					deleteLogger.write(objectType != null ? objectType.getPath() : String.valueOf(objectClassId), id, gmlId);
+				}
+			} catch (IOException e) {
+				throw new IOException("A fatal error occurred while updating the delete log.", e);
+			}
+		}
+
 		Table table = new Table(MappingConstants.CITYOBJECT, builder.getBuildProperties().getAliasGenerator());
 		TimestampLiteral now = new TimestampLiteral(Timestamp.from(Instant.now()));
 		TimestampLiteral terminationDate = internalConfig.getTerminationDate() != null ?

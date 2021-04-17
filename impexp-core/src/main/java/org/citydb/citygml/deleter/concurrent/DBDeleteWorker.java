@@ -27,8 +27,9 @@
  */
 package org.citydb.citygml.deleter.concurrent;
 
+import org.citydb.citygml.deleter.database.DBSplittingResult;
+import org.citydb.citygml.deleter.util.DeleteLogger;
 import org.citydb.citygml.deleter.util.InternalConfig;
-import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
 import org.citydb.config.Config;
 import org.citydb.config.project.deleter.DeleteMode;
@@ -45,6 +46,7 @@ import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
 
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -61,6 +63,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 	private final PreparedStatement stmt;
 	private final AbstractDatabaseAdapter databaseAdapter;
+	private final DeleteLogger deleteLogger;
 	private final InternalConfig internalConfig;
 	private final EventDispatcher eventDispatcher;
 	private final DeleteMode mode;
@@ -68,8 +71,15 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 
-	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) throws SQLException {
+	public DBDeleteWorker(
+			Connection connection,
+			AbstractDatabaseAdapter databaseAdapter,
+			DeleteLogger deleteLogger,
+			InternalConfig internalConfig,
+			Config config,
+			EventDispatcher eventDispatcher) throws SQLException {
 		this.databaseAdapter = databaseAdapter;
+		this.deleteLogger = deleteLogger;
 		this.internalConfig = internalConfig;
 		this.eventDispatcher = eventDispatcher;
 
@@ -166,8 +176,10 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			}
 
 			if (deletedObjectId == objectId) {
-				log.debug(work.getObjectType() + " (ID = " + objectId + ") " +
-						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
+				log.debug(work.getObjectType() + " (ID = " + objectId + ") " + (mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
+				if (deleteLogger != null) {
+					deleteLogger.write(work.getObjectType().getPath(), objectId, work.getGmlId());
+				}
 			} else {
 				log.debug(work.getObjectType() + " (ID = " + objectId + ") is already deleted.");
 			}
@@ -178,6 +190,8 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 		} catch (SQLException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to " + mode.value() + " " + work.getObjectType() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel, this));
+		} catch (IOException e) {
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the delete log.", LogLevel.ERROR, e, eventChannel, this));
 		} catch (Throwable e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during " + mode.value() + ".", LogLevel.ERROR, e, eventChannel, this));
 		} finally {

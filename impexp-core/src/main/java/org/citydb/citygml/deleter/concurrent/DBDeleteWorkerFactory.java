@@ -27,8 +27,9 @@
  */
 package org.citydb.citygml.deleter.concurrent;
 
+import org.citydb.citygml.deleter.database.DBSplittingResult;
+import org.citydb.citygml.deleter.util.DeleteLogger;
 import org.citydb.citygml.deleter.util.InternalConfig;
-import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.config.Config;
@@ -44,12 +45,19 @@ import java.sql.SQLException;
 public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
 	private final Logger log = Logger.getInstance();
 	private final ConnectionManager connectionManager;
+	private final DeleteLogger deleteLogger;
 	private final InternalConfig internalConfig;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBDeleteWorkerFactory(ConnectionManager connectionManager, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
+	public DBDeleteWorkerFactory(
+			ConnectionManager connectionManager,
+			DeleteLogger deleteLogger,
+			InternalConfig internalConfig,
+			Config config,
+			EventDispatcher eventDispatcher) {
 		this.connectionManager = connectionManager;
+		this.deleteLogger = deleteLogger;
 		this.internalConfig = internalConfig;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -62,7 +70,7 @@ public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
 		try {
 			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 			Connection connection = connectionManager.getConnection();
-			dbWorker = new DBDeleteWorker(connection, databaseAdapter, internalConfig, config, eventDispatcher);
+			dbWorker = new DBDeleteWorker(connection, databaseAdapter, deleteLogger, internalConfig, config, eventDispatcher);
 		} catch (SQLException e) {
 			log.error("Failed to create delete worker.", e);
 		}
