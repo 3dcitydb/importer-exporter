@@ -110,7 +110,7 @@ public class Deleter implements EventHandler {
 			try {
 				Path logFile = config.getDeleteConfig().getDeleteLog().isSetLogFile() ?
 						Paths.get(config.getDeleteConfig().getDeleteLog().getLogFile()) :
-						CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
+						CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.DELETE_LOG_DIR);
 				deleteLogger = new DeleteLogger(logFile,
 						config.getDeleteConfig().getMode(),
 						config.getDatabaseConfig().getActiveConnection());
