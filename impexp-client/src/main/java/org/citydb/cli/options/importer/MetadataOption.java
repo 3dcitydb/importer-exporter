@@ -34,6 +34,10 @@ public class MetadataOption implements CliOption {
             description = "Reason for importing the data.")
     private String reasonForUpdate;
 
+    @CommandLine.Option(names = "--use-metadata-from-file",
+            description = "Use lineage, updating person and reason for update from input file if available.")
+    private boolean useMetadataFromFile;
+
     private Continuation continuation;
 
     public Continuation toContinuation() {
@@ -75,6 +79,8 @@ public class MetadataOption implements CliOption {
         if (reasonForUpdate != null) {
             continuation.setReasonForUpdate(reasonForUpdate);
         }
+
+        continuation.setImportCityDBMetadata(useMetadataFromFile);
 
         return continuation;
     }
