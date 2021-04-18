@@ -108,6 +108,7 @@ task build3DCityDB(type: GradleBuild, dependsOn: update3DCityDBGitSubmodule) {
     tasks = ['clean', 'installDist']
     buildFile = "$rootDir/resources/3dcitydb/build.gradle"
     outputs.dir "$rootDir/resources/3dcitydb/build/install/3dcitydb"
+    outputs.upToDateWhen { false }
 }
 
 // build 3dcitydb-web-map submodule
@@ -130,6 +131,7 @@ task buildADEManagerPlugin(type: GradleBuild, dependsOn: updateADEManagerPluginG
     tasks = ['clean', 'installDist']
     buildFile = "$rootDir/resources/plugins/plugin-ade-manager/build.gradle"
     outputs.dir "$rootDir/resources/plugins/plugin-ade-manager/build/install"
+    outputs.upToDateWhen { false }
 }
 
 // build plugin-spreadsheet-generator submodule
@@ -141,6 +143,7 @@ task buildSpreadsheetGeneratorPlugin(type: GradleBuild, dependsOn: updateSpreads
     tasks = ['clean', 'installDist']
     buildFile = "$rootDir/resources/plugins/plugin-spreadsheet-generator/build.gradle"
     outputs.dir "$rootDir/resources/plugins/plugin-spreadsheet-generator/build/install"
+    outputs.upToDateWhen { false }
 }
 
 distributions {
