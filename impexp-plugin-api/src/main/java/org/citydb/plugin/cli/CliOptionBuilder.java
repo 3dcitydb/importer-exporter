@@ -151,11 +151,6 @@ public class CliOptionBuilder {
                         throw new CommandLine.ParameterException(commandLine, "Error: Unknown prefix '" + parts[0] + "'");
                     }
 
-                    Module module = Modules.getModule(namespace);
-                    if (module == null || !module.hasFeature(parts[1])) {
-                        throw new CommandLine.ParameterException(commandLine, "Error: Unknown type name '" + typeName + "'");
-                    }
-
                     featureTypeFilter.addTypeName(new QName(namespace, parts[1]));
                 } else if (parts.length == 1) {
                     Stream.concat(CityGMLVersion.v2_0_0.getCityGMLModules().stream(),

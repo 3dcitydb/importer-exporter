@@ -62,7 +62,7 @@ public class FeatureTypeFilterBuilder {
 
 				FeatureType featureType = schemaMapping.getFeatureType(typeName);
 				if (featureType == null)
-					throw new QueryBuildException("'" + typeName + "' is not a valid feature type.");
+					throw new QueryBuildException("The feature type '" + typeName + "' is not supported.");
 
 				// check whether all feature types share the same CityGML version
 				CityGMLVersion featureVersion = featureType.getSchema().getCityGMLVersion(typeName.getNamespaceURI());
