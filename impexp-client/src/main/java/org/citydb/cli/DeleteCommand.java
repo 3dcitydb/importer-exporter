@@ -47,6 +47,8 @@ import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
+import java.nio.file.Path;
+
 @CommandLine.Command(
         name = "delete",
         description = "Deletes top-level city objects from the database.",
@@ -62,6 +64,10 @@ public class DeleteCommand extends CliCommand {
     @CommandLine.Option(names = {"-v", "--preview"},
             description = "Run in preview mode. Affected city objects will be neither deleted nor terminated.")
     private boolean preview;
+
+    @CommandLine.Option(names = "--delete-log", paramLabel = "<file>",
+            description = "Record deleted top-level features to this file.")
+    private Path deleteLogFile;
 
     @CommandLine.ArgGroup(exclusive = false)
     private CleanupOption cleanupOption;
@@ -142,6 +148,11 @@ public class DeleteCommand extends CliCommand {
             deleteConfig.setMode(mode == Mode.terminate ?
                     DeleteMode.TERMINATE :
                     DeleteMode.DELETE);
+        }
+
+        if (deleteLogFile != null) {
+            deleteConfig.getDeleteLog().setLogFile(deleteLogFile.toAbsolutePath().toString());
+            deleteConfig.getDeleteLog().setLogDeletedFeatures(true);
         }
 
         if (cleanupOption != null) {

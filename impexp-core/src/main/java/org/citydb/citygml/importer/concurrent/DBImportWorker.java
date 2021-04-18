@@ -154,7 +154,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 					updateImportContext();
 				}
 			} catch (IOException e) {
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the import log.", LogLevel.ERROR, e, eventChannel, this));
 			} catch (Throwable e) {
 				if (!isManagedTransaction) {
 					try {

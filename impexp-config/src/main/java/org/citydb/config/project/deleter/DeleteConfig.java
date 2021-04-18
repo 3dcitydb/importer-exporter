@@ -15,7 +15,8 @@ import javax.xml.bind.annotation.XmlType;
         "simpleQuery",
         "deleteList",
         "cleanupGlobalAppearances",
-        "continuation"
+        "continuation",
+        "deleteLog"
 })
 public class DeleteConfig {
     @XmlAttribute
@@ -29,11 +30,13 @@ public class DeleteConfig {
     private DeleteList deleteList;
     private boolean cleanupGlobalAppearances;
     private Continuation continuation;
+    private DeleteLog deleteLog;
 
     public DeleteConfig() {
         query = new QueryConfig();
         simpleQuery = new SimpleQuery();
         continuation = new Continuation();
+        deleteLog = new DeleteLog();
     }
 
     public boolean isUseSimpleQuery() {
@@ -107,4 +110,13 @@ public class DeleteConfig {
             this.continuation = continuation;
     }
 
+    public DeleteLog getDeleteLog() {
+        return deleteLog;
+    }
+
+    public void setDeleteLog(DeleteLog deleteLog) {
+        if (deleteLog != null) {
+            this.deleteLog = deleteLog;
+        }
+    }
 }

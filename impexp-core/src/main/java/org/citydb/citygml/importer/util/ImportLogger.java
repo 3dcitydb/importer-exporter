@@ -75,7 +75,7 @@ public class ImportLogger {
 		writer.newLine();
 		writer.write("#Imported top-level features from file: ");
 		writer.newLine();
-		writer.write("#Database connection string: ");
+		writer.write("#Database connection: ");
 		writer.write(connection.toConnectString());
 		writer.newLine();
 		writer.write("#Timestamp: ");
@@ -86,10 +86,7 @@ public class ImportLogger {
 	}
 
 	private void writeFooter(boolean success) throws IOException {
-		if (success)
-			writer.write("#Import successfully finished.");
-		else
-			writer.write("#Import aborted.");
+		writer.write(success ? "#Import successfully finished." : "#Import aborted.");
 	}
 	
 	public void write(ImportLogEntry entry) throws IOException {
@@ -110,10 +107,14 @@ public class ImportLogger {
 		private final long id;
 		private final String gmlId;
 
-		public ImportLogEntry(String type, long id, String gmlId) {
+		private ImportLogEntry(String type, long id, String gmlId) {
 			this.type = type;
 			this.id = id;
-			this.gmlId = gmlId != null && !gmlId.isEmpty() ? gmlId : "";
+			this.gmlId = gmlId != null ? gmlId : "";
+		}
+
+		public static ImportLogEntry of(String type, long id, String gmlId) {
+			return new ImportLogEntry(type, id, gmlId);
 		}
 	}
 }
