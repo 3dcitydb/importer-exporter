@@ -274,9 +274,13 @@ public class DeleteManager {
 					long id = rs.getLong("id");
 					int objectClassId = rs.getInt("objectclass_id");
 					String gmlId = rs.getString("gmlid");
-					AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
 
-					deleteLogger.write(objectType != null ? objectType.getPath() : String.valueOf(objectClassId), id, gmlId);
+					AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
+					if (objectType == null) {
+						throw new SQLException("Failed to map the object class id '" + objectClassId + "' to an object type (ID: " + id + ").");
+					}
+
+					deleteLogger.write(objectType.getPath(), id, gmlId);
 				}
 			} catch (IOException e) {
 				throw new IOException("A fatal error occurred while updating the delete log.", e);
