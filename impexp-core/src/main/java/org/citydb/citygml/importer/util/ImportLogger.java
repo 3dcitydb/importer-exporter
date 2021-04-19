@@ -73,8 +73,6 @@ public class ImportLogger {
 		writer.write('#' + getClass().getPackage().getImplementationTitle() +
 				", version \"" + getClass().getPackage().getImplementationVersion() + "\"");
 		writer.newLine();
-		writer.write("#Imported top-level features from file: ");
-		writer.newLine();
 		writer.write("#Database connection: ");
 		writer.write(connection.toConnectString());
 		writer.newLine();
