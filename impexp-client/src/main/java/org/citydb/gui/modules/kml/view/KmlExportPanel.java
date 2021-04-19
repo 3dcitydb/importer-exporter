@@ -391,7 +391,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
         add(exportButton, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.NONE, 10, 10, 10, 10));
 
-        browseButton.addActionListener(e -> saveFile());
+        browseButton.addActionListener(e -> saveFile(Language.I18N.getString("main.tabbedPane.kmlExport")));
         manualTilingRadioButton.addActionListener(e -> setEnabledTiling());
         automaticTilingRadioButton.addActionListener(e -> setEnabledTiling());
         footprintCheckbox.addItemListener(e -> setVisibilityEnabledValues());
@@ -960,8 +960,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         featureTree.repaint();
     }
 
-    private void saveFile() {
+    private void saveFile(String title) {
         JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
 
         FileNameExtensionFilter filter = new FileNameExtensionFilter("KML Files (*.kml)", "kml");
         chooser.addChoosableFileFilter(filter);

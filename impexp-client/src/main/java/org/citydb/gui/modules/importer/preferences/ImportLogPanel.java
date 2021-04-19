@@ -69,7 +69,7 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 		PopupMenuDecorator.getInstance().decorate(logFile);
 		
 		browseButton.addActionListener(e -> {
-			String dir = browseFile(Language.I18N.getString("pref.import.log.label.useLog"), logFile.getText());
+			String dir = browseFile(Language.I18N.getString("pref.tree.import.log"), logFile.getText());
 			if (!dir.isEmpty())
 				logFile.setText(dir);
 		});
