@@ -580,7 +580,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     public String[] getVersion() {
         return new String[]{
                 getClass().getPackage().getImplementationTitle() +
-                        ", version " + this.getClass().getPackage().getImplementationVersion(),
+                        ", version " + getClass().getPackage().getImplementationVersion(),
                 "(C) 2013-" + LocalDate.now().getYear() + " " + getClass().getPackage().getImplementationVendor()
         };
     }
