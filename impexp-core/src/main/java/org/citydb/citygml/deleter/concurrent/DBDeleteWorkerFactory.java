@@ -62,6 +62,14 @@ public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
+
+	public DBDeleteWorkerFactory(
+			ConnectionManager connectionManager,
+			InternalConfig internalConfig,
+			Config config,
+			EventDispatcher eventDispatcher) {
+		this(connectionManager, null, internalConfig, config, eventDispatcher);
+	}
 	
 	@Override
 	public Worker<DBSplittingResult> createWorker() {	

@@ -40,6 +40,10 @@ public class DBSplittingResult {
 		this.gmlId = gmlId;
 	}
 
+	public DBSplittingResult(long id, AbstractObjectType<?> objectType) {
+		this(id, objectType, null);
+	}
+
 	public long getId() {
 		return id;
 	}
