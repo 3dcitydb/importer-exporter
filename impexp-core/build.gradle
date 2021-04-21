@@ -10,9 +10,14 @@ dependencies {
     api 'org.locationtech.jts:jts-core:1.16.1'
     api 'org.postgresql:postgresql:42.2.14'
     api 'net.postgis:postgis-jdbc:2.5.0'
+    api('com.oracle.database.jdbc:ojdbc8:19.3.0.0') {
+        exclude group: 'com.oracle.database.jdbc', module: 'ucp'
+        exclude group: 'com.oracle.database.ha'
+        exclude group: 'com.oracle.database.security'
+    }
+    api 'com.oracle.sdoapi:sdoapi:19.3.0.0'
     api 'org.apache.tika:tika-core:1.24.1'
     api 'com.univocity:univocity-parsers:2.9.1'
-    api fileTree(dir: 'lib', include: '*.jar')
     implementation 'com.h2database:h2:1.4.200'
     implementation 'org.apache.tomcat:tomcat-jdbc:9.0.41'
     implementation 'org.apache.tomcat:tomcat-juli:9.0.41'
