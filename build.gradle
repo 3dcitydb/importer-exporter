@@ -1,12 +1,17 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
+plugins {
+    id "com.jfrog.artifactory" version "4.16.1"
+}
+
 apply from: 'properties.gradle'
 
-version '4.3.0-rc4'
+version '4.3.0-rc5'
 
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.artifactory'
 
     group 'org.citydb'
     version parent.version
@@ -107,6 +112,21 @@ subprojects {
                         connection = 'scm:git:' + project.impexpGit
                     }
                 }
+            }
+        }
+    }
+
+    artifactory {
+        contextUrl = project.hasProperty('artifactory_contextUrl') ? project.property('artifactory_contextUrl') : System.getenv('artifactory_contextUrl')
+        publish {
+            repository {
+                repoKey = 'maven'
+                username = project.hasProperty('artifactory_user') ? project.property('artifactory_user') : System.getenv('artifactory_user')
+                password = project.hasProperty('artifactory_password') ? project.property('artifactory_password') : System.getenv('artifactory_password')
+                maven = true
+            }
+            defaults {
+                publications('mavenJava')
             }
         }
     }
