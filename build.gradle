@@ -1,7 +1,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
-    id "com.jfrog.artifactory" version "4.16.1"
+    id 'com.jfrog.artifactory' version '4.16.1'
 }
 
 apply from: 'properties.gradle'
@@ -28,7 +28,7 @@ subprojects {
             url 'https://repo.osgeo.org/repository/release'
         }
         maven {
-            url 'https://dl.bintray.com/3dcitydb/maven'
+            url 'https://citydb.jfrog.io/artifactory/maven'
         }
         mavenCentral()
     }
