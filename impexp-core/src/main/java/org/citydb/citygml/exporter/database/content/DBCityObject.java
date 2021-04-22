@@ -484,8 +484,8 @@ public class DBCityObject extends AbstractTypeExporter {
 
 	private void delegateADEProperties(ObjectContext context, long objectId) throws SQLException, CityGMLExportException {
 		// we only have to query and delegate ADE properties here if the
-		// ADE feature is a direct child of AbstractCityObject and, thus,
-		// is not handled by another exporter class
+		// ADE feature is a direct child of AbstractCityObject or AbstractSite
+		// and, thus, is not handled by another exporter class
 		if (context.queryADEHookTables) {
 			List<Table> adeHookTables = getADEHookTables(context);
 			if (adeHookTables.isEmpty()) {
