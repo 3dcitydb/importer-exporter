@@ -164,7 +164,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 				}
 				openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, opening);
 			}
-			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, table);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, thematicSurface);
 		}
 		constructionElementADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_CONSTR_ELEMENT, table);
 	}

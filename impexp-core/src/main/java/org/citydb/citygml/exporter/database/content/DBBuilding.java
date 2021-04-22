@@ -190,7 +190,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 				}
 				openingADEHookTables = addJoinsToADEHookTables(TableEnum.OPENING, opening);
 			}
-			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, thematicSurface);
 		}
 		if (lodFilter.containsLodGreaterThanOrEuqalTo(2) &&
 				(projectionFilter.containsProperty("outerBuildingInstallation", buildingModule)

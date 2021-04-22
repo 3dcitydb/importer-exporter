@@ -179,7 +179,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 				}
 				openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, opening);
 			}
-			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, table);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, thematicSurface);
 		}
 		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
 				&& (projectionFilter.containsProperty("outerBridgeInstallation", bridgeModule)

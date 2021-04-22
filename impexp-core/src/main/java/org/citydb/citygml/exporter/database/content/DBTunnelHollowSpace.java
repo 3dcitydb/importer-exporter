@@ -131,7 +131,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 							.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
 					openingADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_OPENING, opening);
 				}
-				surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
+				surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, thematicSurface);
 			}
 			if (projectionFilter.containsProperty("interiorFurniture", tunnelModule)) {
 				CombinedProjectionFilter tunnelFurnitureProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TUNNEL_FURNITURE.getName());

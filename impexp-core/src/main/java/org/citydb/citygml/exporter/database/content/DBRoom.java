@@ -142,7 +142,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 					}
 					openingADEHookTables = addJoinsToADEHookTables(TableEnum.OPENING, opening);
 				}
-				surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
+				surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, thematicSurface);
 			}
 			if (projectionFilter.containsProperty("interiorFurniture", buildingModule)) {
 				CombinedProjectionFilter buildingFurnitureProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BUILDING_FURNITURE.getName());

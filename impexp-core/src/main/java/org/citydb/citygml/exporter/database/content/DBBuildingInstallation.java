@@ -157,7 +157,7 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 				}
 				openingADEHookTables = addJoinsToADEHookTables(TableEnum.OPENING, opening);
 			}
-			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, thematicSurface);
 		}
 		installationADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING_INSTALLATION, table);
 	}

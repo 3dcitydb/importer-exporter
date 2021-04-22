@@ -142,7 +142,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 					}
 					openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, opening);
 				}
-				surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, table);
+				surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, thematicSurface);
 			}
 			if (projectionFilter.containsProperty("interiorFurniture", bridgeModule)) {
 				CombinedProjectionFilter bridgeFurnitureProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE_FURNITURE.getName());

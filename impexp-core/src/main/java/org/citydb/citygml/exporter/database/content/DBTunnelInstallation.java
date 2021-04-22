@@ -146,7 +146,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 						.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
 				openingADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_OPENING, opening);
 			}
-			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, thematicSurface);
 		}
 		installationADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_INSTALLATION, table);
 	}
