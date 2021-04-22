@@ -51,10 +51,11 @@ The @name@ is a Java based front-end for
 the @citydbName@ version @citydbVersion@. It allows for high-performance 
 loading and extracting 3D city model data.
 
-* Full support for CityGML versions 2.0.0 and 1.0.0
+* Full support for CityGML versions 2.0 and 1.0
+* Support for CityJSON 1.0
 * Support for CityGML Application Domain Extensions (ADEs) through
   software extensions
-* Support for Oracle Locator/Spatial and PostgreSQL/PostGIS
+* Support for PostgreSQL/PostGIS and Oracle Locator/Spatial
 * Reading/writing CityGML instance documents of arbitrary file size
 * Export of KML/COLLADA/glTF models including tiling schemas for 
   visualization and interactive exploration of large city models
@@ -66,11 +67,11 @@ loading and extracting 3D city model data.
   CityGML datasets
 * Full support of 3D Coordinate Reference Systems (CRS) and 3D 
   coordinate transformations; support for user-defined CRS 
-* Coordinate transformations for CityGML exports
+* Coordinate transformations for CityGML/CityJSON exports
 * Map window for graphical selection of bounding boxes
-* XML validation of CityGML instance documents
-* Multithreaded programming facilitating high-performance CityGML 
-  processing
+* Validation of CityGML/CityJSON instance documents
+* Multithreaded programming facilitating high-performance
+  data processing
 
 The @name@ comes with both a Graphical
 User Interface (GUI) and a Command Line Interface (CLI). The CLI 
@@ -81,7 +82,7 @@ third party applications.
 4. System requirements
 ----------------------
 
-* Java JRE or JDK >= 11
+* Java JRE or JDK >= 8
 * @citydbName@ version @citydbVersion@ on
   - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
   - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
@@ -164,7 +165,7 @@ b) The @name@ also offers a
    to 1GB using the -Xms parameter of the JVM. This value has been chosen to
    be reasonable for most scenarios. Please edit the CLI scripts in case you
    need to adapt the default value. You can also use the environment variables
-   JAVA_OPTS and IMPEXP_OPTS to pass JVM options to CLI script.
+   JAVA_OPTS and IMPEXP_OPTS to pass JVM options to the CLI scripts.
 
 
 7. Documentation
