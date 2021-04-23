@@ -51,8 +51,7 @@ The @name@ is a Java based front-end for
 the @citydbName@ version @citydbVersion@. It allows for high-performance 
 loading and extracting 3D city model data.
 
-* Full support for CityGML versions 2.0 and 1.0
-* Support for CityJSON 1.0
+* Support for CityGML 2.0 and 1.0 and CityJSON 1.0
 * Support for CityGML Application Domain Extensions (ADEs) through
   software extensions
 * Support for PostgreSQL/PostGIS and Oracle Locator/Spatial
