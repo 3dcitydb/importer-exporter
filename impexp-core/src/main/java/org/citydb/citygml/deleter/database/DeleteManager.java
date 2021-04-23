@@ -287,7 +287,10 @@ public class DeleteManager {
 			}
 		}
 
-		Table table = new Table(MappingConstants.CITYOBJECT, builder.getBuildProperties().getAliasGenerator());
+		Table table = new Table(MappingConstants.CITYOBJECT,
+				databaseAdapter.getConnectionDetails().getSchema(),
+				builder.getBuildProperties().getAliasGenerator());
+
 		TimestampLiteral now = new TimestampLiteral(Timestamp.from(Instant.now()));
 		TimestampLiteral terminationDate = internalConfig.getTerminationDate() != null ?
 				new TimestampLiteral(GregorianCalendar.from(internalConfig.getTerminationDate().toZonedDateTime())) :
