@@ -52,7 +52,7 @@ public abstract class AbstractTypeExporter implements DBExporter {
 		List<Table> tables = null;
 		if (exporter.hasADESupport()) {
 			Set<String> tableNames = exporter.getADEHookTables(type);
-			if (tableNames != null) {
+			if (!tableNames.isEmpty()) {
 				tables = new ArrayList<>();
 				for (String tableName : tableNames) {
 					Table table = new Table(tableName, exporter.getDatabaseAdapter().getConnectionDetails().getSchema());

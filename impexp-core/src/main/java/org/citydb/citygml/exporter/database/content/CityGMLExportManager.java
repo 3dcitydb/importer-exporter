@@ -887,7 +887,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	protected Set<String> getADEHookTables(TableEnum table) {
-		Set<String> adeHookTables = null;
+		Set<String> adeHookTables = new HashSet<>();
 
 		for (FeatureType featureType : schemaMapping.listFeatureTypesByTable(table.getName(), true)) {
 			// skip ADE features - we do not support ADEs of ADEs
@@ -895,21 +895,24 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				continue;
 			}
 
-			for (AbstractProperty property : featureType.listProperties(false, true)) {
-				if (property instanceof InjectedProperty) {
-					String adeHookTable = ((InjectedProperty) property).getBaseJoin().getTable();
+			adeHookTables.addAll(getADEHookTables(featureType));
+		}
 
-					ADEExtension extension = adeManager.getExtensionByTableName(adeHookTable);
-					if (extension == null || !extension.isEnabled()) {
-						continue;
-					}
+		return adeHookTables;
+	}
 
-					if (adeHookTables == null) {
-						adeHookTables = new HashSet<>();
-					}
+	protected Set<String> getADEHookTables(FeatureType featureType) {
+		Set<String> adeHookTables = new HashSet<>();
+		for (AbstractProperty property : featureType.listProperties(false, true)) {
+			if (property instanceof InjectedProperty) {
+				String adeHookTable = ((InjectedProperty) property).getBaseJoin().getTable();
 
-					adeHookTables.add(adeHookTable);
+				ADEExtension extension = adeManager.getExtensionByTableName(adeHookTable);
+				if (extension == null || !extension.isEnabled()) {
+					continue;
 				}
+
+				adeHookTables.add(adeHookTable);
 			}
 		}
 

@@ -42,6 +42,7 @@ import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.query.Query;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.tiling.Tile;
@@ -54,6 +55,7 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.geometry.Point;
+import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -86,9 +88,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DBCityObject implements DBExporter {
+public class DBCityObject extends AbstractTypeExporter {
 	private final Query query;
-	private final CityGMLExportManager exporter;
+	private final Connection connection;
 	private final PreparedStatement psSelect;
 	private final PreparedStatement psBulk;
 	private final Map<Long, List<ObjectContext>> batches;
@@ -105,6 +107,8 @@ public class DBCityObject implements DBExporter {
 	private final String appearanceModule;
 	private final String gmlModule;
 
+	private Map<Integer, List<Table>> adeHookTables;
+	private Map<Integer, PreparedStatement> adeHookStatements;
 	private DBLocalAppearance appearanceExporter;
 	private boolean setTileInfoAsGenericAttribute;
 	private Tile activeTile;
@@ -112,8 +116,9 @@ public class DBCityObject implements DBExporter {
 	private String cityDBADEModule;
 
 	public DBCityObject(Connection connection, Query query, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
+		super(exporter);
 		this.query = query;
-		this.exporter = exporter;
+		this.connection = connection;
 
 		batches = new LinkedHashMap<>();
 		batchSize = exporter.getFeatureBatchSize();
@@ -144,12 +149,12 @@ public class DBCityObject implements DBExporter {
 		gmlModule = GMLCoreModule.v3_1_1.getNamespaceURI();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		Table table = new Table(TableEnum.CITYOBJECT.getName(), schema);
+		table = new Table(TableEnum.CITYOBJECT.getName(), schema);
 		Table externalReference = new Table(TableEnum.EXTERNAL_REFERENCE.getName(), schema);
 		Table generalization = new Table(TableEnum.GENERALIZATION.getName(), schema);
 		Table genericAttributes = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
 
-		Select select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), exporter.getGeometryColumn(table.getColumn("envelope")),
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), exporter.getGeometryColumn(table.getColumn("envelope")),
 				table.getColumn("name"), table.getColumn("name_codespace"), table.getColumn("description"), table.getColumn("creation_date"),
 				table.getColumn("termination_date"), table.getColumn("relative_to_terrain"), table.getColumn("relative_to_water"),
 				externalReference.getColumn("id", "exid"), externalReference.getColumn("infosys"), externalReference.getColumn("name", "exname"), externalReference.getColumn("uri"),
@@ -174,13 +179,16 @@ public class DBCityObject implements DBExporter {
 	}
 
 	protected void addBatch(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) throws CityGMLExportException, SQLException {
-		batches.computeIfAbsent(objectId, v -> new ArrayList<>()).add(new ObjectContext(object, objectType, projectionFilter));
+		ObjectContext context = new ObjectContext(object, objectType, projectionFilter);
+		batches.computeIfAbsent(objectId, v -> new ArrayList<>()).add(context);
 		if (batches.size() == batchSize)
 			executeBatch();
 
 		// ADE-specific extensions
-		if (exporter.hasADESupport())
+		if (exporter.hasADESupport()) {
 			exporter.delegateToADEExporter(object, objectId, objectType, projectionFilter);
+			delegateADEProperties(context, objectId);
+		}
 	}
 
 	public boolean executeBatch() throws CityGMLExportException, SQLException {
@@ -261,14 +269,16 @@ public class DBCityObject implements DBExporter {
 			postprocess();
 
 			// ADE-specific extensions
-			if (exporter.hasADESupport())
+			if (exporter.hasADESupport()) {
 				exporter.delegateToADEExporter(context.object, objectId, context.objectType, context.projectionFilter);
+				delegateADEProperties(context, objectId);
+			}
 
 			return true;
 		}
 	}
 
-	protected boolean initializeObject(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
+	private boolean initializeObject(ObjectContext context, ResultSet rs) throws SQLException {
 		boolean setEnvelope = !context.isCityObject || (context.projectionFilter.containsProperty("boundedBy", gmlModule)
 				&& (exporter.getExportConfig().getGeneralOptions().getEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
 				|| (exporter.getExportConfig().getGeneralOptions().getEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && context.isTopLevel)));
@@ -472,10 +482,79 @@ public class DBCityObject implements DBExporter {
 		generalizesToExporter.executeBatch();
 	}
 
+	private void delegateADEProperties(ObjectContext context, long objectId) throws SQLException, CityGMLExportException {
+		// we only have to query and delegate ADE properties here if the
+		// ADE feature is a direct child of AbstractCityObject or AbstractSite
+		// and, thus, is not handled by another exporter class
+		if (context.queryADEHookTables) {
+			List<Table> adeHookTables = getADEHookTables(context);
+			if (adeHookTables.isEmpty()) {
+				return;
+			}
+
+			PreparedStatement ps = getADEHookStatement(context, adeHookTables);
+			ps.setLong(1, objectId);
+
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					List<String> tableNames = retrieveADEHookTables(adeHookTables, rs);
+					if (tableNames != null) {
+						exporter.delegateToADEExporter(tableNames, (AbstractFeature) context.object, objectId,
+								(FeatureType) context.objectType, context.projectionFilter);
+					}
+				}
+			}
+		}
+	}
+
+	private List<Table> getADEHookTables(ObjectContext context) {
+		if (adeHookTables == null) {
+			adeHookTables = new HashMap<>();
+		}
+
+		List<Table> tables = adeHookTables.get(context.objectType.getObjectClassId());
+		if (tables == null) {
+			tables = new ArrayList<>();
+			for (String tableName : exporter.getADEHookTables((FeatureType) context.objectType)) {
+				tables.add(new Table(tableName, exporter.getDatabaseAdapter().getConnectionDetails().getSchema()));
+			}
+
+			adeHookTables.put(context.objectType.getObjectClassId(), tables);
+		}
+
+		return tables;
+	}
+
+	private PreparedStatement getADEHookStatement(ObjectContext context, List<Table> adeHookTables) throws SQLException {
+		if (adeHookStatements == null) {
+			adeHookStatements = new HashMap<>();
+		}
+
+		PreparedStatement ps = adeHookStatements.get(context.objectType.getObjectClassId());
+		if (ps == null) {
+			Select select = new Select().addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
+			for (Table adeHookTable : adeHookTables) {
+				select.addProjection(adeHookTable.getColumn("id", adeHookTable.getAlias() + adeHookTable.getName()))
+						.addJoin(JoinFactory.left(adeHookTable, "id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			}
+
+			ps = connection.prepareStatement(select.toString());
+			adeHookStatements.put(context.objectType.getObjectClassId(), ps);
+		}
+
+		return ps;
+	}
+
 	@Override
 	public void close() throws SQLException {
 		psBulk.close();
 		psSelect.close();
+
+		if (adeHookStatements != null) {
+			for (PreparedStatement ps : adeHookStatements.values()) {
+				ps.close();
+			}
+		}
 	}
 
 	private static class ObjectContext {
@@ -486,6 +565,7 @@ public class DBCityObject implements DBExporter {
 		final boolean isCityObject;
 		final boolean isTopLevel;
 
+		boolean queryADEHookTables;
 		boolean isInitialized;
 		Set<Long> appearances;
 		Set<Long> generalizesTos;
@@ -508,6 +588,12 @@ public class DBCityObject implements DBExporter {
 				externalReferences = new HashSet<>();
 				genericAttributes = new HashSet<>();
 				genericAttributeSets = new HashMap<>();
+
+				if (object instanceof ADEModelObject
+						&& objectType.isSetExtension()
+						&& objectType.getExtension().getBase().getTable().equals(MappingConstants.CITYOBJECT)) {
+					queryADEHookTables = true;
+				}
 			}
 		}
 
