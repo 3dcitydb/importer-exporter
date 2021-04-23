@@ -183,8 +183,8 @@ and with the support from the following cooperation partners:
 
 * Chair of Geoinformatics, Technical University of Munich
   https://www.gis.bgu.tum.de/
-* virtualcitySYSTEMS GmbH, Berlin
-  http://www.virtualcitysystems.de/
+* Virtual City Systems, Berlin
+  https://vc.systems/
 * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen
   http://www.moss.de/
   
@@ -192,9 +192,9 @@ and with the support from the following cooperation partners:
 9. Active Developers
 --------------------
 
-Claus Nagel <cnagel@virtualcitysystems.de>
-Zhihang Yao <zyao@virtualcitysystems.de>
-György Hudra <ghudra@moss.de>
+Claus Nagel <cnagel@vc.systems>
+Zhihang Yao <zyao@vc.systems>
+Luca Casagrande <lcasagrande@moss.de>
 Felix Kunde <felix-kunde@gmx.de>
 Son H. Nguyen <son.nguyen@tum.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
@@ -207,7 +207,7 @@ documentation for the list of all contributors to previous versions.
 10. Contact
 ----------
 
-cnagel@virtualcitysystems.de
+cnagel@vc.systems
 thomas.kolbe@tum.de
 
 
