@@ -51,7 +51,8 @@ The @name@ is a Java based front-end for
 the @citydbName@ version @citydbVersion@. It allows for high-performance 
 loading and extracting 3D city model data.
 
-* Support for CityGML 2.0 and 1.0 and CityJSON 1.0
+* Support for CityGML 2.0 and 1.0
+* Support for CityJSON 1.0
 * Support for CityGML Application Domain Extensions (ADEs) through
   software extensions
 * Support for PostgreSQL/PostGIS and Oracle Locator/Spatial
@@ -62,15 +63,14 @@ loading and extracting 3D city model data.
 * Generic KML information balloons
 * Export of thematic object data into tables. Supported data formats are
   CSV and Microsoft Excel
-* Resolving and preservation of forward and backwards XLinks in 
+* Resolving and preservation of forward and backwards XLinks in
   CityGML datasets
-* Full support of 3D Coordinate Reference Systems (CRS) and 3D 
-  coordinate transformations; support for user-defined CRS 
+* Full support of 3D Coordinate Reference Systems (CRS) and 3D
+  coordinate transformations; support for user-defined CRS
 * Coordinate transformations for CityGML/CityJSON exports
 * Map window for graphical selection of bounding boxes
 * Validation of CityGML/CityJSON instance documents
-* Multithreaded programming facilitating high-performance
-  data processing
+* Multithreaded programming facilitating high-performance data processing
 
 The @name@ comes with both a Graphical
 User Interface (GUI) and a Command Line Interface (CLI). The CLI 
