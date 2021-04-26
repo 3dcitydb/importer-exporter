@@ -145,7 +145,7 @@ public class InfoDialog extends JDialog {
 			Component tumInfo = createInfoText(tum, "https://www.lrg.tum.de/gis");
 
 			JLabel vcsLogo = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/logos/vcs_logo.png")));
-			Component vcsInfo = createInfoText("Virtual City Systems, Berlin", "https://www.vc.systems");
+			Component vcsInfo = createInfoText("Virtual City Systems, Berlin", "https://vc.systems");
 
 			JLabel mossLogo = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/logos/moss_logo.png")));
 			Component mossInfo = createInfoText("M.O.S.S. Computer Grafik Systeme GmbH,<br/>Taufkirchen, Germany",
