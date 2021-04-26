@@ -11,7 +11,7 @@ ext {
     // 3D City Database
     citydbShortName = '3DCityDB'
     citydbName = '3D City Database'
-    citydbVersion = '4.0.x'
+    citydbVersion = '4.1.x'
     citydbWebsiteUrl = 'https://www.3dcitydb.org'
     citydbVcsUrl = 'https://github.com/3dcitydb'
 
@@ -28,5 +28,5 @@ ext {
     appCliName = 'impexp'
 
     // documentation
-    docUrl = 'https://3dcitydb-docs.readthedocs.io/en/release-v4.2.3/'
+    docUrl = 'https://3dcitydb-docs.readthedocs.io/en/release-v4.3.0/'
 }
