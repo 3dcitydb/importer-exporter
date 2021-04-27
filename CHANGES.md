@@ -3,6 +3,7 @@ Change Log
 
 ### 4.3.0
 
+##### Additions
 * Completely redesigned command-line interface (CLI) to be able to invoke default import, export and delete operations
   without the need for passing an XML config file. [#147](https://github.com/3dcitydb/importer-exporter/pull/147)
 * CityJSON import and export. [#88](https://github.com/3dcitydb/importer-exporter/issues/88),
@@ -26,6 +27,11 @@ Change Log
 * Users can now choose to write log messages to a specific log file and not just a log directory.
 * General tweaks, bugfixes, and code refactoring
 
+##### Changes
+* Instead of Oracle, the PostgreSQL/PostGIS is now the default database connection. [#162](https://github.com/3dcitydb/importer-exporter/pull/162)
+* Reworked GUI and config file to manage and store one workspace per connection for Oracle databases. [#164](https://github.com/3dcitydb/importer-exporter/pull/164)
+* When importing local geometry XLinks into a 3DCityDB instance of version 4.1, the `IS_XLINK` column of `SURFACE_GEOMETRY` is now filled with value `2`, which allows to substantially improves the export performance. [#159](https://github.com/3dcitydb/importer-exporter/pull/159)
+
 ##### Fixes
 * Fixed bug in SQL query builder. [#122](https://github.com/3dcitydb/importer-exporter/pull/122)
 * Fixed possible database deadlocks when updating involved tables during XLink resolution.
@@ -41,6 +47,13 @@ Change Log
 * Color settings are used as fallback in COLLADA/glTF exports when the selected theme is not available for a 
   feature.
 * Fixed hierarchical geometry query to work with Oracle 11g and previous versions.
+
+##### Miscellaneous
+* Updated to latest versions of the ADE manager plugin and the Spreadsheet Generator plugin.
+* Upgrade PostgreSQL driver to 42.2.14 and PostGIS to 2.5.0.
+* Updated citygml4j to 2.11.3.
+* Starting from this version, all 3DCityDB Maven artifacts are maintained in the JFrog Artifactory Cloud using the new
+  repository link https://citydb.jfrog.io/artifactory/maven. [#183](https://github.com/3dcitydb/importer-exporter/pull/183)
 
 ### 4.2.3 - 2020-04-06
 
