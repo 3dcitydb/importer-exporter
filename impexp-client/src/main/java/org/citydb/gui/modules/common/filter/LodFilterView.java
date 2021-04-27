@@ -38,6 +38,7 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -49,6 +50,7 @@ public class LodFilterView extends FilterView<LodFilter> {
     private JComboBox<LodFilterMode> lodMode;
     private JLabel lodDepthLabel;
     private JSpinner lodDepth;
+    private boolean enabled;
 
     public LodFilterView() {
         init();
@@ -115,30 +117,21 @@ public class LodFilterView extends FilterView<LodFilter> {
 
     @Override
     public void setEnabled(boolean enabled) {
-        for (JCheckBox lod : lods)
-            lod.setEnabled(enabled);
+        this.enabled = enabled;
 
-        if (enabled) {
-            setEnabledLodFilterMode();
-        } else {
-            lodModeLabel.setEnabled(false);
-            lodMode.setEnabled(false);
+        for (JCheckBox lod : lods) {
+            lod.setEnabled(enabled);
         }
 
+        setEnabledLodFilterMode();
         lodDepthLabel.setEnabled(enabled);
         lodDepth.setEnabled(enabled);
     }
 
     private void setEnabledLodFilterMode() {
-        int selected = 0;
-        for (JCheckBox lod : lods) {
-            if (lod.isSelected()) {
-                selected++;
-            }
-        }
-
-        lodModeLabel.setEnabled(selected > 1);
-        lodMode.setEnabled(selected > 1);
+        boolean enableLodMode = enabled && Arrays.stream(lods).anyMatch(JCheckBox::isSelected);
+        lodModeLabel.setEnabled(enableLodMode);
+        lodMode.setEnabled(enableLodMode);
     }
 
     @Override
@@ -148,9 +141,9 @@ public class LodFilterView extends FilterView<LodFilter> {
             lods[lod].setSelected(lodFilter.isSetLod(lod));
         }
 
-        if (lodFilter.getSearchMode() == LodSearchMode.ALL)
+        if (lodFilter.getSearchMode() == LodSearchMode.ALL) {
             lodDepth.setValue("*");
-        else {
+        } else {
             int searchDepth = lodFilter.getSearchDepth();
             lodDepth.setValue(searchDepth >= 0 && searchDepth < 10 ? String.valueOf(searchDepth) : "1");
         }
