@@ -47,7 +47,7 @@ You may obtain a copy of the License at
 3. About
 --------
 
-The @name@ is a Java based front-end for 
+The @name@ is a Java based client for
 the @citydbName@ version @citydbVersion@. It allows for high-performance 
 loading and extracting 3D city model data.
 
@@ -83,9 +83,9 @@ third party applications.
 
 * Java JRE or JDK >= 8
 * @citydbName@ version @citydbVersion@ on
-  - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
   - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
-  
+  - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
+
 The @name@ can be run on any platform 
 providing appropriate Java support. It has been tested on the 
 following platforms:
@@ -119,7 +119,7 @@ following two options:
 
 a) Use the start scripts to launch the application with a graphical user
    interface. The start scripts are located in the installation directory.
-   During setup you can additionally choose to create shortcuts for the
+   During setup, you can additionally choose to create shortcuts for the
    start scripts on your desktop and in the start menu of your preferred OS.
 
    Please execute the start script suitable for your platform:
