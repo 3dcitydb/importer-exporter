@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 4.3.0
+### 4.3.0 - 2021-04-28
 
 ##### Additions
 * Completely redesigned command-line interface (CLI) to be able to invoke default import, export and delete operations
