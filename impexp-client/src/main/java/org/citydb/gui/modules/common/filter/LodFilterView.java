@@ -38,7 +38,6 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -50,7 +49,6 @@ public class LodFilterView extends FilterView<LodFilter> {
     private JComboBox<LodFilterMode> lodMode;
     private JLabel lodDepthLabel;
     private JSpinner lodDepth;
-    private boolean enabled;
 
     public LodFilterView() {
         init();
@@ -117,21 +115,31 @@ public class LodFilterView extends FilterView<LodFilter> {
 
     @Override
     public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-
         for (JCheckBox lod : lods) {
             lod.setEnabled(enabled);
         }
 
-        setEnabledLodFilterMode();
+        if (enabled) {
+            setEnabledLodFilterMode();
+        } else {
+            lodModeLabel.setEnabled(false);
+            lodMode.setEnabled(false);
+        }
+
         lodDepthLabel.setEnabled(enabled);
         lodDepth.setEnabled(enabled);
     }
 
     private void setEnabledLodFilterMode() {
-        boolean enableLodMode = enabled && Arrays.stream(lods).anyMatch(JCheckBox::isSelected);
-        lodModeLabel.setEnabled(enableLodMode);
-        lodMode.setEnabled(enableLodMode);
+        int selected = 0;
+        for (JCheckBox lod : lods) {
+            if (lod.isEnabled() && lod.isSelected()) {
+                selected++;
+            }
+        }
+
+        lodModeLabel.setEnabled(selected > 1);
+        lodMode.setEnabled(selected > 1);
     }
 
     @Override
