@@ -28,9 +28,9 @@ Change Log
 * General tweaks, bugfixes, and code refactoring
 
 ##### Changes
-* Instead of Oracle, the PostgreSQL/PostGIS is now the default database connection. [#162](https://github.com/3dcitydb/importer-exporter/pull/162)
+* Instead of Oracle, PostgreSQL/PostGIS is now the default database connection. [#162](https://github.com/3dcitydb/importer-exporter/pull/162)
 * Reworked GUI and config file to manage and store one workspace per connection for Oracle databases. [#164](https://github.com/3dcitydb/importer-exporter/pull/164)
-* When importing local geometry XLinks into a 3DCityDB instance of version 4.1, the `IS_XLINK` column of `SURFACE_GEOMETRY` is now filled with value `2`, which allows to substantially improves the export performance. [#159](https://github.com/3dcitydb/importer-exporter/pull/159)
+* When importing local geometry XLinks into a 3DCityDB instance of version 4.1, the `IS_XLINK` column of `SURFACE_GEOMETRY` is now filled with value `2`, which allows to substantially improve the export performance. [#159](https://github.com/3dcitydb/importer-exporter/pull/159)
 
 ##### Fixes
 * Fixed bug in SQL query builder. [#122](https://github.com/3dcitydb/importer-exporter/pull/122)
