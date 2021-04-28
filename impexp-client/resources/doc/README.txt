@@ -182,7 +182,7 @@ The @name@ v@version@ has been developed by
 and with the support from the following cooperation partners:
 
 * Chair of Geoinformatics, Technical University of Munich
-  https://www.gis.bgu.tum.de/
+  https://www.lrg.tum.de/gis/
 * Virtual City Systems, Berlin
   https://vc.systems/
 * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen

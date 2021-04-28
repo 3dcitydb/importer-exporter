@@ -112,8 +112,8 @@ Cooperation partners and supporters
 The 3D City Database Importer/Exporter has been developed by and with the support from the
 following cooperation partners:
 
-* [Chair of Geoinformatics, Technical University of Munich](https://www.gis.bgu.tum.de/)
-* [virtualcitySYSTEMS GmbH, Berlin](http://www.virtualcitysystems.de/)
+* [Chair of Geoinformatics, Technical University of Munich](https://www.lrg.tum.de/gis/)
+* [Virtual City Systems, Berlin](https://vc.systems/)
 * [M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen](http://www.moss.de/)
 
 More information
