@@ -2,7 +2,6 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
     id 'application'
-    id 'com.jfrog.bintray' version '1.8.4'
 }
 
 configurations {
@@ -14,9 +13,9 @@ dependencies {
     api project(':impexp-core')
     api project(':impexp-client-common')
     api project(':impexp-kml-collada-plugin')
-    api 'com.formdev:flatlaf:1.0'
-    api 'com.formdev:flatlaf-extras:1.0'
-    api 'com.formdev:flatlaf-swingx:1.0'
+    api 'com.formdev:flatlaf:1.1.2'
+    api 'com.formdev:flatlaf-extras:1.1.2'
+    api 'com.formdev:flatlaf-swingx:1.1.2'
     api 'com.fifesoft:rsyntaxtextarea:3.1.2'
     api ('org.citydb:swingx-ws:1.1.4') {
         transitive = false
@@ -108,6 +107,7 @@ task build3DCityDB(type: GradleBuild, dependsOn: update3DCityDBGitSubmodule) {
     tasks = ['clean', 'installDist']
     buildFile = "$rootDir/resources/3dcitydb/build.gradle"
     outputs.dir "$rootDir/resources/3dcitydb/build/install/3dcitydb"
+    outputs.upToDateWhen { false }
 }
 
 // build 3dcitydb-web-map submodule
@@ -130,6 +130,7 @@ task buildADEManagerPlugin(type: GradleBuild, dependsOn: updateADEManagerPluginG
     tasks = ['clean', 'installDist']
     buildFile = "$rootDir/resources/plugins/plugin-ade-manager/build.gradle"
     outputs.dir "$rootDir/resources/plugins/plugin-ade-manager/build/install"
+    outputs.upToDateWhen { false }
 }
 
 // build plugin-spreadsheet-generator submodule
@@ -141,6 +142,7 @@ task buildSpreadsheetGeneratorPlugin(type: GradleBuild, dependsOn: updateSpreads
     tasks = ['clean', 'installDist']
     buildFile = "$rootDir/resources/plugins/plugin-spreadsheet-generator/build.gradle"
     outputs.dir "$rootDir/resources/plugins/plugin-spreadsheet-generator/build/install"
+    outputs.upToDateWhen { false }
 }
 
 distributions {
@@ -254,24 +256,5 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
                 output: installer,
                 basedir: izpackDir
         )
-    }
-}
-
-bintray {
-    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
-
-    publications = ['mavenJava']
-    pkg {
-        repo = 'maven'
-        userOrg = '3dcitydb'
-        name = project.name
-        websiteUrl = project.citydbVcsUrl
-        vcsUrl = project.impexpGit
-        issueTrackerUrl = project.impexpIssueTrackerUrl
-        licenses = ['Apache-2.0']
-        version {
-            name = project.version
-        }
     }
 }

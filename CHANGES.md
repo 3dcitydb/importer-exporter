@@ -1,26 +1,60 @@
 Change Log
 ==========
 
-### Pending changes
+### 4.3.0 - 2021-04-28
 
+##### Additions
 * Completely redesigned command-line interface (CLI) to be able to invoke default import, export and delete operations
   without the need for passing an XML config file. [#147](https://github.com/3dcitydb/importer-exporter/pull/147)
-* CityJSON import (already working in `master`). [#88](https://github.com/3dcitydb/importer-exporter/issues/88),
-  [#92](https://github.com/3dcitydb/importer-exporter/pull/92)
-* CityJSON export. [#89](https://github.com/3dcitydb/importer-exporter/issues/89),
+* CityJSON import and export. [#88](https://github.com/3dcitydb/importer-exporter/issues/88),
+  [#92](https://github.com/3dcitydb/importer-exporter/pull/92), [#89](https://github.com/3dcitydb/importer-exporter/issues/89),
   [#166](https://github.com/3dcitydb/importer-exporter/pull/166)
-* Added extension mechanism to KML/COLLADA/glTF exporter to support CityGML ADEs. [#124](https://github.com/3dcitydb/importer-exporter/pull/124)
-* Improved CityGML export performance (as much as 10-15 times faster in case the Importer/Exporter is not running on
+* Improved CityGML export performance (up tp 10-15 times faster in case the Importer/Exporter is not running on
   the same machine or in the same local network as the database server). [#126](https://github.com/3dcitydb/importer-exporter/pull/126),
   [#136](https://github.com/3dcitydb/importer-exporter/pull/136), [#137](https://github.com/3dcitydb/importer-exporter/pull/137)
-* Implemented a more modern GUI look&feel that scales better on HiDPI displays. [#149](https://github.com/3dcitydb/importer-exporter/pull/149)
-* Added explicit CLI script in addition to the start script for simplifying the use of Importer/Exporter CLI mode. [#123](https://github.com/3dcitydb/importer-exporter/pull/123)
-* Added support for importing and exporting arbitrary surfaces as exterior of solids. [#130](https://github.com/3dcitydb/importer-exporter/pull/130)
-* Enhanced LoD export filter with the option to only export the minimum or maximum LoD from the list of selected LoDs. [#133](https://github.com/3dcitydb/importer-exporter/pull/133)
+* Implemented a more modern GUI look & feel that scales better on HiDPI displays. [#149](https://github.com/3dcitydb/importer-exporter/pull/149)
+* Extended ADE export API to support the export of ADE data in KML/COLLADA/glTF. [#124](https://github.com/3dcitydb/importer-exporter/pull/124)
+* Enhanced LoD export filter with the option to only export the minimum or maximum LoD of a city object. [#133](https://github.com/3dcitydb/importer-exporter/pull/133)
+* Added a feature version filter to be able to query city objects that have been terminated in the database.
+* Added more filter options to the KML/COLLADA/glTF export and substantially reworked the preference settings. A
+  bounding box filter is not mandatory for KML/COLLADA/glTF exports anymore.
 * Added support for exporting binary glTF and Draco compression in KML/COLLADA/glTF exports. [#142](https://github.com/3dcitydb/importer-exporter/pull/142)
-* Fixed bug in SQL query builder. [#122](https://github.com/3dcitydb/importer-exporter/pull/122)
-* Java 11 or higher is now mandatory to run the Importer/Exporter.
+* Added support for importing and exporting arbitrary surfaces as exterior of solids. [#130](https://github.com/3dcitydb/importer-exporter/pull/130)
+* GML geometry types not supported by the `SURFACE_GEOMETRY` table are internally mapped to a `gml:MultiSurface` to
+  be able to import them. [#130](https://github.com/3dcitydb/importer-exporter/pull/130)
+* Added a database ID filter to the XML query language.
+* Added explicit CLI script in addition to the start script for simplifying the use of Importer/Exporter CLI mode. [#123](https://github.com/3dcitydb/importer-exporter/pull/123)
+* Users can now choose to write log messages to a specific log file and not just a log directory. 
+* Completely updated user manual at https://3dcitydb-docs.readthedocs.io/en/release-v4.3.0/
 * General tweaks, bugfixes, and code refactoring
+
+##### Changes
+* Instead of Oracle, PostgreSQL/PostGIS is now the default database connection. [#162](https://github.com/3dcitydb/importer-exporter/pull/162)
+* Reworked GUI and config file to manage and store one workspace per connection for Oracle databases. [#164](https://github.com/3dcitydb/importer-exporter/pull/164)
+* When importing local geometry XLinks into a 3DCityDB instance of version 4.1, the `IS_XLINK` column of `SURFACE_GEOMETRY` is now filled with value `2`, which allows to substantially improve the export performance. [#159](https://github.com/3dcitydb/importer-exporter/pull/159)
+
+##### Fixes
+* Fixed bug in SQL query builder. [#122](https://github.com/3dcitydb/importer-exporter/pull/122)
+* Fixed possible database deadlocks when updating involved tables during XLink resolution.
+* Fixed NPE in CityGML exports in case the output file path has no parent folder.
+* Fixed export of XLinks to surface data members.
+* XLinks in WaterBody objects are now exported differently depending on the target CityGML version.
+* Fixed bug in CityGML export which caused a city object to be exported on multiple tiles in rare cases.
+* Fixed missing tile counter in export status dialog when using XML queries.
+* Fixed bug when reading ZIP input files which could cause the application to freeze.
+* Fixed error due to incorrect database ID values when importing a `gml:OrientableSurface`.  
+* Fixed bug in resolving geometry XLinks across top-level features.
+* Fixed missing X3D materials in KML/COLLADA/glTF exports when theme is set to `none`.
+* Color settings are used as fallback in COLLADA/glTF exports when the selected theme is not available for a 
+  feature.
+* Fixed hierarchical geometry query to work with Oracle 11g and previous versions.
+
+##### Miscellaneous
+* Updated to latest versions of the ADE manager plugin and the Spreadsheet Generator plugin.
+* Upgrade PostgreSQL driver to 42.2.14 and PostGIS to 2.5.0.
+* Updated citygml4j to 2.11.3.
+* Starting from this version, all 3DCityDB Maven artifacts are maintained in the JFrog Artifactory Cloud using the new
+  repository link https://citydb.jfrog.io/artifactory/maven. [#183](https://github.com/3dcitydb/importer-exporter/pull/183)
 
 ### 4.2.3 - 2020-04-06
 

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <!--
   ~ 3D City Database - The Open Source CityGML Database
-  ~ http://www.3dcitydb.org/
+  ~ https://www.3dcitydb.org/
   ~
-  ~ Copyright 2013 - 2019
+  ~ Copyright 2013 - 2021
   ~ Chair of Geoinformatics
   ~ Technical University of Munich, Germany
-  ~ https://www.gis.bgu.tum.de/
+  ~ https://www.lrg.tum.de/gis/
   ~
   ~ The 3D City Database is jointly developed with the following
   ~ cooperation partners:
   ~
-  ~ virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+  ~ Virtual City Systems, Berlin <https://vc.systems/>
   ~ M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@
         <authors>
             <author name="Claus Nagel" email="cnagel@vc.systems"/>
             <author name="Zhihang Yao" email="zyao@vc.systems"/>
-            <author name="György Hudra" email="ghudra@moss.de"/>
+            <author name="Luca Casagrande" email="lcasagrande@moss.de"/>
             <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
             <author name="Son H. Nguyen" email="son.nguyen@tum.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>
@@ -65,7 +65,6 @@
         <modifier key="useHeadingPanel" value="yes"/>
         <modifier key="headingLineCount" value="3"/>
         <modifier key="headingFontSize" value="1.2"/>
-        <modifier key="headingBackgroundColor" value="0x00ffffff"/>
         <modifier key="headingPanelCounter" value="text"/>
         <modifier key="headingPanelCounterPos" value="inHeading"/>
         <modifier key="langDisplayType" value="native"/>

@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,12 +33,13 @@ import org.citydb.citygml.common.cache.model.CacheTableModel;
 import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.citygml.deleter.database.BundledConnection;
+import org.citydb.citygml.deleter.database.DBSplittingResult;
 import org.citydb.citygml.deleter.database.DeleteListImporter;
 import org.citydb.citygml.deleter.database.DeleteManager;
 import org.citydb.citygml.deleter.util.DeleteListException;
 import org.citydb.citygml.deleter.util.DeleteListParser;
+import org.citydb.citygml.deleter.util.DeleteLogger;
 import org.citydb.citygml.deleter.util.InternalConfig;
-import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -67,6 +68,8 @@ import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,15 +104,39 @@ public class Deleter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+		// create delete logger
+		DeleteLogger deleteLogger = null;
+		if (!preview && config.getDeleteConfig().getDeleteLog().isSetLogDeletedFeatures()) {
+			try {
+				Path logFile = config.getDeleteConfig().getDeleteLog().isSetLogFile() ?
+						Paths.get(config.getDeleteConfig().getDeleteLog().getLogFile()) :
+						CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.DELETE_LOG_DIR);
+				deleteLogger = new DeleteLogger(logFile,
+						config.getDeleteConfig().getMode(),
+						config.getDatabaseConfig().getActiveConnection());
+				log.info("Log file of deleted top-level features: " + deleteLogger.getLogFilePath().toString());
+			} catch (IOException e) {
+				throw new DeleteException("Failed to create log file for deleted top-level features.", e);
+			}
+		}
+
 		try {
-			return process(preview);
+			return process(preview, deleteLogger);
 		} finally {
 			objectCounter.clear();
 			eventDispatcher.removeEventHandler(this);
+
+			if (deleteLogger != null) {
+				try {
+					deleteLogger.close(shouldRun);
+				} catch (IOException e) {
+					log.error("Failed to close the feature delete log. It is most likely corrupt.", e);
+				}
+			}
 		}
 	}
 
-	private boolean process(boolean preview) throws DeleteException {
+	private boolean process(boolean preview, DeleteLogger deleteLogger) throws DeleteException {
 		long start = System.currentTimeMillis();
 		DeleteMode mode = config.getDeleteConfig().getMode();
 
@@ -196,12 +223,12 @@ public class Deleter implements EventHandler {
 			InternalConfig internalConfig = new InternalConfig();
 			internalConfig.setMetadata(config.getDeleteConfig().getContinuation());
 
-			// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
-			// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
-			// Hence, we use single thread to avoid this issue.
+			// multi-threading may cause a database deadlock when deleting a CityObjectGroup within
+			// one thread and its groupMembers within another threads at the same time.
+			// Hence, we use a single thread pool to avoid this issue.
 			dbWorkerPool = new SingleWorkerPool<>(
 					"db_deleter_pool",
-					new DBDeleteWorkerFactory(bundledConnection, internalConfig, config, eventDispatcher),
+					new DBDeleteWorkerFactory(bundledConnection, deleteLogger, internalConfig, config, eventDispatcher),
 					300,
 					false);
 
@@ -210,21 +237,22 @@ public class Deleter implements EventHandler {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
 			}
 
-			// get database splitter and start query
+			// get delete manager and execute delete operation
 			try {
 				deleteManager = new DeleteManager(bundledConnection,
 						schemaMapping,
 						dbWorkerPool,
 						query,
 						cacheTable,
+						deleteLogger,
 						internalConfig,
 						config,
 						eventDispatcher,
 						preview);
 				deleteManager.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
 				deleteManager.deleteObjects();
-			} catch (SQLException | QueryBuildException e) {
-				throw new DeleteException("Failed to query the database.", e);
+			} catch (SQLException | IOException | QueryBuildException e) {
+				throw new DeleteException("Failed to execute the " + mode.value() + " operation.", e);
 			}
 
 			try {

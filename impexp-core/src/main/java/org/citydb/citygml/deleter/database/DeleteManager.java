@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +28,8 @@
 package org.citydb.citygml.deleter.database;
 
 import org.citydb.citygml.common.cache.CacheTable;
+import org.citydb.citygml.deleter.util.DeleteLogger;
 import org.citydb.citygml.deleter.util.InternalConfig;
-import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.deleter.DeleteListIdType;
@@ -73,6 +73,7 @@ import org.citydb.sqlbuilder.update.Update;
 import org.citydb.sqlbuilder.update.UpdateToken;
 import org.citygml4j.model.module.citygml.CoreModule;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -91,6 +92,7 @@ public class DeleteManager {
 	private final Query query;
 	private final Config config;
 	private final CacheTable cacheTable;
+	private final DeleteLogger deleteLogger;
 	private final InternalConfig internalConfig;
 	private final EventDispatcher eventDispatcher;
 
@@ -110,6 +112,7 @@ public class DeleteManager {
 			WorkerPool<DBSplittingResult> dbWorkerPool,
 			Query query,
 			CacheTable cacheTable,
+			DeleteLogger deleteLogger,
 			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher,
@@ -119,6 +122,7 @@ public class DeleteManager {
 		this.dbWorkerPool = dbWorkerPool;
 		this.query = query;
 		this.cacheTable = cacheTable;
+		this.deleteLogger = deleteLogger;
 		this.internalConfig = internalConfig;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -134,7 +138,7 @@ public class DeleteManager {
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
 				databaseAdapter,
-				BuildProperties.defaults());
+				BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID));
 	}
 
 	public boolean isCalculateNumberMatched() {
@@ -158,7 +162,7 @@ public class DeleteManager {
 		}
 	}
 
-	public void deleteObjects() throws SQLException, QueryBuildException {
+	public void deleteObjects() throws SQLException, IOException, QueryBuildException {
 		try {
 			process();
 			if (shouldRun) {
@@ -176,7 +180,7 @@ public class DeleteManager {
 		}
 	}
 
-	private void process() throws SQLException, QueryBuildException {
+	private void process() throws SQLException, IOException, QueryBuildException {
 		if (!shouldRun)
 			return;
 
@@ -214,27 +218,26 @@ public class DeleteManager {
 		// get affected city objects
 		Map<Integer, Long> counter = null;
 		long hits = 0;
-		if (calculateNumberMatched || preview) {
+		if (calculateNumberMatched || preview || config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
 			log.debug("Calculating the number of matching top-level features...");
 			counter = getNumberMatched(select);
 			hits = counter.values().stream().mapToLong(Long::longValue).sum();
+
+			if (hits > 0) {
+				log.info("Found " + hits + " top-level feature(s) matching the request.");
+			} else {
+				log.info("No top-level feature matches the query expression.");
+				return;
+			}
 		}
 
-		if (hits > 0) {
-			if (calculateNumberMatched) {
-				log.info("Found " + hits + " top-level feature(s) matching the request.");
-			}
-
-			if (preview) {
-				eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
-			} else if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
-				doTerminate(select);
-				eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
-			} else {
-				doDelete(select, hits);
-			}
+		if (preview) {
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
+		} else if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
+			doTerminate(select);
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
 		} else {
-			log.info("No feature matches the request.");
+			doDelete(select, hits);
 		}
 	}
 
@@ -246,6 +249,7 @@ public class DeleteManager {
 				do {
 					long id = rs.getLong("id");
 					int objectClassId = rs.getInt("objectclass_id");
+					String gmlId = rs.getString("gmlid");
 
 					AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
 					if (objectType == null) {
@@ -253,15 +257,37 @@ public class DeleteManager {
 						continue;
 					}
 
-					DBSplittingResult splitter = new DBSplittingResult(id, objectType);
+					DBSplittingResult splitter = new DBSplittingResult(id, objectType, gmlId);
 					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
+			} else {
+				log.info("No top-level feature matches the query expression.");
 			}
 		}
 	}
 
-	private void doTerminate(Select select) throws SQLException {
-		Table table = new Table(MappingConstants.CITYOBJECT, builder.getBuildProperties().getAliasGenerator());
+	private void doTerminate(Select select) throws SQLException, IOException {
+		if (deleteLogger != null) {
+			try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+				 ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					long id = rs.getLong("id");
+					int objectClassId = rs.getInt("objectclass_id");
+					String gmlId = rs.getString("gmlid");
+
+					AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
+					if (objectType == null) {
+						throw new SQLException("Failed to map the object class id '" + objectClassId + "' to an object type (ID: " + id + ").");
+					}
+
+					deleteLogger.write(objectType.getPath(), id, gmlId);
+				}
+			} catch (IOException e) {
+				throw new IOException("A fatal error occurred while updating the delete log.", e);
+			}
+		}
+
+		Table table = new Table(MappingConstants.CITYOBJECT, databaseAdapter.getConnectionDetails().getSchema());
 		TimestampLiteral now = new TimestampLiteral(Timestamp.from(Instant.now()));
 		TimestampLiteral terminationDate = internalConfig.getTerminationDate() != null ?
 				new TimestampLiteral(GregorianCalendar.from(internalConfig.getTerminationDate().toZonedDateTime())) :

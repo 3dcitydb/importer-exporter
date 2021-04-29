@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,10 +44,12 @@ public class CityGMLOptions {
     private boolean prettyPrint = true;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private LinkedHashMap<String, Namespace> namespaces;
+    private ExportAddress address;
     private XLink xlink;
     private XSLTransformation xslTransformation;
 
     public CityGMLOptions() {
+        address = new ExportAddress();
         xlink = new XLink();
         xslTransformation = new XSLTransformation();
     }
@@ -88,6 +90,16 @@ public class CityGMLOptions {
         namespaces.stream()
                 .filter(Namespace::isSetURI)
                 .forEach(v -> this.namespaces.put(v.getURI(), v));
+    }
+
+    public ExportAddress getAddress() {
+        return address;
+    }
+
+    public void setAddress(ExportAddress address) {
+        if (address != null) {
+            this.address = address;
+        }
     }
 
     public XLink getXlink() {

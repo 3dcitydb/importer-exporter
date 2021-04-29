@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2020
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,7 @@ import org.citydb.cli.options.exporter.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.exporter.ExportConfig;
+import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
@@ -50,6 +51,8 @@ import java.nio.file.Path;
         versionProvider = ImpExpCli.class
 )
 public class ExportCommand extends CliCommand {
+    enum CompressedFormat {citygml, cityjson}
+
     @CommandLine.Option(names = {"-o", "--output"}, required = true,
             description = "Name of the output file.")
     private Path file;
@@ -57,6 +60,10 @@ public class ExportCommand extends CliCommand {
     @CommandLine.Option(names = "--output-encoding", defaultValue = "UTF-8",
             description = "Encoding used for the output file (default: ${DEFAULT-VALUE}).")
     private String encoding;
+
+    @CommandLine.Option(names = "--compressed-format", paramLabel = "<format>",
+            description = "Output format to use for compressed exports: ${COMPLETION-CANDIDATES}.")
+    private CompressedFormat compressedFormat;
 
     @CommandLine.ArgGroup
     private ThreadPoolOption threadPoolOption;
@@ -109,6 +116,12 @@ public class ExportCommand extends CliCommand {
 
     private void setExportOptions(ExportConfig exportConfig) {
         exportConfig.getGeneralOptions().setFileEncoding(encoding);
+
+        if (compressedFormat != null) {
+            exportConfig.getGeneralOptions().setCompressedOutputFormat(compressedFormat == CompressedFormat.cityjson ?
+                    OutputFormat.CITYJSON :
+                    OutputFormat.CITYGML);
+        }
 
         if (queryOption != null) {
             exportConfig.getAppearances().setExportAppearances(queryOption.isExportAppearances());

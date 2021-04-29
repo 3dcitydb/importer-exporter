@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,12 +33,12 @@ import org.citydb.citygml.common.cache.IdCacheManager;
 import org.citydb.citygml.common.cache.IdCacheType;
 import org.citydb.citygml.common.xlink.DBXlink;
 import org.citydb.citygml.importer.CityGMLImportException;
+import org.citydb.citygml.importer.cache.GeometryGmlIdCache;
+import org.citydb.citygml.importer.cache.ObjectGmlIdCache;
+import org.citydb.citygml.importer.cache.TextureImageCache;
 import org.citydb.citygml.importer.concurrent.DBImportWorkerFactory;
 import org.citydb.citygml.importer.concurrent.DBImportXlinkResolverWorkerFactory;
 import org.citydb.citygml.importer.concurrent.DBImportXlinkWorkerFactory;
-import org.citydb.citygml.importer.cache.ObjectGmlIdCache;
-import org.citydb.citygml.importer.cache.GeometryGmlIdCache;
-import org.citydb.citygml.importer.cache.TextureImageCache;
 import org.citydb.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.filter.CityGMLFilterBuilder;
@@ -134,14 +134,36 @@ public class Importer implements EventHandler {
         eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
         eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+        // create import logger
+        ImportLogger importLogger = null;
+        if (config.getImportConfig().getImportLog().isSetLogImportedFeatures()) {
+            try {
+                Path logFile = config.getImportConfig().getImportLog().isSetLogFile() ?
+                        Paths.get(config.getImportConfig().getImportLog().getLogFile()) :
+                        CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
+                importLogger = new ImportLogger(logFile, config.getDatabaseConfig().getActiveConnection());
+                log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
+            } catch (IOException e) {
+                throw new CityGMLImportException("Failed to create log file for imported top-level features.", e);
+            }
+        }
+
         try {
-            return process(inputFiles);
+            return process(inputFiles, importLogger);
         } finally {
             eventDispatcher.removeEventHandler(this);
+
+            if (importLogger != null) {
+                try {
+                    importLogger.close(shouldRun);
+                } catch (IOException e) {
+                    log.error("Failed to close the feature import log. It is most likely corrupt.", e);
+                }
+            }
         }
     }
 
-    private boolean process(List<Path> inputFiles) throws CityGMLImportException {
+    private boolean process(List<Path> inputFiles, ImportLogger importLogger) throws CityGMLImportException {
         // worker pool settings
         int minThreads = config.getImportConfig().getResources().getThreadPool().getMinThreads();
         int maxThreads = config.getImportConfig().getResources().getThreadPool().getMaxThreads();
@@ -240,7 +262,6 @@ public class Importer implements EventHandler {
         WorkerPool<DBXlink> tmpXlinkPool = null;
         WorkerPool<DBXlink> xlinkResolverPool = null;
         DBXlinkSplitter splitter;
-        ImportLogger importLogger = null;
 
         long start = System.currentTimeMillis();
 
@@ -263,6 +284,11 @@ public class Importer implements EventHandler {
                 eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
                 eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
 
+                // update import log
+                if (importLogger != null) {
+                    importLogger.setInputFile(contentFile);
+                }
+
                 // set metadata
                 internalConfig.setMetadata(config.getImportConfig().getContinuation());
 
@@ -279,19 +305,6 @@ public class Importer implements EventHandler {
                         if (codespace != null && !codespace.isEmpty()) {
                         	internalConfig.setCurrentGmlIdCodespace(codespace);
 						}
-                    }
-                }
-
-                // create import logger
-                if (config.getImportConfig().getImportLog().isSetLogImportedFeatures()) {
-                    try {
-                        Path logFile = config.getImportConfig().getImportLog().isSetLogFile() ?
-                                Paths.get(config.getImportConfig().getImportLog().getLogFile()) :
-								CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
-                        importLogger = new ImportLogger(logFile, contentFile, config.getDatabaseConfig().getActiveConnection());
-                        log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
-                    } catch (IOException e) {
-                        throw new CityGMLImportException("Failed to create log file for imported top-level features.", e);
                     }
                 }
 
@@ -496,15 +509,6 @@ public class Importer implements EventHandler {
                         cacheTableManager.dropAll();
                     } catch (SQLException e) {
                         setException("Failed to clean the temporary cache.", e);
-                        shouldRun = false;
-                    }
-                }
-
-                if (importLogger != null) {
-                    try {
-                        importLogger.close(shouldRun);
-                    } catch (IOException e) {
-                        setException("Failed to close the feature import log. It is most likely corrupt.", e);
                         shouldRun = false;
                     }
                 }

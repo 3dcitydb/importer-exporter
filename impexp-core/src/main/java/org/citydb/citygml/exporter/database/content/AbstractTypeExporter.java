@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,7 @@ public abstract class AbstractTypeExporter implements DBExporter {
 		List<Table> tables = null;
 		if (exporter.hasADESupport()) {
 			Set<String> tableNames = exporter.getADEHookTables(type);
-			if (tableNames != null) {
+			if (!tableNames.isEmpty()) {
 				tables = new ArrayList<>();
 				for (String tableName : tableNames) {
 					Table table = new Table(tableName, exporter.getDatabaseAdapter().getConnectionDetails().getSchema());

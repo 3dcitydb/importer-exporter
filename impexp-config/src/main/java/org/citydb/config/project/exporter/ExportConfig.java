@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,7 +44,6 @@ import javax.xml.bind.annotation.XmlType;
         "generalOptions",
         "continuation",
         "cityObjectGroup",
-        "address",
         "appearances",
         "metadataProvider",
         "cityGMLOptions",
@@ -61,7 +60,6 @@ public class ExportConfig {
     private GeneralOptions generalOptions;
     private Continuation continuation;
     private ExportCityObjectGroup cityObjectGroup;
-    private ExportAddress address;
     private ExportAppearance appearances;
     private String metadataProvider;
     private CityGMLOptions cityGMLOptions;
@@ -75,7 +73,6 @@ public class ExportConfig {
         generalOptions = new GeneralOptions();
         continuation = new Continuation();
         cityObjectGroup = new ExportCityObjectGroup();
-        address = new ExportAddress();
         appearances = new ExportAppearance();
         cityGMLOptions = new CityGMLOptions();
         cityJSONOptions = new CityJSONOptions();
@@ -137,16 +134,6 @@ public class ExportConfig {
     public void setContinuation(Continuation continuation) {
         if (continuation != null) {
             this.continuation = continuation;
-        }
-    }
-
-    public ExportAddress getAddress() {
-        return address;
-    }
-
-    public void setAddress(ExportAddress address) {
-        if (address != null) {
-            this.address = address;
         }
     }
 

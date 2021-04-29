@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -566,7 +566,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	protected void updateObjectCounter(AbstractGML object, int objectClassId, long id) {
 		Long counter = objectCounter.get(objectClassId);
 		if (counter == null)
-			objectCounter.put(objectClassId, 1l);
+			objectCounter.put(objectClassId, 1L);
 		else
 			objectCounter.put(objectClassId, counter + 1);		
 
@@ -579,14 +579,14 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		if (importLogEntries != null
 				&& !object.isSetParent()
 				&& !(object instanceof Appearance)) {
-			importLogEntries.add(new ImportLogEntry(type.getPath(), id, (String)object.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID)));
+			importLogEntries.add(ImportLogEntry.of(type.getPath(), id, (String)object.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID)));
 		}
 	}
 
 	protected void updateGeometryCounter(GMLClass type) {
 		Long counter = geometryCounter.get(type);
 		if (counter == null)
-			geometryCounter.put(type, 1l);
+			geometryCounter.put(type, 1L);
 		else
 			geometryCounter.put(type, counter + 1);
 	}

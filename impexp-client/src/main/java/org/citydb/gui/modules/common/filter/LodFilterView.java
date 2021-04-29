@@ -1,3 +1,31 @@
+/*
+ * 3D City Database - The Open Source CityGML Database
+ * https://www.3dcitydb.org/
+ *
+ * Copyright 2013 - 2021
+ * Chair of Geoinformatics
+ * Technical University of Munich, Germany
+ * https://www.lrg.tum.de/gis/
+ *
+ * The 3D City Database is jointly developed with the following
+ * cooperation partners:
+ *
+ * Virtual City Systems, Berlin <https://vc.systems/>
+ * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.citydb.gui.modules.common.filter;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
@@ -87,8 +115,9 @@ public class LodFilterView extends FilterView<LodFilter> {
 
     @Override
     public void setEnabled(boolean enabled) {
-        for (JCheckBox lod : lods)
+        for (JCheckBox lod : lods) {
             lod.setEnabled(enabled);
+        }
 
         if (enabled) {
             setEnabledLodFilterMode();
@@ -104,7 +133,7 @@ public class LodFilterView extends FilterView<LodFilter> {
     private void setEnabledLodFilterMode() {
         int selected = 0;
         for (JCheckBox lod : lods) {
-            if (lod.isSelected()) {
+            if (lod.isEnabled() && lod.isSelected()) {
                 selected++;
             }
         }
@@ -120,9 +149,9 @@ public class LodFilterView extends FilterView<LodFilter> {
             lods[lod].setSelected(lodFilter.isSetLod(lod));
         }
 
-        if (lodFilter.getSearchMode() == LodSearchMode.ALL)
+        if (lodFilter.getSearchMode() == LodSearchMode.ALL) {
             lodDepth.setValue("*");
-        else {
+        } else {
             int searchDepth = lodFilter.getSearchDepth();
             lodDepth.setValue(searchDepth >= 0 && searchDepth < 10 ? String.valueOf(searchDepth) : "1");
         }

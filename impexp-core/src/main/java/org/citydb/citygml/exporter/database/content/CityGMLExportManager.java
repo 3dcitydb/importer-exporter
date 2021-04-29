@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -887,21 +887,32 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	protected Set<String> getADEHookTables(TableEnum table) {
-		Set<String> adeHookTables = null;
+		Set<String> adeHookTables = new HashSet<>();
 
 		for (FeatureType featureType : schemaMapping.listFeatureTypesByTable(table.getName(), true)) {
 			// skip ADE features - we do not support ADEs of ADEs
-			if (adeManager.getExtensionByObjectClassId(featureType.getObjectClassId()) != null)
+			if (adeManager.getExtensionByObjectClassId(featureType.getObjectClassId()) != null) {
 				continue;
+			}
 
-			for (AbstractProperty property : featureType.listProperties(false, true)) {
-				if (property instanceof InjectedProperty) {
-					String adeHookTable = ((InjectedProperty)property).getBaseJoin().getTable();
-					if (adeHookTables == null)
-						adeHookTables = new HashSet<>();
+			adeHookTables.addAll(getADEHookTables(featureType));
+		}
 
-					adeHookTables.add(adeHookTable);						
+		return adeHookTables;
+	}
+
+	protected Set<String> getADEHookTables(FeatureType featureType) {
+		Set<String> adeHookTables = new HashSet<>();
+		for (AbstractProperty property : featureType.listProperties(false, true)) {
+			if (property instanceof InjectedProperty) {
+				String adeHookTable = ((InjectedProperty) property).getBaseJoin().getTable();
+
+				ADEExtension extension = adeManager.getExtensionByTableName(adeHookTable);
+				if (extension == null || !extension.isEnabled()) {
+					continue;
 				}
+
+				adeHookTables.add(adeHookTable);
 			}
 		}
 

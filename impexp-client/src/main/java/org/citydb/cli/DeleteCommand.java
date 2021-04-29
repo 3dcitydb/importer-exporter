@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2020
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,9 +33,11 @@ import org.citydb.citygml.deleter.controller.Deleter;
 import org.citydb.citygml.deleter.util.DeleteListPreviewer;
 import org.citydb.cli.options.deleter.CleanupOption;
 import org.citydb.cli.options.deleter.DeleteListOption;
+import org.citydb.cli.options.deleter.MetadataOption;
 import org.citydb.cli.options.deleter.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
+import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.deleter.DeleteList;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.DatabaseController;
@@ -44,6 +46,8 @@ import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
+
+import java.nio.file.Path;
 
 @CommandLine.Command(
         name = "delete",
@@ -61,8 +65,15 @@ public class DeleteCommand extends CliCommand {
             description = "Run in preview mode. Affected city objects will be neither deleted nor terminated.")
     private boolean preview;
 
+    @CommandLine.Option(names = "--delete-log", paramLabel = "<file>",
+            description = "Record deleted top-level features to this file.")
+    private Path deleteLogFile;
+
     @CommandLine.ArgGroup(exclusive = false)
     private CleanupOption cleanupOption;
+
+    @CommandLine.ArgGroup(exclusive = false, heading = "Metadata options:%n")
+    private MetadataOption metadataOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
@@ -110,17 +121,7 @@ public class DeleteCommand extends CliCommand {
             return 1;
         }
 
-        // set delete mode
-        if (mode != null) {
-            config.getDeleteConfig().setMode(mode == Mode.terminate ?
-                    DeleteMode.TERMINATE :
-                    DeleteMode.DELETE);
-        }
-
-        // set cleanup option
-        if (cleanupOption != null) {
-            config.getDeleteConfig().setCleanupGlobalAppearances(cleanupOption.isCleanupGlobalAppearances());
-        }
+        setDeleteOptions(config.getDeleteConfig());
 
         // set user-defined query options
         if (queryOption != null) {
@@ -140,5 +141,26 @@ public class DeleteCommand extends CliCommand {
         }
 
         return 0;
+    }
+
+    private void setDeleteOptions(DeleteConfig deleteConfig) {
+        if (mode != null) {
+            deleteConfig.setMode(mode == Mode.terminate ?
+                    DeleteMode.TERMINATE :
+                    DeleteMode.DELETE);
+        }
+
+        if (deleteLogFile != null) {
+            deleteConfig.getDeleteLog().setLogFile(deleteLogFile.toAbsolutePath().toString());
+            deleteConfig.getDeleteLog().setLogDeletedFeatures(true);
+        }
+
+        if (cleanupOption != null) {
+            deleteConfig.setCleanupGlobalAppearances(cleanupOption.isCleanupGlobalAppearances());
+        }
+
+        if (metadataOption != null) {
+            deleteConfig.setContinuation(metadataOption.toContinuation());
+        }
     }
 }

@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2020
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -337,6 +337,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		scaleTexImagesCheckbox.addActionListener(e -> scaleFactorSpinner.setEnabled(scaleTexImagesCheckbox.isSelected()));
 		groupObjectsCheckbox.addActionListener(e -> groupSizeText.setEnabled(groupObjectsCheckbox.isSelected()));
 		oneObjectPerRegion.addActionListener(e -> setEnabledKmlRegionComponents());
+		viewRefreshMode.addActionListener(e -> setEnabledViewRefreshTime());
 	}
 
 	private void excludeGltfAndKMZ(boolean deactivateKmz) {
@@ -515,8 +516,13 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		visibleFromText.setEnabled(oneObjectPerRegion.isSelected());
 		visibleFromPixels.setEnabled(oneObjectPerRegion.isSelected());
 		viewRefreshTimeLabel.setEnabled(oneObjectPerRegion.isSelected());
-		viewRefreshTimeText.setEnabled(oneObjectPerRegion.isSelected());
-		viewRefreshTimeSeconds.setEnabled(oneObjectPerRegion.isSelected());
+		setEnabledViewRefreshTime();
+	}
+
+	private void setEnabledViewRefreshTime() {
+		boolean onStop = ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshMode.getSelectedItem());
+		viewRefreshTimeText.setEnabled(oneObjectPerRegion.isSelected() && onStop);
+		viewRefreshTimeSeconds.setEnabled(oneObjectPerRegion.isSelected() && onStop);
 	}
 	
 	private void browseGltfConverterFile(String title) {

@@ -1,22 +1,23 @@
-plugins {
-    id 'com.jfrog.bintray' version '1.8.4'
-}
-
 dependencies {
     api project(':impexp-config')
     api project(':impexp-plugin-api')
     api 'org.citydb:sqlbuilder:2.2.1'
     api 'org.citydb:3dcitydb-ade-citygml4j:1.1.1'
-    api 'org.citygml4j:citygml4j:2.11.3-b20210129.0027'
+    api 'org.citygml4j:citygml4j:2.11.3'
     api 'org.geotools:gt-epsg-extension:23.1'
     api 'org.geotools:gt-epsg-hsql:23.1'
     api 'org.geotools:gt-referencing:23.1'
     api 'org.locationtech.jts:jts-core:1.16.1'
     api 'org.postgresql:postgresql:42.2.14'
     api 'net.postgis:postgis-jdbc:2.5.0'
+    api('com.oracle.database.jdbc:ojdbc8:19.3.0.0') {
+        exclude group: 'com.oracle.database.jdbc', module: 'ucp'
+        exclude group: 'com.oracle.database.ha'
+        exclude group: 'com.oracle.database.security'
+    }
+    api 'com.oracle.sdoapi:sdoapi:19.3.0.0'
     api 'org.apache.tika:tika-core:1.24.1'
     api 'com.univocity:univocity-parsers:2.9.1'
-    api fileTree(dir: 'lib', include: '*.jar')
     implementation 'com.h2database:h2:1.4.200'
     implementation 'org.apache.tomcat:tomcat-jdbc:9.0.41'
     implementation 'org.apache.tomcat:tomcat-juli:9.0.41'
@@ -26,23 +27,4 @@ dependencies {
 javadoc {
     source += project(':impexp-config').sourceSets.main.allJava
     source += project(':impexp-plugin-api').sourceSets.main.allJava
-}
-
-bintray {
-    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
-
-    publications = ['mavenJava']
-    pkg {
-        repo = 'maven'
-        userOrg = '3dcitydb'
-        name = project.name
-        websiteUrl = project.citydbVcsUrl
-        vcsUrl = project.impexpGit
-        issueTrackerUrl = project.impexpIssueTrackerUrl
-        licenses = ['Apache-2.0']
-        version {
-            name = project.version
-        }
-    }
 }

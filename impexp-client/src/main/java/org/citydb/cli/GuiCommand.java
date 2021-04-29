@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2020
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -171,15 +171,13 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
             }
         }
 
-        // enable window decorations
-        JFrame.setDefaultLookAndFeelDecorated(true);
-        JDialog.setDefaultLookAndFeelDecorated(true);
-
         // set UI defaults
         int offset = Math.max(16 - UIManager.getIcon("CheckBox.icon").getIconWidth(), 0);
         int iconTextGap = UIManager.getInt("CheckBox.iconTextGap") + offset;
         UIManager.put("CheckBox.iconTextGap", iconTextGap);
         UIManager.put("RadioButton.iconTextGap", iconTextGap);
+        UIManager.put("TitlePane.unifiedBackground", true);
+        UIManager.put("TitlePane.centerTitleIfMenuBarEmbedded", false);
 
         // splash screen
         if (!hideSplash) {

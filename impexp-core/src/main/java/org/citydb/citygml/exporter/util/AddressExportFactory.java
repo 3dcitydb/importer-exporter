@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
  * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,7 @@ package org.citydb.citygml.exporter.util;
 
 import org.citydb.config.project.exporter.AddressMode;
 import org.citydb.config.project.exporter.ExportConfig;
+import org.citydb.config.project.exporter.OutputFormat;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
@@ -50,10 +51,15 @@ public class AddressExportFactory {
 	protected final AddressMode fallback;
 	protected final boolean useFallback;
 
-	public AddressExportFactory(ExportConfig exportConfig) {
-		primary = exportConfig.getAddress().getMode();
-		fallback = primary == AddressMode.DB ? AddressMode.XAL : AddressMode.DB;		
-		useFallback = exportConfig.getAddress().isSetUseFallback();
+	public AddressExportFactory(OutputFormat outputFormat, ExportConfig exportConfig) {
+		if (outputFormat == OutputFormat.CITYGML) {
+			primary = exportConfig.getCityGMLOptions().getAddress().getMode();
+			fallback = primary == AddressMode.DB ? AddressMode.XAL : AddressMode.DB;
+			useFallback = exportConfig.getCityGMLOptions().getAddress().isSetUseFallback();
+		} else {
+			primary = fallback = AddressMode.DB;
+			useFallback = false;
+		}
 	}
 	
 	public AddressObject newAddressObject() {

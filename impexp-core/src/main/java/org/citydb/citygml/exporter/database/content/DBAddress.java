@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,9 +27,9 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
+import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AddressExportFactory;
 import org.citydb.citygml.exporter.util.AddressObject;
-import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.AddressMode;
 import org.citydb.database.schema.TableEnum;
@@ -63,7 +63,7 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 		select = addProjection(new Select(), table, "");
 		adeHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, table);
 
-		factory = new AddressExportFactory(exporter.getExportConfig());
+		factory = new AddressExportFactory(exporter.getInternalConfig().getOutputFormat(), exporter.getExportConfig());
 		gmlConverter = exporter.getGMLConverter();
 	}
 

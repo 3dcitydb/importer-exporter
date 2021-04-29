@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2020
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,9 +39,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class DisplayOption implements CliOption {
-    @CommandLine.Option(names = {"-D", "--display-mode"}, split = ",", paramLabel = "<mode[=pixels]>",
+    @CommandLine.Option(names = {"-D", "--display-form"}, split = ",", paramLabel = "<form[=pixels]>",
             required = true, mapFallbackValue = "0",
-            description = "Display mode: collada, geometry, extruded, footprint. Optionally specify the visibility " +
+            description = "Display form: collada, geometry, extruded, footprint. Optionally specify the visibility " +
                     "in terms of screen pixels (default: ${MAP-FALLBACK-VALUE}).")
     private Map<Mode, Integer> modes;
 

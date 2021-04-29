@@ -47,14 +47,15 @@ You may obtain a copy of the License at
 3. About
 --------
 
-The @name@ is a Java based front-end for 
+The @name@ is a Java based client for
 the @citydbName@ version @citydbVersion@. It allows for high-performance 
 loading and extracting 3D city model data.
 
-* Full support for CityGML versions 2.0.0 and 1.0.0
+* Support for CityGML 2.0 and 1.0
+* Support for CityJSON 1.0
 * Support for CityGML Application Domain Extensions (ADEs) through
   software extensions
-* Support for Oracle Locator/Spatial and PostgreSQL/PostGIS
+* Support for PostgreSQL/PostGIS and Oracle Locator/Spatial
 * Reading/writing CityGML instance documents of arbitrary file size
 * Export of KML/COLLADA/glTF models including tiling schemas for 
   visualization and interactive exploration of large city models
@@ -62,15 +63,14 @@ loading and extracting 3D city model data.
 * Generic KML information balloons
 * Export of thematic object data into tables. Supported data formats are
   CSV and Microsoft Excel
-* Resolving and preservation of forward and backwards XLinks in 
+* Resolving and preservation of forward and backwards XLinks in
   CityGML datasets
-* Full support of 3D Coordinate Reference Systems (CRS) and 3D 
-  coordinate transformations; support for user-defined CRS 
-* Coordinate transformations for CityGML exports
+* Full support of 3D Coordinate Reference Systems (CRS) and 3D
+  coordinate transformations; support for user-defined CRS
+* Coordinate transformations for CityGML/CityJSON exports
 * Map window for graphical selection of bounding boxes
-* XML validation of CityGML instance documents
-* Multithreaded programming facilitating high-performance CityGML 
-  processing
+* Validation of CityGML/CityJSON instance documents
+* Multithreaded programming facilitating high-performance data processing
 
 The @name@ comes with both a Graphical
 User Interface (GUI) and a Command Line Interface (CLI). The CLI 
@@ -81,11 +81,11 @@ third party applications.
 4. System requirements
 ----------------------
 
-* Java JRE or JDK >= 11
+* Java JRE or JDK >= 8
 * @citydbName@ version @citydbVersion@ on
-  - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
   - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
-  
+  - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
+
 The @name@ can be run on any platform 
 providing appropriate Java support. It has been tested on the 
 following platforms:
@@ -119,7 +119,7 @@ following two options:
 
 a) Use the start scripts to launch the application with a graphical user
    interface. The start scripts are located in the installation directory.
-   During setup you can additionally choose to create shortcuts for the
+   During setup, you can additionally choose to create shortcuts for the
    start scripts on your desktop and in the start menu of your preferred OS.
 
    Please execute the start script suitable for your platform:
@@ -164,7 +164,7 @@ b) The @name@ also offers a
    to 1GB using the -Xms parameter of the JVM. This value has been chosen to
    be reasonable for most scenarios. Please edit the CLI scripts in case you
    need to adapt the default value. You can also use the environment variables
-   JAVA_OPTS and IMPEXP_OPTS to pass JVM options to CLI script.
+   JAVA_OPTS and IMPEXP_OPTS to pass JVM options to the CLI scripts.
 
 
 7. Documentation
@@ -182,9 +182,9 @@ The @name@ v@version@ has been developed by
 and with the support from the following cooperation partners:
 
 * Chair of Geoinformatics, Technical University of Munich
-  https://www.gis.bgu.tum.de/
-* virtualcitySYSTEMS GmbH, Berlin
-  http://www.virtualcitysystems.de/
+  https://www.lrg.tum.de/gis/
+* Virtual City Systems, Berlin
+  https://vc.systems/
 * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen
   http://www.moss.de/
   
@@ -192,9 +192,9 @@ and with the support from the following cooperation partners:
 9. Active Developers
 --------------------
 
-Claus Nagel <cnagel@virtualcitysystems.de>
-Zhihang Yao <zyao@virtualcitysystems.de>
-György Hudra <ghudra@moss.de>
+Claus Nagel <cnagel@vc.systems>
+Zhihang Yao <zyao@vc.systems>
+Luca Casagrande <lcasagrande@moss.de>
 Felix Kunde <felix-kunde@gmx.de>
 Son H. Nguyen <son.nguyen@tum.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
@@ -207,7 +207,7 @@ documentation for the list of all contributors to previous versions.
 10. Contact
 ----------
 
-cnagel@virtualcitysystems.de
+cnagel@vc.systems
 thomas.kolbe@tum.de
 
 

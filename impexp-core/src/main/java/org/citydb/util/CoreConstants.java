@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,7 @@ import java.nio.file.Paths;
 public class CoreConstants {
     public static final Path IMPEXP_DATA_DIR = Paths.get(System.getProperty("user.home"), "3dcitydb", "importer-exporter").toAbsolutePath();
     public static final String IMPORT_LOG_DIR = "imported-features";
+    public static final String DELETE_LOG_DIR = "deleted-features";
     public static final String LIBRARY_OBJECTS_DIR = "library-objects";
     public static final URL CITYDB_SCHEMA_MAPPING_FILE = CoreConstants.class.getResource("/org/citydb/database/schema/3dcitydb-schema.xml");
 

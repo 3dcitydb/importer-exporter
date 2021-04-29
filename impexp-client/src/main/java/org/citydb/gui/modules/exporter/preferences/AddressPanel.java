@@ -1,16 +1,16 @@
 /*
  * 3D City Database - The Open Source CityGML Database
- * http://www.3dcitydb.org/
+ * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
- * https://www.gis.bgu.tum.de/
+ * https://www.lrg.tum.de/gis/
  *
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  *
- * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Virtual City Systems, Berlin <https://vc.systems/>
  * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,7 +51,7 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		ExportAddress address = config.getExportConfig().getAddress();
+		ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
 		
 		if (exportDB.isSelected() && address.getMode() != AddressMode.DB) return true;
 		if (exportXAL.isSelected() && address.getMode() != AddressMode.XAL) return true;
@@ -86,7 +86,7 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		ExportAddress address = config.getExportConfig().getAddress();
+		ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
 		
 		address.setMode(exportDB.isSelected() ? AddressMode.DB : AddressMode.XAL);
 		address.setUseFallback(exportFallback.isSelected());
@@ -94,13 +94,11 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		ExportAddress address = config.getExportConfig().getAddress();
-		
-		switch (address.getMode()) {
-		case XAL:
+		ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
+
+		if (address.getMode() == AddressMode.XAL) {
 			exportXAL.setSelected(true);
-			break;
-		default:
+		} else {
 			exportDB.setSelected(true);
 		}
 		
