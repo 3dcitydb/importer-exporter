@@ -33,8 +33,7 @@ RUN set -x && \
 # Cleanup dist
 RUN set -x && \
   rm -rf /build_tmp /impexp/contribs/collada2gltf/*osx* /impexp/contribs/collada2gltf/*windows* \
-    /impexp/license /impexp/**/*.md /impexp/**/*.txt /impexp/**/*.bat \
-    /var/lib/apt/lists/*
+    /impexp/license /impexp/**/*.md /impexp/**/*.txt /impexp/**/*.bat
 
 # Runtime stage ###############################################################
 # Base image
