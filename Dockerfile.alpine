@@ -5,8 +5,8 @@
 
 # Fetch & build stage #########################################################
 # ARGS
-ARG BUILDER_IMAGE_TAG='jdk-11.0.10_9-alpine-slim'
-ARG RUNTIME_IMAGE_TAG='jre-11.0.10_9-alpine'
+ARG BUILDER_IMAGE_TAG='jdk-11.0.11_9-alpine-slim'
+ARG RUNTIME_IMAGE_TAG='jre-11.0.11_9-alpine'
 
 # Base image
 FROM adoptopenjdk/openjdk11:${BUILDER_IMAGE_TAG} AS builder
