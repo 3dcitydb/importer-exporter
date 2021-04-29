@@ -1,6 +1,10 @@
 # git and github related files
 .github/
-.git/
+
+# Include .git in build context. Remove this when new ImpExp Installer
+# is available.
+# .git/
+
 .gitignore
 .gitattributes
 

@@ -15,6 +15,12 @@ FROM openjdk:${BUILDER_IMAGE_TAG} AS builder
 WORKDIR /build_tmp
 COPY . ./
 
+# Install git, wget
+RUN set -x && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends git && \
+  rm -rf /var/lib/apt/lists/*
+
 # Build
 RUN set -x && \
   chmod u+x ./gradlew && ./gradlew installDockerDist

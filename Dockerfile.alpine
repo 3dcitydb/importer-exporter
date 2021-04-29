@@ -15,6 +15,11 @@ FROM adoptopenjdk/openjdk11:${BUILDER_IMAGE_TAG} AS builder
 WORKDIR /build_tmp
 COPY . ./
 
+# Setup fetch deps
+RUN set -ex && \
+ apk update && \
+ apk add --no-cache --virtual .fetch-deps git
+
 # Build
 RUN set -x && \
   chmod u+x ./gradlew && ./gradlew installDockerDist
