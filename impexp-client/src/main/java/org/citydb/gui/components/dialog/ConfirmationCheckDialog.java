@@ -84,7 +84,20 @@ public class ConfirmationCheckDialog {
     public int show() {
         messages.add("\n");
         messages.add(disableDialog);
-        return JOptionPane.showConfirmDialog(parent, messages.toArray(), title, optionType, messageType);
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            return JOptionPane.showConfirmDialog(parent, messages.toArray(), title, optionType, messageType);
+        } else {
+            int[] option = new int[1];
+            try {
+                SwingUtilities.invokeAndWait(() -> option[0] = JOptionPane.showConfirmDialog(
+                        parent, messages.toArray(), title, optionType, messageType));
+            } catch (Exception e) {
+                option[0] = JOptionPane.CANCEL_OPTION;
+            }
+
+            return option[0];
+        }
     }
 
     public boolean keepShowingDialog() {

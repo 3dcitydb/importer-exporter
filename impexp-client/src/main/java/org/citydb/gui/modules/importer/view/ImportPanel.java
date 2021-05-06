@@ -267,12 +267,11 @@ public class ImportPanel extends JPanel {
 
 			// affine transformation
 			if (config.getImportConfig().getAffineTransformation().isEnabled()) {
-				if (JOptionPane.showConfirmDialog(
-						viewController.getTopFrame(),
+				if (viewController.showOptionDialog(Language.I18N.getString("common.dialog.warning.title"),
 						Language.I18N.getString("import.dialog.warning.affineTransformation"),
-						Language.I18N.getString("common.dialog.warning.title"),
-						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
+						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION) {
 					return;
+				}
 			}
 
 			if (!databaseController.connect()) {

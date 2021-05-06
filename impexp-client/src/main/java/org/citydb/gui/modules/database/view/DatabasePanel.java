@@ -574,6 +574,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
 						.withParentComponent(viewController.getTopFrame())
 						.withOptionType(JOptionPane.OK_CANCEL_OPTION)
+						.withMessageType(JOptionPane.WARNING_MESSAGE)
 						.withTitle(Language.I18N.getString("db.dialog.warn.title"))
 						.addMessage(warning.getFormattedMessage());
 
@@ -721,27 +722,30 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private boolean requestChange() {
 		if (isModified()) {
-			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), Language.I18N.getString("db.dialog.apply.msg"),
-					Language.I18N.getString("db.dialog.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
-			if (res==JOptionPane.CANCEL_OPTION)
-				return false;
-			else if (res==JOptionPane.YES_OPTION)
-				apply();
-			else
-				getDbConnection((DatabaseConnection)connCombo.getSelectedItem());
+			int option = viewController.showOptionDialog(Language.I18N.getString("db.dialog.apply.title"),
+					Language.I18N.getString("db.dialog.apply.msg"),
+					JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+			switch (option) {
+				case JOptionPane.CANCEL_OPTION:
+					return false;
+				case JOptionPane.YES_OPTION:
+					apply();
+					break;
+				default:
+					getDbConnection((DatabaseConnection) connCombo.getSelectedItem());
+					break;
+			}
 		}
 
 		return true;
 	}
 
 	private boolean requestDelete() {
-		DatabaseConnection databaseConnection = (DatabaseConnection)connCombo.getSelectedItem();
-		String text = Language.I18N.getString("db.dialog.delete.msg");
-		Object[] args = new Object[]{ databaseConnection.getDescription() };
-		String result = MessageFormat.format(text, args);
-
-		int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), result, Language.I18N.getString("db.dialog.delete.title"), JOptionPane.YES_NO_OPTION);
-		return res==JOptionPane.YES_OPTION;
+		DatabaseConnection databaseConnection = (DatabaseConnection) connCombo.getSelectedItem();
+		return viewController.showOptionDialog(Language.I18N.getString("db.dialog.delete.title"),
+				MessageFormat.format(Language.I18N.getString("db.dialog.delete.msg"), databaseConnection.getDescription()),
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
 	}
 
 	private void setEnabledDBOperations(boolean enable) {

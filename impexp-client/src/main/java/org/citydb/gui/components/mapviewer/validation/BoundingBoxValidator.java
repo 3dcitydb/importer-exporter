@@ -42,16 +42,19 @@ import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
+import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 
 public class BoundingBoxValidator {
 	private final Logger log = Logger.getInstance();
 	private final MapWindow map;
 	private final Config config;
+	private final ViewController viewController;
 	private final DatabaseController dbController;
 
 	public enum ValidationResult {
@@ -70,8 +73,9 @@ public class BoundingBoxValidator {
 		OK
 	};
 
-	public BoundingBoxValidator(MapWindow map, Config config) {
+	public BoundingBoxValidator(MapWindow map, ViewController viewController, Config config) {
 		this.map = map;
+		this.viewController = viewController;
 		this.config = config;
 
 		dbController = ObjectRegistry.getInstance().getDatabaseController();
@@ -197,8 +201,11 @@ public class BoundingBoxValidator {
 			SwingUtilities.invokeLater(() -> transform.setMessage(Language.I18N.getString("main.status.database.connect.label")));
 			if (!dbController.connect(true)) {
 				SwingUtilities.invokeLater(transform::dispose);
-				JOptionPane.showMessageDialog(map, Language.I18N.getString("map.dialog.label.error.db"),
-						Language.I18N.getString("map.dialog.title.transform.error"), JOptionPane.ERROR_MESSAGE);
+				viewController.showOptionDialog(map,
+						Language.I18N.getString("common.dialog.error.db.title"),
+						Language.I18N.getString("map.dialog.label.error.db"),
+						JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+
 				return ValidationResult.SKIP;
 			}
 		}
@@ -223,8 +230,11 @@ public class BoundingBoxValidator {
 		} catch (SQLException e) {
 			log.error("Failed to transform bounding box to WGS 84.", e);
 			SwingUtilities.invokeLater(transform::dispose);
-			JOptionPane.showMessageDialog(map, Language.I18N.getString("map.dialog.label.error.db"),
-					Language.I18N.getString("map.dialog.label.error.transform"), JOptionPane.ERROR_MESSAGE);
+			viewController.showOptionDialog(map,
+					Language.I18N.getString("common.dialog.error.db.title"),
+					MessageFormat.format(Language.I18N.getString("map.dialog.label.error.transform"), e.getMessage().trim()),
+					JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+
 			return ValidationResult.SKIP;
 		}
 	}

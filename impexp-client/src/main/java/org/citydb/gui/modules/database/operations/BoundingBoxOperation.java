@@ -379,14 +379,9 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				SwingUtilities.invokeLater(bboxDialog::dispose);
 			} catch (SQLException | QueryBuildException e) {
 				SwingUtilities.invokeLater(bboxDialog::dispose);
-
 				bboxPanel.clearBoundingBox();
-
-				JOptionPane.showMessageDialog(
-						viewController.getTopFrame(),
-						MessageFormat.format(Language.I18N.getString("db.dialog.error.bbox"), e.getMessage().trim()),
-						Language.I18N.getString("common.dialog.error.db.title"),
-						JOptionPane.ERROR_MESSAGE);
+				viewController.errorMessage(Language.I18N.getString("common.dialog.error.db.title"),
+						MessageFormat.format(Language.I18N.getString("db.dialog.error.bbox"), e.getMessage().trim()));
 
 				log.error("Failed to calculate bounding box.", e);
 			} finally {		
@@ -525,14 +520,9 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				SwingUtilities.invokeLater(bboxDialog::dispose);
 			} catch (SQLException | QueryBuildException e) {
 				SwingUtilities.invokeLater(bboxDialog::dispose);
-
 				bboxPanel.clearBoundingBox();
-
-				JOptionPane.showMessageDialog(
-						viewController.getTopFrame(),
-						MessageFormat.format(Language.I18N.getString("db.dialog.error.setbbox"), e.getMessage().trim()),
-						Language.I18N.getString("common.dialog.error.db.title"),
-						JOptionPane.ERROR_MESSAGE);
+				viewController.errorMessage(Language.I18N.getString("common.dialog.error.db.title"),
+						MessageFormat.format(Language.I18N.getString("db.dialog.error.setbbox"), e.getMessage().trim()));
 
 				log.error("Failed to create bounding boxes.", e);
 			} finally {		

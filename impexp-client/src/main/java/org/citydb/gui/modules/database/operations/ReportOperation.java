@@ -46,7 +46,6 @@ import java.util.regex.Pattern;
 public class ReportOperation extends DatabaseOperationView {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
-	private final DatabaseOperationsPanel parent;
 	private final ViewController viewController;
 	private final DatabaseConnectionPool dbConnectionPool;
 
@@ -54,8 +53,6 @@ public class ReportOperation extends DatabaseOperationView {
 	private JButton reportButton;
 
 	public ReportOperation(DatabaseOperationsPanel parent) {
-		this.parent = parent;
-		
 		viewController = parent.getViewController();
 		dbConnectionPool = DatabaseConnectionPool.getInstance();
 
@@ -174,21 +171,12 @@ public class ReportOperation extends DatabaseOperationView {
 
 				SwingUtilities.invokeLater(reportDialog::dispose);
 
-			} catch (SQLException sqlEx) {
+			} catch (SQLException e) {
 				SwingUtilities.invokeLater(reportDialog::dispose);
+				viewController.errorMessage(Language.I18N.getString("common.dialog.error.db.title"),
+						MessageFormat.format(Language.I18N.getString("db.dialog.error.report"), e.getMessage().trim()));
 
-				String dbSqlEx = sqlEx.getMessage().trim();
-				String text = Language.I18N.getString("db.dialog.error.report");
-				Object[] args = new Object[]{ dbSqlEx };
-				String result = MessageFormat.format(text, args);
-
-				JOptionPane.showMessageDialog(
-						viewController.getTopFrame(), 
-						result, 
-						Language.I18N.getString("common.dialog.error.db.title"),
-						JOptionPane.ERROR_MESSAGE);
-
-				log.error("SQL error: " + dbSqlEx);
+				log.error("Failed to generate the database report.", e);
 			} finally {			
 				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}

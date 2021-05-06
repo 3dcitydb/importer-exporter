@@ -38,6 +38,7 @@ import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 import org.citydb.util.ClientConstants;
 
@@ -54,6 +55,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class GeneralPanel extends AbstractPreferencesComponent {
+	private final ViewController viewController;
 	private final Map<String, Integer> packingAlgorithms = new HashMap<>();
 
 	private TitledPanel generalPanel;
@@ -99,9 +101,10 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JFormattedTextField viewRefreshTimeText;
 	private JLabel viewRefreshTimeSeconds;
 
-	public GeneralPanel(Config config) {
+	public GeneralPanel(ViewController viewController, Config config) {
 		super(config);
 
+		this.viewController = viewController;
 		packingAlgorithms.put("BASIC", TextureAtlasCreator.BASIC);
 		packingAlgorithms.put("TPIM", TextureAtlasCreator.TPIM);
 		packingAlgorithms.put("TPIM w/o image rotation", TextureAtlasCreator.TPIM_WO_ROTATION);
@@ -347,12 +350,11 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 					"pref.kmlexport.label.deactivateGlTF");
 
 			Object[] options = {option, Language.I18N.getString("common.button.cancel")};
-			int choice = JOptionPane.showOptionDialog(getTopLevelAncestor(),
-					Language.I18N.getString("pref.kmlexport.label.kmzGltfWarning"),
+			int choice = viewController.showOptionDialog(viewController.getTopFrame(),
 					Language.I18N.getString("common.dialog.warning.title"),
+					Language.I18N.getString("pref.kmlexport.label.kmzGltfWarning"),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE,
-					null,
 					options,
 					options[0]);
 

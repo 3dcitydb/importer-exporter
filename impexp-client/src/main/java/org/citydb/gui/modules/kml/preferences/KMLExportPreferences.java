@@ -37,13 +37,14 @@ import org.citydb.database.schema.mapping.AppSchema;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.modules.common.AbstractPreferences;
 import org.citydb.gui.modules.common.DefaultPreferencesEntry;
+import org.citydb.plugin.extension.view.ViewController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class KMLExportPreferences extends AbstractPreferences {
 	
-	public KMLExportPreferences(Config config) {
+	public KMLExportPreferences(ViewController viewController, Config config) {
 		super(new KMLExportEntry());
 
 		DefaultPreferencesEntry renderingNode = new StylingPanel();
@@ -183,7 +184,7 @@ public class KMLExportPreferences extends AbstractPreferences {
 			}
 		}
 
-		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(viewController, config)));
 		root.addChildEntry(renderingNode);
 		root.addChildEntry(balloonNode);
 		root.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));
