@@ -95,8 +95,7 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 		
 		if (language == LanguageType.DE) {
 			importLanguageRadioDe.setSelected(true);
-		}
-		else if (language == LanguageType.EN) {
+		} else if (language == LanguageType.EN) {
 			importLanguageRadioEn.setSelected(true);
 		}
 	}
@@ -107,8 +106,7 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 		
 		if (importLanguageRadioDe.isSelected()) {
 			globalConfig.setLanguage(LanguageType.DE);
-		}
-		else if (importLanguageRadioEn.isSelected()) {
+		} else if (importLanguageRadioEn.isSelected()) {
 			globalConfig.setLanguage(LanguageType.EN);
 		}
 		

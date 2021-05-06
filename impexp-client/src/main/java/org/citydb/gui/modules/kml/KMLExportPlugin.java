@@ -45,7 +45,7 @@ public class KMLExportPlugin implements InternalPlugin, ViewExtension, Preferenc
 	
 	public KMLExportPlugin(ViewController viewController, Config config) {
 		view = new KMLExportView(viewController, config);
-		preferences = new KMLExportPreferences(config);
+		preferences = new KMLExportPreferences(viewController, config);
 	}
 		
 	@Override

@@ -109,7 +109,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private final PrintStream out = System.out;
 	private final PrintStream err = System.err;
 
-	private JPanel main;
 	private JLabel statusText;
 	private JLabel connectText;
 	private MenuBar menuBar;
@@ -242,7 +241,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		setLayout(new GridBagLayout());
 
 		// main panel
-		main = new JPanel();
+		JPanel main = new JPanel();
 		main.setLayout(new GridBagLayout());
 		{
 			statusText = new JLabel();
@@ -448,13 +447,40 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	@Override
-	public void errorMessage(String title, String text) {
-		JOptionPane.showMessageDialog(this, text, title, JOptionPane.ERROR_MESSAGE);
+	public void errorMessage(String title, Object message) {
+		showOptionDialog(this, title, message, JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, null);
 	}
 
 	@Override
-	public int warnMessage(String title, String text) {
-		return JOptionPane.showConfirmDialog(this, text, title, JOptionPane.OK_CANCEL_OPTION);
+	public int warnMessage(String title, Object message) {
+		return showOptionDialog(this, title, message, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null);
+	}
+
+	@Override
+	public int showOptionDialog(String title, Object message, int optionType, int messageType) {
+		return showOptionDialog(this, title, message, optionType, messageType);
+	}
+
+	@Override
+	public int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType) {
+		return showOptionDialog(parent, title, message, optionType, messageType, null, null);
+	}
+
+	@Override
+	public int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType, Object[] options, Object initialValue) {
+		if (SwingUtilities.isEventDispatchThread()) {
+			return JOptionPane.showOptionDialog(parent, message, title, optionType, messageType, null, options, initialValue);
+		} else {
+			int[] option = new int[1];
+			try {
+				SwingUtilities.invokeAndWait(() -> option[0] = JOptionPane.showOptionDialog(
+						parent, message, title, optionType, messageType, null, null, null));
+			} catch (Exception e) {
+				option[0] = JOptionPane.CANCEL_OPTION;
+			}
+
+			return option[0];
+		}
 	}
 
 	public void enableConsoleWindow(boolean enable, boolean resizeMain) {

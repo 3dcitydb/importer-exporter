@@ -293,13 +293,12 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		deleteButton.addActionListener(e -> {
 			DatabaseSrs refSys = srsComboBox.getSelectedItem();
 			if (refSys != null) {
-				int index = srsComboBox.getSelectedIndex();
+				int option = viewController.showOptionDialog(Language.I18N.getString("pref.db.srs.dialog.delete.title"),
+						MessageFormat.format(Language.I18N.getString("pref.db.srs.dialog.delete.msg"), refSys.getDescription()),
+						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
-				String text = Language.I18N.getString("pref.db.srs.dialog.delete.msg");
-				Object[] args = new Object[]{refSys.getDescription()};
-				String formattedMsg = MessageFormat.format(text, args);
-
-				if (JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, Language.I18N.getString("pref.db.srs.dialog.delete.title"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+				if (option == JOptionPane.YES_OPTION) {
+					int index = srsComboBox.getSelectedIndex();
 					config.getDatabaseConfig().getReferenceSystems().remove(refSys);
 					updateSrsComboBoxes(false);
 					srsComboBox.setSelectedIndex(index < srsComboBox.getItemCount() ? index : index - 1);
@@ -451,11 +450,11 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		String name = refSys.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "");
 		String copy = name + " - " + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem");
 
-		if (Language.I18N.getString("common.label.boundingBox.crs.sameAsInDB").replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
+		if (Language.I18N.getString("common.label.boundingBox.crs.sameAsInDB").replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").equalsIgnoreCase(name))
 			nr++;
 
 		for (DatabaseSrs tmp : config.getDatabaseConfig().getReferenceSystems())
-			if (tmp.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
+			if (tmp.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").equalsIgnoreCase(name))
 				nr++;
 
 		if (nr > 1)
@@ -614,16 +613,21 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		if (isModified()) {
 			DatabaseSrs refSys = srsComboBox.getSelectedItem();
 			String description = refSys != null ? refSys.getDescription() : "";
-			String formattedMsg = MessageFormat.format(Language.I18N.getString("pref.db.srs.apply.msg"), description);
 
-			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, 
-					Language.I18N.getString("pref.db.srs.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
-			if (res == JOptionPane.CANCEL_OPTION) 
-				return false;
-			else if (res == JOptionPane.YES_OPTION) {
-				setSettings();
-			} else
-				loadSettings();
+			int option = viewController.showOptionDialog(Language.I18N.getString("pref.db.srs.apply.title"),
+					MessageFormat.format(Language.I18N.getString("pref.db.srs.apply.msg"), description),
+					JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+			switch (option) {
+				case JOptionPane.CANCEL_OPTION:
+					return false;
+				case JOptionPane.YES_OPTION:
+					setSettings();
+					break;
+				default:
+					loadSettings();
+					break;
+			}
 		}
 
 		return true;

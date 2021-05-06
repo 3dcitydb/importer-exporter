@@ -364,15 +364,10 @@ public class SrsOperation extends DatabaseOperationView {
 				SwingUtilities.invokeLater(srsDialog::dispose);
 			} catch (SQLException e) {
 				SwingUtilities.invokeLater(srsDialog::dispose);
-				String sqlExMsg = e.getMessage().trim();
+				viewController.errorMessage(Language.I18N.getString("common.dialog.error.db.title"),
+						MessageFormat.format(Language.I18N.getString("db.dialog.srs.error"), e.getMessage().trim()));
 
-				JOptionPane.showMessageDialog(
-						viewController.getTopFrame(),
-						MessageFormat.format(Language.I18N.getString("db.dialog.srs.error"), sqlExMsg),
-						Language.I18N.getString("common.dialog.error.db.title"),
-						JOptionPane.ERROR_MESSAGE);
-
-				log.error("SQL error: " + sqlExMsg);
+				log.error("Failed to change the reference system.", e);
 			} finally {
 				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}

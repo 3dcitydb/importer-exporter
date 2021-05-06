@@ -106,7 +106,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		LAT_LON_FORMATTER.setMaximumFractionDigits(7);
 	}
 
-	private final JFrame mainFrame;
+	private final ViewController viewController;
 	private final BoundingBoxClipboardHandler clipboardHandler;
 	private final BoundingBoxValidator validator;
 	private final Config config;
@@ -164,9 +164,9 @@ public class MapWindow extends JDialog implements EventHandler {
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(MapEvents.MAP_BOUNDS, this);
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(MapEvents.REVERSE_GEOCODER, this);
 
-		mainFrame = viewController.getTopFrame();
+		this.viewController = viewController;
 		clipboardHandler = BoundingBoxClipboardHandler.getInstance();
-		validator = new BoundingBoxValidator(this, config);
+		validator = new BoundingBoxValidator(this, viewController, config);
 
 		init();
 		doTranslation();
@@ -552,10 +552,9 @@ public class MapWindow extends JDialog implements EventHandler {
 					GeocodingService service = getGeocodingService((GeocodingServiceName) geocoderCombo.getSelectedItem());
 					Geocoder.getInstance().setGeocodingService(service);
 				} catch (GeocodingServiceException e) {
-					SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-							this, e.getMessage(),
-							Language.I18N.getString("map.error.geocoder.title"),
-							JOptionPane.ERROR_MESSAGE));
+					viewController.showOptionDialog(this,
+							Language.I18N.getString("map.error.geocoder.title"), e.getMessage(),
+							JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
 
 					geocoderCombo.setSelectedItem(config.getGuiConfig().getMapWindow().getGeocoder());
 				}
@@ -830,6 +829,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		// create default values for main window
 		if (x == null || y == null || width == null || height == null) {
+			JFrame mainFrame = viewController.getTopFrame();
 			x = mainFrame.getLocation().x + 10;
 			y = mainFrame.getLocation().y + 10;
 			width = 1024;

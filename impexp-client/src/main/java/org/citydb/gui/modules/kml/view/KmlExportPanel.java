@@ -1015,19 +1015,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             fetchThemesButton.setEnabled(false);
 
             try {
-                String text = Language.I18N.getString("pref.kmlexport.connectDialog.line2");
                 DatabaseConnection conn = config.getDatabaseConfig().getActiveConnection();
-                Object[] args = new Object[]{conn.getDescription(), conn.toConnectString()};
-                String formattedMsg = MessageFormat.format(text, args);
-                String[] connectConfirm = {Language.I18N.getString("pref.kmlexport.connectDialog.line1"),
-                        formattedMsg,
-                        Language.I18N.getString("pref.kmlexport.connectDialog.line3")};
 
-                if (!databaseController.isConnected() &&
-                        JOptionPane.showConfirmDialog(getTopLevelAncestor(),
-                                connectConfirm,
-                                Language.I18N.getString("pref.kmlexport.connectDialog.title"),
-                                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                if (!databaseController.isConnected() && viewController.showOptionDialog(
+                        Language.I18N.getString("pref.kmlexport.connectDialog.title"),
+                        MessageFormat.format(Language.I18N.getString("pref.kmlexport.connectDialog"),
+                                conn.getDescription(), conn.toConnectString()),
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                     databaseController.connect();
                 }
 

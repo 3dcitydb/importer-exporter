@@ -146,11 +146,11 @@ public class MenuFile extends JMenu {
         });
 
 		defaults.addActionListener(e -> {
-			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(),
+			int option = mainView.showOptionDialog(Language.I18N.getString("menu.file.defaults.msg.title"),
 					Language.I18N.getString("menu.file.defaults.msg"),
-					Language.I18N.getString("menu.file.defaults.msg.title"), JOptionPane.YES_NO_OPTION);
+					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
-			if (res == JOptionPane.YES_OPTION) {
+			if (option == JOptionPane.YES_OPTION) {
 				mainView.clearConsole();
 				mainView.disconnectFromDatabase();
 
