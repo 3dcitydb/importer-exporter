@@ -1,8 +1,0 @@
-                             PROGRAM LICENSE
-
-@license@
-
-
-APPENDIX.
-
-@apache@
