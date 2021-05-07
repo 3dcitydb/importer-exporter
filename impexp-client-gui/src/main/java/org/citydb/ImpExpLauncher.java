@@ -30,6 +30,7 @@ package org.citydb;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.cli.ImpExpCli;
+import org.citydb.gui.GuiCommand;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.Plugin;
 
@@ -66,7 +67,8 @@ public class ImpExpLauncher {
 
     public void start() {
         int exitCode = impExpCli
-                .startWithGuiAsDefault(true)
+                .withCliCommand(new GuiCommand())
+                .withDefaultCommand(GuiCommand.NAME)
                 .start(args);
 
         if (exitCode != 0) {

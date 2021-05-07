@@ -28,7 +28,6 @@
 
 package org.citydb.cli;
 
-import org.citydb.ImpExpException;
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
@@ -95,8 +94,7 @@ import java.util.stream.Stream;
                 ExportCommand.class,
                 ExportVisCommand.class,
                 DeleteCommand.class,
-                ValidateCommand.class,
-                GuiCommand.class
+                ValidateCommand.class
         }
 )
 public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvider {
@@ -134,7 +132,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     private String subCommandName;
     private int processStep;
 
-    private boolean startWithGuiAsDefault;
+    private String defaultCommand;
     private boolean useDefaultConfiguration;
     private boolean useDefaultLogLevel = true;
     private boolean failOnADEExceptions = true;
@@ -188,8 +186,8 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         return this;
     }
 
-    public ImpExpCli startWithGuiAsDefault(boolean startWithGuiAsDefault) {
-        this.startWithGuiAsDefault = startWithGuiAsDefault;
+    public ImpExpCli withDefaultCommand(String defaultCommand) {
+        this.defaultCommand = defaultCommand;
         return this;
     }
 
@@ -225,8 +223,8 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
                 .setAbbreviatedOptionsAllowed(true)
                 .setExecutionStrategy(new CommandLine.RunAll());
 
-        if (startWithGuiAsDefault) {
-            args = addGuiCommand(cmd, args);
+        if (defaultCommand != null) {
+            args = addDefaultCommand(cmd, args);
         }
 
         try {
@@ -559,7 +557,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private String[] addGuiCommand(CommandLine cmd, String[] args) {
+    private String[] addDefaultCommand(CommandLine cmd, String[] args) {
         Set<String> subCommands = cmd.getSubcommands().keySet().stream()
                 .map(String::toLowerCase)
                 .collect(Collectors.toSet());
@@ -573,7 +571,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             }
         }
 
-        return Stream.concat(Stream.of(GuiCommand.NAME), Arrays.stream(args)).toArray(String[]::new);
+        return Stream.concat(Stream.of(defaultCommand), Arrays.stream(args)).toArray(String[]::new);
     }
 
     @Override

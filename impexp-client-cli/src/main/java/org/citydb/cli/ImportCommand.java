@@ -28,7 +28,6 @@
 
 package org.citydb.cli;
 
-import org.citydb.ImpExpException;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.controller.Importer;
 import org.citydb.cli.options.importer.FilterOption;

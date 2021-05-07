@@ -28,7 +28,6 @@
 
 package org.citydb.cli;
 
-import org.citydb.ImpExpException;
 import org.citydb.citygml.validator.ValidationException;
 import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.log.Logger;
