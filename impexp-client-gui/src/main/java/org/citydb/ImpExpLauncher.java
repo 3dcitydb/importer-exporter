@@ -67,7 +67,6 @@ public class ImpExpLauncher {
 
     public void start() {
         int exitCode = impExpCli
-                .withCliCommand(new GuiCommand())
                 .withDefaultCommand(GuiCommand.NAME)
                 .start(args);
 
