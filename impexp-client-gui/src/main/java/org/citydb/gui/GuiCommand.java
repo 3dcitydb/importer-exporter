@@ -26,16 +26,16 @@
  * limitations under the License.
  */
 
-package org.citydb.cli;
+package org.citydb.gui;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import org.citydb.ImpExpException;
+import org.citydb.cli.ImpExpCli;
+import org.citydb.cli.ImpExpException;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.GuiConfig;
 import org.citydb.config.gui.style.Theme;
 import org.citydb.database.DatabaseController;
-import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.SplashScreen;
 import org.citydb.gui.modules.database.DatabasePlugin;
 import org.citydb.gui.modules.exporter.CityGMLExportPlugin;

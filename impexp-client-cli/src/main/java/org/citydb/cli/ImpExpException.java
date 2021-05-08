@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb;
+package org.citydb.cli;
 
 public class ImpExpException extends Exception {
 	private static final long serialVersionUID = -3716015045363231263L;

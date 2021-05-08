@@ -1,6 +1,7 @@
 include 'impexp-core'
 include 'impexp-config'
 include 'impexp-plugin-api'
-include 'impexp-client'
 include 'impexp-client-common'
+include 'impexp-client-cli'
+include 'impexp-client-gui'
 include 'impexp-kml-collada-plugin'

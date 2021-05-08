@@ -1,0 +1,133 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'application'
+}
+
+configurations {
+    izpack
+    doc
+}
+
+dependencies {
+    api project(':impexp-client-cli')
+    api 'com.formdev:flatlaf:1.1.2'
+    api 'com.formdev:flatlaf-extras:1.1.2'
+    api 'com.formdev:flatlaf-swingx:1.1.2'
+    api 'com.fifesoft:rsyntaxtextarea:3.1.2'
+    api ('org.citydb:swingx-ws:1.1.4') {
+        transitive = false
+    }
+    api ('org.citydb:swingx-all:1.6.8') {
+        transitive = false
+    }
+
+    izpack fileTree(dir: 'resources/izpack/lib', include: '*.jar')
+    doc 'org.kohsuke.metainf-services:metainf-services:1.8'
+    doc 'org.swinglabs.swingx:swingx-mavensupport:1.6.5-1'
+}
+
+processResources {
+    filesMatching('**/application.properties') {
+        filteringCharset = 'UTF-8'
+        filter(ReplaceTokens, tokens: [
+                docUrl: project.docUrl
+        ])
+    }
+}
+
+task processReadme(type: Copy) {
+    from('resources/doc/README.txt') {
+        filteringCharset = 'UTF-8'
+        filter(ReplaceTokens, tokens: [
+                name: project.impexpName,
+                version: project.version,
+                date: project.date.format('yyyy-MM-dd'),
+                citydbName: project.citydbName,
+                citydbVersion: project.citydbVersion,
+                jar: jar.archiveFileName.get(),
+                appName: project.appName,
+                cliName: project.appCliName,
+                cliDir: application.executableDir,
+                citydbWebsiteUrl: project.citydbWebsiteUrl,
+                citydbVcsUrl: project.citydbVcsUrl,
+                vendorName: project.vendorName,
+                vendorOrganisation: project.vendorOrganisation,
+                vendorCountry: project.vendorCountry,
+                vendorCopyright: project.vendorCopyright,
+                vendorWebsiteUrl: project.vendorWebsiteUrl,
+                docUrl: project.docUrl
+        ])
+    }
+    into "$buildDir/tmp/doc"
+}
+
+javadoc {
+    classpath += configurations.doc
+}
+
+jar {
+    manifest {
+        attributes('Main-Class': application.mainClass,
+                'Class-Path': configurations.runtimeClasspath.collect{ it.name }.join(' ')
+        )
+        into('META-INF') {
+            from processReadme
+        }
+    }
+}
+
+application {
+    mainClass = 'org.citydb.cli.ImpExpCli'
+    applicationName = project.appCliName
+    applicationDefaultJvmArgs = ['-Xms1G']
+
+    startScripts {
+        classpath = jar.outputs.files
+
+        doLast {
+            def windows = getWindowsScript()
+            def unix = getUnixScript()
+            windows.text = windows.text.replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
+            unix.text = unix.text.replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
+        }
+    }
+}
+
+distributions {
+    main {
+        distributionBaseName = project.appName
+
+        contents {
+            from processReadme
+            from('resources/start') {
+                rename 'start(.*)', project.appName + '$1'
+                fileMode 0755
+                filter(ReplaceTokens, tokens: [
+                        name: project.impexpName,
+                        cliName: project.appCliName,
+                        cliDir: application.executableDir
+                ])
+            }
+            into('contribs') {
+                from "$rootDir/resources/contribs"
+            }
+            into('templates') {
+                from "$rootDir/resources/templates"
+            }
+            into('samples') {
+                from "$rootDir/resources/samples"
+            }
+            into('license') {
+                from "$rootDir/resources/license/APACHE-2.0.txt"
+                from processLicense
+            }
+            from(file("$buildDir/tmp/dir")) {
+                mkdir "$buildDir/tmp/dir/plugins"
+            }
+            from(file("$buildDir/tmp/dir")) {
+                mkdir "$buildDir/tmp/dir/ade-extensions"
+            }
+        }
+    }
+}
