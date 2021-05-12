@@ -46,8 +46,8 @@ import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoField;
 
 public class FeatureVersionOption implements CliOption {
-    @CommandLine.Option(names = {"-r", "--feature-version"}, required = true,
-            description = "Feature version: ${COMPLETION-CANDIDATES}.")
+    @CommandLine.Option(names = {"-r", "--feature-version"}, required = true, defaultValue = "latest",
+            description = "Feature version: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Version version;
 
     @CommandLine.Option(names = {"-R", "--feature-version-timestamp"}, paramLabel = "<timestamp[,timestamp]>",
@@ -59,6 +59,10 @@ public class FeatureVersionOption implements CliOption {
     private OffsetDateTime startDateTime;
     private OffsetDateTime endDateTime;
     private SimpleFeatureVersionFilter featureVersionFilter;
+
+    public static SimpleFeatureVersionFilter defaultFeatureVersionFilter() {
+        return new SimpleFeatureVersionFilter();
+    }
 
     public SimpleFeatureVersionFilter toFeatureVersionFilter(DatatypeFactory datatypeFactory) {
         if (featureVersionFilter != null) {

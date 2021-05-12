@@ -53,7 +53,7 @@ public class SimpleFeatureVersionFilter {
     private XMLGregorianCalendar endDate;
 
     public SimpleFeatureVersionFilterMode getMode() {
-        return mode;
+        return mode != null ? mode : SimpleFeatureVersionFilterMode.LATEST;
     }
 
     public void setMode(SimpleFeatureVersionFilterMode mode) {
