@@ -135,7 +135,7 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		if (connection.getSuspectTimeout() != null) properties.setSuspectTimeout(connection.getSuspectTimeout());
 
 		// pool maintenance
-		properties.setJdbcInterceptors("StatementFinalizer");
+		properties.setJdbcInterceptors("org.citydb.database.connection.ConcurrentStatementFinalizer");
 
 		// create new data source
 		dataSource = new DataSource(properties);

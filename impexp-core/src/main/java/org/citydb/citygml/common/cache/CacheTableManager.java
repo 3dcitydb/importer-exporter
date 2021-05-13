@@ -168,7 +168,7 @@ public class CacheTableManager {
 				cacheConnection.rollback();
 				cacheConnection.close();
 			} catch (SQLException e) {
-				//
+				log.error("Failed to close temporary cache connection.", e);
 			}
 
 			if (databaseConnection != null) {
@@ -178,7 +178,7 @@ public class CacheTableManager {
 						databaseConnection.close();
 					}
 				} catch (SQLException e) {
-					//
+					log.error("Failed to close temporary cache connection.", e);
 				} finally {
 					databaseConnection = null;
 					databaseAdapter = null;
