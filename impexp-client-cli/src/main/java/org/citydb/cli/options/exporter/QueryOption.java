@@ -48,7 +48,6 @@ import org.citydb.plugin.cli.XMLQueryOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
-import javax.xml.datatype.DatatypeFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,14 +103,14 @@ public class QueryOption implements CliOption {
                 queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
             }
 
-            if (featureVersionOption != null) {
-                DatatypeFactory datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
-                SimpleFeatureVersionFilter versionFilter = featureVersionOption.toFeatureVersionFilter(datatypeFactory);
-                if (versionFilter != null) {
-                    AbstractPredicate predicate = versionFilter.toPredicate();
-                    if (predicate != null) {
-                        predicates.add(predicate);
-                    }
+            SimpleFeatureVersionFilter versionFilter = featureVersionOption != null ?
+                    featureVersionOption.toFeatureVersionFilter(ObjectRegistry.getInstance().getDatatypeFactory()) :
+                    FeatureVersionOption.defaultFeatureVersionFilter();
+
+            if (versionFilter != null) {
+                AbstractPredicate predicate = versionFilter.toPredicate();
+                if (predicate != null) {
+                    predicates.add(predicate);
                 }
             }
 
