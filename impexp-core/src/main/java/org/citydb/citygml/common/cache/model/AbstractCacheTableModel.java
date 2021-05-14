@@ -47,14 +47,12 @@ public abstract class AbstractCacheTableModel {
     public void create(Connection conn, String tableName, AbstractSQLAdapter sqlAdapter) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sqlAdapter.getCreateUnloggedTable(tableName, getColumns(sqlAdapter)));
-            conn.commit();
         }
     }
 
     public void createAsSelect(Connection conn, String tableName, String select, AbstractSQLAdapter sqlAdapter) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sqlAdapter.getCreateUnloggedTableAsSelect(tableName, select));
-            conn.commit();
         }
     }
 
@@ -68,14 +66,12 @@ public abstract class AbstractCacheTableModel {
     public void truncate(Connection conn, String tableName) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("delete from " + tableName);
-            conn.commit();
         }
     }
 
     public void drop(Connection conn, String tableName) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("drop table " + tableName);
-            conn.commit();
         }
     }
 
