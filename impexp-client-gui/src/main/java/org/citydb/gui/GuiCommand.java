@@ -161,7 +161,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         } catch (Exception e) {
             log.error("Failed to install look and feel theme '" + laf + "'.", e);
             guiConfig.getAppearance().setTheme(Theme.LIGHT);
-            FlatLightLaf.install();
+            FlatLightLaf.setup();
         }
 
         if (OSXAdapter.IS_MAC_OS) {
