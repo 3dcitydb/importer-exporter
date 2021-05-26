@@ -52,8 +52,8 @@ public class FeatureVersionOption implements CliOption {
 
     @CommandLine.Option(names = {"-R", "--feature-version-timestamp"}, paramLabel = "<timestamp[,timestamp]>",
             description = "Timestamp given as date <YYYY-MM-DD> or date-time <YYYY-MM-DDThh:mm:ss[(+|-)hh:mm]> with " +
-                    "optional UTC offset. Use one timestamp with 'at' and two timestamps defining a time range " +
-                    "with 'between'.")
+                    "optional UTC offset. Use one timestamp with 'at' and 'terminated_at', and two timestamps " +
+                    "defining a time range with 'between'.")
     private String timestamp;
 
     private OffsetDateTime startDateTime;
@@ -82,6 +82,8 @@ public class FeatureVersionOption implements CliOption {
         latest(SimpleFeatureVersionFilterMode.LATEST),
         at(SimpleFeatureVersionFilterMode.AT),
         between(SimpleFeatureVersionFilterMode.BETWEEN),
+        terminated(SimpleFeatureVersionFilterMode.TERMINATED),
+        terminated_at(SimpleFeatureVersionFilterMode.TERMINATED_AT),
         all(null);
 
         private final SimpleFeatureVersionFilterMode mode;
@@ -107,14 +109,14 @@ public class FeatureVersionOption implements CliOption {
         featureVersionFilter.setMode(version.mode);
 
         if (timestamp != null) {
-            if (version == Version.latest) {
+            if (version == Version.latest || version == Version.terminated) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: The feature version '" + version + "' does not take a timestamp");
             }
 
             String[] timestamps = timestamp.split(",");
 
-            if (version == Version.at && timestamps.length != 1) {
+            if ((version == Version.at || version == Version.terminated_at) && timestamps.length != 1) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: The feature version '" + version + "' requires only one timestamp");
             } else if (version == Version.between && timestamps.length != 2) {
