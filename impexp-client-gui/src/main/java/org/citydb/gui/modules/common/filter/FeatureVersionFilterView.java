@@ -59,14 +59,18 @@ import java.util.Date;
 public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFilter> {
     private final DatatypeFactory datatypeFactory;
     private JPanel component;
-
     private JComboBox<FeatureFilterMode> featureFilterMode;
-    private JComboBox<DateMode> dateMode;
-    private DatePicker startDate;
-    private JFormattedTextField startTime;
-    private JLabel endDateLabel;
-    private DatePicker endDate;
-    private JFormattedTextField endTime;
+
+    private JComboBox<TimestampMode> validMode;
+    private DatePicker validStartDate;
+    private JFormattedTextField validStartTime;
+    private JLabel validEndDateLabel;
+    private DatePicker validEndDate;
+    private JFormattedTextField validEndTime;
+
+    private JComboBox<TimestampMode> terminatedMode;
+    private DatePicker terminatedAtDate;
+    private JFormattedTextField terminatedAtTime;
 
     public FeatureVersionFilterView() {
         datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
@@ -77,64 +81,114 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
         component = new JPanel();
         component.setLayout(new GridBagLayout());
 
-        startDate = new DatePicker();
-        startTime = new JFormattedTextField();
-        endDateLabel = new JLabel();
-        endDate = new DatePicker();
-        endTime = new JFormattedTextField();
-
-        startTime.putClientProperty("JTextField.placeholderText", "HH:MM:SS");
-        endTime.putClientProperty("JTextField.placeholderText", "HH:MM:SS");
-
-        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-        startTime.setFormatterFactory(new DefaultFormatterFactory(new DateFormatter(timeFormat)));
-        endTime.setFormatterFactory(new DefaultFormatterFactory(new DateFormatter(timeFormat)));
+        DefaultFormatterFactory timeFormat = new DefaultFormatterFactory(new DateFormatter(new SimpleDateFormat("HH:mm:ss")));
 
         featureFilterMode = new JComboBox<>();
-        for (FeatureFilterMode mode : FeatureFilterMode.values())
+        for (FeatureFilterMode mode : FeatureFilterMode.values()) {
             featureFilterMode.addItem(mode);
+        }
 
-        dateMode = new JComboBox<>();
-        for (DateMode mode : DateMode.values())
-            dateMode.addItem(mode);
+        JPanel timestampPanel = new JPanel();
+        timestampPanel.setLayout(new CardLayout());
+        {
+            timestampPanel.add(Box.createHorizontalGlue(), FeatureFilterMode.LATEST.name());
+        }
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
 
-        component.add(featureFilterMode, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-        component.add(dateMode, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 20, 0, 5));
-        component.add(startDate, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-        component.add(startTime, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-        component.add(endDateLabel, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
-        component.add(endDate, GuiUtil.setConstraints(5, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-        component.add(endTime, GuiUtil.setConstraints(6, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-        startTime.setPreferredSize(startTime.getPreferredSize());
-        endTime.setPreferredSize(endTime.getPreferredSize());
+            validMode = new JComboBox<>();
+            validMode.addItem(TimestampMode.AT);
+            validMode.addItem(TimestampMode.FROM);
 
-        startTime.addFocusListener(new FocusAdapter() {
-            public void focusLost(FocusEvent e) {
-                if (startTime.getValue() != null && startTime.getText().trim().length() == 0)
-                    startTime.setValue(null);
-            }
-        });
+            validStartDate = new DatePicker();
+            validStartTime = new JFormattedTextField();
+            validEndDateLabel = new JLabel();
+            validEndDate = new DatePicker();
+            validEndTime = new JFormattedTextField();
 
-        endTime.addFocusListener(new FocusAdapter() {
-            public void focusLost(FocusEvent e) {
-                if (endTime.getValue() != null && startTime.getText().trim().length() == 0)
-                    endTime.setValue(null);
-            }
-        });
+            validStartTime.putClientProperty("JTextField.placeholderText", "HH:MM:SS");
+            validEndTime.putClientProperty("JTextField.placeholderText", "HH:MM:SS");
+            validStartTime.setFormatterFactory(timeFormat);
+            validEndTime.setFormatterFactory(timeFormat);
+
+            content.add(validMode, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+            content.add(validStartDate, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+            content.add(validStartTime, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+            content.add(validEndDateLabel, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
+            content.add(validEndDate, GuiUtil.setConstraints(5, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+            content.add(validEndTime, GuiUtil.setConstraints(6, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            validStartTime.setPreferredSize(validStartTime.getPreferredSize());
+            validEndTime.setPreferredSize(validEndTime.getPreferredSize());
+
+            timestampPanel.add(content, FeatureFilterMode.VALID.name());
+        }
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+
+            terminatedMode = new JComboBox<>();
+            terminatedMode.addItem(TimestampMode.ALL);
+            terminatedMode.addItem(TimestampMode.AT);
+
+            terminatedAtDate = new DatePicker();
+            terminatedAtTime = new JFormattedTextField();
+            terminatedAtTime.putClientProperty("JTextField.placeholderText", "HH:MM:SS");
+            terminatedAtTime.setFormatterFactory(timeFormat);
+
+            content.add(terminatedMode, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+            content.add(terminatedAtDate, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+            content.add(terminatedAtTime, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            terminatedAtTime.setPreferredSize(terminatedAtTime.getPreferredSize());
+
+            timestampPanel.add(content, FeatureFilterMode.TERMINATED.name());
+        }
+
+        component.add(featureFilterMode, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+        component.add(timestampPanel, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 0));
 
         featureFilterMode.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                setEnabledStartDate();
-                setEnabledEndDate();
+                FeatureFilterMode mode = (FeatureFilterMode) e.getItem();
+                ((CardLayout) timestampPanel.getLayout()).show(timestampPanel, mode.name());
+
+                if (mode == FeatureFilterMode.VALID) {
+                    setEnabledValidMode();
+                } else if (mode == FeatureFilterMode.TERMINATED) {
+                    setEnabledTerminatedMode();
+                }
             }
         });
 
-        dateMode.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED)
-                setEnabledEndDate();
+        validMode.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                setEnabledValidEndDate();
+            }
         });
 
-        PopupMenuDecorator.getInstance().decorate(startDate.getEditor(), startTime, endDate.getEditor(), endTime);
+        terminatedMode.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                setEnabledTerminatedAtDate();
+            }
+        });
+
+        FocusAdapter focusLostAdapter = new FocusAdapter() {
+            public void focusLost(FocusEvent e) {
+                if (e.getSource() instanceof JFormattedTextField) {
+                    JFormattedTextField source = (JFormattedTextField) e.getSource();
+                    if (source.getValue() != null && source.getText().trim().length() == 0) {
+                        source.setValue(null);
+                    }
+                }
+            }
+        };
+
+        validStartTime.addFocusListener(focusLostAdapter);
+        validEndTime.addFocusListener(focusLostAdapter);
+        terminatedAtTime.addFocusListener(focusLostAdapter);
+
+        PopupMenuDecorator.getInstance().decorate(validStartDate.getEditor(), validStartTime, validEndDate.getEditor(),
+                validEndTime, terminatedAtDate.getEditor(), terminatedAtTime);
     }
 
     @Override
@@ -159,43 +213,54 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
 
     @Override
     public void doTranslation() {
-        endDateLabel.setText(Language.I18N.getString("filter.label.featureVersion.to"));
+        validEndDateLabel.setText(Language.I18N.getString("filter.label.featureVersion.to"));
         featureFilterMode.updateUI();
-        dateMode.updateUI();
+        validMode.updateUI();
+        terminatedMode.updateUI();
     }
 
     @Override
     public void setEnabled(boolean enable) {
         featureFilterMode.setEnabled(enable);
-
-        if (enable) {
-            setEnabledStartDate();
-            setEnabledEndDate();
-        } else {
-            dateMode.setEnabled(false);
-            startDate.setEnabled(false);
-            startTime.setEnabled(false);
-            endDateLabel.setEnabled(false);
-            endDate.setEnabled(false);
-            endTime.setEnabled(false);
-        }
+        setEnabledValidMode();
+        setEnabledTerminatedMode();
     }
 
-    private void setEnabledStartDate() {
+    private void setEnabledValidMode() {
+        setEnabledValidStartDate();
+        setEnabledValidEndDate();
+    }
+
+    private void setEnabledValidStartDate() {
         boolean enable = featureFilterMode.isEnabled()
                 && featureFilterMode.getSelectedItem() == FeatureFilterMode.VALID;
-        dateMode.setEnabled(enable);
-        startDate.setEnabled(enable);
-        startTime.setEnabled(enable);
+        validMode.setEnabled(enable);
+        validStartDate.setEnabled(enable);
+        validStartTime.setEnabled(enable);
     }
 
-    private void setEnabledEndDate() {
+    private void setEnabledValidEndDate() {
         boolean enable = featureFilterMode.isEnabled()
                 && featureFilterMode.getSelectedItem() == FeatureFilterMode.VALID
-                && dateMode.getSelectedItem() == DateMode.FROM;
-        endDateLabel.setEnabled(enable);
-        endDate.setEnabled(enable);
-        endTime.setEnabled(enable);
+                && validMode.getSelectedItem() == TimestampMode.FROM;
+        validEndDateLabel.setEnabled(enable);
+        validEndDate.setEnabled(enable);
+        validEndTime.setEnabled(enable);
+    }
+
+    private void setEnabledTerminatedMode() {
+        boolean enable = featureFilterMode.isEnabled()
+                && featureFilterMode.getSelectedItem() == FeatureFilterMode.TERMINATED;
+        terminatedMode.setEnabled(enable);
+        setEnabledTerminatedAtDate();
+    }
+
+    private void setEnabledTerminatedAtDate() {
+        boolean enable = featureFilterMode.isEnabled()
+                && featureFilterMode.getSelectedItem() == FeatureFilterMode.TERMINATED
+                && terminatedMode.getSelectedItem() == TimestampMode.AT;
+        terminatedAtDate.setEnabled(enable);
+        terminatedAtTime.setEnabled(enable);
     }
 
     @Override
@@ -206,32 +271,35 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
                 break;
             case AT:
                 featureFilterMode.setSelectedItem(FeatureFilterMode.VALID);
-                dateMode.setSelectedItem(DateMode.AT);
+                validMode.setSelectedItem(TimestampMode.AT);
                 break;
             case BETWEEN:
                 featureFilterMode.setSelectedItem(FeatureFilterMode.VALID);
-                dateMode.setSelectedItem(DateMode.FROM);
+                validMode.setSelectedItem(TimestampMode.FROM);
+                break;
+            case TERMINATED:
+                featureFilterMode.setSelectedItem(FeatureFilterMode.TERMINATED);
+                terminatedMode.setSelectedItem(TimestampMode.ALL);
+                break;
+            case TERMINATED_AT:
+                featureFilterMode.setSelectedItem(FeatureFilterMode.TERMINATED);
+                terminatedMode.setSelectedItem(TimestampMode.AT);
                 break;
         }
 
-        if (featureVersionFilter.isSetStartDate()) {
-            ZonedDateTime dateTime = featureVersionFilter.getStartDate().toGregorianCalendar().toZonedDateTime();
-            Date date = Date.from(dateTime.toInstant());
-            startDate.setDate(date);
-            startTime.setValue(!dateTime.toLocalTime().equals(LocalTime.MAX.withNano(0)) ? date : null);
-        } else {
-            startDate.setDate(null);
-            startTime.setValue(null);
-        }
+        ZonedDateTime startDate = featureVersionFilter.isSetStartDate() ?
+                featureVersionFilter.getStartDate().toGregorianCalendar().toZonedDateTime() :
+                null;
 
-        if (featureVersionFilter.isSetEndDate()) {
-            ZonedDateTime dateTime = featureVersionFilter.getEndDate().toGregorianCalendar().toZonedDateTime();
-            Date date = Date.from(dateTime.toInstant());
-            endDate.setDate(date);
-            endTime.setValue(!dateTime.toLocalTime().equals(LocalTime.MAX.withNano(0)) ? date : null);
-        } else {
-            endDate.setDate(null);
-            endTime.setValue(null);
+        ZonedDateTime endDate = featureVersionFilter.isSetEndDate() ?
+                featureVersionFilter.getEndDate().toGregorianCalendar().toZonedDateTime() :
+                null;
+
+        if (featureFilterMode.getSelectedItem() == FeatureFilterMode.VALID) {
+            setDateTime(startDate, validStartDate, validStartTime);
+            setDateTime(endDate, validEndDate, validEndTime);
+        } else if (featureFilterMode.getSelectedItem() == FeatureFilterMode.TERMINATED) {
+            setDateTime(startDate, terminatedAtDate, terminatedAtTime);
         }
     }
 
@@ -239,15 +307,26 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
     public SimpleFeatureVersionFilter toSettings() {
         SimpleFeatureVersionFilter featureVersionFilter = new SimpleFeatureVersionFilter();
         if (featureFilterMode.getSelectedItem() == FeatureFilterMode.VALID) {
-            if (dateMode.getSelectedItem() == DateMode.AT)
+            if (validMode.getSelectedItem() == TimestampMode.AT) {
                 featureVersionFilter.setMode(SimpleFeatureVersionFilterMode.AT);
-            else if (dateMode.getSelectedItem() == DateMode.FROM)
+            } else if (validMode.getSelectedItem() == TimestampMode.FROM) {
                 featureVersionFilter.setMode(SimpleFeatureVersionFilterMode.BETWEEN);
-        } else
-            featureVersionFilter.setMode(SimpleFeatureVersionFilterMode.LATEST);
+            }
 
-        featureVersionFilter.setStartDate(toCalendar(startDate.getDate(), (Date) startTime.getValue()));
-        featureVersionFilter.setEndDate(toCalendar(endDate.getDate(), (Date) endTime.getValue()));
+            featureVersionFilter.setStartDate(toCalendar(validStartDate.getDate(), (Date) validStartTime.getValue()));
+            featureVersionFilter.setEndDate(toCalendar(validEndDate.getDate(), (Date) validEndTime.getValue()));
+        } else if (featureFilterMode.getSelectedItem() == FeatureFilterMode.TERMINATED) {
+            if (terminatedMode.getSelectedItem() == TimestampMode.ALL) {
+                featureVersionFilter.setMode(SimpleFeatureVersionFilterMode.TERMINATED);
+            } else if (terminatedMode.getSelectedItem() == TimestampMode.AT) {
+                featureVersionFilter.setMode(SimpleFeatureVersionFilterMode.TERMINATED_AT);
+            }
+
+            featureVersionFilter.setStartDate(toCalendar(terminatedAtDate.getDate(), (Date) terminatedAtTime.getValue()));
+            featureVersionFilter.setEndDate(null);
+        } else {
+            featureVersionFilter.setMode(SimpleFeatureVersionFilterMode.LATEST);
+        }
 
         return featureVersionFilter;
     }
@@ -269,13 +348,26 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
                     dateTime.getSecond(),
                     DatatypeConstants.FIELD_UNDEFINED,
                     dateTime.getOffset() != ZoneOffset.UTC ? dateTime.getOffset().getTotalSeconds() / 60 : DatatypeConstants.FIELD_UNDEFINED);
-        } else
+        } else {
             return null;
+        }
+    }
+
+    private void setDateTime(ZonedDateTime dateTime, DatePicker datePicker, JFormattedTextField timeField) {
+        if (dateTime != null) {
+            Date date = Date.from(dateTime.toInstant());
+            datePicker.setDate(date);
+            timeField.setValue(!dateTime.toLocalTime().equals(LocalTime.MAX.withNano(0)) ? date : null);
+        } else {
+            datePicker.setDate(null);
+            timeField.setValue(null);
+        }
     }
 
     private enum FeatureFilterMode {
         LATEST,
-        VALID;
+        VALID,
+        TERMINATED;
 
         @Override
         public String toString() {
@@ -284,19 +376,24 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
                     return Language.I18N.getString("filter.label.featureVersion.latest");
                 case VALID:
                     return Language.I18N.getString("filter.label.featureVersion.valid");
+                case TERMINATED:
+                    return Language.I18N.getString("filter.label.featureVersion.terminated");
                 default:
                     return "";
             }
         }
     }
 
-    private enum DateMode {
+    private enum TimestampMode {
+        ALL,
         AT,
         FROM;
 
         @Override
         public String toString() {
             switch (this) {
+                case ALL:
+                    return Language.I18N.getString("filter.label.featureVersion.all");
                 case AT:
                     return Language.I18N.getString("filter.label.featureVersion.at");
                 case FROM:
