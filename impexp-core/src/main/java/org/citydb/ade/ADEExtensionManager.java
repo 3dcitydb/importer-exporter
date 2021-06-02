@@ -44,7 +44,6 @@ import javax.xml.bind.JAXBException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -62,9 +61,9 @@ import java.util.ServiceLoader;
 
 public class ADEExtensionManager {
 	private static ADEExtensionManager instance;
-	private HashMap<String, ADEExtension> extensions = new HashMap<>();
-	private HashMap<Integer, ADEExtension> extensionsByObjectClassIds = new HashMap<>();
-	private HashMap<String, ADEExtension> extensionsByTablePrefix = new HashMap<>();
+	private final HashMap<String, ADEExtension> extensions = new HashMap<>();
+	private final HashMap<Integer, ADEExtension> extensionsByObjectClassIds = new HashMap<>();
+	private final HashMap<String, ADEExtension> extensionsByTablePrefix = new HashMap<>();
 	private HashMap<String, List<ADEExtensionException>> exceptions;
 	private MessageDigest md5;
 
@@ -77,8 +76,9 @@ public class ADEExtensionManager {
 	}
 
 	public static synchronized ADEExtensionManager getInstance() {
-		if (instance == null)
+		if (instance == null) {
 			instance = new ADEExtensionManager();
+		}
 
 		return instance;
 	}
@@ -86,6 +86,12 @@ public class ADEExtensionManager {
 	public void loadExtensions(ClassLoader loader) {
 		ServiceLoader<ADEExtension> adeLoader = ServiceLoader.load(ADEExtension.class, loader);
 		for (ADEExtension adeExtension : adeLoader) {
+			// skip extension if it already failed to load
+			if (exceptions != null && exceptions.containsKey(adeExtension.getClass().getName())) {
+				continue;
+			}
+
+			// skip extension if it is already loaded
 			boolean isLoaded = false;
 			for (ADEExtension tmp : extensions.values()) {
 				if (tmp.getClass() == adeExtension.getClass()) {
@@ -94,21 +100,23 @@ public class ADEExtensionManager {
 				}
 			}
 
-			if (!isLoaded)
+			if (!isLoaded) {
 				loadExtension(adeExtension);
+			}
 		}
 	}
 
 	public void loadExtension(ADEExtension extension) {
 		try {
 			// determine base path
-			if (extension.getBasePath() == null)
+			if (extension.getBasePath() == null) {
 				extension.setBasePath(findBaseLocation(extension));
+			}
 
 			// validate extension
 			extension.validate();
 
-			// create and set unqiue id
+			// create and set unique id
 			String id = createMD5Fingerprint(extension.getSchemaMappingFile());
 			extension.setId(id);
 
@@ -118,7 +126,6 @@ public class ADEExtensionManager {
 				addException(previous, new ADEExtensionException("The ADE extension " + previous.getClass().getName() + " shares the same unique ID."));					
 				extensions.remove(id);
 			}
-
 		} catch (ADEExtensionException e) {
 			addException(extension, e);
 		}  catch (Throwable e) {
@@ -136,16 +143,18 @@ public class ADEExtensionManager {
 				SchemaMapping extensionMapping = SchemaMappingUtil.getInstance().unmarshal(schemaMapping, schemaMappingFile.toFile());
 
 				// register objectclass ids
-				for (AbstractObjectType<?> type : extensionMapping.getAbstractObjectTypes())
+				for (AbstractObjectType<?> type : extensionMapping.getAbstractObjectTypes()) {
 					extensionsByObjectClassIds.put(type.getObjectClassId(), extension);
+				}
 
 				// set metadata
 				if (extensionMapping.isSetMetadata()) {
 					Metadata metadata = extensionMapping.getMetadata();
 					extension.setMetadata(metadata);
 					extensionsByTablePrefix.put(metadata.getDBPrefix().toLowerCase(), extension);
-				} else
+				} else {
 					throw new SchemaMappingException("The schema mapping does not provide metadata.");
+				}
 				
 				// set schemas
 				extension.setSchemas(extensionMapping.getSchemas());
@@ -155,10 +164,12 @@ public class ADEExtensionManager {
 					for (ADEContext context : extension.getADEContexts()) {
 						for (ADEModule module : context.getADEModules()) {
 							if (schema.matchesNamespaceURI(module.getNamespaceURI())) {
-								if (schema.isGeneratedXMLPrefix())
+								if (schema.isGeneratedXMLPrefix()) {
 									schema.setXMLPrefix(module.getNamespacePrefix());
-								else if (schema.isSetXMLPrefix() && !module.getNamespacePrefix().equals(schema.getXMLPrefix()))
+								} else if (schema.isSetXMLPrefix()
+										&& !module.getNamespacePrefix().equals(schema.getXMLPrefix())) {
 									module.setNamespacePrefix(schema.getXMLPrefix());
+								}
 							}
 						}
 					}
@@ -185,8 +196,9 @@ public class ADEExtensionManager {
 
 	public List<ADEContext> getADEContexts() {
 		List<ADEContext> contexts = new ArrayList<>();
-		for (ADEExtension extension : extensions.values())
+		for (ADEExtension extension : extensions.values()) {
 			contexts.addAll(extension.getADEContexts());
+		}
 
 		return contexts;
 	}
@@ -207,8 +219,9 @@ public class ADEExtensionManager {
 		List<AppSchema> disabled = new ArrayList<>();
 		for (AppSchema schema : schemaMapping.getSchemas()) {
 			ADEExtension extension = getExtensionBySchema(schema);
-			if (extension != null && !extension.isEnabled())
+			if (extension != null && !extension.isEnabled()) {
 				disabled.add(schema);
+			}
 		}
 
 		return disabled;
@@ -217,8 +230,9 @@ public class ADEExtensionManager {
 	private List<ADEExtension> getExtensions(boolean filter) {
 		List<ADEExtension> result = new ArrayList<>();
 		for (ADEExtension extension : extensions.values()) {
-			if (extension.isEnabled() == filter)
+			if (extension.isEnabled() == filter) {
 				result.add(extension);
+			}
 		}
 
 		return result;
@@ -231,8 +245,9 @@ public class ADEExtensionManager {
 	public ADEExtension getExtensionByObject(Class<? extends ADEModelObject> adeObjectClass) {
 		for (ADEExtension extension : extensions.values()) {
 			for (ADEContext adeContext : extension.getADEContexts()) {
-				if (adeContext.getModelPackageNames().contains(adeObjectClass.getPackage().getName()))
+				if (adeContext.getModelPackageNames().contains(adeObjectClass.getPackage().getName())) {
 					return extension;
+				}
 			}
 		}
 
@@ -250,8 +265,9 @@ public class ADEExtensionManager {
 	public ADEExtension getExtensionBySchema(AppSchema schema) {
 		for (Namespace namespace : schema.getNamespaces()) {
 			ADEExtension extension = getExtensionByURI(namespace.getURI());
-			if (extension != null)
+			if (extension != null) {
 				return extension;
+			}
 		}
 
 		return null;
@@ -261,8 +277,9 @@ public class ADEExtensionManager {
 		for (ADEExtension extension : extensions.values()) {
 			for (ADEContext adeContext : extension.getADEContexts()) {
 				for (ADEModule adeModule : adeContext.getADEModules()) {
-					if (adeModule.getNamespaceURI().equals(namespaceURI))
+					if (adeModule.getNamespaceURI().equals(namespaceURI)) {
 						return extension;
+					}
 				}
 			}
 		}
@@ -301,11 +318,12 @@ public class ADEExtensionManager {
 	}
 
 	private void addException(ADEExtension extension, ADEExtensionException exception) {
-		if (this.exceptions == null)
-			this.exceptions = new HashMap<>();
+		if (exceptions == null) {
+			exceptions = new HashMap<>();
+		}
 
-		List<ADEExtensionException> exceptions = this.exceptions.computeIfAbsent(extension.getClass().getName(), k -> new ArrayList<>());
-		exceptions.add(exception);
+		exceptions.computeIfAbsent(extension.getClass().getName(), k -> new ArrayList<>())
+				.add(exception);
 	}
 
 	private Path findBaseLocation(ADEExtension extension) throws ADEExtensionException {
@@ -332,7 +350,7 @@ public class ADEExtensionManager {
 
 					basePath = Paths.get(new URL(location).toURI()).getParent();
 				}
-			} catch (MalformedURLException | URISyntaxException | NullPointerException e) {
+			} catch (Exception e) {
 				//
 			}
 		}
@@ -347,8 +365,9 @@ public class ADEExtensionManager {
 			} while ((basePath = basePath.getParent()) != null);
 		}
 
-		if (basePath == null)
+		if (basePath == null) {
 			throw new ADEExtensionException("Failed to determine the base path of the ADE extension.");
+		}
 
 		return basePath;
 	}
@@ -358,20 +377,21 @@ public class ADEExtensionManager {
 				ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
 			int nRead;
 			byte[] data = new byte[4096];
-			while ((nRead = stream.read(data, 0, data.length)) != -1)
+			while ((nRead = stream.read(data, 0, data.length)) != -1) {
 				buffer.write(data, 0, nRead);
+			}
 
 			buffer.flush();			
 			byte[] hash = md5.digest(buffer.toByteArray());
 
 			StringBuilder hex = new StringBuilder();
-			for (byte aHash : hash)
+			for (byte aHash : hash) {
 				hex.append(Integer.toString((aHash & 0xff) + 0x100, 16).substring(1));
+			}
 
 			return hex.toString();
 		} catch (IOException e) {
 			throw new ADEExtensionException("Failed to create a unique ID.", e);
 		}
 	}
-
 }
