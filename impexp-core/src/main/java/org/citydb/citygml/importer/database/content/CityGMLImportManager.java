@@ -33,6 +33,7 @@ import org.citydb.ade.importer.ADEImportManager;
 import org.citydb.ade.importer.ADEPropertyCollection;
 import org.citydb.ade.importer.CityGMLImportHelper;
 import org.citydb.ade.importer.ForeignKeys;
+import org.citydb.ade.model.CityDBADEModuleComponent;
 import org.citydb.citygml.common.cache.IdCache;
 import org.citydb.citygml.common.cache.IdCacheEntry;
 import org.citydb.citygml.common.cache.IdCacheManager;
@@ -342,6 +343,11 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 			if (properties != null && !properties.isEmpty()) {
 				IdentityHashMap<ADEImportManager, ADEPropertyCollection> groupedBy = new IdentityHashMap<>();
 				for (ADEModelObject property : properties) {
+					if (property instanceof CityDBADEModuleComponent) {
+						// 3DCityDB ADE properties are handled internally, so skip them here
+						continue;
+					}
+
 					ADEImportManager adeImporter = getADEImportManager(property);
 					ADEPropertyCollection collection = groupedBy.get(adeImporter);
 					if (collection == null) {
