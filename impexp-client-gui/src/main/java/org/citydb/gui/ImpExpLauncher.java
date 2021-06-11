@@ -26,11 +26,10 @@
  * limitations under the License.
  */
 
-package org.citydb;
+package org.citydb.gui;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.cli.ImpExpCli;
-import org.citydb.gui.GuiCommand;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.Plugin;
 
