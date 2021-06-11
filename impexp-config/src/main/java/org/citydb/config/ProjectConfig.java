@@ -32,7 +32,7 @@ import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.importer.ImportConfig;
-import org.citydb.config.project.kmlExporter.KmlExportConfig;
+import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.config.project.plugin.PluginConfigListAdapter;
 import org.citydb.config.util.ConfigNamespaceFilter;
@@ -51,7 +51,7 @@ import java.util.Map;
         "importConfig",
         "exportConfig",
         "deleteConfig",
-        "kmlExportConfig",
+        "visExportConfig",
         "globalConfig",
         "extensions"
 })
@@ -64,8 +64,8 @@ public class ProjectConfig {
     private ExportConfig exportConfig;
     @XmlElement(name = "delete")
     private DeleteConfig deleteConfig;
-    @XmlElement(name = "kmlExport")
-    private KmlExportConfig kmlExportConfig;
+    @XmlElement(name = "visExport")
+    private VisExportConfig visExportConfig;
     @XmlElement(name = "global")
     private GlobalConfig globalConfig;
     @XmlJavaTypeAdapter(PluginConfigListAdapter.class)
@@ -78,13 +78,13 @@ public class ProjectConfig {
                          ImportConfig importConfig,
                          ExportConfig exportConfig,
                          DeleteConfig deleteConfig,
-                         KmlExportConfig kmlExportConfig,
+                         VisExportConfig visExportConfig,
                          GlobalConfig globalConfig) {
         this.databaseConfig = databaseConfig;
         this.importConfig = importConfig;
         this.exportConfig = exportConfig;
         this.deleteConfig = deleteConfig;
-        this.kmlExportConfig = kmlExportConfig;
+        this.visExportConfig = visExportConfig;
         this.globalConfig = globalConfig;
 
         namespaceFilter = new ConfigNamespaceFilter();
@@ -96,7 +96,7 @@ public class ProjectConfig {
                 new ImportConfig(),
                 new ExportConfig(),
                 new DeleteConfig(),
-                new KmlExportConfig(),
+                new VisExportConfig(),
                 new GlobalConfig());
     }
 
@@ -140,13 +140,13 @@ public class ProjectConfig {
         }
     }
 
-    KmlExportConfig getKmlExportConfig() {
-        return kmlExportConfig;
+    VisExportConfig getVisExportConfig() {
+        return visExportConfig;
     }
 
-    void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
-        if (kmlExportConfig != null) {
-            this.kmlExportConfig = kmlExportConfig;
+    void setVisExportConfig(VisExportConfig visExportConfig) {
+        if (visExportConfig != null) {
+            this.visExportConfig = visExportConfig;
         }
     }
 

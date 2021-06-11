@@ -28,7 +28,7 @@
 package org.citydb.config.project.query.filter.tiling;
 
 import org.citydb.config.project.exporter.SimpleTilingOptions;
-import org.citydb.config.project.kmlExporter.KmlTilingOptions;
+import org.citydb.config.project.visExporter.VisTilingOptions;
 
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "AbstractTilingOptionsType")
 @XmlSeeAlso({
         SimpleTilingOptions.class,
-        KmlTilingOptions.class
+        VisTilingOptions.class
 })
 public abstract class AbstractTilingOptions {
 }

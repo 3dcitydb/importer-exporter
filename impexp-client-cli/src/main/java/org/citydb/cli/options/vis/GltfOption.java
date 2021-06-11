@@ -28,8 +28,8 @@
 
 package org.citydb.cli.options.vis;
 
-import org.citydb.config.project.kmlExporter.GltfOptions;
-import org.citydb.config.project.kmlExporter.GltfVersion;
+import org.citydb.config.project.visExporter.GltfOptions;
+import org.citydb.config.project.visExporter.GltfVersion;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 

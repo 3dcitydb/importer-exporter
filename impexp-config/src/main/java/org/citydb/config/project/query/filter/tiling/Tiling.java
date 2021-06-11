@@ -28,7 +28,7 @@
 package org.citydb.config.project.query.filter.tiling;
 
 import org.citydb.config.project.exporter.SimpleTilingOptions;
-import org.citydb.config.project.kmlExporter.KmlTilingOptions;
+import org.citydb.config.project.visExporter.VisTilingOptions;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.XmlType;
 public class Tiling extends AbstractTiling {
     @XmlElements({
             @XmlElement(name = "tilingOptions", type = SimpleTilingOptions.class),
-            @XmlElement(name = "kmlTilingOptions", type = KmlTilingOptions.class)
+            @XmlElement(name = "visTilingOptions", type = VisTilingOptions.class)
     })
     private AbstractTilingOptions tilingOptions;
 

@@ -31,9 +31,9 @@ import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
-import org.citydb.config.project.kmlExporter.KmlTiling;
-import org.citydb.config.project.kmlExporter.KmlTilingMode;
-import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
+import org.citydb.config.project.visExporter.VisTiling;
+import org.citydb.config.project.visExporter.VisTilingMode;
+import org.citydb.config.project.visExporter.SimpleVisQuery;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
@@ -250,8 +250,8 @@ public class ConfigQueryBuilder {
 		return query;
 	}
 
-	public Query buildQuery(SimpleKmlQuery queryConfig, NamespaceContext namespaceContext) throws QueryBuildException {
-		// support for legacy KML export filter
+	public Query buildQuery(SimpleVisQuery queryConfig, NamespaceContext namespaceContext) throws QueryBuildException {
+		// support for legacy VIS export filter
 		Query query = new Query();
 
 		// always use CityGML 2.0 as target version
@@ -309,7 +309,7 @@ public class ConfigQueryBuilder {
 			}
 		}
 
-		KmlTiling spatialFilter = queryConfig.getBboxFilter();
+		VisTiling spatialFilter = queryConfig.getBboxFilter();
 
 		// check bbox filter
 		if (queryConfig.isUseBboxFilter() && !spatialFilter.isSetExtent()) {
@@ -317,7 +317,7 @@ public class ConfigQueryBuilder {
 		}
 
 		// apply tiling
-		if (spatialFilter.getMode() != KmlTilingMode.NO_TILING
+		if (spatialFilter.getMode() != VisTilingMode.NO_TILING
 				&& spatialFilter.isSetExtent()
 				&& spatialFilter.getExtent().isValid()) {
 			TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);

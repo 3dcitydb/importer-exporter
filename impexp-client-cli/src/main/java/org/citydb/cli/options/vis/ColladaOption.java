@@ -28,7 +28,7 @@
 
 package org.citydb.cli.options.vis;
 
-import org.citydb.config.project.kmlExporter.ColladaOptions;
+import org.citydb.config.project.visExporter.ColladaOptions;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 import picocli.CommandLine;

@@ -28,13 +28,14 @@
 package org.citydb.gui.modules.common;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.common.XSLTransformation;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -236,7 +237,7 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
             if (lastPath != null)
                 currentDirectory = lastPath;
             else
-                currentDirectory = ClientConstants.IMPEXP_HOME.resolve(ClientConstants.XSLT_TEMPLATES_DIR).toFile();
+                currentDirectory = CoreConstants.IMPEXP_HOME.resolve(CliConstants.XSLT_TEMPLATES_DIR).toFile();
         }
 
         chooser.setCurrentDirectory(currentDirectory);

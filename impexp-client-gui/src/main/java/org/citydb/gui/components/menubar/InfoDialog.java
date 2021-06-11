@@ -81,7 +81,8 @@ public class InfoDialog extends JDialog {
 
 		add(header, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(tabs, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(button, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 15, 10, 10, 10));
+		add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 2, 0, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(button, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 15, 10, 10, 10));
 
 		pack();
 
