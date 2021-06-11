@@ -1,6 +1,6 @@
 dependencies {
     api project(':impexp-config')
-    api project(':impexp-plugin-api')
+    api 'info.picocli:picocli:4.6.1'
     api 'org.citydb:sqlbuilder:2.2.1'
     api 'org.citydb:3dcitydb-ade-citygml4j:1.1.2'
     api 'org.citygml4j:citygml4j:2.11.3'
@@ -25,5 +25,4 @@ dependencies {
 
 javadoc {
     source += project(':impexp-config').sourceSets.main.allJava
-    source += project(':impexp-plugin-api').sourceSets.main.allJava
 }
