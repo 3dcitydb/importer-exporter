@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api project(':impexp-core')
-    api project(':impexp-kml-collada-plugin')
+    api project(':impexp-vis-plugin')
 }
 
 jar {

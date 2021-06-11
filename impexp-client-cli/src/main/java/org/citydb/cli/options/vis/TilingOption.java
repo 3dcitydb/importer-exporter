@@ -28,9 +28,9 @@
 
 package org.citydb.cli.options.vis;
 
-import org.citydb.config.project.kmlExporter.KmlTiling;
-import org.citydb.config.project.kmlExporter.KmlTilingMode;
-import org.citydb.config.project.kmlExporter.KmlTilingOptions;
+import org.citydb.config.project.visExporter.VisTiling;
+import org.citydb.config.project.visExporter.VisTilingMode;
+import org.citydb.config.project.visExporter.VisTilingOptions;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
@@ -43,22 +43,22 @@ public class TilingOption implements CliOption {
                     "fixed side length. Optionally specify the side length in meters (default: 125).")
     private String tiling;
 
-    private KmlTiling kmlTiling;
+    private VisTiling visTiling;
 
-    public KmlTiling toKmlTiling() {
-        return kmlTiling;
+    public VisTiling toVisTiling() {
+        return visTiling;
     }
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        kmlTiling = new KmlTiling();
+        visTiling = new VisTiling();
 
         if (tiling != null) {
             Pattern pattern = Pattern.compile("^(.+,.+)|(auto(?:=.+)?)$", Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(tiling);
             if (matcher.matches()) {
                 if (matcher.group(2) != null) {
-                    kmlTiling.setMode(KmlTilingMode.AUTOMATIC);
+                    visTiling.setMode(VisTilingMode.AUTOMATIC);
                     String[] tokens = tiling.split("=");
                     if (tokens.length == 2) {
                         try {
@@ -67,9 +67,9 @@ public class TilingOption implements CliOption {
                                 throw new NumberFormatException();
                             }
 
-                            KmlTilingOptions tilingOptions = new KmlTilingOptions();
+                            VisTilingOptions tilingOptions = new VisTilingOptions();
                             tilingOptions.setAutoTileSideLength(length);
-                            kmlTiling.setTilingOptions(tilingOptions);
+                            visTiling.setTilingOptions(tilingOptions);
                         } catch (NumberFormatException e) {
                             throw new CommandLine.ParameterException(commandLine,
                                     "Error: The side length for automatic tiling must be a positive number " +
@@ -77,7 +77,7 @@ public class TilingOption implements CliOption {
                         }
                     }
                 } else {
-                    kmlTiling.setMode(KmlTilingMode.MANUAL);
+                    visTiling.setMode(VisTilingMode.MANUAL);
                     String[] numbers = tiling.split(",");
                     try {
                         int rows = Integer.parseInt(numbers[0]);
@@ -86,8 +86,8 @@ public class TilingOption implements CliOption {
                             throw new NumberFormatException();
                         }
 
-                        kmlTiling.setRows(rows);
-                        kmlTiling.setColumns(columns);
+                        visTiling.setRows(rows);
+                        visTiling.setColumns(columns);
                     } catch (NumberFormatException e) {
                         throw new CommandLine.ParameterException(commandLine,
                                 "Error: The number of rows and columns for tiling must be positive integers but were '" +
@@ -100,7 +100,7 @@ public class TilingOption implements CliOption {
                                 "but was '" + tiling + "'");
             }
         } else {
-            kmlTiling.setMode(KmlTilingMode.NO_TILING);
+            visTiling.setMode(VisTilingMode.NO_TILING);
         }
     }
 }

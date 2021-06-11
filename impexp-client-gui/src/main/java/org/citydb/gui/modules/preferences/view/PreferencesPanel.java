@@ -36,7 +36,7 @@ import org.citydb.gui.modules.common.NullComponent;
 import org.citydb.gui.modules.database.DatabasePlugin;
 import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
 import org.citydb.gui.modules.importer.CityGMLImportPlugin;
-import org.citydb.gui.modules.kml.KMLExportPlugin;
+import org.citydb.gui.modules.visExporter.VisExportPlugin;
 import org.citydb.gui.modules.preferences.preferences.GeneralPreferences;
 import org.citydb.gui.modules.preferences.preferences.RootPreferencesEntry;
 import org.citydb.gui.util.GuiUtil;
@@ -119,7 +119,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		rootNode = new PreferencesTreeNode(new RootPreferencesEntry());
 		rootNode.add(pluginManager.getInternalPlugin(CityGMLImportPlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getPreferences().getPreferencesEntry());
-		rootNode.add(pluginManager.getInternalPlugin(KMLExportPlugin.class).getPreferences().getPreferencesEntry());
+		rootNode.add(pluginManager.getInternalPlugin(VisExportPlugin.class).getPreferences().getPreferencesEntry());
 
 		for (PreferencesExtension extension : pluginManager.getExternalPlugins(PreferencesExtension.class)) {
 			Preferences preferences = extension.getPreferences();

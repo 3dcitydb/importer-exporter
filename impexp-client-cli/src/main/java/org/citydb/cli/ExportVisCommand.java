@@ -35,11 +35,11 @@ import org.citydb.cli.options.vis.GltfOption;
 import org.citydb.cli.options.vis.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
-import org.citydb.config.project.kmlExporter.KmlExportConfig;
+import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.controller.KmlExportException;
-import org.citydb.modules.kml.controller.KmlExporter;
+import org.citydb.vis.controller.VisExportException;
+import org.citydb.vis.controller.VisExporter;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.plugin.cli.ThreadPoolOption;
@@ -105,31 +105,31 @@ public class ExportVisCommand extends CliCommand {
         }
 
         // set general export options
-        setExportOptions(config.getKmlExportConfig());
+        setExportOptions(config.getVisExportConfig());
 
         // set display options
-        setDisplayOptions(config.getKmlExportConfig());
+        setDisplayOptions(config.getVisExportConfig());
 
         // set user-defined query options
         if (queryOption != null) {
-            config.getKmlExportConfig().setQuery(queryOption.toSimpleKmlQuery());
+            config.getVisExportConfig().setQuery(queryOption.toSimpleVisQuery());
         }
 
         // set COLLADA/glTF rendering options
-        config.getKmlExportConfig().setColladaOptions(colladaOption.toColladaOptions());
+        config.getVisExportConfig().setColladaOptions(colladaOption.toColladaOptions());
 
         // set glTF options
         if (gltfOption != null) {
-            config.getKmlExportConfig().setGltfOptions(gltfOption.toGltfOptions());
+            config.getVisExportConfig().setGltfOptions(gltfOption.toGltfOptions());
         }
 
         // set elevation options
         setElevationOptions(config);
 
         try {
-            new KmlExporter().doExport(file);
+            new VisExporter().doExport(file);
             log.info("Database export successfully finished.");
-        } catch (KmlExportException e) {
+        } catch (VisExportException e) {
             log.error(e.getMessage(), e.getCause());
             log.warn("Database export aborted.");
             return 1;
@@ -140,30 +140,30 @@ public class ExportVisCommand extends CliCommand {
         return 0;
     }
 
-    private void setExportOptions(KmlExportConfig kmlExportConfig) {
+    private void setExportOptions(VisExportConfig visExportConfig) {
         if (exportAsKmz) {
-            kmlExportConfig.setExportAsKmz(exportAsKmz);
+            visExportConfig.setExportAsKmz(exportAsKmz);
         }
 
         if (json) {
-            kmlExportConfig.setWriteJSONFile(json);
+            visExportConfig.setWriteJSONFile(json);
         }
 
         if (threadPoolOption != null) {
-            kmlExportConfig.getResources().setThreadPool(threadPoolOption.toThreadPool());
+            visExportConfig.getResources().setThreadPool(threadPoolOption.toThreadPool());
         }
     }
 
-    private void setDisplayOptions(KmlExportConfig kmlExportConfig) {
+    private void setDisplayOptions(VisExportConfig visExportConfig) {
         if (displayOption != null) {
-            kmlExportConfig.setLodToExportFrom(displayOption.getLod());
-            kmlExportConfig.setAppearanceTheme(displayOption.getAppearanceTheme());
-            kmlExportConfig.setDisplayForms(displayOption.toDisplayForms());
+            visExportConfig.setLodToExportFrom(displayOption.getLod());
+            visExportConfig.setAppearanceTheme(displayOption.getAppearanceTheme());
+            visExportConfig.setDisplayForms(displayOption.toDisplayForms());
         }
     }
 
     private void setElevationOptions(Config config) {
-        config.getKmlExportConfig().setElevation(elevationOption.toElevation());
+        config.getVisExportConfig().setElevation(elevationOption.toElevation());
         config.getGlobalConfig().getApiKeys().setGoogleElevation(elevationOption.getGoogleApiKey());
     }
 

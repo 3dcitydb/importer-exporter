@@ -28,7 +28,7 @@
 
 package org.citydb.cli.options.vis;
 
-import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
+import org.citydb.config.project.visExporter.SimpleVisQuery;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
@@ -62,8 +62,8 @@ public class QueryOption implements CliOption {
     @CommandLine.ArgGroup
     private SQLSelectOption sqlSelectOption;
 
-    public SimpleKmlQuery toSimpleKmlQuery() {
-        SimpleKmlQuery query = new SimpleKmlQuery();
+    public SimpleVisQuery toSimpleVisQuery() {
+        SimpleVisQuery query = new SimpleVisQuery();
 
         if (typeNamesOption != null) {
             query.setUseTypeNames(true);
@@ -90,7 +90,7 @@ public class QueryOption implements CliOption {
         }
 
         if (tilingOption != null) {
-            query.setBboxFilter(tilingOption.toKmlTiling());
+            query.setBboxFilter(tilingOption.toVisTiling());
         }
 
         if (boundingBoxOption != null) {

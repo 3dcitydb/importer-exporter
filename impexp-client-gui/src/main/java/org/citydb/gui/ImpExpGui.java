@@ -56,7 +56,7 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.database.DatabasePlugin;
 import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
 import org.citydb.gui.modules.importer.CityGMLImportPlugin;
-import org.citydb.gui.modules.kml.KMLExportPlugin;
+import org.citydb.gui.modules.visExporter.VisExportPlugin;
 import org.citydb.gui.modules.preferences.PreferencesPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
@@ -174,7 +174,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		DatabasePlugin databasePlugin = pluginManager.getInternalPlugin(DatabasePlugin.class);
 		views.add(pluginManager.getInternalPlugin(CityGMLImportPlugin.class).getView());
 		views.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getView());
-		views.add(pluginManager.getInternalPlugin(KMLExportPlugin.class).getView());
+		views.add(pluginManager.getInternalPlugin(VisExportPlugin.class).getView());
 
 		for (ViewExtension viewExtension : pluginManager.getExternalPlugins(ViewExtension.class)) {
 			View view = viewExtension.getView();

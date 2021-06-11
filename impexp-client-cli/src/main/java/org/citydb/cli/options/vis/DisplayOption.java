@@ -28,10 +28,10 @@
 
 package org.citydb.cli.options.vis;
 
-import org.citydb.config.project.kmlExporter.DisplayForm;
-import org.citydb.config.project.kmlExporter.DisplayFormType;
-import org.citydb.config.project.kmlExporter.DisplayForms;
-import org.citydb.config.project.kmlExporter.KmlExportConfig;
+import org.citydb.config.project.visExporter.DisplayForm;
+import org.citydb.config.project.visExporter.DisplayFormType;
+import org.citydb.config.project.visExporter.DisplayForms;
+import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
@@ -65,10 +65,10 @@ public class DisplayOption implements CliOption {
 
     public String getAppearanceTheme() {
         if (theme == null) {
-            return KmlExportConfig.THEME_NONE;
+            return VisExportConfig.THEME_NONE;
         }
 
-        return "none".equalsIgnoreCase(theme) ? KmlExportConfig.THEME_NULL : theme;
+        return "none".equalsIgnoreCase(theme) ? VisExportConfig.THEME_NULL : theme;
     }
 
     public DisplayForms toDisplayForms() {

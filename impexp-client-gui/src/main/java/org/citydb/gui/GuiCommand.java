@@ -41,7 +41,7 @@ import org.citydb.gui.components.SplashScreen;
 import org.citydb.gui.modules.database.DatabasePlugin;
 import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
 import org.citydb.gui.modules.importer.CityGMLImportPlugin;
-import org.citydb.gui.modules.kml.KMLExportPlugin;
+import org.citydb.gui.modules.visExporter.VisExportPlugin;
 import org.citydb.gui.modules.preferences.PreferencesPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
@@ -132,7 +132,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         // register predefined internal plugins
         pluginManager.registerInternalPlugin(new CityGMLImportPlugin(impExpGui, config));
         pluginManager.registerInternalPlugin(new CityGMLExportPlugin(impExpGui, config));
-        pluginManager.registerInternalPlugin(new KMLExportPlugin(impExpGui, config));
+        pluginManager.registerInternalPlugin(new VisExportPlugin(impExpGui, config));
         pluginManager.registerInternalPlugin(databasePlugin);
         pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
 

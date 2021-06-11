@@ -28,9 +28,9 @@
 
 package org.citydb.cli.options.vis;
 
-import org.citydb.config.project.kmlExporter.AltitudeMode;
-import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
-import org.citydb.config.project.kmlExporter.Elevation;
+import org.citydb.config.project.visExporter.AltitudeMode;
+import org.citydb.config.project.visExporter.AltitudeOffsetMode;
+import org.citydb.config.project.visExporter.Elevation;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 

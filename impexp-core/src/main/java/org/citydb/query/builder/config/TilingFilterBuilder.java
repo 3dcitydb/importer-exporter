@@ -29,8 +29,8 @@ package org.citydb.query.builder.config;
 
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.config.project.kmlExporter.KmlTiling;
-import org.citydb.config.project.kmlExporter.KmlTilingMode;
+import org.citydb.config.project.visExporter.VisTiling;
+import org.citydb.config.project.visExporter.VisTilingMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.FilterException;
@@ -47,14 +47,14 @@ public class TilingFilterBuilder {
 
 	protected Tiling buildTilingFilter(org.citydb.config.project.query.filter.tiling.AbstractTiling tilingConfig) throws QueryBuildException {
 		try {
-			// adapt tiling settings in case of KML exports
-			if (tilingConfig instanceof KmlTiling) {
-				KmlTiling kmlTilingConfig = (KmlTiling) tilingConfig;
+			// adapt tiling settings in case of VIS exports
+			if (tilingConfig instanceof VisTiling) {
+				VisTiling visTilingConfig = (VisTiling) tilingConfig;
 
 				// calculate tile size if required
-				if (kmlTilingConfig.getMode() == KmlTilingMode.AUTOMATIC) {
-					BoundingBox extent = kmlTilingConfig.getExtent();
-					double autoTileSideLength = kmlTilingConfig.getTilingOptions().getAutoTileSideLength();
+				if (visTilingConfig.getMode() == VisTilingMode.AUTOMATIC) {
+					BoundingBox extent = visTilingConfig.getExtent();
+					double autoTileSideLength = visTilingConfig.getTilingOptions().getAutoTileSideLength();
 
 					// transform extent into the database srs if required
 					DatabaseSrs dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
@@ -72,7 +72,7 @@ public class TilingFilterBuilder {
 				} 
 
 				// internally map no tiling to manual tiling mode
-				else if (kmlTilingConfig.getMode() == KmlTilingMode.NO_TILING) {
+				else if (visTilingConfig.getMode() == VisTilingMode.NO_TILING) {
 					tilingConfig.setRows(1);
 					tilingConfig.setColumns(1);
 				}
