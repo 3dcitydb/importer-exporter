@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     api project(':impexp-core')
-    api project(':impexp-client-common')
     api project(':impexp-kml-collada-plugin')
 }
 

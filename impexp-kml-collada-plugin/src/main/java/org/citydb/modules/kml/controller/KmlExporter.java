@@ -115,7 +115,7 @@ import org.citydb.query.filter.tiling.Tile;
 import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.query.filter.type.FeatureTypeFilter;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citydb.writer.XMLWriterWorkerFactory;
 import org.citygml4j.model.citygml.CityGML;
@@ -272,7 +272,7 @@ public class KmlExporter implements EventHandler {
 			// check collada2gltf converter tool
 			Path collada2gltf = Paths.get(config.getKmlExportConfig().getGltfOptions().getPathToConverter());
 			if (!collada2gltf.isAbsolute())
-				collada2gltf = ClientConstants.IMPEXP_HOME.resolve(collada2gltf);
+				collada2gltf = CoreConstants.IMPEXP_HOME.resolve(collada2gltf);
 
 			if (!Files.exists(collada2gltf))
 				throw new KmlExportException("Failed to find the COLLADA2glTF tool at the provided path " + collada2gltf + ".");

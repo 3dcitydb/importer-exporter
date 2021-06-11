@@ -12,7 +12,6 @@ configurations {
 
 dependencies {
     api project(':impexp-core')
-    api project(':impexp-client-common')
     api 'org.citydb:texture-atlas-creator:1.4.0'
     implementation 'java3d:j3d-core:1.5.2'
     implementation 'java3d:j3d-core-utils:1.5.2'

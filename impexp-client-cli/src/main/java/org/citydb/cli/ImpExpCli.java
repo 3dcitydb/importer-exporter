@@ -30,6 +30,8 @@ package org.citydb.cli;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
+import org.citydb.cli.util.CliConstants;
+import org.citydb.cli.util.PidFile;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.ProjectConfig;
@@ -54,10 +56,8 @@ import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.StartupProgressListener;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.InternalProxySelector;
-import org.citydb.util.PidFile;
 import org.citydb.util.Util;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
@@ -84,7 +84,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @CommandLine.Command(
-        name = ClientConstants.CLI_NAME,
+        name = CliConstants.CLI_NAME,
         description = "Command-line interface for the 3D City Database.",
         synopsisSubcommandLabel = "COMMAND",
         versionProvider = ImpExpCli.class,
@@ -278,8 +278,8 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             // set default configuration file if required
             if (useDefaultConfiguration && configFile == null) {
                 configFile = CoreConstants.IMPEXP_DATA_DIR
-                        .resolve(ClientConstants.CONFIG_DIR)
-                        .resolve(ClientConstants.PROJECT_SETTINGS_FILE);
+                        .resolve(CliConstants.CONFIG_DIR)
+                        .resolve(CliConstants.PROJECT_SETTINGS_FILE);
             } else {
                 useDefaultConfiguration = false;
             }
@@ -370,8 +370,8 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     private void loadADEExtensions() throws ImpExpException {
         try {
             adeExtensionsFolder = adeExtensionsFolder != null ?
-                    ClientConstants.WORKING_DIR.resolve(adeExtensionsFolder) :
-                    ClientConstants.IMPEXP_HOME.resolve(ClientConstants.ADE_EXTENSIONS_DIR);
+                    CoreConstants.WORKING_DIR.resolve(adeExtensionsFolder) :
+                    CoreConstants.IMPEXP_HOME.resolve(CliConstants.ADE_EXTENSIONS_DIR);
 
             loadClasses(adeExtensionsFolder, classLoader);
         } catch (IOException e) {
@@ -405,7 +405,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     private void loadConfig(Config config) throws ImpExpException {
         if (!configFile.isAbsolute()) {
-            configFile = ClientConstants.WORKING_DIR.resolve(configFile);
+            configFile = CoreConstants.WORKING_DIR.resolve(configFile);
         }
 
         try {
@@ -481,7 +481,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         if (logging.getFile().isActive()) {
             Path file = logging.getFile().isUseAlternativeLogFile() ?
                     Paths.get(logging.getFile().getAlternativeLogFile()) :
-                    CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
+                    CoreConstants.IMPEXP_DATA_DIR.resolve(CliConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
 
             log.setFileLogLevel(logging.getFile().getLogLevel());
             if (log.appendLogFile(file, logging.getFile().getLogFileMode())) {
@@ -540,8 +540,8 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
 
         return pluginsFolder != null ?
-                ClientConstants.WORKING_DIR.resolve(pluginsFolder) :
-                ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR);
+                CoreConstants.WORKING_DIR.resolve(pluginsFolder) :
+                CoreConstants.IMPEXP_HOME.resolve(CliConstants.PLUGINS_DIR);
     }
 
     private String readPassword(CommandLine.ParseResult parseResult) {

@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb.util;
+package org.citydb.cli.util;
 
 import java.io.IOException;
 import java.io.OutputStream;

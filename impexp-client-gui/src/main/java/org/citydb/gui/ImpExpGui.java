@@ -32,6 +32,7 @@ import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.extras.components.FlatTabbedPane;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.citydb.ade.ADEExtensionManager;
+import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.style.Theme;
@@ -70,7 +71,6 @@ import org.citydb.plugin.extension.view.ViewEvent.ViewState;
 import org.citydb.plugin.extension.view.ViewExtension;
 import org.citydb.plugin.extension.view.components.ComponentFactory;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 
 import javax.swing.*;
@@ -540,8 +540,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	private void saveGUISettings() {
 		Path guiConfigFile = CoreConstants.IMPEXP_DATA_DIR
-				.resolve(ClientConstants.CONFIG_DIR)
-				.resolve(ClientConstants.GUI_SETTINGS_FILE);
+				.resolve(CliConstants.CONFIG_DIR)
+				.resolve(CliConstants.GUI_SETTINGS_FILE);
 
 		if (!createConfigDir(guiConfigFile.getParent()))
 			return;

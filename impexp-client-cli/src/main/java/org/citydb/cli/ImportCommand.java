@@ -42,7 +42,7 @@ import org.citydb.plugin.cli.CliOptionBuilder;
 import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.plugin.cli.ThreadPoolOption;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 import picocli.CommandLine;
 
 import java.io.IOException;
@@ -88,7 +88,7 @@ public class ImportCommand extends CliCommand {
         List<Path> inputFiles;
         try {
             log.debug("Parsing and resolving input file parameters.");
-            inputFiles = CliOptionBuilder.inputFiles(files, ClientConstants.WORKING_DIR);
+            inputFiles = CliOptionBuilder.inputFiles(files, CoreConstants.WORKING_DIR);
 
             if (inputFiles.isEmpty()) {
                 log.error("Failed to find input files for the provided parameters: " + String.join(", ", files));

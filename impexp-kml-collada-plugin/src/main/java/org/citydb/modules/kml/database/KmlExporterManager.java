@@ -62,7 +62,7 @@ import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.query.Query;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import javax.imageio.ImageIO;
@@ -669,7 +669,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 		GltfOptions gltfOptions = config.getKmlExportConfig().getGltfOptions();
 
 		String collada2gltfPath = gltfOptions.getPathToConverter();
-		File collada2gltfFile = new File(ClientConstants.IMPEXP_HOME.resolve(collada2gltfPath).toString());
+		File collada2gltfFile = new File(CoreConstants.IMPEXP_HOME.resolve(collada2gltfPath).toString());
 		if (collada2gltfFile.exists()) {
 			List<String> commands = new ArrayList<>();
 			commands.add(collada2gltfFile.getAbsolutePath());

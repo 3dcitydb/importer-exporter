@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.modules.preferences.preferences;
 
+import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
 import org.citydb.config.gui.style.LogLevelStyle;
 import org.citydb.config.i18n.Language;
@@ -40,7 +41,6 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
-import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 
 import javax.swing.*;
@@ -388,7 +388,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             if (useLogFile.isSelected()) {
                 Path logFile = useAlternativeLogFile.isSelected() ?
                         Paths.get(logging.getFile().getAlternativeLogFile()) :
-                        CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
+                        CoreConstants.IMPEXP_DATA_DIR.resolve(CliConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
 
                 boolean success = log.appendLogFile(logFile, logging.getFile().getLogFileMode());
                 if (!success) {

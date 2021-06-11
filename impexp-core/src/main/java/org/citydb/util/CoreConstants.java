@@ -32,6 +32,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class CoreConstants {
+    public static final Path IMPEXP_HOME;
+    public static final Path WORKING_DIR;
+
     public static final Path IMPEXP_DATA_DIR = Paths.get(System.getProperty("user.home"), "3dcitydb", "importer-exporter").toAbsolutePath();
     public static final String IMPORT_LOG_DIR = "imported-features";
     public static final String DELETE_LOG_DIR = "deleted-features";
@@ -50,4 +53,17 @@ public class CoreConstants {
     public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
 
     public static boolean IS_GUI_MODE = false;
+
+    static {
+        String impexpHomeEnv = System.getenv("APP_HOME");
+        if (impexpHomeEnv == null)
+            impexpHomeEnv = ".";
+
+        String workingDirEnv = System.getenv("WORKING_DIR");
+        if (workingDirEnv == null)
+            workingDirEnv = ".";
+
+        IMPEXP_HOME = Paths.get(impexpHomeEnv).normalize().toAbsolutePath();
+        WORKING_DIR = Paths.get(workingDirEnv).normalize().toAbsolutePath();
+    }
 }

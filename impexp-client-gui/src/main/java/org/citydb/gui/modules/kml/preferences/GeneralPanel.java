@@ -38,9 +38,10 @@ import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.modules.kml.util.VisConstants;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.textureAtlas.TextureAtlasCreator;
-import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -535,11 +536,11 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (!gltfConverterBrowseText.getText().trim().isEmpty()) {
 			Path path = Paths.get(gltfConverterBrowseText.getText());
 			if (!path.isAbsolute())
-				path = ClientConstants.IMPEXP_HOME.resolve(path);
+				path = CoreConstants.IMPEXP_HOME.resolve(path);
 
 			chooser.setCurrentDirectory(path.toFile());
 		} else
-			chooser.setCurrentDirectory(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.COLLADA2GLTF_DIR).toFile());
+			chooser.setCurrentDirectory(CoreConstants.IMPEXP_HOME.resolve(VisConstants.COLLADA2GLTF_DIR).toFile());
 		
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 

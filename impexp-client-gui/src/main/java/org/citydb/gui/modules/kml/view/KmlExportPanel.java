@@ -71,7 +71,7 @@ import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.BridgeModule;
 import org.citygml4j.model.module.citygml.CityFurnitureModule;
@@ -820,7 +820,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             if (config.getKmlExportConfig().getGltfOptions().isCreateGltfModel()) {
                 Path collada2gltf = Paths.get(config.getKmlExportConfig().getGltfOptions().getPathToConverter());
                 if (!collada2gltf.isAbsolute())
-                    collada2gltf = ClientConstants.IMPEXP_HOME.resolve(collada2gltf);
+                    collada2gltf = CoreConstants.IMPEXP_HOME.resolve(collada2gltf);
 
                 if (!Files.exists(collada2gltf)) {
                     String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExists");

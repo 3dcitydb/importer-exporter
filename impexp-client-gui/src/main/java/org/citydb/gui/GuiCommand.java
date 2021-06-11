@@ -31,6 +31,7 @@ package org.citydb.gui;
 import com.formdev.flatlaf.FlatLightLaf;
 import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
+import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.GuiConfig;
@@ -51,7 +52,6 @@ import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.cli.StartupProgressListener;
 import org.citydb.plugin.extension.view.ViewExtension;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 import picocli.CommandLine;
 
@@ -110,8 +110,8 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
 
     private GuiConfig loadGuiConfig() {
         Path guiConfigFile = CoreConstants.IMPEXP_DATA_DIR
-                .resolve(ClientConstants.CONFIG_DIR)
-                .resolve(ClientConstants.GUI_SETTINGS_FILE);
+                .resolve(CliConstants.CONFIG_DIR)
+                .resolve(CliConstants.GUI_SETTINGS_FILE);
 
         Object object = null;
         try {
