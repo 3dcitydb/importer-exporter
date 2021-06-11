@@ -40,7 +40,11 @@ public enum SimpleFeatureVersionFilterMode {
     @XmlEnumValue("at")
     AT("at"),
     @XmlEnumValue("between")
-    BETWEEN("between");
+    BETWEEN("between"),
+    @XmlEnumValue("terminated")
+    TERMINATED("terminated"),
+    @XmlEnumValue("terminatedAt")
+    TERMINATED_AT("terminatedAt");
 
     private final String value;
 

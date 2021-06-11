@@ -221,23 +221,26 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				if (query.isUseFeatureVersionFilter()) {
 					SimpleFeatureVersionFilter featureVersionFilter = query.getFeatureVersionFilter();
 
-					if (featureVersionFilter.getMode() != SimpleFeatureVersionFilterMode.LATEST) {
+					if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
+							|| featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.TERMINATED_AT) {
+						if (!featureVersionFilter.isSetStartDate()) {
+							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+									Language.I18N.getString("export.dialog.error.featureVersion.date"));
+							return;
+						}
+					} else if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN) {
 						if (!featureVersionFilter.isSetStartDate()) {
 							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
 									Language.I18N.getString("export.dialog.error.featureVersion.startDate"));
 							return;
-						}
-
-						if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN) {
-							if (!featureVersionFilter.isSetEndDate()) {
-								viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-										Language.I18N.getString("export.dialog.error.featureVersion.endDate"));
-								return;
-							} else if (featureVersionFilter.getStartDate().compare(featureVersionFilter.getEndDate()) != DatatypeConstants.LESSER) {
-								viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-										Language.I18N.getString("export.dialog.error.featureVersion.range"));
-								return;
-							}
+						} else if (!featureVersionFilter.isSetEndDate()) {
+							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+									Language.I18N.getString("export.dialog.error.featureVersion.endDate"));
+							return;
+						} else if (featureVersionFilter.getStartDate().compare(featureVersionFilter.getEndDate()) != DatatypeConstants.LESSER) {
+							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+									Language.I18N.getString("export.dialog.error.featureVersion.range"));
+							return;
 						}
 					}
 				}

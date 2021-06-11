@@ -33,6 +33,7 @@ import org.citydb.config.project.query.filter.selection.comparison.GreaterThanOp
 import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqualToOperator;
 import org.citydb.config.project.query.filter.selection.comparison.NullOperator;
 import org.citydb.config.project.query.filter.selection.logical.AndOperator;
+import org.citydb.config.project.query.filter.selection.logical.NotOperator;
 import org.citydb.config.project.query.filter.selection.logical.OrOperator;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -57,7 +58,9 @@ public class SimpleFeatureVersionFilter {
     }
 
     public void setMode(SimpleFeatureVersionFilterMode mode) {
-        this.mode = mode;
+        if (mode != null) {
+            this.mode = mode;
+        }
     }
 
     public XMLGregorianCalendar getStartDate() {
@@ -87,18 +90,25 @@ public class SimpleFeatureVersionFilter {
     public AbstractPredicate toPredicate() {
         if (mode == SimpleFeatureVersionFilterMode.LATEST) {
             return new NullOperator("core:terminationDate");
-        } else if (startDate != null && (mode == SimpleFeatureVersionFilterMode.AT || endDate != null)) {
-            XMLGregorianCalendar creationDate = mode == SimpleFeatureVersionFilterMode.AT ?
-                    startDate :
-                    endDate;
+        } else if (mode == SimpleFeatureVersionFilterMode.TERMINATED) {
+            return new NotOperator(new NullOperator("core:terminationDate"));
+        } else if (startDate != null) {
+            if (mode == SimpleFeatureVersionFilterMode.TERMINATED_AT) {
+                return new LessThanOrEqualToOperator("core:terminationDate", startDate.toXMLFormat());
+            } else if (mode == SimpleFeatureVersionFilterMode.AT
+                    || (mode == SimpleFeatureVersionFilterMode.BETWEEN && endDate != null)) {
+                XMLGregorianCalendar creationDate = mode == SimpleFeatureVersionFilterMode.AT ?
+                        startDate :
+                        endDate;
 
-            return new AndOperator(
-                    new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
-                    new OrOperator(
-                            new GreaterThanOperator("core:terminationDate", startDate.toXMLFormat()),
-                            new NullOperator("core:terminationDate")
-                    )
-            );
+                return new AndOperator(
+                        new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
+                        new OrOperator(
+                                new GreaterThanOperator("core:terminationDate", startDate.toXMLFormat()),
+                                new NullOperator("core:terminationDate")
+                        )
+                );
+            }
         }
 
         return null;
