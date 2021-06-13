@@ -34,7 +34,6 @@ import org.citydb.gui.components.popup.EditPopupMenu;
 import org.citydb.gui.components.popup.TitledPanelGroupPopupMenu;
 import org.citydb.gui.components.popup.TreePopupMenu;
 import org.citydb.log.Logger;
-import org.citydb.plugin.extension.view.components.DefaultPopupMenuDecorator;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -49,7 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
+public class PopupMenuDecorator {
 	private static PopupMenuDecorator instance;
 	private final Map<String, AbstractPopupMenu> standardPopupMenus = new HashMap<>();
 	private final Set<AbstractPopupMenu> popupMenus = Collections.newSetFromMap(new WeakHashMap<>());
@@ -117,12 +116,10 @@ public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 		}
 	}
 
-	@Override
 	public void decorate(JTextComponent... components) {
 		decorate((JComponent[]) components);
 	}
 
-	@Override
 	public JPopupMenu decorateAndGet(JTextComponent component) {
 		EditPopupMenu popupMenu = new EditPopupMenu();
 		popupMenu.init(component);
@@ -132,12 +129,10 @@ public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 		return popupMenu;
 	}
 
-	@Override
 	public void decorate(JTree... trees) {
 		decorate((JComponent[]) trees);
 	}
 
-	@Override
 	public JPopupMenu decorateAndGet(JTree tree) {
 		TreePopupMenu popupMenu = new TreePopupMenu();
 		popupMenu.init();
@@ -147,12 +142,10 @@ public class PopupMenuDecorator implements DefaultPopupMenuDecorator {
 		return popupMenu;
 	}
 
-	@Override
 	public void decorateCheckBoxGroup(JCheckBox... group) {
 		decorateAndGetCheckBoxGroup(group);
 	}
 
-	@Override
 	public JPopupMenu[] decorateAndGetCheckBoxGroup(JCheckBox... group) {
 		if (group == null || group.length <= 1) {
 			throw new IllegalArgumentException("The check box group may not be null and must contain more than two members.");

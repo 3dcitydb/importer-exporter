@@ -51,13 +51,13 @@ import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
+import org.citydb.gui.components.bbox.BoundingBoxPanel;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.operation.common.filter.FeatureVersionFilterView;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.config.ConfigQueryBuilder;
@@ -133,7 +133,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		component.setLayout(new GridBagLayout());
 
 		featureLabel = new JLabel();
-		bboxPanel = viewController.getComponentFactory().createBoundingBoxPanel();
+		bboxPanel = new BoundingBoxPanel(viewController);
 		bboxPanel.setEditable(false);
 		createAllButton = new JButton();
 		createMissingButton = new JButton();

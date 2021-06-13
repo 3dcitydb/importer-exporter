@@ -27,8 +27,6 @@
  */
 package org.citydb.plugin.extension.view;
 
-import org.citydb.plugin.extension.view.components.ComponentFactory;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -42,5 +40,4 @@ public interface ViewController {
 	int showOptionDialog(String title, Object message, int optionType, int messageType);
 	int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType);
 	int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType, Object[] options, Object initialValue);
-	ComponentFactory getComponentFactory();
 }

@@ -31,8 +31,8 @@ package org.citydb.gui.operation.common.filter;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
+import org.citydb.gui.components.bbox.BoundingBoxPanel;
 import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 
 import javax.swing.*;
 
@@ -46,7 +46,7 @@ public class BoundingBoxFilterView extends FilterView<BoundingBox> {
     }
 
     private void init() {
-        component = viewController.getComponentFactory().createBoundingBoxPanel();
+        component = new BoundingBoxPanel(viewController);
     }
 
     @Override

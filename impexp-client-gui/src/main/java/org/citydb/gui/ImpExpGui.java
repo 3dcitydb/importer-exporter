@@ -51,13 +51,12 @@ import org.citydb.gui.components.console.ConsoleTextPane;
 import org.citydb.gui.components.console.ConsoleWindow;
 import org.citydb.gui.components.console.StyledConsoleLogger;
 import org.citydb.gui.components.menubar.MenuBar;
-import org.citydb.gui.factory.DefaultComponentFactory;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.operation.database.DatabasePlugin;
 import org.citydb.gui.operation.exporter.CityGMLExportPlugin;
 import org.citydb.gui.operation.importer.CityGMLImportPlugin;
-import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.operation.preferences.PreferencesPlugin;
+import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.log.DefaultConsoleLogger;
@@ -69,7 +68,6 @@ import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.ViewEvent;
 import org.citydb.plugin.extension.view.ViewEvent.ViewState;
 import org.citydb.plugin.extension.view.ViewExtension;
-import org.citydb.plugin.extension.view.components.ComponentFactory;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.CoreConstants;
 
@@ -105,7 +103,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private final EventDispatcher eventDispatcher;
 	private final ConsoleTextPane consoleText;
 	private final StyledConsoleLogger consoleLogger;
-	private final ComponentFactory componentFactory;
 	private final PrintStream out = System.out;
 	private final PrintStream err = System.err;
 
@@ -131,7 +128,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		config = ObjectRegistry.getInstance().getConfig();
 		dbPool = DatabaseConnectionPool.getInstance();
 		pluginManager = PluginManager.getInstance();
-		componentFactory = new DefaultComponentFactory(this);
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
@@ -597,11 +593,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	@Override
 	public JFrame getTopFrame() {
 		return this;
-	}
-
-	@Override
-	public ComponentFactory getComponentFactory() {
-		return componentFactory;
 	}
 
 	public ConsoleTextPane getConsole() {

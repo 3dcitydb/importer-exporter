@@ -42,8 +42,6 @@ import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
-import org.citydb.plugin.extension.view.components.DatabaseSrsComboBox;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
@@ -54,7 +52,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
 
-public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandler, BoundingBoxListener {
+public class BoundingBoxPanel extends JPanel implements EventHandler, BoundingBoxListener {
     private final Logger log = Logger.getInstance();
     private boolean isEnabled;
     private boolean isEditable;
@@ -76,7 +74,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
     private final BBoxPopupMenuWrapper[] bboxPopups;
     private final BoundingBoxClipboardHandler clipboardHandler;
 
-    public BoundingBoxPanelImpl(ViewController viewController) {
+    public BoundingBoxPanel(ViewController viewController) {
         ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
         clipboardHandler = BoundingBoxClipboardHandler.getInstance();
         isEnabled = isEditable = true;
@@ -169,13 +167,11 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         });
     }
 
-    @Override
     public void addComponent(JComponent component, boolean indent) {
         int left = indent ? xminLabel.getPreferredSize().width + 10 : 0;
         add(component, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, left, 0, 0));
     }
 
-    @Override
     public void addComponent(JComponent component) {
         addComponent(component, false);
     }
@@ -231,7 +227,6 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         srsComboBox.setEnabled(enable);
     }
 
-    @Override
     public void setEditable(boolean editable) {
         isEditable = editable;
 
@@ -245,7 +240,6 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
             bboxPopup.paste.setEnabled(false);
     }
 
-    @Override
     public BoundingBox getBoundingBox() {
         BoundingBox bbox = new BoundingBox();
         bbox.setSrs(srsComboBox.getSelectedItem());
@@ -274,7 +268,6 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         }
     }
 
-    @Override
     public void clearBoundingBox() {
         xmin.setText(null);
         ymin.setText(null);
@@ -282,27 +275,22 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         ymax.setText(null);
     }
 
-    @Override
-    public DatabaseSrsComboBox getSrsComboBox() {
+    public SrsComboBox getSrsComboBox() {
         return srsComboBox;
     }
 
-    @Override
     public void showMapButton(boolean show) {
         map.setVisible(show);
     }
 
-    @Override
     public void showCopyBoundingBoxButton(boolean show) {
         copy.setVisible(show);
     }
 
-    @Override
     public void showPasteBoundingBoxButton(boolean show) {
         paste.setVisible(show);
     }
 
-    @Override
     public void handleEvent(Event event) throws Exception {
         doTranslation();
     }

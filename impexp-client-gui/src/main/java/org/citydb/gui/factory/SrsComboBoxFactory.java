@@ -34,7 +34,6 @@ import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
-import org.citydb.plugin.extension.view.components.DatabaseSrsComboBox;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
@@ -75,6 +74,10 @@ public class SrsComboBoxFactory {
 		return srsBox;
 	}
 
+	public SrsComboBox createSrsComboBox() {
+		return createSrsComboBox(true);
+	}
+
 	public void updateAll(boolean sort) {
 		processSrsComboBoxes(sort, true);
 	}
@@ -82,8 +85,9 @@ public class SrsComboBoxFactory {
 	public void resetAll(boolean sort) {
 		// by default, any reference system is not supported. In GUI mode we can
 		// override this because the SRS combo boxes will take care.
-		for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems())
+		for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems()) {
 			refSys.setSupported(true);
+		}
 		
 		processSrsComboBoxes(sort, false);
 	}
@@ -104,15 +108,14 @@ public class SrsComboBoxFactory {
 		}
 	}
 
-	@SuppressWarnings("serial")
-	public class SrsComboBox extends DatabaseSrsComboBox implements EventHandler {
+	public class SrsComboBox extends JComboBox<DatabaseSrs> implements EventHandler {
 		private boolean showOnlySupported;
 		private boolean showOnlySameDimension;
 
 		@SuppressWarnings("unchecked")
 		private SrsComboBox(boolean onlyShowSupported) {
 			this.showOnlySupported = onlyShowSupported;
-			setRenderer(new SrsComboBoxRenderer(this, (ListCellRenderer<DatabaseSrs>)getRenderer()));
+			setRenderer(new SrsComboBoxRenderer(this, (ListCellRenderer<DatabaseSrs>) getRenderer()));
 
 			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
 		}
@@ -122,35 +125,35 @@ public class SrsComboBoxFactory {
 			if (anObject instanceof DatabaseSrs) {
 				DatabaseSrs refSys = (DatabaseSrs)anObject;
 
-				if (refSys == dbRefSys || config.getDatabaseConfig().getReferenceSystems().contains(refSys))
+				if (refSys == dbRefSys || config.getDatabaseConfig().getReferenceSystems().contains(refSys)) {
 					super.setSelectedItem(refSys);
-				else {
-					DatabaseSrs cand = null;
+				} else {
+					DatabaseSrs candidate = null;
 
 					for (int i = 0; i < getItemCount(); i++) {
 						DatabaseSrs item = getItemAt(i);
 						if (item != null) {
 							if (item.getId().equals(refSys.getId())) {
 								super.setSelectedItem(item);
-								cand = null;
+								candidate = null;
 								break;
-							} else if (cand == null && item.getSrid() == refSys.getSrid())
-								cand = refSys;
+							} else if (candidate == null && item.getSrid() == refSys.getSrid()) {
+								candidate = refSys;
+							}
 						}
 					}
 
-					if (cand != null)
-						super.setSelectedItem(cand);
+					if (candidate != null) {
+						super.setSelectedItem(candidate);
+					}
 				}
 			}
 		}
 
-		@Override
 		public void setShowOnlySupported(boolean show) {
 			showOnlySupported = show;
 		}
 
-		@Override
 		public void setShowOnlySameDimension(boolean show) {
 			showOnlySameDimension = show;
 		}
@@ -168,11 +171,13 @@ public class SrsComboBoxFactory {
 
 			// user-defined reference systems
 			for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems()) {
-				if (showOnlySupported && !refSys.isSupported())
+				if (showOnlySupported && !refSys.isSupported()) {
 					continue;
+				}
 
-				if (showOnlySameDimension && refSys.is3D() != dbRefSys.is3D())
+				if (showOnlySameDimension && refSys.is3D() != dbRefSys.is3D()) {
 					continue;
+				}
 
 				addItem(refSys);
 			}
@@ -192,8 +197,9 @@ public class SrsComboBoxFactory {
 
 		private void updateContent() {
 			DatabaseSrs selectedItem = getSelectedItem();
-			if (selectedItem == null)
+			if (selectedItem == null) {
 				selectedItem = dbRefSys;
+			}
 
 			reset();
 			setSelectedItem(selectedItem);
@@ -202,17 +208,25 @@ public class SrsComboBoxFactory {
 		private void doTranslation() {
 			dbRefSys.setDescription(Language.I18N.getString("common.label.boundingBox.crs.sameAsInDB"));
 			DatabaseSrs selectedItem = getSelectedItem();
-			if (selectedItem == null)
+			if (selectedItem == null) {
 				selectedItem = dbRefSys;
+			}
 
 			removeItemAt(0);
 			insertItemAt(dbRefSys, 0);
 
-			if (selectedItem == dbRefSys)
+			if (selectedItem == dbRefSys) {
 				setSelectedItem(selectedItem);
+			}
 
 			repaint();
 			fireActionEvent();
+		}
+
+		@Override
+		public DatabaseSrs getSelectedItem() {
+			Object object = super.getSelectedItem();
+			return (object instanceof DatabaseSrs) ? (DatabaseSrs) object : null;
 		}
 
 		@Override
@@ -221,11 +235,11 @@ public class SrsComboBoxFactory {
 		}
 	}
 
-	private class SrsComboBoxRenderer implements ListCellRenderer<DatabaseSrs> {
-		final DatabaseSrsComboBox box;
-		final ListCellRenderer<DatabaseSrs> renderer;
+	private static class SrsComboBoxRenderer implements ListCellRenderer<DatabaseSrs> {
+		private final SrsComboBox box;
+		private final ListCellRenderer<DatabaseSrs> renderer;
 
-		public SrsComboBoxRenderer(DatabaseSrsComboBox box, ListCellRenderer<DatabaseSrs> renderer) {
+		public SrsComboBoxRenderer(SrsComboBox box, ListCellRenderer<DatabaseSrs> renderer) {
 			this.box = box;
 			this.renderer = renderer;
 		}
@@ -236,12 +250,12 @@ public class SrsComboBoxFactory {
 				int index, 
 				boolean isSelected, 
 				boolean cellHasFocus) {
-			Component c = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-			if (value != null)
+			Component component = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			if (value != null) {
 				box.setToolTipText(value.toString());
+			}
 
-			return c;
+			return component;
 		}
 	}
 }
