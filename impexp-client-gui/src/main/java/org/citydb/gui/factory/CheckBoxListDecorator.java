@@ -27,8 +27,10 @@
  */
 package org.citydb.gui.factory;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -38,18 +40,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.Box;
-import javax.swing.DefaultListSelectionModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelectionListener, ActionListener, PropertyChangeListener {
 	private final JList<T> list;
@@ -61,14 +51,14 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 		this.list = list;
 
 		list.setCellRenderer(new CheckBoxListCellRenderer<T>());
-		list.addMouseListener(this); 
+		list.addMouseListener(this);
 		list.addPropertyChangeListener("enabled", this);
-		list.registerKeyboardAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JComponent.WHEN_FOCUSED); 
+		list.registerKeyboardAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JComponent.WHEN_FOCUSED);
 
 		checkBoxSelectionModel = new DefaultListSelectionModel();
 		checkBoxSelectionModel.addListSelectionListener(this);
 
-		enabled = new HashMap<Integer, Boolean>();
+		enabled = new HashMap<>();
 		width = new JCheckBox().getPreferredSize().width;
 	}
 
@@ -78,43 +68,50 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 
 	public void setCheckBoxSelected(int index, boolean selected) {
 		if (index >= 0) {
-			if (!selected) 
-				checkBoxSelectionModel.removeSelectionInterval(index, index); 
-			else 
+			if (!selected) {
+				checkBoxSelectionModel.removeSelectionInterval(index, index);
+			} else {
 				checkBoxSelectionModel.addSelectionInterval(index, index);
+			}
 		}
 	}
 
 	public void deselectAllCheckBoxes() {
-		for (int index = 0; index < list.getModel().getSize(); ++index)
+		for (int index = 0; index < list.getModel().getSize(); index++) {
 			setCheckBoxSelected(index, false);
+		}
 	}
-	
+
 	public void selectAllCheckBoxes() {
-		for (int index = 0; index < list.getModel().getSize(); ++index)
+		for (int index = 0; index < list.getModel().getSize(); index++) {
 			setCheckBoxSelected(index, true);
+		}
 	}
 
 	private void setCheckBoxSelected(int index) {
 		if (index >= 0) {
-			if (checkBoxSelectionModel.isSelectedIndex(index)) 
-				checkBoxSelectionModel.removeSelectionInterval(index, index); 
-			else 
+			if (checkBoxSelectionModel.isSelectedIndex(index)) {
+				checkBoxSelectionModel.removeSelectionInterval(index, index);
+			} else {
 				checkBoxSelectionModel.addSelectionInterval(index, index);
+			}
 		}
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		int index = list.locationToIndex(e.getPoint()); 
-		if (index < 0) 
-			return; 
-
-		if (e.getX() > list.getCellBounds(index, index).x + width && e.getClickCount() != 2) 
-			return; 
-
-		if (!enabled.get(index))
+		int index = list.locationToIndex(e.getPoint());
+		if (index < 0) {
 			return;
+		}
+
+		if (e.getX() > list.getCellBounds(index, index).x + width && e.getClickCount() != 2) {
+			return;
+		}
+
+		if (!enabled.get(index)) {
+			return;
+		}
 
 		setCheckBoxSelected(index);
 	}
@@ -126,8 +123,9 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (enabled.get(list.getSelectedIndex()))
-			setCheckBoxSelected(list.getSelectedIndex()); 
+		if (enabled.get(list.getSelectedIndex())) {
+			setCheckBoxSelected(list.getSelectedIndex());
+		}
 	}
 
 	@Override
@@ -135,18 +133,16 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 		list.repaint(list.getCellBounds(e.getFirstIndex(), e.getLastIndex()));
 	}
 
-	@SuppressWarnings("serial")
-	private final class CheckBoxListCellRenderer<E extends T> extends JPanel implements ListCellRenderer<E> { 
-		private final ListCellRenderer<? super T> renderer; 
-		private final JCheckBox checkBox; 
+	private final class CheckBoxListCellRenderer<E extends T> extends JPanel implements ListCellRenderer<E> {
+		private final ListCellRenderer<? super T> renderer;
+		private final JCheckBox checkBox;
 
-		public CheckBoxListCellRenderer() { 
-			renderer = list.getCellRenderer(); 
+		public CheckBoxListCellRenderer() {
+			renderer = list.getCellRenderer();
 			checkBox = new JCheckBox();
+			checkBox.setOpaque(false);
 
-			setLayout(new BorderLayout()); 
-			setOpaque(false); 
-			checkBox.setOpaque(false); 
+			setLayout(new BorderLayout());
 
 			Box box = Box.createHorizontalBox();
 			box.add(checkBox);
@@ -155,16 +151,21 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 		}
 
 		public Component getListCellRendererComponent(JList<? extends E> list, E value, int index, boolean isSelected, boolean cellHasFocus) {
-			Component component = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); 
-			add(component, BorderLayout.CENTER); 
+			Component component = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			add(component, BorderLayout.CENTER);
 
 			boolean enable = component.isEnabled() && list.isEnabled();
-			checkBox.setSelected(checkBoxSelectionModel.isSelectedIndex(index)); 
+			checkBox.setSelected(checkBoxSelectionModel.isSelectedIndex(index));
 			checkBox.setEnabled(enable);
 			enabled.put(index, enable);
-			repaint();
 
-			return this; 
-		} 
+			if (isSelected) {
+				setBackground(list.getSelectionBackground());
+			} else {
+				setBackground(list.getBackground());
+			}
+
+			return this;
+		}
 	}
 }
