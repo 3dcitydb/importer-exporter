@@ -29,9 +29,9 @@ package org.citydb.ade.importer;
 
 import java.sql.SQLException;
 
-import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.database.content.GeometryConverter;
-import org.citydb.citygml.importer.util.AttributeValueJoiner;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.database.content.GeometryConverter;
+import org.citydb.operation.importer.util.AttributeValueJoiner;
 import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.AbstractObjectType;

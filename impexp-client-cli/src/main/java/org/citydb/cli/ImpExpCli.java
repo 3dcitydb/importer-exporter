@@ -30,6 +30,11 @@ package org.citydb.cli;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
+import org.citydb.cli.operation.deleter.DeleteCommand;
+import org.citydb.cli.operation.exporter.ExportCommand;
+import org.citydb.cli.operation.importer.ImportCommand;
+import org.citydb.cli.operation.validator.ValidateCommand;
+import org.citydb.cli.operation.visExporter.ExportVisCommand;
 import org.citydb.cli.util.CliConstants;
 import org.citydb.cli.util.PidFile;
 import org.citydb.config.Config;

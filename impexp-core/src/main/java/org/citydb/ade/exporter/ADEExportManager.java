@@ -30,7 +30,7 @@ package org.citydb.ade.exporter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.query.filter.projection.ProjectionFilter;

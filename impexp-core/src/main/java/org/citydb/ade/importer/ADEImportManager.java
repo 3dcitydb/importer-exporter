@@ -30,7 +30,7 @@ package org.citydb.ade.importer;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.citydb.citygml.importer.CityGMLImportException;
+import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;

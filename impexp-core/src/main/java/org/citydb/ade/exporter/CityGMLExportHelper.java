@@ -27,10 +27,10 @@
  */
 package org.citydb.ade.exporter;
 
-import org.citydb.citygml.exporter.CityGMLExportException;
-import org.citydb.citygml.exporter.database.content.GMLConverter;
-import org.citydb.citygml.exporter.database.content.SurfaceGeometryExporter;
-import org.citydb.citygml.exporter.util.AttributeValueSplitter;
+import org.citydb.operation.exporter.CityGMLExportException;
+import org.citydb.operation.exporter.database.content.GMLConverter;
+import org.citydb.operation.exporter.database.content.SurfaceGeometryExporter;
+import org.citydb.operation.exporter.util.AttributeValueSplitter;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;

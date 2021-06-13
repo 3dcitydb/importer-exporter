@@ -29,7 +29,7 @@ package org.citydb.ade.exporter;
 
 import java.sql.SQLException;
 
-import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.operation.exporter.CityGMLExportException;
 
 public interface ADEExporter {
 	public void close() throws CityGMLExportException, SQLException;
