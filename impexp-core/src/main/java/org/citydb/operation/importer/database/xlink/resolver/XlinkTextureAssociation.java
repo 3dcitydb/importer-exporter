@@ -27,11 +27,11 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
+import org.citydb.log.Logger;
 import org.citydb.operation.common.cache.CacheTable;
 import org.citydb.operation.common.cache.IdCacheEntry;
 import org.citydb.operation.common.xlink.DBXlinkTextureAssociation;
 import org.citydb.operation.common.xlink.DBXlinkTextureAssociationTarget;
-import org.citydb.log.Logger;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 

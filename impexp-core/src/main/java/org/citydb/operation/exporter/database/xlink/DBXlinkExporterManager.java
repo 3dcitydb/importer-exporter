@@ -27,11 +27,11 @@
  */
 package org.citydb.operation.exporter.database.xlink;
 
-import org.citydb.operation.exporter.util.InternalConfig;
 import org.citydb.config.Config;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
+import org.citydb.operation.exporter.util.InternalConfig;
 
 import java.sql.Connection;
 import java.sql.SQLException;

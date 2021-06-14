@@ -28,8 +28,8 @@
 
 package org.citydb.operation.validator.reader;
 
-import org.citydb.operation.validator.ValidationException;
 import org.citydb.config.Config;
+import org.citydb.operation.validator.ValidationException;
 
 public interface ValidatorFactory {
     void initializeContext(Config config) throws ValidationException;

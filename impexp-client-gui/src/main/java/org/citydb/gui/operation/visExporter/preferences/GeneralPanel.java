@@ -38,10 +38,10 @@ import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.vis.util.VisConstants;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 import org.citydb.util.CoreConstants;
+import org.citydb.vis.util.VisConstants;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;

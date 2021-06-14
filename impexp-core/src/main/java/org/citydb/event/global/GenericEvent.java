@@ -27,10 +27,10 @@
  */
 package org.citydb.event.global;
 
+import org.citydb.event.Event;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.citydb.event.Event;
 
 public final class GenericEvent extends Event {
 	private final String id;

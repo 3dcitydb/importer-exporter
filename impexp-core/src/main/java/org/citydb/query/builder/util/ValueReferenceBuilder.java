@@ -28,10 +28,10 @@
 
 package org.citydb.query.builder.util;
 
-import org.citydb.config.util.ConfigNamespaceFilter;
 import org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.sorting.SortProperty;
+import org.citydb.config.util.ConfigNamespaceFilter;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.PathElementType;
 import org.citydb.database.schema.mapping.SchemaMapping;

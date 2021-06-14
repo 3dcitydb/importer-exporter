@@ -27,11 +27,11 @@
  */
 package org.citydb.operation.importer.util;
 
-import java.util.List;
-
 import org.citydb.config.Config;
 import org.citydb.config.project.common.TransformationMatrix;
 import org.citygml4j.geometry.Matrix;
+
+import java.util.List;
 
 public class AffineTransformer {
 	private final Matrix matrix4x4;

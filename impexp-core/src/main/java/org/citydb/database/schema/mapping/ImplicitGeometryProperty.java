@@ -27,11 +27,11 @@
  */
 package org.citydb.database.schema.mapping;
 
+import org.citygml4j.model.module.citygml.CoreModule;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citygml4j.model.module.citygml.CoreModule;
 
 @XmlType(name = "implicitGeometryProperty")
 public class ImplicitGeometryProperty extends AbstractRefTypeProperty<ObjectType> {

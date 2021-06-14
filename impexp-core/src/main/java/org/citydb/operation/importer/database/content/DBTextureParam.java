@@ -27,15 +27,15 @@
  */
 package org.citydb.operation.importer.database.content;
 
+import org.citydb.config.Config;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.util.LocalAppearanceHandler.SurfaceGeometryTarget;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.util.LocalAppearanceHandler.SurfaceGeometryTarget;
-import org.citydb.config.Config;
-import org.citydb.database.schema.TableEnum;
 
 public class DBTextureParam implements DBImporter {
 	private final Connection batchConn;

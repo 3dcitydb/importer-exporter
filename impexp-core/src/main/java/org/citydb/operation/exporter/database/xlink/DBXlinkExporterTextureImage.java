@@ -27,7 +27,6 @@
  */
 package org.citydb.operation.exporter.database.xlink;
 
-import org.citydb.operation.common.xlink.DBXlinkTextureFile;
 import org.citydb.config.Config;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
@@ -36,6 +35,7 @@ import org.citydb.event.global.CounterType;
 import org.citydb.file.FileType;
 import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.xlink.DBXlinkTextureFile;
 
 import java.io.File;
 import java.io.IOException;

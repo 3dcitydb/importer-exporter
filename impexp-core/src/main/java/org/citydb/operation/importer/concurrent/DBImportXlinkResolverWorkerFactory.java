@@ -27,9 +27,6 @@
  */
 package org.citydb.operation.importer.concurrent;
 
-import org.citydb.operation.common.cache.CacheTableManager;
-import org.citydb.operation.common.cache.IdCacheManager;
-import org.citydb.operation.common.xlink.DBXlink;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.concurrent.WorkerPool;
@@ -40,6 +37,9 @@ import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.EventDispatcher;
 import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.cache.CacheTableManager;
+import org.citydb.operation.common.cache.IdCacheManager;
+import org.citydb.operation.common.xlink.DBXlink;
 
 import java.sql.Connection;
 import java.sql.SQLException;

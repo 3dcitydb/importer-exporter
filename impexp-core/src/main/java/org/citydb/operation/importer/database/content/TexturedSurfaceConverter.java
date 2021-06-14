@@ -27,13 +27,9 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.citydb.config.Config;
 import org.citydb.operation.common.xlink.DBXlinkDeprecatedMaterial;
 import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.config.Config;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.Color;
@@ -54,6 +50,10 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TexturedSurfaceConverter {
 	private final DBAppearance appearanceImporter;

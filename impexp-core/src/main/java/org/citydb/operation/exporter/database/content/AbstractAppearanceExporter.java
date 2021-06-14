@@ -27,17 +27,17 @@
  */
 package org.citydb.operation.exporter.database.content;
 
+import org.citydb.config.Config;
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.log.Logger;
 import org.citydb.operation.common.cache.CacheTable;
 import org.citydb.operation.common.xlink.DBXlink;
 import org.citydb.operation.common.xlink.DBXlinkTextureFile;
 import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.operation.exporter.util.AttributeValueSplitter;
 import org.citydb.operation.exporter.util.AttributeValueSplitter.SplitValue;
-import org.citydb.config.Config;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.database.schema.TableEnum;
-import org.citydb.database.schema.mapping.FeatureType;
-import org.citydb.log.Logger;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;

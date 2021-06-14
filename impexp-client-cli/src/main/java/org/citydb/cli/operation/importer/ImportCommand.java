@@ -30,13 +30,13 @@ package org.citydb.cli.operation.importer;
 
 import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.controller.Importer;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.controller.Importer;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.CliOptionBuilder;
 import org.citydb.plugin.cli.DatabaseOption;

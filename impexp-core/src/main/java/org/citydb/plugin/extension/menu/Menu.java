@@ -27,8 +27,7 @@
  */
 package org.citydb.plugin.extension.menu;
 
-import javax.swing.Icon;
-import javax.swing.JMenu;
+import javax.swing.*;
 
 public abstract class Menu {
 	public abstract String getLocalizedTitle();

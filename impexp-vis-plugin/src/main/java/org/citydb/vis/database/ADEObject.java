@@ -43,9 +43,9 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
+import org.citydb.query.Query;
 import org.citydb.vis.util.BalloonTemplateHandler;
 import org.citydb.vis.util.ElevationServiceHandler;
-import org.citydb.query.Query;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;

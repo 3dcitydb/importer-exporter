@@ -27,18 +27,13 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
+import org.citydb.config.Config;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.operation.common.xlink.DBXlinkBasic;
 import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.operation.importer.util.AttributeValueJoiner;
-import org.citydb.config.Config;
-import org.citydb.database.schema.TableEnum;
-import org.citydb.database.schema.mapping.FeatureType;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.building.BuildingFurniture;
@@ -49,6 +44,11 @@ import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class DBRoom implements DBImporter {
 	private final CityGMLImportManager importer;

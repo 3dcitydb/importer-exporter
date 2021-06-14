@@ -28,8 +28,8 @@
 package org.citydb.database;
 
 import org.citydb.config.Config;
-import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.ConnectionManager;

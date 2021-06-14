@@ -27,13 +27,13 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.util.AffineTransformer;
-import org.citydb.operation.importer.util.RingValidator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.util.AffineTransformer;
+import org.citydb.operation.importer.util.RingValidator;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;

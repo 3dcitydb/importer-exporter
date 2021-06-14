@@ -27,12 +27,12 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.log.Logger;
 import org.citydb.operation.common.cache.IdCache;
 import org.citydb.operation.common.cache.IdCacheEntry;
 import org.citydb.operation.common.cache.IdCacheManager;
 import org.citydb.operation.common.cache.IdCacheType;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.log.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

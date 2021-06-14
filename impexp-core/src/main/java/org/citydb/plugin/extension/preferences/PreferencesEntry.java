@@ -27,7 +27,7 @@
  */
 package org.citydb.plugin.extension.preferences;
 
-import java.awt.Component;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 

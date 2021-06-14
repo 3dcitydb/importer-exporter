@@ -27,8 +27,8 @@
  */
 package org.citydb.operation.exporter.database.content;
 
-import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.config.Config;
+import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.AppearanceFilterBuilder;

@@ -28,9 +28,9 @@
 
 package org.citydb.operation.deleter.controller;
 
-import org.citydb.operation.deleter.DeleteException;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.ConnectionManager;
+import org.citydb.operation.deleter.DeleteException;
 
 import java.sql.Connection;
 import java.sql.SQLException;

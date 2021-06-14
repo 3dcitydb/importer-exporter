@@ -27,10 +27,10 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
-import org.citydb.operation.common.xlink.DBXlinkSolidGeometry;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.xlink.DBXlinkSolidGeometry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

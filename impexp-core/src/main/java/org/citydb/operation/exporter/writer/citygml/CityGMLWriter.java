@@ -27,15 +27,15 @@
  */
 package org.citydb.operation.exporter.writer.citygml;
 
-import org.citydb.operation.exporter.util.Metadata;
-import org.citydb.operation.exporter.writer.FeatureWriteException;
-import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
+import org.citydb.operation.exporter.util.Metadata;
+import org.citydb.operation.exporter.writer.FeatureWriteException;
+import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.writer.SequentialWriter;
 import org.citydb.writer.XMLWriterWorkerFactory;

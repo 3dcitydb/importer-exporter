@@ -27,9 +27,9 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import java.sql.SQLException;
-
 import org.citydb.operation.importer.CityGMLImportException;
+
+import java.sql.SQLException;
 
 public interface DBImporter {
 	public void executeBatch() throws CityGMLImportException, SQLException;

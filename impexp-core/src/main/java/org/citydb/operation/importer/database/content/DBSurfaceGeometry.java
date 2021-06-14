@@ -27,12 +27,6 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import org.citydb.operation.common.xlink.DBXlinkLinearRing;
-import org.citydb.operation.common.xlink.DBXlinkSolidGeometry;
-import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.util.LocalAppearanceHandler;
-import org.citydb.operation.importer.util.RingValidator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
@@ -41,6 +35,12 @@ import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.XlinkType;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.xlink.DBXlinkLinearRing;
+import org.citydb.operation.common.xlink.DBXlinkSolidGeometry;
+import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.util.LocalAppearanceHandler;
+import org.citydb.operation.importer.util.RingValidator;
 import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
 import org.citygml4j.model.citygml.texturedsurface._AppearanceProperty;

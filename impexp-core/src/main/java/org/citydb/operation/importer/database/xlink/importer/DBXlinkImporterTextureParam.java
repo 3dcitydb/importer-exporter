@@ -27,13 +27,13 @@
  */
 package org.citydb.operation.importer.database.xlink.importer;
 
+import org.citydb.operation.common.cache.CacheTable;
+import org.citydb.operation.common.xlink.DBXlinkTextureParam;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-
-import org.citydb.operation.common.cache.CacheTable;
-import org.citydb.operation.common.xlink.DBXlinkTextureParam;
 
 public class DBXlinkImporterTextureParam implements DBXlinkImporter {
 	private final DBXlinkImporterManager xlinkImporterManager;

@@ -27,11 +27,11 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.log.Logger;
 import org.citydb.operation.common.cache.CacheTable;
 import org.citydb.operation.common.xlink.DBXlinkTextureAssociationTarget;
 import org.citydb.operation.common.xlink.DBXlinkTextureCoordList;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.log.Logger;
 import org.citydb.util.Util;
 
 import java.sql.Connection;

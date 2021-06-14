@@ -27,8 +27,6 @@
  */
 package org.citydb.gui.operation.database;
 
-import java.util.Locale;
-
 import org.citydb.config.Config;
 import org.citydb.database.connection.ConnectionViewHandler;
 import org.citydb.gui.operation.database.preferences.DatabasePreferences;
@@ -39,6 +37,8 @@ import org.citydb.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.plugin.extension.view.View;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.ViewExtension;
+
+import java.util.Locale;
 
 public class DatabasePlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private DatabaseView view;

@@ -27,8 +27,8 @@
  */
 package org.citydb.operation.exporter.database.content;
 
-import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.database.schema.TableEnum;
+import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;

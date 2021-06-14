@@ -28,10 +28,6 @@
 
 package org.citydb.operation.importer.reader.citygml;
 
-import org.citydb.operation.importer.concurrent.FeatureReaderWorkerFactory;
-import org.citydb.operation.importer.filter.selection.counter.CounterFilter;
-import org.citydb.operation.importer.reader.FeatureReadException;
-import org.citydb.operation.importer.reader.FeatureReader;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -40,6 +36,10 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.file.InputFile;
+import org.citydb.operation.importer.concurrent.FeatureReaderWorkerFactory;
+import org.citydb.operation.importer.filter.selection.counter.CounterFilter;
+import org.citydb.operation.importer.reader.FeatureReadException;
+import org.citydb.operation.importer.reader.FeatureReader;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;

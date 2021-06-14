@@ -27,10 +27,10 @@
  */
 package org.citydb.database.adapter;
 
+import org.citydb.config.geometry.GeometryObject;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import org.citydb.config.geometry.GeometryObject;
 
 public abstract class AbstractGeometryConverterAdapter {
 	protected final AbstractDatabaseAdapter databaseAdapter;

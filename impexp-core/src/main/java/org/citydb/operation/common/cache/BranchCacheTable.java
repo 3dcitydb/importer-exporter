@@ -27,14 +27,14 @@
  */
 package org.citydb.operation.common.cache;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
+import org.citydb.operation.common.cache.model.CacheTableModel;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.citydb.operation.common.cache.model.CacheTableModel;
-import org.citydb.database.adapter.AbstractSQLAdapter;
 
 public class BranchCacheTable extends AbstractCacheTable {
 	private final CacheTable main;

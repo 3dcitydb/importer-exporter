@@ -27,11 +27,11 @@
  */
 package org.citydb.database.schema.mapping;
 
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 @XmlEnum
 @XmlType(name = "cityGMLContext")

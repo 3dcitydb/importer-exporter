@@ -27,11 +27,11 @@
  */
 package org.citydb.operation.importer.database.xlink.importer;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 import org.citydb.operation.common.cache.CacheTable;
 import org.citydb.operation.common.xlink.DBXlinkLibraryObject;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class DBXlinkImporterLibraryObject implements DBXlinkImporter {
 	private final DBXlinkImporterManager xlinkImporterManager;

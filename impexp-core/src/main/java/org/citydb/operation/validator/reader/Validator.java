@@ -28,8 +28,8 @@
 
 package org.citydb.operation.validator.reader;
 
-import org.citydb.operation.validator.ValidationException;
 import org.citydb.file.InputFile;
+import org.citydb.operation.validator.ValidationException;
 
 public interface Validator extends AutoCloseable {
     long getValidationErrors();

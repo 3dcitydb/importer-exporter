@@ -28,9 +28,6 @@
 
 package org.citydb.operation.importer.reader.cityjson;
 
-import org.citydb.operation.importer.filter.selection.counter.CounterFilter;
-import org.citydb.operation.importer.reader.FeatureReadException;
-import org.citydb.operation.importer.reader.FeatureReader;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.event.Event;
@@ -38,6 +35,9 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.file.InputFile;
+import org.citydb.operation.importer.filter.selection.counter.CounterFilter;
+import org.citydb.operation.importer.reader.FeatureReadException;
+import org.citydb.operation.importer.reader.FeatureReader;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.builder.cityjson.json.io.reader.CityJSONChunkReader;
 import org.citygml4j.builder.cityjson.json.io.reader.CityJSONInputFactory;

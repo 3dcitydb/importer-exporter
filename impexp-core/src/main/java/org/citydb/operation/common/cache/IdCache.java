@@ -27,14 +27,14 @@
  */
 package org.citydb.operation.common.cache;
 
+import org.citydb.log.Logger;
+
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.citydb.log.Logger;
 
 public class IdCache {
 	private final Logger log = Logger.getInstance();

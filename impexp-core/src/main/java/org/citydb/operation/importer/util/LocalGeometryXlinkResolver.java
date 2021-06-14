@@ -27,8 +27,8 @@
  */
 package org.citydb.operation.importer.util;
 
-import org.citydb.operation.importer.database.content.CityGMLImportManager;
 import org.citydb.log.Logger;
+import org.citydb.operation.importer.database.content.CityGMLImportManager;
 import org.citydb.util.CoreConstants;
 import org.citygml4j.builder.copy.CopyBuilder;
 import org.citygml4j.builder.copy.ShallowCopyBuilder;

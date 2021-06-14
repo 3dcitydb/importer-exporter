@@ -27,15 +27,6 @@
  */
 package org.citydb.operation.importer.concurrent;
 
-import org.citydb.operation.common.cache.IdCacheManager;
-import org.citydb.operation.common.xlink.DBXlink;
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.database.content.CityGMLImportManager;
-import org.citydb.operation.importer.filter.CityGMLFilter;
-import org.citydb.operation.importer.util.AffineTransformer;
-import org.citydb.operation.importer.util.ImportLogger;
-import org.citydb.operation.importer.util.ImportLogger.ImportLogEntry;
-import org.citydb.operation.importer.util.InternalConfig;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -52,6 +43,15 @@ import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.cache.IdCacheManager;
+import org.citydb.operation.common.xlink.DBXlink;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.database.content.CityGMLImportManager;
+import org.citydb.operation.importer.filter.CityGMLFilter;
+import org.citydb.operation.importer.util.AffineTransformer;
+import org.citydb.operation.importer.util.ImportLogger;
+import org.citydb.operation.importer.util.ImportLogger.ImportLogEntry;
+import org.citydb.operation.importer.util.InternalConfig;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.appearance.Appearance;

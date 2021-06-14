@@ -27,15 +27,6 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
-import org.citydb.operation.common.cache.CacheTable;
-import org.citydb.operation.common.cache.CacheTableManager;
-import org.citydb.operation.common.cache.model.CacheTableModel;
-import org.citydb.operation.common.cache.IdCacheEntry;
-import org.citydb.operation.common.cache.IdCacheManager;
-import org.citydb.operation.common.cache.IdCacheType;
-import org.citydb.operation.common.xlink.DBXlink;
-import org.citydb.operation.importer.database.SequenceHelper;
-import org.citydb.operation.importer.util.ConcurrentLockManager;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -46,6 +37,15 @@ import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.file.InputFile;
+import org.citydb.operation.common.cache.CacheTable;
+import org.citydb.operation.common.cache.CacheTableManager;
+import org.citydb.operation.common.cache.IdCacheEntry;
+import org.citydb.operation.common.cache.IdCacheManager;
+import org.citydb.operation.common.cache.IdCacheType;
+import org.citydb.operation.common.cache.model.CacheTableModel;
+import org.citydb.operation.common.xlink.DBXlink;
+import org.citydb.operation.importer.database.SequenceHelper;
+import org.citydb.operation.importer.util.ConcurrentLockManager;
 import org.citydb.registry.ObjectRegistry;
 
 import java.io.IOException;

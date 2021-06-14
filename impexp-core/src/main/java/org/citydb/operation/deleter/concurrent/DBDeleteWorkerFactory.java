@@ -27,9 +27,6 @@
  */
 package org.citydb.operation.deleter.concurrent;
 
-import org.citydb.operation.deleter.database.DBSplittingResult;
-import org.citydb.operation.deleter.util.DeleteLogger;
-import org.citydb.operation.deleter.util.InternalConfig;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.config.Config;
@@ -38,6 +35,9 @@ import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
+import org.citydb.operation.deleter.database.DBSplittingResult;
+import org.citydb.operation.deleter.util.DeleteLogger;
+import org.citydb.operation.deleter.util.InternalConfig;
 
 import java.sql.Connection;
 import java.sql.SQLException;

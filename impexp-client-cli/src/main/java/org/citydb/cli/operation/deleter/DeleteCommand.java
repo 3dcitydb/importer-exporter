@@ -29,9 +29,6 @@
 package org.citydb.cli.operation.deleter;
 
 import org.citydb.cli.ImpExpCli;
-import org.citydb.operation.deleter.DeleteException;
-import org.citydb.operation.deleter.controller.Deleter;
-import org.citydb.operation.deleter.util.DeleteListPreviewer;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.deleter.DeleteConfig;
@@ -39,6 +36,9 @@ import org.citydb.config.project.deleter.DeleteList;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
+import org.citydb.operation.deleter.DeleteException;
+import org.citydb.operation.deleter.controller.Deleter;
+import org.citydb.operation.deleter.util.DeleteListPreviewer;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.registry.ObjectRegistry;

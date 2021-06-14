@@ -27,6 +27,13 @@
  */
 package org.citydb.operation.importer.database.content;
 
+import org.citydb.config.Config;
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.database.connection.DatabaseConnectionPool;
+import org.citydb.database.schema.SequenceEnum;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.log.Logger;
 import org.citydb.operation.common.xlink.DBXlinkSurfaceDataToTexImage;
 import org.citydb.operation.common.xlink.DBXlinkTextureAssociation;
 import org.citydb.operation.common.xlink.DBXlinkTextureAssociationTarget;
@@ -38,13 +45,6 @@ import org.citydb.operation.importer.util.AttributeValueJoiner;
 import org.citydb.operation.importer.util.ExternalFileChecker;
 import org.citydb.operation.importer.util.LocalAppearanceHandler;
 import org.citydb.operation.importer.util.LocalAppearanceHandler.SurfaceGeometryTarget;
-import org.citydb.config.Config;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.database.connection.DatabaseConnectionPool;
-import org.citydb.database.schema.SequenceEnum;
-import org.citydb.database.schema.TableEnum;
-import org.citydb.database.schema.mapping.FeatureType;
-import org.citydb.log.Logger;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;

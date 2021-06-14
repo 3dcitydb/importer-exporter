@@ -36,9 +36,9 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
+import org.citydb.query.Query;
 import org.citydb.vis.database.DBSplittingResult;
 import org.citydb.vis.util.ExportTracker;
-import org.citydb.query.Query;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import javax.xml.bind.JAXBContext;

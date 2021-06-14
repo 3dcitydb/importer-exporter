@@ -27,15 +27,15 @@
  */
 package org.citydb.operation.importer.database.xlink.importer;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-
-import org.citydb.operation.common.cache.CacheTable;
-import org.citydb.operation.common.cache.CacheTableManager;
-import org.citydb.operation.common.cache.model.CacheTableModel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
+import org.citydb.operation.common.cache.CacheTable;
+import org.citydb.operation.common.cache.CacheTableManager;
+import org.citydb.operation.common.cache.model.CacheTableModel;
+
+import java.sql.SQLException;
+import java.util.HashMap;
 
 public class DBXlinkImporterManager {
 	private final CacheTableManager cacheTableManager;

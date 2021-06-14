@@ -28,14 +28,14 @@
 
 package org.citydb.operation.importer.reader.citygml;
 
+import org.citydb.config.Config;
+import org.citydb.config.project.importer.CityGMLOptions;
+import org.citydb.log.Logger;
 import org.citydb.operation.importer.filter.CityGMLFilter;
 import org.citydb.operation.importer.filter.selection.counter.CounterFilter;
 import org.citydb.operation.importer.reader.FeatureReadException;
 import org.citydb.operation.importer.reader.FeatureReader;
 import org.citydb.operation.importer.reader.FeatureReaderFactory;
-import org.citydb.config.Config;
-import org.citydb.config.project.importer.CityGMLOptions;
-import org.citydb.log.Logger;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
 import org.citygml4j.model.module.Module;

@@ -28,8 +28,8 @@
 
 package org.citydb.operation.importer.reader;
 
-import org.citydb.operation.importer.filter.CityGMLFilter;
 import org.citydb.config.Config;
+import org.citydb.operation.importer.filter.CityGMLFilter;
 
 public interface FeatureReaderFactory {
     void initializeContext(CityGMLFilter filter, Config config) throws FeatureReadException;

@@ -27,11 +27,11 @@
  */
 package org.citydb.operation.common.cache;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
+import org.citydb.operation.common.cache.model.CacheTableModel;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import org.citydb.operation.common.cache.model.CacheTableModel;
-import org.citydb.database.adapter.AbstractSQLAdapter;
 
 public abstract class AbstractCacheTable {
 	protected static long ID;

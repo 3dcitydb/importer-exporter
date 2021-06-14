@@ -27,20 +27,20 @@
  */
 package org.citydb.operation.importer.database.content;
 
+import org.citydb.config.Config;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.util.AttributeValueJoiner;
+import org.citygml4j.model.citygml.landuse.LandUse;
+import org.citygml4j.model.gml.basicTypes.Code;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-
-import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.util.AttributeValueJoiner;
-import org.citydb.config.Config;
-import org.citydb.database.schema.TableEnum;
-import org.citydb.database.schema.mapping.FeatureType;
-import org.citygml4j.model.citygml.landuse.LandUse;
-import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 public class DBLandUse implements DBImporter {
 	private final CityGMLImportManager importer;

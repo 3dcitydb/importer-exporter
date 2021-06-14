@@ -27,9 +27,9 @@
  */
 package org.citydb.event.global;
 
-import java.util.Locale;
-
 import org.citydb.event.Event;
+
+import java.util.Locale;
 
 public final class SwitchLocaleEvent extends Event {
 	private final Locale locale;

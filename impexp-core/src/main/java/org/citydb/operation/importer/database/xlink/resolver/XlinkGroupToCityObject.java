@@ -27,10 +27,10 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.operation.common.cache.CacheTable;
 import org.citydb.operation.common.cache.IdCacheEntry;
 import org.citydb.operation.common.xlink.DBXlinkGroupToCityObject;
-import org.citydb.database.schema.mapping.FeatureType;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

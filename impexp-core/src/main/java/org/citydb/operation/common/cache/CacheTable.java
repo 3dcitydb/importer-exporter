@@ -27,6 +27,7 @@
  */
 package org.citydb.operation.common.cache;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citydb.operation.common.cache.model.AbstractCacheTableModel;
 import org.citydb.operation.common.cache.model.CacheTableBasic;
 import org.citydb.operation.common.cache.model.CacheTableDeleteList;
@@ -47,7 +48,6 @@ import org.citydb.operation.common.cache.model.CacheTableTextureCoordList;
 import org.citydb.operation.common.cache.model.CacheTableTextureFile;
 import org.citydb.operation.common.cache.model.CacheTableTextureFileId;
 import org.citydb.operation.common.cache.model.CacheTableTextureParam;
-import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import java.sql.Connection;

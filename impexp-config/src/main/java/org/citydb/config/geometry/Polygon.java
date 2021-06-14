@@ -27,11 +27,10 @@
  */
 package org.citydb.config.geometry;
 
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.List;
 
 @XmlRootElement(name = "polygon")
 @XmlType(name = "PolygonType", propOrder = {

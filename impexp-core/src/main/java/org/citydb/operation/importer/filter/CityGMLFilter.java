@@ -27,10 +27,10 @@
  */
 package org.citydb.operation.importer.filter;
 
+import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.operation.importer.filter.selection.SelectionFilter;
 import org.citydb.operation.importer.filter.selection.counter.CounterFilter;
 import org.citydb.operation.importer.filter.type.FeatureTypeFilter;
-import org.citydb.database.schema.mapping.SchemaMapping;
 
 public class CityGMLFilter {
 	private FeatureTypeFilter featureTypeFilter;

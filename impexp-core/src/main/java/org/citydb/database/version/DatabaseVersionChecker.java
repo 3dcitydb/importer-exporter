@@ -27,10 +27,10 @@
  */
 package org.citydb.database.version;
 
-import java.util.List;
-
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionWarning;
+
+import java.util.List;
 
 public interface DatabaseVersionChecker {
 	public List<DatabaseConnectionWarning> checkVersionSupport(AbstractDatabaseAdapter databaseAdapter) throws DatabaseVersionException;

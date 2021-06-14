@@ -27,9 +27,8 @@
  */
 package org.citydb.database.schema.mapping;
 
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlType;
+import java.util.List;
 
 @XmlType(name = "objectType", propOrder = {
 		"extension",

@@ -27,13 +27,13 @@
  */
 package org.citydb.operation.exporter.database.content;
 
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.XlinkType;
 import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.operation.exporter.util.DefaultGeometrySetterHandler;
 import org.citydb.operation.exporter.util.GeometrySetter;
 import org.citydb.operation.exporter.util.GeometrySetterHandler;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.database.schema.TableEnum;
-import org.citydb.database.schema.XlinkType;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;

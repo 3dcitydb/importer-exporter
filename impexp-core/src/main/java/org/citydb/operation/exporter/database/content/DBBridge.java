@@ -27,14 +27,14 @@
  */
 package org.citydb.operation.exporter.database.content;
 
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.operation.exporter.util.AttributeValueSplitter;
 import org.citydb.operation.exporter.util.AttributeValueSplitter.SplitValue;
 import org.citydb.operation.exporter.util.DefaultGeometrySetterHandler;
 import org.citydb.operation.exporter.util.GeometrySetterHandler;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.database.schema.TableEnum;
-import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;

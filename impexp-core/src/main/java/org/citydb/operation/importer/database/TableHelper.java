@@ -27,14 +27,23 @@
  */
 package org.citydb.operation.importer.database;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.mapping.AbstractAttribute;
+import org.citydb.database.schema.mapping.AbstractExtension;
+import org.citydb.database.schema.mapping.AbstractJoin;
+import org.citydb.database.schema.mapping.AbstractProperty;
+import org.citydb.database.schema.mapping.AbstractType;
+import org.citydb.database.schema.mapping.AppSchema;
+import org.citydb.database.schema.mapping.ComplexAttribute;
+import org.citydb.database.schema.mapping.ComplexAttributeType;
+import org.citydb.database.schema.mapping.ComplexProperty;
+import org.citydb.database.schema.mapping.GeometryProperty;
+import org.citydb.database.schema.mapping.InjectedProperty;
+import org.citydb.database.schema.mapping.Join;
+import org.citydb.database.schema.mapping.JoinTable;
+import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.database.schema.mapping.TableRole;
 import org.citydb.operation.importer.database.content.DBAddress;
 import org.citydb.operation.importer.database.content.DBAddressToBridge;
 import org.citydb.operation.importer.database.content.DBAddressToBuilding;
@@ -85,23 +94,14 @@ import org.citydb.operation.importer.database.content.DBTunnelThematicSurface;
 import org.citydb.operation.importer.database.content.DBWaterBodToWaterBndSrf;
 import org.citydb.operation.importer.database.content.DBWaterBody;
 import org.citydb.operation.importer.database.content.DBWaterBoundarySurface;
-import org.citydb.database.schema.TableEnum;
-import org.citydb.database.schema.mapping.AbstractAttribute;
-import org.citydb.database.schema.mapping.AbstractExtension;
-import org.citydb.database.schema.mapping.AbstractJoin;
-import org.citydb.database.schema.mapping.AbstractProperty;
-import org.citydb.database.schema.mapping.AbstractType;
-import org.citydb.database.schema.mapping.AppSchema;
-import org.citydb.database.schema.mapping.ComplexAttribute;
-import org.citydb.database.schema.mapping.ComplexAttributeType;
-import org.citydb.database.schema.mapping.ComplexProperty;
-import org.citydb.database.schema.mapping.GeometryProperty;
-import org.citydb.database.schema.mapping.InjectedProperty;
-import org.citydb.database.schema.mapping.Join;
-import org.citydb.database.schema.mapping.JoinTable;
-import org.citydb.database.schema.mapping.MappingConstants;
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.schema.mapping.TableRole;
+
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TableHelper {
 	private final SchemaMapping schemaMapping;

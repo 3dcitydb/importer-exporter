@@ -32,9 +32,9 @@ import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.importer.ImportConfig;
-import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.config.project.plugin.PluginConfigListAdapter;
+import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.config.util.ConfigNamespaceFilter;
 
 import javax.xml.bind.annotation.XmlElement;

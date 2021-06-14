@@ -30,9 +30,9 @@ package org.citydb.cli.operation.validator;
 
 import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
+import org.citydb.log.Logger;
 import org.citydb.operation.validator.ValidationException;
 import org.citydb.operation.validator.controller.Validator;
-import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.CliOptionBuilder;
 import org.citydb.util.CoreConstants;

@@ -27,15 +27,14 @@
  */
 package org.citydb.database.schema.util;
 
-import java.io.File;
-import java.io.IOException;
+import org.citydb.database.schema.mapping.SchemaMapping;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
-
-import org.citydb.database.schema.mapping.SchemaMapping;
+import java.io.File;
+import java.io.IOException;
 
 public class SchemaMappingWriter {
 

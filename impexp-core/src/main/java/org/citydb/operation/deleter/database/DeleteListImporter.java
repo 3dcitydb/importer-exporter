@@ -28,11 +28,11 @@
 
 package org.citydb.operation.deleter.database;
 
+import org.citydb.config.project.deleter.DeleteListIdType;
+import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.operation.common.cache.CacheTable;
 import org.citydb.operation.deleter.util.DeleteListException;
 import org.citydb.operation.deleter.util.DeleteListParser;
-import org.citydb.config.project.deleter.DeleteListIdType;
-import org.citydb.database.schema.mapping.MappingConstants;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

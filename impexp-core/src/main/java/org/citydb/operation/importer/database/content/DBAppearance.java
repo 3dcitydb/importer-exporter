@@ -27,14 +27,14 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import org.citydb.operation.common.xlink.DBXlinkBasic;
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.util.AttributeValueJoiner;
-import org.citydb.operation.importer.util.LocalAppearanceHandler;
 import org.citydb.config.Config;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.operation.common.xlink.DBXlinkBasic;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.util.AttributeValueJoiner;
+import org.citydb.operation.importer.util.LocalAppearanceHandler;
 import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.Appearance;

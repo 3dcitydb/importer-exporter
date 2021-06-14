@@ -27,8 +27,6 @@
  */
 package org.citydb.gui.operation.importer;
 
-import java.util.Locale;
-
 import org.citydb.config.Config;
 import org.citydb.gui.operation.importer.preferences.CityGMLImportPreferences;
 import org.citydb.gui.operation.importer.view.CityGMLImportView;
@@ -38,6 +36,8 @@ import org.citydb.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.plugin.extension.view.View;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.ViewExtension;
+
+import java.util.Locale;
 
 public class CityGMLImportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private CityGMLImportView view;

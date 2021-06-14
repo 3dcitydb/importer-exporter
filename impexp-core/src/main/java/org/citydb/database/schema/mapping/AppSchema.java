@@ -27,9 +27,7 @@
  */
 package org.citydb.database.schema.mapping;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -39,8 +37,9 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.citygml4j.model.module.citygml.CityGMLVersion;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @XmlType(name = "schema", propOrder = {
 		"namespaces"

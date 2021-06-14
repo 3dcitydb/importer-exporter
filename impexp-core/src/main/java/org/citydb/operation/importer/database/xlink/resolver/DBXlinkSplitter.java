@@ -27,6 +27,18 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
+import org.citydb.concurrent.WorkerPool;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.global.LogLevel;
+import org.citydb.event.Event;
+import org.citydb.event.EventDispatcher;
+import org.citydb.event.EventHandler;
+import org.citydb.event.global.EventType;
+import org.citydb.event.global.InterruptEvent;
+import org.citydb.event.global.ProgressBarEventType;
+import org.citydb.event.global.StatusDialogMessage;
+import org.citydb.event.global.StatusDialogProgressBar;
+import org.citydb.log.Logger;
 import org.citydb.operation.common.cache.CacheTable;
 import org.citydb.operation.common.cache.CacheTableManager;
 import org.citydb.operation.common.cache.model.CacheTableModel;
@@ -43,18 +55,6 @@ import org.citydb.operation.common.xlink.DBXlinkTextureCoordList;
 import org.citydb.operation.common.xlink.DBXlinkTextureFile;
 import org.citydb.operation.common.xlink.DBXlinkTextureParam;
 import org.citydb.operation.common.xlink.DBXlinkTextureParamEnum;
-import org.citydb.concurrent.WorkerPool;
-import org.citydb.config.i18n.Language;
-import org.citydb.config.project.global.LogLevel;
-import org.citydb.event.Event;
-import org.citydb.event.EventDispatcher;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.EventType;
-import org.citydb.event.global.InterruptEvent;
-import org.citydb.event.global.ProgressBarEventType;
-import org.citydb.event.global.StatusDialogMessage;
-import org.citydb.event.global.StatusDialogProgressBar;
-import org.citydb.log.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

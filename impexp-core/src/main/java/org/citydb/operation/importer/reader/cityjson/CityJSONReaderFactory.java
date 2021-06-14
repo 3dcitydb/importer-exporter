@@ -28,12 +28,12 @@
 
 package org.citydb.operation.importer.reader.cityjson;
 
+import org.citydb.config.Config;
 import org.citydb.operation.importer.filter.CityGMLFilter;
 import org.citydb.operation.importer.filter.selection.counter.CounterFilter;
 import org.citydb.operation.importer.reader.FeatureReadException;
 import org.citydb.operation.importer.reader.FeatureReader;
 import org.citydb.operation.importer.reader.FeatureReaderFactory;
-import org.citydb.config.Config;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.cityjson.CityJSONBuilder;
 import org.citygml4j.builder.cityjson.CityJSONBuilderException;

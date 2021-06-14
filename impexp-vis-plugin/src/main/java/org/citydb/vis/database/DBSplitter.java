@@ -43,7 +43,6 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.log.Logger;
-import org.citydb.vis.util.CityObject4JSON;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.BuildProperties;
@@ -57,6 +56,7 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.util.Util;
+import org.citydb.vis.util.CityObject4JSON;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import java.sql.Connection;

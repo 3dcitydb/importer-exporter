@@ -27,10 +27,9 @@
  */
 package org.citydb.config.project.global;
 
-import java.io.File;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.io.File;
 
 
 @XmlType(name = "CacheType", propOrder = {

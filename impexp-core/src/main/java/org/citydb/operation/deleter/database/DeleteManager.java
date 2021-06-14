@@ -27,9 +27,6 @@
  */
 package org.citydb.operation.deleter.database;
 
-import org.citydb.operation.common.cache.CacheTable;
-import org.citydb.operation.deleter.util.DeleteLogger;
-import org.citydb.operation.deleter.util.InternalConfig;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.deleter.DeleteListIdType;
@@ -49,6 +46,9 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.cache.CacheTable;
+import org.citydb.operation.deleter.util.DeleteLogger;
+import org.citydb.operation.deleter.util.InternalConfig;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.BuildProperties;

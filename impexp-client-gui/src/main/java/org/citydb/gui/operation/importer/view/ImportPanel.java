@@ -27,10 +27,6 @@
  */
 package org.citydb.gui.operation.importer.view;
 
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.controller.Importer;
-import org.citydb.operation.validator.ValidationException;
-import org.citydb.operation.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
@@ -45,6 +41,10 @@ import org.citydb.gui.components.dialog.ImportStatusDialog;
 import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.controller.Importer;
+import org.citydb.operation.validator.ValidationException;
+import org.citydb.operation.validator.controller.Validator;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 

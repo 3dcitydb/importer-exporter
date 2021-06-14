@@ -27,19 +27,19 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
-import org.citydb.operation.common.xlink.DBXlinkBasic;
-import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.operation.common.xlink.DBXlinkBasic;
+import org.citydb.operation.importer.CityGMLImportException;
 import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
 import org.citygml4j.model.citygml.relief.RasterRelief;
 import org.citygml4j.model.citygml.relief.ReliefComponentProperty;
 import org.citygml4j.model.citygml.relief.ReliefFeature;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class DBReliefFeature implements DBImporter {
 	private final CityGMLImportManager importer;

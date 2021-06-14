@@ -27,9 +27,9 @@
  */
 package org.citydb.gui.console;
 
-import javax.swing.JTextPane;
+import javax.swing.*;
 import javax.swing.text.DefaultCaret;
-import java.awt.Dimension;
+import java.awt.*;
 
 public class ConsoleTextPane extends JTextPane {
     private boolean lineWrap = false;

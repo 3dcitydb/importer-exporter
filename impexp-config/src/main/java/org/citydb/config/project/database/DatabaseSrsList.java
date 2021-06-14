@@ -27,15 +27,14 @@
  */
 package org.citydb.config.project.database;
 
+import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 
 @XmlRootElement(name = "referenceSystems")
 public class DatabaseSrsList {

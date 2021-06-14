@@ -57,12 +57,12 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
 import org.citydb.log.Logger;
-import org.citydb.vis.util.BalloonTemplateHandler;
-import org.citydb.vis.util.CityObject4JSON;
-import org.citydb.vis.util.ExportTracker;
 import org.citydb.query.Query;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.CoreConstants;
+import org.citydb.vis.util.BalloonTemplateHandler;
+import org.citydb.vis.util.CityObject4JSON;
+import org.citydb.vis.util.ExportTracker;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import javax.imageio.ImageIO;

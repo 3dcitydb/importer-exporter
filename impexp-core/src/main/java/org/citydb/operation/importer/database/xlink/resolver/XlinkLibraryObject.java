@@ -27,10 +27,10 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
-import org.citydb.operation.common.xlink.DBXlinkLibraryObject;
 import org.citydb.database.adapter.BlobImportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.xlink.DBXlinkLibraryObject;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

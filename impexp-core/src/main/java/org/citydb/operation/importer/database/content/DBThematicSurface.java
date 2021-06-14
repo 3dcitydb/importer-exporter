@@ -27,17 +27,12 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
-import org.citydb.operation.common.xlink.DBXlinkBasic;
-import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
-import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.operation.common.xlink.DBXlinkBasic;
+import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.operation.importer.CityGMLImportException;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.AbstractOpening;
@@ -47,6 +42,11 @@ import org.citygml4j.model.citygml.building.OpeningProperty;
 import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class DBThematicSurface implements DBImporter {
 	private final CityGMLImportManager importer;

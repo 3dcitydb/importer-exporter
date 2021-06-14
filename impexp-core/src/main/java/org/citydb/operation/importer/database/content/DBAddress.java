@@ -27,13 +27,13 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.file.InputFile;
+import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.module.xal.XALModuleType;

@@ -27,11 +27,11 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
-import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.operation.importer.CityGMLImportException;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.WaterBody;

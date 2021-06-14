@@ -27,9 +27,9 @@
  */
 package org.citydb.operation.exporter.util;
 
-import org.citydb.operation.exporter.database.content.CityGMLExportManager;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.operation.exporter.database.content.CityGMLExportManager;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodFilterMode;
 import org.citydb.query.filter.lod.LodIterator;

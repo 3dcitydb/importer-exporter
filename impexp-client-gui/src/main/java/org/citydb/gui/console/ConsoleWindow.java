@@ -27,19 +27,15 @@
  */
 package org.citydb.gui.console;
 
-import java.awt.Component;
-import java.awt.Dialog.ModalExclusionType;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Toolkit;
-
-import javax.swing.JFrame;
-
 import org.citydb.config.Config;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.Dialog.ModalExclusionType;
 
 public class ConsoleWindow extends JFrame {
 	private final Component content;

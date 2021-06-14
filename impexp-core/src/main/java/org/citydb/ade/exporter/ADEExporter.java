@@ -27,9 +27,9 @@
  */
 package org.citydb.ade.exporter;
 
-import java.sql.SQLException;
-
 import org.citydb.operation.exporter.CityGMLExportException;
+
+import java.sql.SQLException;
 
 public interface ADEExporter {
 	public void close() throws CityGMLExportException, SQLException;

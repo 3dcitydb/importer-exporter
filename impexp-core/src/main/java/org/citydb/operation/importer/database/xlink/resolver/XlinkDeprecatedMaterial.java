@@ -27,9 +27,9 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
+import org.citydb.database.schema.SequenceEnum;
 import org.citydb.operation.common.cache.IdCacheEntry;
 import org.citydb.operation.common.xlink.DBXlinkDeprecatedMaterial;
-import org.citydb.database.schema.SequenceEnum;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

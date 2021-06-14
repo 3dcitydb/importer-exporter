@@ -27,13 +27,6 @@
  */
 package org.citydb.operation.exporter.database.content;
 
-import org.citydb.operation.common.cache.CacheTable;
-import org.citydb.operation.common.cache.CacheTableManager;
-import org.citydb.operation.common.cache.IdCache;
-import org.citydb.operation.common.cache.model.CacheTableModel;
-import org.citydb.operation.exporter.util.InternalConfig;
-import org.citydb.operation.exporter.writer.FeatureWriteException;
-import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
@@ -51,6 +44,13 @@ import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.cache.CacheTable;
+import org.citydb.operation.common.cache.CacheTableManager;
+import org.citydb.operation.common.cache.IdCache;
+import org.citydb.operation.common.cache.model.CacheTableModel;
+import org.citydb.operation.exporter.util.InternalConfig;
+import org.citydb.operation.exporter.writer.FeatureWriteException;
+import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.extension.export.MetadataProvider;
 import org.citydb.query.Query;

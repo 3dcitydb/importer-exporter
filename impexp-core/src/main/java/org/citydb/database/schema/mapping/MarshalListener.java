@@ -27,10 +27,9 @@
  */
 package org.citydb.database.schema.mapping;
 
+import javax.xml.bind.Marshaller.Listener;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import javax.xml.bind.Marshaller.Listener;
 
 public class MarshalListener extends Listener {
 	private SchemaMapping previous;

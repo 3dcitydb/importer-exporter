@@ -27,15 +27,15 @@
  */
 package org.citydb.ade.exporter;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
 import org.citygml4j.model.gml.feature.AbstractFeature;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public interface ADEExportManager {
 	public void init(Connection connection, CityGMLExportHelper helper) throws CityGMLExportException, SQLException;

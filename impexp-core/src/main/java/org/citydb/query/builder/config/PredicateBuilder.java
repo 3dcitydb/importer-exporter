@@ -30,7 +30,6 @@ package org.citydb.query.builder.config;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator;
 import org.citydb.config.project.query.filter.selection.id.AbstractIdOperator;
-import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.logical.AbstractBinaryLogicalOperator;
 import org.citydb.config.project.query.filter.selection.logical.AbstractLogicalOperator;
 import org.citydb.config.project.query.filter.selection.logical.NotOperator;

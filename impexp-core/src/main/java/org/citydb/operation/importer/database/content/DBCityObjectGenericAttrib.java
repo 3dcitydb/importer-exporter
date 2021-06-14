@@ -27,11 +27,11 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
+import org.citydb.operation.importer.CityGMLImportException;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
 import org.citygml4j.model.citygml.generics.DateAttribute;

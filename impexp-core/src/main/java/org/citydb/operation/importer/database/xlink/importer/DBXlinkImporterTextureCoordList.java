@@ -27,12 +27,12 @@
  */
 package org.citydb.operation.importer.database.xlink.importer;
 
+import org.citydb.operation.common.cache.CacheTable;
+import org.citydb.operation.common.xlink.DBXlinkTextureCoordList;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
-import org.citydb.operation.common.cache.CacheTable;
-import org.citydb.operation.common.xlink.DBXlinkTextureCoordList;
 
 public class DBXlinkImporterTextureCoordList implements DBXlinkImporter {
 	private final DBXlinkImporterManager xlinkImporterManager;

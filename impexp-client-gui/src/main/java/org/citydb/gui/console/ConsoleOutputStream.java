@@ -27,8 +27,7 @@
  */
 package org.citydb.gui.console;
 
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 import java.io.ByteArrayOutputStream;

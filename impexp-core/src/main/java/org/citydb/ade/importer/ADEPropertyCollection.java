@@ -27,12 +27,12 @@
  */
 package org.citydb.ade.importer;
 
+import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
-import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
 
 public class ADEPropertyCollection {
 	private HashMap<Class<? extends ADEModelObject>, List<ADEModelObject>> properties = new HashMap<>();

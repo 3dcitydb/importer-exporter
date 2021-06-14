@@ -27,9 +27,6 @@
  */
 package org.citydb.operation.importer.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.citygml4j.model.citygml.ade.ADEClass;
 import org.citygml4j.model.citygml.ade.ADEComponent;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
@@ -107,6 +104,9 @@ import org.citygml4j.model.gml.coverage.AbstractDiscreteCoverage;
 import org.citygml4j.model.gml.coverage.RectifiedGridCoverage;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.util.walker.FeatureWalker;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ADEPropertyCollector {
 	private final ADEHookWalker walker;

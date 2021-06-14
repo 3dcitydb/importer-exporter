@@ -27,11 +27,11 @@
  */
 package org.citydb.operation.exporter.writer;
 
-import org.citydb.operation.exporter.writer.citygml.CityGMLWriterFactory;
-import org.citydb.operation.exporter.writer.cityjson.CityJSONWriterFactory;
 import org.citydb.config.Config;
 import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.operation.exporter.writer.citygml.CityGMLWriterFactory;
+import org.citydb.operation.exporter.writer.cityjson.CityJSONWriterFactory;
 import org.citydb.query.Query;
 
 public class FeatureWriterFactoryBuilder {

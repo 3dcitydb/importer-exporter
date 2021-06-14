@@ -27,11 +27,6 @@
  */
 package org.citydb.database.schema.mapping;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
-
 import org.citygml4j.model.gml.GML;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
@@ -46,6 +41,11 @@ import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.model.module.gml.GMLCoreModule;
+
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 
 @XmlEnum
 @XmlType(name = "geometryType")

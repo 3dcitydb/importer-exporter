@@ -27,14 +27,6 @@
  */
 package org.citydb.operation.exporter.concurrent;
 
-import org.citydb.operation.common.cache.CacheTableManager;
-import org.citydb.operation.common.cache.IdCacheManager;
-import org.citydb.operation.common.xlink.DBXlink;
-import org.citydb.operation.exporter.CityGMLExportException;
-import org.citydb.operation.exporter.database.content.CityGMLExportManager;
-import org.citydb.operation.exporter.database.content.DBSplittingResult;
-import org.citydb.operation.exporter.util.InternalConfig;
-import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -56,6 +48,14 @@ import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
+import org.citydb.operation.common.cache.CacheTableManager;
+import org.citydb.operation.common.cache.IdCacheManager;
+import org.citydb.operation.common.xlink.DBXlink;
+import org.citydb.operation.exporter.CityGMLExportException;
+import org.citydb.operation.exporter.database.content.CityGMLExportManager;
+import org.citydb.operation.exporter.database.content.DBSplittingResult;
+import org.citydb.operation.exporter.util.InternalConfig;
+import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.query.Query;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.tiling.Tile;

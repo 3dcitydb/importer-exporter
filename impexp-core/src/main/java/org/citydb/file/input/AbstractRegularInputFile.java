@@ -29,8 +29,8 @@
 package org.citydb.file.input;
 
 import org.apache.tika.mime.MediaType;
-import org.citydb.file.InputFile;
 import org.citydb.file.FileType;
+import org.citydb.file.InputFile;
 
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;

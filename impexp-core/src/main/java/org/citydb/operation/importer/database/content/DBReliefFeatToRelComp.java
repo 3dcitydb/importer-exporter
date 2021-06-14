@@ -27,13 +27,13 @@
  */
 package org.citydb.operation.importer.database.content;
 
+import org.citydb.config.Config;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.operation.importer.CityGMLImportException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.config.Config;
-import org.citydb.database.schema.TableEnum;
 
 public class DBReliefFeatToRelComp implements DBImporter {
 	private final CityGMLImportManager importer;

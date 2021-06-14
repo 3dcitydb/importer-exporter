@@ -27,13 +27,6 @@
  */
 package org.citydb.operation.exporter.concurrent;
 
-import org.citydb.operation.common.cache.CacheTableManager;
-import org.citydb.operation.common.cache.IdCacheManager;
-import org.citydb.operation.common.xlink.DBXlink;
-import org.citydb.operation.exporter.CityGMLExportException;
-import org.citydb.operation.exporter.database.content.DBSplittingResult;
-import org.citydb.operation.exporter.util.InternalConfig;
-import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.concurrent.WorkerPool;
@@ -43,6 +36,13 @@ import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.cache.CacheTableManager;
+import org.citydb.operation.common.cache.IdCacheManager;
+import org.citydb.operation.common.xlink.DBXlink;
+import org.citydb.operation.exporter.CityGMLExportException;
+import org.citydb.operation.exporter.database.content.DBSplittingResult;
+import org.citydb.operation.exporter.util.InternalConfig;
+import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.query.Query;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 

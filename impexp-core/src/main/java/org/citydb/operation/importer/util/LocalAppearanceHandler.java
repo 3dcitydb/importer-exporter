@@ -27,9 +27,9 @@
  */
 package org.citydb.operation.importer.util;
 
+import org.citydb.config.geometry.GeometryObject;
 import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.operation.importer.database.content.CityGMLImportManager;
-import org.citydb.config.geometry.GeometryObject;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
 import org.citygml4j.model.citygml.appearance.ParameterizedTexture;

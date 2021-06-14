@@ -27,6 +27,13 @@
  */
 package org.citydb.ade;
 
+import org.citydb.ade.exporter.ADEExportManager;
+import org.citydb.ade.importer.ADEImportManager;
+import org.citydb.database.schema.mapping.AppSchema;
+import org.citydb.database.schema.mapping.Metadata;
+import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citygml4j.model.citygml.ade.binding.ADEContext;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,13 +41,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
-
-import org.citydb.ade.exporter.ADEExportManager;
-import org.citydb.ade.importer.ADEImportManager;
-import org.citydb.database.schema.mapping.AppSchema;
-import org.citydb.database.schema.mapping.Metadata;
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citygml4j.model.citygml.ade.binding.ADEContext;
 
 public abstract class ADEExtension {
 	public static final String LIB_PATH = "lib";

@@ -27,10 +27,10 @@
  */
 package org.citydb.event;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.concurrent.Worker;
 import org.citydb.log.Logger;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 public class EventWorker extends Worker<Event> {
 	private final Logger log = Logger.getInstance();

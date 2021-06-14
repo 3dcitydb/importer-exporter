@@ -34,12 +34,12 @@ import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
-import org.citydb.vis.controller.VisExportException;
-import org.citydb.vis.controller.VisExporter;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.plugin.cli.ThreadPoolOption;
 import org.citydb.registry.ObjectRegistry;
+import org.citydb.vis.controller.VisExportException;
+import org.citydb.vis.controller.VisExporter;
 import picocli.CommandLine;
 
 import java.nio.file.Path;

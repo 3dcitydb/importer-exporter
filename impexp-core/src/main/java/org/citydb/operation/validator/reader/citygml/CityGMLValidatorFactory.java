@@ -28,10 +28,10 @@
 
 package org.citydb.operation.validator.reader.citygml;
 
+import org.citydb.config.Config;
 import org.citydb.operation.validator.ValidationException;
 import org.citydb.operation.validator.reader.Validator;
 import org.citydb.operation.validator.reader.ValidatorFactory;
-import org.citydb.config.Config;
 import org.citygml4j.xml.schema.SchemaHandler;
 import org.xml.sax.SAXException;
 

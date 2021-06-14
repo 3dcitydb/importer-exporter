@@ -29,11 +29,11 @@
 package org.citydb.operation.validator.reader;
 
 import org.apache.tika.mime.MediaType;
+import org.citydb.config.Config;
+import org.citydb.file.InputFile;
 import org.citydb.operation.validator.ValidationException;
 import org.citydb.operation.validator.reader.citygml.CityGMLValidatorFactory;
 import org.citydb.operation.validator.reader.cityjson.CityJSONValidatorFactory;
-import org.citydb.config.Config;
-import org.citydb.file.InputFile;
 
 import java.util.HashMap;
 import java.util.Map;

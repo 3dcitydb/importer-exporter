@@ -28,10 +28,10 @@
 
 package org.citydb.operation.validator.reader.cityjson;
 
+import org.citydb.config.Config;
 import org.citydb.operation.validator.ValidationException;
 import org.citydb.operation.validator.reader.Validator;
 import org.citydb.operation.validator.reader.ValidatorFactory;
-import org.citydb.config.Config;
 
 public class CityJSONValidatorFactory implements ValidatorFactory {
 

@@ -27,7 +27,6 @@
  */
 package org.citydb.operation.exporter.database.content;
 
-import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.database.schema.mapping.AbstractJoin;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.AbstractTypeProperty;
@@ -36,6 +35,7 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.Join;
 import org.citydb.database.schema.mapping.JoinTable;
 import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.operation.exporter.CityGMLExportException;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;

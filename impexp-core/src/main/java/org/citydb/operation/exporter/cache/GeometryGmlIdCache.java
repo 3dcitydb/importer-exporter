@@ -30,9 +30,9 @@ package org.citydb.operation.exporter.cache;
 import org.citydb.operation.common.cache.BranchCacheTable;
 import org.citydb.operation.common.cache.CacheTable;
 import org.citydb.operation.common.cache.CacheTableManager;
-import org.citydb.operation.common.cache.model.CacheTableModel;
 import org.citydb.operation.common.cache.IdCacheEntry;
 import org.citydb.operation.common.cache.IdCachingModel;
+import org.citydb.operation.common.cache.model.CacheTableModel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

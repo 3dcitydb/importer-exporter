@@ -28,9 +28,6 @@
 package org.citydb.operation.validator.controller;
 
 import org.apache.tika.exception.TikaException;
-import org.citydb.operation.validator.ValidationException;
-import org.citydb.operation.validator.reader.ValidatorFactory;
-import org.citydb.operation.validator.reader.ValidatorFactoryBuilder;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.event.Event;
@@ -47,6 +44,9 @@ import org.citydb.file.InputFile;
 import org.citydb.file.input.AbstractArchiveInputFile;
 import org.citydb.file.input.DirectoryScanner;
 import org.citydb.log.Logger;
+import org.citydb.operation.validator.ValidationException;
+import org.citydb.operation.validator.reader.ValidatorFactory;
+import org.citydb.operation.validator.reader.ValidatorFactoryBuilder;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 

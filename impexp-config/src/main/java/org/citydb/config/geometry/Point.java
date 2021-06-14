@@ -27,11 +27,11 @@
  */
 package org.citydb.config.geometry;
 
+import org.citydb.config.project.database.DatabaseSrs;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.project.database.DatabaseSrs;
 
 @XmlRootElement(name = "point")
 @XmlType(name = "PointType", propOrder = {

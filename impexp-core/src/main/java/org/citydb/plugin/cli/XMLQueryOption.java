@@ -38,7 +38,6 @@ import org.xml.sax.SAXException;
 import picocli.CommandLine;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;

@@ -27,14 +27,13 @@
  */
 package org.citydb.gui.operation.preferences.view;
 
-import java.awt.Component;
-
-import javax.swing.Icon;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.plugin.extension.view.View;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class PreferencesView extends View {
 	private PreferencesPanel component;

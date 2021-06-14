@@ -28,13 +28,13 @@
 
 package org.citydb.operation.validator.reader.citygml;
 
-import org.citydb.operation.validator.ValidationException;
-import org.citydb.operation.validator.reader.Validator;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.file.InputFile;
+import org.citydb.operation.validator.ValidationException;
+import org.citydb.operation.validator.reader.Validator;
 import org.citydb.registry.ObjectRegistry;
 import org.xml.sax.SAXException;
 

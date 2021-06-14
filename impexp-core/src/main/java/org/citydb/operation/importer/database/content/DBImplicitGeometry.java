@@ -27,17 +27,17 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import org.citydb.operation.common.xlink.DBXlinkLibraryObject;
-import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.util.ConcurrentLockManager;
-import org.citydb.operation.importer.util.ExternalFileChecker;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.xlink.DBXlinkLibraryObject;
+import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.util.ConcurrentLockManager;
+import org.citydb.operation.importer.util.ExternalFileChecker;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;

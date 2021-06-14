@@ -27,12 +27,12 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
-import org.citydb.operation.common.xlink.DBXlinkTextureFile;
 import org.citydb.database.adapter.BlobImportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.xlink.DBXlinkTextureFile;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

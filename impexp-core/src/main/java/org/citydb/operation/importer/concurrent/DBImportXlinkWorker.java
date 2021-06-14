@@ -27,6 +27,17 @@
  */
 package org.citydb.operation.importer.concurrent;
 
+import org.citydb.concurrent.Worker;
+import org.citydb.config.Config;
+import org.citydb.config.project.database.DatabaseConfig;
+import org.citydb.config.project.global.LogLevel;
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.database.connection.DatabaseConnectionPool;
+import org.citydb.event.Event;
+import org.citydb.event.EventDispatcher;
+import org.citydb.event.EventHandler;
+import org.citydb.event.global.EventType;
+import org.citydb.event.global.InterruptEvent;
 import org.citydb.operation.common.cache.CacheTableManager;
 import org.citydb.operation.common.xlink.DBXlink;
 import org.citydb.operation.common.xlink.DBXlinkBasic;
@@ -57,17 +68,6 @@ import org.citydb.operation.importer.database.xlink.importer.DBXlinkImporterText
 import org.citydb.operation.importer.database.xlink.importer.DBXlinkImporterTextureCoordList;
 import org.citydb.operation.importer.database.xlink.importer.DBXlinkImporterTextureFile;
 import org.citydb.operation.importer.database.xlink.importer.DBXlinkImporterTextureParam;
-import org.citydb.concurrent.Worker;
-import org.citydb.config.Config;
-import org.citydb.config.project.database.DatabaseConfig;
-import org.citydb.config.project.global.LogLevel;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.DatabaseConnectionPool;
-import org.citydb.event.Event;
-import org.citydb.event.EventDispatcher;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.EventType;
-import org.citydb.event.global.InterruptEvent;
 
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;

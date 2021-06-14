@@ -29,11 +29,11 @@
 package org.citydb.operation.importer.reader;
 
 import org.apache.tika.mime.MediaType;
+import org.citydb.config.Config;
+import org.citydb.file.InputFile;
 import org.citydb.operation.importer.filter.CityGMLFilter;
 import org.citydb.operation.importer.reader.citygml.CityGMLReaderFactory;
 import org.citydb.operation.importer.reader.cityjson.CityJSONReaderFactory;
-import org.citydb.config.Config;
-import org.citydb.file.InputFile;
 
 import java.util.HashMap;
 import java.util.Map;

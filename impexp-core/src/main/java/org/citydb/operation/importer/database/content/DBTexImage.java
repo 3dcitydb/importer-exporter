@@ -27,14 +27,14 @@
  */
 package org.citydb.operation.importer.database.content;
 
-import org.citydb.operation.common.xlink.DBXlinkTextureFile;
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.util.ConcurrentLockManager;
-import org.citydb.operation.importer.util.ExternalFileChecker;
 import org.citydb.config.Config;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.xlink.DBXlinkTextureFile;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.util.ConcurrentLockManager;
+import org.citydb.operation.importer.util.ExternalFileChecker;
 import org.citygml4j.model.citygml.appearance.AbstractTexture;
 
 import java.io.IOException;

@@ -27,13 +27,13 @@
  */
 package org.citydb.operation.exporter.database.content;
 
-import org.citydb.operation.exporter.CityGMLExportException;
-import org.citydb.operation.exporter.util.AddressExportFactory;
-import org.citydb.operation.exporter.util.AddressObject;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.AddressMode;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.operation.exporter.CityGMLExportException;
+import org.citydb.operation.exporter.util.AddressExportFactory;
+import org.citydb.operation.exporter.util.AddressObject;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.core.Address;

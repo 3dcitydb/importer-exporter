@@ -27,17 +27,17 @@
  */
 package org.citydb.operation.importer.filter;
 
-import org.citydb.operation.importer.filter.selection.comparison.LikeFilter;
-import org.citydb.operation.importer.filter.selection.counter.CounterFilter;
-import org.citydb.operation.importer.filter.selection.id.ResourceIdFilter;
-import org.citydb.operation.importer.filter.selection.spatial.SimpleBBOXFilter;
-import org.citydb.operation.importer.filter.type.FeatureTypeFilter;
 import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.operation.importer.filter.selection.comparison.LikeFilter;
+import org.citydb.operation.importer.filter.selection.counter.CounterFilter;
+import org.citydb.operation.importer.filter.selection.id.ResourceIdFilter;
+import org.citydb.operation.importer.filter.selection.spatial.SimpleBBOXFilter;
+import org.citydb.operation.importer.filter.type.FeatureTypeFilter;
 import org.citydb.query.filter.FilterException;
 
 public class CityGMLFilterBuilder {

@@ -27,15 +27,14 @@
  */
 package org.citydb.database.schema.mapping;
 
-import java.util.HashMap;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
-
-import org.citygml4j.model.module.citygml.CityGMLVersion;
+import java.util.HashMap;
 
 @XmlType(name = "abstractPathElement")
 public abstract class AbstractPathElement {

@@ -28,8 +28,8 @@
 
 package org.citydb.plugin.extension.export;
 
-import org.citydb.operation.exporter.util.Metadata;
 import org.citydb.config.project.exporter.ExportConfig;
+import org.citydb.operation.exporter.util.Metadata;
 import org.citydb.plugin.PluginException;
 import org.citydb.query.Query;
 

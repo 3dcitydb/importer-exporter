@@ -27,15 +27,6 @@
  */
 package org.citydb.operation.exporter.concurrent;
 
-import org.citydb.operation.common.xlink.DBXlink;
-import org.citydb.operation.common.xlink.DBXlinkEnum;
-import org.citydb.operation.common.xlink.DBXlinkLibraryObject;
-import org.citydb.operation.common.xlink.DBXlinkTextureFile;
-import org.citydb.operation.exporter.database.xlink.DBXlinkExporterEnum;
-import org.citydb.operation.exporter.database.xlink.DBXlinkExporterLibraryObject;
-import org.citydb.operation.exporter.database.xlink.DBXlinkExporterManager;
-import org.citydb.operation.exporter.database.xlink.DBXlinkExporterTextureImage;
-import org.citydb.operation.exporter.util.InternalConfig;
 import org.citydb.concurrent.Worker;
 import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
@@ -45,6 +36,15 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
+import org.citydb.operation.common.xlink.DBXlink;
+import org.citydb.operation.common.xlink.DBXlinkEnum;
+import org.citydb.operation.common.xlink.DBXlinkLibraryObject;
+import org.citydb.operation.common.xlink.DBXlinkTextureFile;
+import org.citydb.operation.exporter.database.xlink.DBXlinkExporterEnum;
+import org.citydb.operation.exporter.database.xlink.DBXlinkExporterLibraryObject;
+import org.citydb.operation.exporter.database.xlink.DBXlinkExporterManager;
+import org.citydb.operation.exporter.database.xlink.DBXlinkExporterTextureImage;
+import org.citydb.operation.exporter.util.InternalConfig;
 
 import java.sql.Connection;
 import java.sql.SQLException;

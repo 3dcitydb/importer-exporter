@@ -27,18 +27,18 @@
  */
 package org.citydb.database.version;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionWarning;
 import org.citydb.database.connection.DatabaseConnectionWarning.ConnectionWarningType;
 import org.citydb.util.Util;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
 	private final DatabaseVersionSupport[] supportedVersions = new DatabaseVersionSupport[]{

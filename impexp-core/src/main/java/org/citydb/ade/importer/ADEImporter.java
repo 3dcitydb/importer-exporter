@@ -27,9 +27,9 @@
  */
 package org.citydb.ade.importer;
 
-import java.sql.SQLException;
-
 import org.citydb.operation.importer.CityGMLImportException;
+
+import java.sql.SQLException;
 
 public interface ADEImporter {
 	public void executeBatch() throws CityGMLImportException, SQLException;

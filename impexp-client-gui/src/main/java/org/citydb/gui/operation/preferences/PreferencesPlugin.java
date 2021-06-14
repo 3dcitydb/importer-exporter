@@ -27,8 +27,6 @@
  */
 package org.citydb.gui.operation.preferences;
 
-import java.util.Locale;
-
 import org.citydb.config.Config;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;
@@ -40,6 +38,8 @@ import org.citydb.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.plugin.extension.view.View;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.ViewExtension;
+
+import java.util.Locale;
 
 public class PreferencesPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private PreferencesView view;

@@ -27,14 +27,14 @@
  */
 package org.citydb.ade.importer;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import org.citydb.operation.importer.CityGMLImportException;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.operation.importer.CityGMLImportException;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
 import org.citygml4j.model.gml.feature.AbstractFeature;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public interface ADEImportManager {
 	public void init(Connection connection, CityGMLImportHelper helper) throws CityGMLImportException, SQLException;	

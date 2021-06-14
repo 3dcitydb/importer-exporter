@@ -27,22 +27,22 @@
  */
 package org.citydb.ade.importer;
 
-import java.sql.SQLException;
-
-import org.citydb.operation.importer.CityGMLImportException;
-import org.citydb.operation.importer.database.content.GeometryConverter;
-import org.citydb.operation.importer.util.AttributeValueJoiner;
 import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.ObjectType;
+import org.citydb.operation.importer.CityGMLImportException;
+import org.citydb.operation.importer.database.content.GeometryConverter;
+import org.citydb.operation.importer.util.AttributeValueJoiner;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.TransformationMatrix4x4;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
+
+import java.sql.SQLException;
 
 public interface CityGMLImportHelper {
 	public long importObject(AbstractGML object) throws CityGMLImportException, SQLException;

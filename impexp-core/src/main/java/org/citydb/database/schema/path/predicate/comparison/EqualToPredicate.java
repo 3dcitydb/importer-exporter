@@ -27,13 +27,13 @@
  */
 package org.citydb.database.schema.path.predicate.comparison;
 
-import java.util.Objects;
-
 import org.citydb.database.schema.mapping.SimpleAttribute;
 import org.citydb.database.schema.path.AbstractNodePredicate;
 import org.citydb.query.filter.selection.expression.AbstractLiteral;
 import org.citydb.query.filter.selection.expression.DateLiteral;
 import org.citydb.query.filter.selection.expression.TimestampLiteral;
+
+import java.util.Objects;
 
 public class EqualToPredicate extends AbstractNodePredicate {
 	private final SimpleAttribute leftOperand;

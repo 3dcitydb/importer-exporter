@@ -28,12 +28,12 @@
 
 package org.citydb.operation.exporter.writer.cityjson;
 
-import org.citydb.operation.exporter.writer.FeatureWriteException;
-import org.citydb.operation.exporter.writer.FeatureWriter;
-import org.citydb.operation.exporter.writer.FeatureWriterFactory;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.CityJSONOptions;
+import org.citydb.operation.exporter.writer.FeatureWriteException;
+import org.citydb.operation.exporter.writer.FeatureWriter;
+import org.citydb.operation.exporter.writer.FeatureWriterFactory;
 import org.citydb.query.Query;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.cityjson.CityJSONBuilder;

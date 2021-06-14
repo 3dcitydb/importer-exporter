@@ -27,12 +27,12 @@
  */
 package org.citydb.operation.common.cache;
 
-import org.citydb.operation.common.cache.model.CacheTableModel;
 import org.citydb.config.Config;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.h2.H2Adapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.log.Logger;
+import org.citydb.operation.common.cache.model.CacheTableModel;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import java.io.File;

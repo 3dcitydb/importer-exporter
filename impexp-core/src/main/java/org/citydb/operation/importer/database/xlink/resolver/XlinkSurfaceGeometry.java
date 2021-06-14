@@ -27,14 +27,14 @@
  */
 package org.citydb.operation.importer.database.xlink.resolver;
 
-import org.citydb.operation.common.cache.CacheTable;
-import org.citydb.operation.common.cache.IdCacheEntry;
-import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.XlinkType;
 import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.operation.common.cache.CacheTable;
+import org.citydb.operation.common.cache.IdCacheEntry;
+import org.citydb.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.util.Util;
 
 import java.sql.Connection;
