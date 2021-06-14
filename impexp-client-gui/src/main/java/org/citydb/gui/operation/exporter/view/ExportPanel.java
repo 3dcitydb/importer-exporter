@@ -27,10 +27,7 @@
  */
 package org.citydb.gui.operation.exporter.view;
 
-import org.citydb.operation.exporter.CityGMLExportException;
-import org.citydb.operation.exporter.controller.Exporter;
 import org.citydb.config.Config;
-import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.OutputFormat;
@@ -54,6 +51,9 @@ import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
+import org.citydb.operation.exporter.CityGMLExportException;
+import org.citydb.operation.exporter.CityGMLExportException.ErrorCode;
+import org.citydb.operation.exporter.controller.Exporter;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;

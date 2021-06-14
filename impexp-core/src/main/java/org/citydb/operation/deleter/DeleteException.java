@@ -28,40 +28,51 @@
 
 package org.citydb.operation.deleter;
 
-import org.citydb.config.exception.ApplicationException;
-import org.citydb.config.exception.ErrorCode;
+public class DeleteException extends Exception {
+	private final ErrorCode errorCode;
 
-public class DeleteException extends ApplicationException {
+	public enum ErrorCode {
+		SPATIAL_INDEXES_NOT_ACTIVATED,
+		UNKNOWN
+	}
 
 	public DeleteException(ErrorCode errorCode) {
-		super(errorCode);
+		super();
+		this.errorCode = errorCode;
 	}
 
 	public DeleteException(ErrorCode errorCode, String message) {
-		super(errorCode, message);
+		super(message);
+		this.errorCode = errorCode;
 	}
 
 	public DeleteException(ErrorCode errorCode, String message, Throwable cause) {
-		super(errorCode, message, cause);
+		super(message, cause);
+		this.errorCode = errorCode;
 	}
 
 	public DeleteException(ErrorCode errorCode, Throwable cause) {
-		super(errorCode, cause);
+		super(cause);
+		this.errorCode = errorCode;
 	}
 
 	public DeleteException() {
-		super();
+		this(ErrorCode.UNKNOWN);
 	}
 
 	public DeleteException(String message) {
-		super(message);
+		this(ErrorCode.UNKNOWN, message);
 	}
 
 	public DeleteException(String message, Throwable cause) {
-		super(message, cause);
+		this(ErrorCode.UNKNOWN, message, cause);
 	}
 
 	public DeleteException(Throwable cause) {
-		super(cause);
+		this(ErrorCode.UNKNOWN, cause);
+	}
+
+	public ErrorCode getErrorCode() {
+		return errorCode;
 	}
 }

@@ -28,26 +28,7 @@
 
 package org.citydb.operation.importer;
 
-import org.citydb.config.exception.ApplicationException;
-import org.citydb.config.exception.ErrorCode;
-
-public class CityGMLImportException extends ApplicationException {
-
-	public CityGMLImportException(ErrorCode errorCode) {
-		super(errorCode);
-	}
-
-	public CityGMLImportException(ErrorCode errorCode, String message) {
-		super(errorCode, message);
-	}
-
-	public CityGMLImportException(ErrorCode errorCode, String message, Throwable cause) {
-		super(errorCode, message, cause);
-	}
-
-	public CityGMLImportException(ErrorCode errorCode, Throwable cause) {
-		super(errorCode, cause);
-	}
+public class CityGMLImportException extends Exception {
 
 	public CityGMLImportException() {
 		super();

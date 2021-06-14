@@ -28,25 +28,7 @@
 
 package org.citydb.operation.validator;
 
-import org.citydb.config.exception.ApplicationException;
-import org.citydb.config.exception.ErrorCode;
-
-public class ValidationException extends ApplicationException {
-	public ValidationException(ErrorCode errorCode) {
-		super(errorCode);
-	}
-
-	public ValidationException(ErrorCode errorCode, String message) {
-		super(errorCode, message);
-	}
-
-	public ValidationException(ErrorCode errorCode, String message, Throwable cause) {
-		super(errorCode, message, cause);
-	}
-
-	public ValidationException(ErrorCode errorCode, Throwable cause) {
-		super(errorCode, cause);
-	}
+public class ValidationException extends Exception {
 
 	public ValidationException() {
 		super();

@@ -28,40 +28,52 @@
 
 package org.citydb.vis.controller;
 
-import org.citydb.config.exception.ApplicationException;
-import org.citydb.config.exception.ErrorCode;
+public class VisExportException extends Exception {
+	private final ErrorCode errorCode;
 
-public class VisExportException extends ApplicationException {
+	public enum ErrorCode {
+		SPATIAL_INDEXES_NOT_ACTIVATED,
+		MISSING_GOOGLE_API_KEY,
+		UNKNOWN
+	}
 
 	public VisExportException(ErrorCode errorCode) {
-		super(errorCode);
+		super();
+		this.errorCode = errorCode;
 	}
 
 	public VisExportException(ErrorCode errorCode, String message) {
-		super(errorCode, message);
+		super(message);
+		this.errorCode = errorCode;
 	}
 
 	public VisExportException(ErrorCode errorCode, String message, Throwable cause) {
-		super(errorCode, message, cause);
+		super(message, cause);
+		this.errorCode = errorCode;
 	}
 
 	public VisExportException(ErrorCode errorCode, Throwable cause) {
-		super(errorCode, cause);
+		super(cause);
+		this.errorCode = errorCode;
 	}
 
 	public VisExportException() {
-		super();
+		this(ErrorCode.UNKNOWN);
 	}
 
 	public VisExportException(String message) {
-		super(message);
+		this(ErrorCode.UNKNOWN, message);
 	}
 
 	public VisExportException(String message, Throwable cause) {
-		super(message, cause);
+		this(ErrorCode.UNKNOWN, message, cause);
 	}
 
 	public VisExportException(Throwable cause) {
-		super(cause);
+		this(ErrorCode.UNKNOWN, cause);
+	}
+
+	public ErrorCode getErrorCode() {
+		return errorCode;
 	}
 }

@@ -28,40 +28,51 @@
 
 package org.citydb.operation.exporter;
 
-import org.citydb.config.exception.ApplicationException;
-import org.citydb.config.exception.ErrorCode;
+public class CityGMLExportException extends Exception {
+	private final ErrorCode errorCode;
 
-public class CityGMLExportException extends ApplicationException {
+	public enum ErrorCode {
+		SPATIAL_INDEXES_NOT_ACTIVATED,
+		UNKNOWN
+	}
 
 	public CityGMLExportException(ErrorCode errorCode) {
-		super(errorCode);
+		super();
+		this.errorCode = errorCode;
 	}
 
 	public CityGMLExportException(ErrorCode errorCode, String message) {
-		super(errorCode, message);
+		super(message);
+		this.errorCode = errorCode;
 	}
 
 	public CityGMLExportException(ErrorCode errorCode, String message, Throwable cause) {
-		super(errorCode, message, cause);
+		super(message, cause);
+		this.errorCode = errorCode;
 	}
 
 	public CityGMLExportException(ErrorCode errorCode, Throwable cause) {
-		super(errorCode, cause);
+		super(cause);
+		this.errorCode = errorCode;
 	}
 
 	public CityGMLExportException() {
-		super();
+		this(ErrorCode.UNKNOWN);
 	}
 
 	public CityGMLExportException(String message) {
-		super(message);
+		this(ErrorCode.UNKNOWN, message);
 	}
 
 	public CityGMLExportException(String message, Throwable cause) {
-		super(message, cause);
+		this(ErrorCode.UNKNOWN, message, cause);
 	}
 
 	public CityGMLExportException(Throwable cause) {
-		super(cause);
+		this(ErrorCode.UNKNOWN, cause);
+	}
+
+	public ErrorCode getErrorCode() {
+		return errorCode;
 	}
 }
