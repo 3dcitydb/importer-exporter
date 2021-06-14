@@ -33,7 +33,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.lod.LodFilterMode;
 import org.citydb.config.project.query.filter.lod.LodSearchMode;
-import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;

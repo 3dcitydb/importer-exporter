@@ -32,8 +32,8 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
-import org.citydb.gui.components.common.DatePicker;
-import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.components.DatePicker;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.registry.ObjectRegistry;
 

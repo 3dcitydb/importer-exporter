@@ -31,8 +31,8 @@ package org.citydb.gui.operation.common.filter;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
-import org.citydb.gui.components.common.BlankNumberFormatter;
-import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.components.BlankNumberFormatter;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;

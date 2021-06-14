@@ -32,9 +32,9 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.visExporter.DisplayFormType;
 import org.citydb.config.project.visExporter.Style;
 import org.citydb.config.project.visExporter.Styles;
-import org.citydb.gui.components.common.ColorPicker;
-import org.citydb.gui.components.common.TitledPanel;
-import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.components.ColorPicker;
+import org.citydb.gui.components.TitledPanel;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 

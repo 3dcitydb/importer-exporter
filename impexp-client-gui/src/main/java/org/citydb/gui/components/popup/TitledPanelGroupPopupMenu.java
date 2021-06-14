@@ -31,7 +31,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
-import org.citydb.gui.components.common.TitledPanel;
+import org.citydb.gui.components.TitledPanel;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;

@@ -32,7 +32,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.gui.ImpExpGui;
-import org.citydb.gui.components.common.TitledPanel;
+import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.operation.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 

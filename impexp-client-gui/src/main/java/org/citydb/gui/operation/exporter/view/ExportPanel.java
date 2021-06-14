@@ -51,7 +51,7 @@ import org.citydb.event.global.InterruptEvent;
 import org.citydb.file.output.OutputFileFactory;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
-import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;

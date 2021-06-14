@@ -33,8 +33,8 @@ import org.citydb.config.project.global.UpdatingPersonMode;
 import org.citydb.config.project.importer.Continuation;
 import org.citydb.config.project.importer.CreationDateMode;
 import org.citydb.config.project.importer.TerminationDateMode;
-import org.citydb.gui.components.common.TitledPanel;
-import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.components.TitledPanel;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 

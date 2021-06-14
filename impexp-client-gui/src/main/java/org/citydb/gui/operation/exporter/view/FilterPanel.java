@@ -33,9 +33,10 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
-import org.citydb.gui.components.common.TitledPanel;
-import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.factory.SrsComboBoxFactory;
+import org.citydb.gui.components.TitledPanel;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
+import org.citydb.gui.components.srs.SrsComboBox;
+import org.citydb.gui.components.srs.SrsComboBoxFactory;
 import org.citydb.gui.operation.common.filter.AttributeFilterView;
 import org.citydb.gui.operation.common.filter.BoundingBoxFilterView;
 import org.citydb.gui.operation.common.filter.CounterFilterView;
@@ -84,7 +85,7 @@ public class FilterPanel extends JPanel {
 	private FeatureTypeFilterView featureTypeFilter;
 	private XMLQueryView xmlQuery;
 	private JLabel srsComboBoxLabel;
-	private SrsComboBoxFactory.SrsComboBox srsComboBox;
+	private SrsComboBox srsComboBox;
 
 	private JRadioButton bboxOverlaps;
 	private JRadioButton bboxWithin;

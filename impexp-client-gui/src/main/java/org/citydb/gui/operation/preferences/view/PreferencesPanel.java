@@ -31,7 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
-import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.NullComponent;
 import org.citydb.gui.operation.database.DatabasePlugin;
 import org.citydb.gui.operation.exporter.CityGMLExportPlugin;

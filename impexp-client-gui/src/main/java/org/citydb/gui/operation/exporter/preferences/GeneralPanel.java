@@ -34,7 +34,7 @@ import org.citydb.config.project.exporter.GeneralOptions;
 import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
 import org.citydb.event.global.PropertyChangeEvent;
-import org.citydb.gui.components.common.TitledPanel;
+import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.operation.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.registry.ObjectRegistry;
