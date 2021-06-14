@@ -227,46 +227,48 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	private AbstractGML processObject(AbstractGML object) throws CityGMLExportException, SQLException {
-		// execute batch export
-		executeBatch();
+		try {
+			// execute batch export
+			executeBatch();
 
-		// remove empty city objects in case we filter LoDs
-		if (lodGeometryChecker != null)
-			lodGeometryChecker.cleanupCityObjects(object);
+			// remove empty city objects in case we filter LoDs
+			if (lodGeometryChecker != null)
+				lodGeometryChecker.cleanupCityObjects(object);
 
-		// remove local appearances in case we filter LoDs
-		if (appearanceRemover != null)
-			appearanceRemover.cleanupAppearances(object);
+			// remove local appearances in case we filter LoDs
+			if (appearanceRemover != null)
+				appearanceRemover.cleanupAppearances(object);
 
-		// cache geometry ids in case we export global appearances
-		if (internalConfig.isExportGlobalAppearances())
-			getExporter(DBGlobalAppearance.class).cacheGeometryIds(object);
+			// cache geometry ids in case we export global appearances
+			if (internalConfig.isExportGlobalAppearances())
+				getExporter(DBGlobalAppearance.class).cacheGeometryIds(object);
 
-		if (object instanceof AbstractFeature) {
-			AbstractFeature feature = (AbstractFeature) object;
+			if (object instanceof AbstractFeature) {
+				AbstractFeature feature = (AbstractFeature) object;
 
-			// invoke export plugins
-			if (!plugins.isEmpty()) {
-				for (CityGMLExportExtension plugin : plugins) {
-					try {
-						feature = plugin.postprocess(feature);
-						if (feature == null)
-							return null;
-					} catch (PluginException e) {
-						throw new CityGMLExportException("Export plugin " + plugin.getClass().getName() + " threw an exception.", e);
+				// invoke export plugins
+				if (!plugins.isEmpty()) {
+					for (CityGMLExportExtension plugin : plugins) {
+						try {
+							feature = plugin.postprocess(feature);
+							if (feature == null)
+								return null;
+						} catch (PluginException e) {
+							throw new CityGMLExportException("Export plugin " + plugin.getClass().getName() + " threw an exception.", e);
+						}
 					}
 				}
+
+				// trigger export of textures if required
+				if (isLazyTextureExport() && config.getExportConfig().getAppearances().isSetExportAppearance())
+					getExporter(DBLocalAppearance.class).triggerLazyTextureExport(feature);
 			}
 
-			// trigger export of textures if required
-			if (isLazyTextureExport() && config.getExportConfig().getAppearances().isSetExportAppearance())
-				getExporter(DBLocalAppearance.class).triggerLazyTextureExport(feature);
+			return object;
+		} finally {
+			// clear local geometry cache
+			localGeometryCache.clear();
 		}
-
-		// clear local geometry cache
-		localGeometryCache.clear();
-
-		return object;
 	}
 
 	@Override
