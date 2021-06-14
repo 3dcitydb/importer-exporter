@@ -26,12 +26,13 @@
  * limitations under the License.
  */
 
-package org.citydb.plugin.extension.export;
+package org.citydb.plugin.extension.exporter;
 
+import org.citydb.config.project.exporter.ExportConfig;
+import org.citydb.operation.exporter.util.Metadata;
 import org.citydb.plugin.PluginException;
-import org.citydb.plugin.extension.Extension;
-import org.citygml4j.model.gml.feature.AbstractFeature;
+import org.citydb.query.Query;
 
-public interface CityGMLExportExtension extends Extension {
-    AbstractFeature postprocess(AbstractFeature feature) throws PluginException;
+public interface MetadataProvider {
+    void setMetadata(Metadata metadata, Query query, ExportConfig exportConfig) throws PluginException;
 }

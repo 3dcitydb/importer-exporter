@@ -76,8 +76,8 @@ import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.operation.exporter.writer.FeatureWriterFactory;
 import org.citydb.operation.exporter.writer.FeatureWriterFactoryBuilder;
 import org.citydb.plugin.PluginManager;
-import org.citydb.plugin.extension.export.CityGMLExportExtension;
-import org.citydb.plugin.extension.export.MetadataProvider;
+import org.citydb.plugin.extension.exporter.FeatureExportExtension;
+import org.citydb.plugin.extension.exporter.MetadataProvider;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.config.ConfigQueryBuilder;
@@ -196,7 +196,7 @@ public class Exporter implements EventHandler {
         // get metadata provider
         MetadataProvider metadataProvider = null;
         if (config.getExportConfig().isSetMetadataProvider()) {
-            for (CityGMLExportExtension plugin : PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class)) {
+            for (FeatureExportExtension plugin : PluginManager.getInstance().getExternalPlugins(FeatureExportExtension.class)) {
                 if (plugin instanceof MetadataProvider
                         && plugin.getClass().getCanonicalName().equals(config.getExportConfig().getMetadataProvider())) {
                     metadataProvider = (MetadataProvider) plugin;

@@ -67,7 +67,7 @@ import org.citydb.operation.exporter.writer.FeatureWriteException;
 import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
-import org.citydb.plugin.extension.export.CityGMLExportExtension;
+import org.citydb.plugin.extension.exporter.FeatureExportExtension;
 import org.citydb.query.Query;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
@@ -155,7 +155,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final SchemaMapping schemaMapping;
 	private final CityGMLBuilder cityGMLBuilder;
 	private final ADEExtensionManager adeManager;
-	private final List<CityGMLExportExtension> plugins;
+	private final List<FeatureExportExtension> plugins;
 	private final FeatureWriter featureWriter;
 	private final WorkerPool<DBXlink> xlinkPool;
 	private final IdCacheManager idCacheManager;
@@ -200,7 +200,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 		adeManager = ADEExtensionManager.getInstance();
 		hasADESupport = !adeManager.getEnabledExtensions().isEmpty();
-		plugins = PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class);
+		plugins = PluginManager.getInstance().getExternalPlugins(FeatureExportExtension.class);
 
 		localGeometryCache = new HashSet<>();
 		attributeValueSplitter = new AttributeValueSplitter();
@@ -248,9 +248,9 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 				// invoke export plugins
 				if (!plugins.isEmpty()) {
-					for (CityGMLExportExtension plugin : plugins) {
+					for (FeatureExportExtension plugin : plugins) {
 						try {
-							feature = plugin.postprocess(feature);
+							feature = plugin.process(feature);
 							if (feature == null)
 								return null;
 						} catch (PluginException e) {

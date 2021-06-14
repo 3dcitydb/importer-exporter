@@ -52,7 +52,7 @@ import org.citydb.operation.exporter.util.InternalConfig;
 import org.citydb.operation.exporter.writer.FeatureWriteException;
 import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.plugin.PluginException;
-import org.citydb.plugin.extension.export.MetadataProvider;
+import org.citydb.plugin.extension.exporter.MetadataProvider;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.AppearanceFilterBuilder;
