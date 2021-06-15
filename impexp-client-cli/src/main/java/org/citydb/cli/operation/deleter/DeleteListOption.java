@@ -30,7 +30,7 @@ package org.citydb.cli.operation.deleter;
 
 import org.citydb.config.project.deleter.DeleteList;
 import org.citydb.config.project.deleter.DeleteListIdType;
-import org.citydb.plugin.cli.CliOption;
+import org.citydb.core.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 import java.nio.charset.Charset;

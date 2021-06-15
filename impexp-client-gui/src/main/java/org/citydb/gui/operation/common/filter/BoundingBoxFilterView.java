@@ -32,7 +32,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.bbox.BoundingBoxPanel;
-import org.citydb.plugin.extension.view.ViewController;
+import org.citydb.core.plugin.extension.view.ViewController;
 
 import javax.swing.*;
 

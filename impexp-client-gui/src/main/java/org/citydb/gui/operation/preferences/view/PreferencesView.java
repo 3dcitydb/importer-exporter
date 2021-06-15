@@ -30,7 +30,7 @@ package org.citydb.gui.operation.preferences.view;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
-import org.citydb.plugin.extension.view.View;
+import org.citydb.core.plugin.extension.view.View;
 
 import javax.swing.*;
 import java.awt.*;

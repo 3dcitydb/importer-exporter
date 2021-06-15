@@ -28,7 +28,7 @@
 package org.citydb.vis.database;
 
 import org.citydb.config.project.visExporter.DisplayForm;
-import org.citydb.util.Util;
+import org.citydb.core.util.Util;
 import org.citydb.vis.util.CityObject4JSON;
 import org.citygml4j.model.citygml.CityGMLClass;
 

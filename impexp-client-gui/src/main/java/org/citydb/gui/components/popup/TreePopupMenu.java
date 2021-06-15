@@ -28,10 +28,10 @@
 package org.citydb.gui.components.popup;
 
 import org.citydb.config.i18n.Language;
-import org.citydb.event.Event;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.EventType;
-import org.citydb.registry.ObjectRegistry;
+import org.citydb.core.event.Event;
+import org.citydb.core.event.EventHandler;
+import org.citydb.core.event.global.EventType;
+import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;
 import javax.swing.tree.TreeNode;

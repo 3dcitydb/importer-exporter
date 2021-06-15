@@ -27,17 +27,17 @@
  */
 package org.citydb.vis.util;
 
-import org.citydb.ade.ADEExtension;
-import org.citydb.ade.ADEExtensionManager;
-import org.citydb.ade.visExporter.ADEBalloonException;
-import org.citydb.ade.visExporter.ADEBalloonExtensionManager;
-import org.citydb.ade.visExporter.ADEBalloonHandler;
-import org.citydb.ade.visExporter.ADEBalloonManager;
+import org.citydb.core.ade.ADEExtension;
+import org.citydb.core.ade.ADEExtensionManager;
+import org.citydb.core.ade.visExporter.ADEBalloonException;
+import org.citydb.core.ade.visExporter.ADEBalloonExtensionManager;
+import org.citydb.core.ade.visExporter.ADEBalloonHandler;
+import org.citydb.core.ade.visExporter.ADEBalloonManager;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.log.Logger;
-import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.Util;
+import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.core.log.Logger;
+import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.core.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.bridge.Bridge;
 import org.citygml4j.model.citygml.building.Building;

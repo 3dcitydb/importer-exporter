@@ -32,7 +32,7 @@ import org.citydb.config.project.global.UpdatingPersonMode;
 import org.citydb.config.project.importer.Continuation;
 import org.citydb.config.project.importer.CreationDateMode;
 import org.citydb.config.project.importer.TerminationDateMode;
-import org.citydb.plugin.cli.CliOption;
+import org.citydb.core.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 public class MetadataOption implements CliOption {

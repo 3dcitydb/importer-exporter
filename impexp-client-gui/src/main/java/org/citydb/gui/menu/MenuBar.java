@@ -31,10 +31,10 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
-import org.citydb.plugin.PluginManager;
-import org.citydb.plugin.extension.menu.Menu;
-import org.citydb.plugin.extension.menu.MenuExtension;
+import org.citydb.core.log.Logger;
+import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.extension.menu.Menu;
+import org.citydb.core.plugin.extension.menu.MenuExtension;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;

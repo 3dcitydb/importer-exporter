@@ -27,7 +27,7 @@
  */
 package org.citydb.gui.map.map.event;
 
-import org.citydb.event.Event;
+import org.citydb.core.event.Event;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 
 public class MapBoundsSelectionEvent extends Event {

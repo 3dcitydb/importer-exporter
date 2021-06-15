@@ -30,7 +30,7 @@ package org.citydb.cli.operation.visExporter;
 
 import org.citydb.config.project.visExporter.GltfOptions;
 import org.citydb.config.project.visExporter.GltfVersion;
-import org.citydb.plugin.cli.CliOption;
+import org.citydb.core.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 import java.nio.file.Path;

@@ -32,7 +32,7 @@ import org.citydb.config.project.visExporter.DisplayForm;
 import org.citydb.config.project.visExporter.DisplayFormType;
 import org.citydb.config.project.visExporter.DisplayForms;
 import org.citydb.config.project.visExporter.VisExportConfig;
-import org.citydb.plugin.cli.CliOption;
+import org.citydb.core.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 import java.util.Map;

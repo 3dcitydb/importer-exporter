@@ -30,12 +30,12 @@ package org.citydb.gui.operation.importer;
 import org.citydb.config.Config;
 import org.citydb.gui.operation.importer.preferences.CityGMLImportPreferences;
 import org.citydb.gui.operation.importer.view.CityGMLImportView;
-import org.citydb.plugin.InternalPlugin;
-import org.citydb.plugin.extension.preferences.Preferences;
-import org.citydb.plugin.extension.preferences.PreferencesExtension;
-import org.citydb.plugin.extension.view.View;
-import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.plugin.extension.view.ViewExtension;
+import org.citydb.core.plugin.InternalPlugin;
+import org.citydb.core.plugin.extension.preferences.Preferences;
+import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
+import org.citydb.core.plugin.extension.view.View;
+import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.core.plugin.extension.view.ViewExtension;
 
 import java.util.Locale;
 

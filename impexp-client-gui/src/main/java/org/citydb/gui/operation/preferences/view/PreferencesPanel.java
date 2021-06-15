@@ -40,12 +40,12 @@ import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;
 import org.citydb.gui.operation.preferences.preferences.RootPreferencesEntry;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
-import org.citydb.plugin.PluginManager;
-import org.citydb.plugin.extension.preferences.Preferences;
-import org.citydb.plugin.extension.preferences.PreferencesEntry;
-import org.citydb.plugin.extension.preferences.PreferencesEvent;
-import org.citydb.plugin.extension.preferences.PreferencesExtension;
+import org.citydb.core.log.Logger;
+import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.extension.preferences.Preferences;
+import org.citydb.core.plugin.extension.preferences.PreferencesEntry;
+import org.citydb.core.plugin.extension.preferences.PreferencesEvent;
+import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
 
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;

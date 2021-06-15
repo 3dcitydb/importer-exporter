@@ -28,7 +28,7 @@
 
 package org.citydb.cli.operation.deleter;
 
-import org.citydb.plugin.cli.CliOption;
+import org.citydb.core.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 public class CleanupOption implements CliOption {

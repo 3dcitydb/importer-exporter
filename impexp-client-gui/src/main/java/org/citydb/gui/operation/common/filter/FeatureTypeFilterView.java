@@ -29,20 +29,20 @@
 package org.citydb.gui.operation.common.filter;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import org.citydb.ade.ADEExtension;
+import org.citydb.core.ade.ADEExtension;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
-import org.citydb.event.Event;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.EventType;
-import org.citydb.event.global.PropertyChangeEvent;
+import org.citydb.core.event.Event;
+import org.citydb.core.event.EventHandler;
+import org.citydb.core.event.global.EventType;
+import org.citydb.core.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.FeatureTypeTree;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.Util;
+import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.core.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;

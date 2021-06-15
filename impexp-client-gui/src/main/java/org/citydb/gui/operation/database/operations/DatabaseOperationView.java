@@ -28,8 +28,8 @@
 package org.citydb.gui.operation.database.operations;
 
 import org.citydb.config.project.database.DatabaseOperationType;
-import org.citydb.event.global.DatabaseConnectionStateEvent;
-import org.citydb.plugin.extension.view.View;
+import org.citydb.core.event.global.DatabaseConnectionStateEvent;
+import org.citydb.core.plugin.extension.view.View;
 
 public abstract class DatabaseOperationView extends View {
 	public abstract DatabaseOperationType getType();

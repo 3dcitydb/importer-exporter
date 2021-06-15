@@ -27,7 +27,7 @@
  */
 package org.citydb.gui.util;
 
-import org.citydb.log.Logger;
+import org.citydb.core.log.Logger;
 
 import java.awt.*;
 import java.lang.reflect.InvocationHandler;

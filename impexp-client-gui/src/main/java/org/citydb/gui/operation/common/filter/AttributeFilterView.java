@@ -35,7 +35,7 @@ import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.Util;
+import org.citydb.core.util.Util;
 
 import javax.swing.*;
 import java.awt.*;

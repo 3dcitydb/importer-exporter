@@ -35,9 +35,9 @@ import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.map.MapWindow;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.plugin.PluginManager;
-import org.citydb.plugin.extension.config.ConfigExtension;
-import org.citydb.plugin.extension.config.PluginConfigEvent;
+import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.extension.config.ConfigExtension;
+import org.citydb.core.plugin.extension.config.PluginConfigEvent;
 
 import javax.swing.*;
 import java.util.List;

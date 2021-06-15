@@ -28,7 +28,7 @@
 
 package org.citydb.gui.operation.common.filter;
 
-import org.citydb.plugin.extension.view.View;
+import org.citydb.core.plugin.extension.view.View;
 
 public abstract class FilterView<T> extends View {
     public abstract void doTranslation();

@@ -35,7 +35,7 @@ import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.gui.components.DatePicker;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.registry.ObjectRegistry;
+import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;
 import javax.swing.text.DateFormatter;

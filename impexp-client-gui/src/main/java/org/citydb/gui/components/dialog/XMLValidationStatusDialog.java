@@ -28,14 +28,14 @@
 package org.citydb.gui.components.dialog;
 
 import org.citydb.config.i18n.Language;
-import org.citydb.event.Event;
-import org.citydb.event.EventDispatcher;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.CounterEvent;
-import org.citydb.event.global.CounterType;
-import org.citydb.event.global.EventType;
-import org.citydb.event.global.StatusDialogMessage;
-import org.citydb.event.global.StatusDialogTitle;
+import org.citydb.core.event.Event;
+import org.citydb.core.event.EventDispatcher;
+import org.citydb.core.event.EventHandler;
+import org.citydb.core.event.global.CounterEvent;
+import org.citydb.core.event.global.CounterType;
+import org.citydb.core.event.global.EventType;
+import org.citydb.core.event.global.StatusDialogMessage;
+import org.citydb.core.event.global.StatusDialogTitle;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;

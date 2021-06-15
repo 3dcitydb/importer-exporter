@@ -30,9 +30,9 @@ package org.citydb.cli.operation.importer;
 
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
-import org.citydb.plugin.cli.CliOption;
-import org.citydb.plugin.cli.ResourceIdOption;
-import org.citydb.plugin.cli.TypeNamesOption;
+import org.citydb.core.plugin.cli.CliOption;
+import org.citydb.core.plugin.cli.ResourceIdOption;
+import org.citydb.core.plugin.cli.TypeNamesOption;
 import picocli.CommandLine;
 
 public class FilterOption implements CliOption {

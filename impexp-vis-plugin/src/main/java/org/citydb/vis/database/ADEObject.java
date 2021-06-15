@@ -28,10 +28,10 @@
 package org.citydb.vis.database;
 
 import net.opengis.kml._2.PlacemarkType;
-import org.citydb.ade.visExporter.ADEVisExportException;
-import org.citydb.ade.visExporter.ADEVisExportExtensionManager;
-import org.citydb.ade.visExporter.ADEVisExportManager;
-import org.citydb.ade.visExporter.ADEVisExporter;
+import org.citydb.core.ade.visExporter.ADEVisExportException;
+import org.citydb.core.ade.visExporter.ADEVisExportExtensionManager;
+import org.citydb.core.ade.visExporter.ADEVisExportManager;
+import org.citydb.core.ade.visExporter.ADEVisExporter;
 import org.citydb.config.Config;
 import org.citydb.config.project.visExporter.ADEPreference;
 import org.citydb.config.project.visExporter.Balloon;
@@ -39,11 +39,11 @@ import org.citydb.config.project.visExporter.ColladaOptions;
 import org.citydb.config.project.visExporter.DisplayFormType;
 import org.citydb.config.project.visExporter.PointAndCurve;
 import org.citydb.config.project.visExporter.Styles;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.adapter.BlobExportAdapter;
-import org.citydb.event.EventDispatcher;
-import org.citydb.log.Logger;
-import org.citydb.query.Query;
+import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.core.database.adapter.BlobExportAdapter;
+import org.citydb.core.event.EventDispatcher;
+import org.citydb.core.log.Logger;
+import org.citydb.core.query.Query;
 import org.citydb.vis.util.BalloonTemplateHandler;
 import org.citydb.vis.util.ElevationServiceHandler;
 

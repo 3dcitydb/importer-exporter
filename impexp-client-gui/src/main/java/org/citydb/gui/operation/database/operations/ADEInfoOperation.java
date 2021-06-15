@@ -27,26 +27,26 @@
  */
 package org.citydb.gui.operation.database.operations;
 
-import org.citydb.ade.ADEExtension;
-import org.citydb.ade.ADEExtensionManager;
+import org.citydb.core.ade.ADEExtension;
+import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseOperationType;
-import org.citydb.database.connection.ADEMetadata;
-import org.citydb.database.connection.DatabaseConnectionPool;
-import org.citydb.database.schema.mapping.Metadata;
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.schema.mapping.SchemaMappingException;
-import org.citydb.database.schema.mapping.SchemaMappingValidationException;
-import org.citydb.database.schema.util.SchemaMappingUtil;
-import org.citydb.event.global.DatabaseConnectionStateEvent;
+import org.citydb.core.database.connection.ADEMetadata;
+import org.citydb.core.database.connection.DatabaseConnectionPool;
+import org.citydb.core.database.schema.mapping.Metadata;
+import org.citydb.core.database.schema.mapping.SchemaMapping;
+import org.citydb.core.database.schema.mapping.SchemaMappingException;
+import org.citydb.core.database.schema.mapping.SchemaMappingValidationException;
+import org.citydb.core.database.schema.util.SchemaMappingUtil;
+import org.citydb.core.event.global.DatabaseConnectionStateEvent;
 import org.citydb.gui.operation.database.util.ADEInfoDialog;
 import org.citydb.gui.operation.database.util.ADEInfoRow;
 import org.citydb.gui.operation.database.util.ADETableCellRenderer;
 import org.citydb.gui.operation.database.util.ADETableModel;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
-import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.registry.ObjectRegistry;
+import org.citydb.core.log.Logger;
+import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;
 import javax.xml.bind.JAXBException;

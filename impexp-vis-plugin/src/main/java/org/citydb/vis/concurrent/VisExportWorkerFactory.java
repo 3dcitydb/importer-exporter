@@ -28,15 +28,15 @@
 package org.citydb.vis.concurrent;
 
 import net.opengis.kml._2.ObjectFactory;
-import org.citydb.concurrent.Worker;
-import org.citydb.concurrent.WorkerFactory;
-import org.citydb.concurrent.WorkerPool;
+import org.citydb.core.concurrent.Worker;
+import org.citydb.core.concurrent.WorkerFactory;
+import org.citydb.core.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.DatabaseConnectionPool;
-import org.citydb.event.EventDispatcher;
-import org.citydb.log.Logger;
-import org.citydb.query.Query;
+import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.core.database.connection.DatabaseConnectionPool;
+import org.citydb.core.event.EventDispatcher;
+import org.citydb.core.log.Logger;
+import org.citydb.core.query.Query;
 import org.citydb.vis.database.DBSplittingResult;
 import org.citydb.vis.util.ExportTracker;
 import org.citygml4j.util.xml.SAXEventBuffer;

@@ -46,7 +46,7 @@ import org.citydb.gui.operation.common.filter.LodFilterView;
 import org.citydb.gui.operation.common.filter.SQLFilterView;
 import org.citydb.gui.operation.common.filter.XMLQueryView;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.plugin.extension.view.ViewController;
+import org.citydb.core.plugin.extension.view.ViewController;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;

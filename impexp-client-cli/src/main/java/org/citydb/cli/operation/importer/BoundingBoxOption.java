@@ -31,8 +31,8 @@ package org.citydb.cli.operation.importer;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.importer.SimpleBBOXMode;
 import org.citydb.config.project.importer.SimpleBBOXOperator;
-import org.citydb.plugin.cli.CliOption;
-import org.citydb.plugin.cli.CliOptionBuilder;
+import org.citydb.core.plugin.cli.CliOption;
+import org.citydb.core.plugin.cli.CliOptionBuilder;
 import picocli.CommandLine;
 
 public class BoundingBoxOption implements CliOption {

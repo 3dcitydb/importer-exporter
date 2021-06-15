@@ -31,7 +31,7 @@ package org.citydb.cli.operation.exporter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.lod.LodFilterMode;
 import org.citydb.config.project.query.filter.lod.LodSearchMode;
-import org.citydb.plugin.cli.CliOption;
+import org.citydb.core.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 public class LodOption implements CliOption {

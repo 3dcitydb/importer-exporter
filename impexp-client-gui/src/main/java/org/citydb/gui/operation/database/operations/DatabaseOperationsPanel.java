@@ -29,15 +29,15 @@ package org.citydb.gui.operation.database.operations;
 
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConfig;
-import org.citydb.database.connection.DatabaseConnectionPool;
-import org.citydb.event.Event;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.DatabaseConnectionStateEvent;
-import org.citydb.event.global.EventType;
+import org.citydb.core.database.connection.DatabaseConnectionPool;
+import org.citydb.core.event.Event;
+import org.citydb.core.event.EventHandler;
+import org.citydb.core.event.global.DatabaseConnectionStateEvent;
+import org.citydb.core.event.global.EventType;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
-import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.registry.ObjectRegistry;
+import org.citydb.core.log.Logger;
+import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;
 import java.awt.*;

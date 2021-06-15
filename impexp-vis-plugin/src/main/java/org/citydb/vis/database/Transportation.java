@@ -39,12 +39,12 @@ import org.citydb.config.project.visExporter.ColladaOptions;
 import org.citydb.config.project.visExporter.DisplayFormType;
 import org.citydb.config.project.visExporter.Style;
 import org.citydb.config.project.visExporter.Styles;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.adapter.BlobExportAdapter;
-import org.citydb.event.EventDispatcher;
-import org.citydb.event.global.GeometryCounterEvent;
-import org.citydb.log.Logger;
-import org.citydb.query.Query;
+import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.core.database.adapter.BlobExportAdapter;
+import org.citydb.core.event.EventDispatcher;
+import org.citydb.core.event.global.GeometryCounterEvent;
+import org.citydb.core.log.Logger;
+import org.citydb.core.query.Query;
 import org.citydb.vis.util.BalloonTemplateHandler;
 import org.citydb.vis.util.ElevationServiceHandler;
 

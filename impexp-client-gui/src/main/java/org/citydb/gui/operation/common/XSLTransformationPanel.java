@@ -35,7 +35,7 @@ import org.citydb.config.project.common.XSLTransformation;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.CoreConstants;
+import org.citydb.core.util.CoreConstants;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;

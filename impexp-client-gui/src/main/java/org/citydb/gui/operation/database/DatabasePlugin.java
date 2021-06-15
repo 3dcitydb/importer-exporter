@@ -28,15 +28,15 @@
 package org.citydb.gui.operation.database;
 
 import org.citydb.config.Config;
-import org.citydb.database.connection.ConnectionViewHandler;
+import org.citydb.core.database.connection.ConnectionViewHandler;
 import org.citydb.gui.operation.database.preferences.DatabasePreferences;
 import org.citydb.gui.operation.database.view.DatabaseView;
-import org.citydb.plugin.InternalPlugin;
-import org.citydb.plugin.extension.preferences.Preferences;
-import org.citydb.plugin.extension.preferences.PreferencesExtension;
-import org.citydb.plugin.extension.view.View;
-import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.plugin.extension.view.ViewExtension;
+import org.citydb.core.plugin.InternalPlugin;
+import org.citydb.core.plugin.extension.preferences.Preferences;
+import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
+import org.citydb.core.plugin.extension.view.View;
+import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.core.plugin.extension.view.ViewExtension;
 
 import java.util.Locale;
 

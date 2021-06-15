@@ -28,7 +28,7 @@
 package org.citydb.gui.map.map;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import org.citydb.log.Logger;
+import org.citydb.core.log.Logger;
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointPainter;

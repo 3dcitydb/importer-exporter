@@ -29,8 +29,8 @@
 package org.citydb.cli.operation.importer;
 
 import org.citydb.config.project.query.filter.counter.CounterFilter;
-import org.citydb.plugin.cli.CliOption;
-import org.citydb.plugin.cli.CliOptionBuilder;
+import org.citydb.core.plugin.cli.CliOption;
+import org.citydb.core.plugin.cli.CliOptionBuilder;
 import picocli.CommandLine;
 
 public class CounterOption implements CliOption {

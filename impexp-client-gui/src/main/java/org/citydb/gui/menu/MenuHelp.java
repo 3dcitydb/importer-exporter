@@ -34,7 +34,7 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.dialog.InfoDialog;
 import org.citydb.gui.components.dialog.ReadMeDialog;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
+import org.citydb.core.log.Logger;
 
 import javax.swing.*;
 import java.awt.*;

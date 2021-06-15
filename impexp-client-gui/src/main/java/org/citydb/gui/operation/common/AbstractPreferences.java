@@ -27,8 +27,8 @@
  */
 package org.citydb.gui.operation.common;
 
-import org.citydb.plugin.extension.preferences.Preferences;
-import org.citydb.plugin.extension.preferences.PreferencesEntry;
+import org.citydb.core.plugin.extension.preferences.Preferences;
+import org.citydb.core.plugin.extension.preferences.PreferencesEntry;
 
 public class AbstractPreferences implements Preferences {
 	protected DefaultPreferencesEntry root;

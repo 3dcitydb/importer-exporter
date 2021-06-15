@@ -29,7 +29,7 @@ package org.citydb.gui.components.srs;
 
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.registry.ObjectRegistry;
+import org.citydb.core.registry.ObjectRegistry;
 
 import java.util.Collections;
 import java.util.Set;

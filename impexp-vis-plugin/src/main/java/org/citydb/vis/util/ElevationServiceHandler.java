@@ -28,7 +28,7 @@
 package org.citydb.vis.util;
 
 import org.citydb.config.Config;
-import org.citydb.log.Logger;
+import org.citydb.core.log.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;

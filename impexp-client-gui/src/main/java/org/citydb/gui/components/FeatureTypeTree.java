@@ -27,15 +27,15 @@
  */
 package org.citydb.gui.components;
 
-import org.citydb.ade.ADEExtension;
-import org.citydb.ade.ADEExtensionManager;
-import org.citydb.database.schema.mapping.AppSchema;
-import org.citydb.database.schema.mapping.FeatureType;
-import org.citydb.database.schema.mapping.Namespace;
-import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.core.ade.ADEExtension;
+import org.citydb.core.ade.ADEExtensionManager;
+import org.citydb.core.database.schema.mapping.AppSchema;
+import org.citydb.core.database.schema.mapping.FeatureType;
+import org.citydb.core.database.schema.mapping.Namespace;
+import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.gui.components.checkboxtree.CheckboxTree;
 import org.citydb.gui.components.checkboxtree.TreeCheckingModel;
-import org.citydb.registry.ObjectRegistry;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citygml4j.model.module.citygml.BridgeModule;
 import org.citygml4j.model.module.citygml.BuildingModule;
 import org.citygml4j.model.module.citygml.CityFurnitureModule;

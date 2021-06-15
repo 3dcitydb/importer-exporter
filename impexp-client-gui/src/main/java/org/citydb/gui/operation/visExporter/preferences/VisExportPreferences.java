@@ -27,17 +27,17 @@
  */
 package org.citydb.gui.operation.visExporter.preferences;
 
-import org.citydb.ade.ADEExtension;
-import org.citydb.ade.ADEExtensionManager;
-import org.citydb.ade.visExporter.ADEVisExportExtension;
-import org.citydb.ade.visExporter.ADEVisExportExtensionManager;
+import org.citydb.core.ade.ADEExtension;
+import org.citydb.core.ade.ADEExtensionManager;
+import org.citydb.core.ade.visExporter.ADEVisExportExtension;
+import org.citydb.core.ade.visExporter.ADEVisExportExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.database.schema.mapping.AppSchema;
-import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.core.database.schema.mapping.AppSchema;
+import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.gui.operation.common.AbstractPreferences;
 import org.citydb.gui.operation.common.DefaultPreferencesEntry;
-import org.citydb.plugin.extension.view.ViewController;
+import org.citydb.core.plugin.extension.view.ViewController;
 
 import java.util.List;
 import java.util.stream.Collectors;

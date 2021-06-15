@@ -40,7 +40,7 @@ import org.citydb.gui.operation.common.filter.BoundingBoxFilterView;
 import org.citydb.gui.operation.common.filter.CounterFilterView;
 import org.citydb.gui.operation.common.filter.FeatureTypeFilterView;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.plugin.extension.view.ViewController;
+import org.citydb.core.plugin.extension.view.ViewController;
 
 import javax.swing.*;
 import java.awt.*;

@@ -30,7 +30,7 @@ package org.citydb.gui.operation.database.preferences;
 import org.citydb.config.Config;
 import org.citydb.gui.operation.common.AbstractPreferences;
 import org.citydb.gui.operation.common.DefaultPreferencesEntry;
-import org.citydb.plugin.extension.view.ViewController;
+import org.citydb.core.plugin.extension.view.ViewController;
 
 public class DatabasePreferences extends AbstractPreferences {
 	

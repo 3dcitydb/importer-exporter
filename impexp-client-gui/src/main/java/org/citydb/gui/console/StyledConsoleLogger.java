@@ -30,7 +30,7 @@ package org.citydb.gui.console;
 import org.citydb.config.gui.style.LogLevelStyle;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.ConsoleLogger;
+import org.citydb.core.log.ConsoleLogger;
 
 import javax.swing.*;
 import javax.swing.text.Style;

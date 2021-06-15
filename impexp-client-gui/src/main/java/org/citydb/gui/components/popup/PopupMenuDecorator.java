@@ -28,7 +28,7 @@
 package org.citydb.gui.components.popup;
 
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.log.Logger;
+import org.citydb.core.log.Logger;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
