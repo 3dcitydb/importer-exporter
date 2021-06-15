@@ -32,7 +32,7 @@ import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.extension.view.ViewController;
 
 import javax.swing.*;

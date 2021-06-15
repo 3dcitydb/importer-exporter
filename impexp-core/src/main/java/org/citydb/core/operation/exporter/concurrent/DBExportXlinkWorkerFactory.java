@@ -27,13 +27,13 @@
  */
 package org.citydb.core.operation.exporter.concurrent;
 
-import org.citydb.core.concurrent.Worker;
-import org.citydb.core.concurrent.WorkerFactory;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerFactory;
 import org.citydb.config.Config;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.log.Logger;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.exporter.util.InternalConfig;
 

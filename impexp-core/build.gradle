@@ -1,5 +1,5 @@
 dependencies {
-    api project(':impexp-config')
+    api project(':impexp-util')
     api 'info.picocli:picocli:4.6.1'
     api 'org.citydb:sqlbuilder:2.2.1'
     api 'org.citydb:3dcitydb-ade-citygml4j:1.1.2'

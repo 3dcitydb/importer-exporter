@@ -40,7 +40,7 @@ import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.util.CoreConstants;
 
 import javax.swing.*;

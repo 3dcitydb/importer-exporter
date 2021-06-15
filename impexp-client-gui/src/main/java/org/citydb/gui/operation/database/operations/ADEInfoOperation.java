@@ -38,13 +38,13 @@ import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.database.schema.mapping.SchemaMappingException;
 import org.citydb.core.database.schema.mapping.SchemaMappingValidationException;
 import org.citydb.core.database.schema.util.SchemaMappingUtil;
-import org.citydb.core.event.global.DatabaseConnectionStateEvent;
+import org.citydb.util.event.global.DatabaseConnectionStateEvent;
 import org.citydb.gui.operation.database.util.ADEInfoDialog;
 import org.citydb.gui.operation.database.util.ADEInfoRow;
 import org.citydb.gui.operation.database.util.ADETableCellRenderer;
 import org.citydb.gui.operation.database.util.ADETableModel;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.extension.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 

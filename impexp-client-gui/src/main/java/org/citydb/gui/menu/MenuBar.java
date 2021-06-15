@@ -31,7 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.PluginManager;
 import org.citydb.core.plugin.extension.menu.Menu;
 import org.citydb.core.plugin.extension.menu.MenuExtension;

@@ -28,13 +28,13 @@
 
 package org.citydb.core.operation.importer.reader.citygml;
 
-import org.citydb.core.concurrent.PoolSizeAdaptationStrategy;
-import org.citydb.core.concurrent.WorkerPool;
+import org.citydb.util.concurrent.PoolSizeAdaptationStrategy;
+import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.event.EventHandler;
-import org.citydb.core.event.global.EventType;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.operation.importer.concurrent.FeatureReaderWorkerFactory;
 import org.citydb.core.operation.importer.filter.selection.counter.CounterFilter;

@@ -30,12 +30,12 @@ package org.citydb.gui.operation.database.operations;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventHandler;
-import org.citydb.core.event.global.DatabaseConnectionStateEvent;
-import org.citydb.core.event.global.EventType;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.DatabaseConnectionStateEvent;
+import org.citydb.util.event.global.EventType;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.extension.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 

@@ -33,7 +33,7 @@ import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceDataToTexImage;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureAssociation;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureAssociationTarget;

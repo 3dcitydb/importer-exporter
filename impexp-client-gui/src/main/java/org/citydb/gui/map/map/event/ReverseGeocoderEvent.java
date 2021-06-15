@@ -27,7 +27,7 @@
  */
 package org.citydb.gui.map.map.event;
 
-import org.citydb.core.event.Event;
+import org.citydb.util.event.Event;
 import org.citydb.gui.map.geocoder.Location;
 import org.citydb.gui.map.geocoder.service.GeocodingServiceException;
 

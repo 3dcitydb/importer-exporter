@@ -27,7 +27,7 @@
  */
 package org.citydb.core.operation.common.cache;
 
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;

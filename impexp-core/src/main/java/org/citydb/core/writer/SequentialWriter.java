@@ -28,7 +28,7 @@
 
 package org.citydb.core.writer;
 
-import org.citydb.core.concurrent.WorkerPool;
+import org.citydb.util.concurrent.WorkerPool;
 
 import java.util.HashMap;
 import java.util.Map;

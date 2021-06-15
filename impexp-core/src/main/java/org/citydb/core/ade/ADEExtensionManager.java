@@ -35,7 +35,7 @@ import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.database.schema.mapping.SchemaMappingException;
 import org.citydb.core.database.schema.mapping.SchemaMappingValidationException;
 import org.citydb.core.database.schema.util.SchemaMappingUtil;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.ade.binding.ADEContext;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
 import org.citygml4j.model.module.ade.ADEModule;

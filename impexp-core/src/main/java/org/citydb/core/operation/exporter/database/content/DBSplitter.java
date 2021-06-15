@@ -27,7 +27,7 @@
  */
 package org.citydb.core.operation.exporter.database.content;
 
-import org.citydb.core.concurrent.WorkerPool;
+import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
@@ -39,11 +39,11 @@ import org.citydb.core.database.schema.mapping.AbstractObjectType;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.event.global.ProgressBarEventType;
-import org.citydb.core.event.global.StatusDialogMessage;
-import org.citydb.core.event.global.StatusDialogProgressBar;
-import org.citydb.core.log.Logger;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.global.ProgressBarEventType;
+import org.citydb.util.event.global.StatusDialogMessage;
+import org.citydb.util.event.global.StatusDialogProgressBar;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.cache.IdCache;

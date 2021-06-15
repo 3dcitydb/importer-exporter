@@ -34,7 +34,7 @@ import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.controller.Exporter;
 import org.citydb.core.plugin.CliCommand;

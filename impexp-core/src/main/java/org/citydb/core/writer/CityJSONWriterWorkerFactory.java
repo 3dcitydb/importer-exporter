@@ -27,9 +27,9 @@
  */
 package org.citydb.core.writer;
 
-import org.citydb.core.concurrent.Worker;
-import org.citydb.core.concurrent.WorkerFactory;
-import org.citydb.core.event.EventDispatcher;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerFactory;
+import org.citydb.util.event.EventDispatcher;
 import org.citygml4j.builder.cityjson.json.io.writer.CityJSONChunkWriter;
 import org.citygml4j.cityjson.feature.AbstractCityObjectType;
 

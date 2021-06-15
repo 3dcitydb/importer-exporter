@@ -28,9 +28,9 @@
 package org.citydb.core.plugin;
 
 import org.citydb.core.database.connection.DatabaseConnectionPool;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventHandler;
-import org.citydb.core.event.global.EventType;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citydb.core.plugin.extension.view.ViewController;
 
 public class IllegalEventSourceChecker implements EventHandler {

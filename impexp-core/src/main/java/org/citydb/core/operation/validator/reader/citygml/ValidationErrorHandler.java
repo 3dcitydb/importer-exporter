@@ -30,7 +30,7 @@ package org.citydb.core.operation.validator.reader.citygml;
 
 import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;

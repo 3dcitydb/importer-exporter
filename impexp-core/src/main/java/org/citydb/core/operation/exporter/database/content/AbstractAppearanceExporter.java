@@ -31,7 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureFile;

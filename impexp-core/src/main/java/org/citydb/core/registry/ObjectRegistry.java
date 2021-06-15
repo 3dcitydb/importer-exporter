@@ -31,7 +31,7 @@ import org.citydb.ade.CityDBADEContext;
 import org.citydb.config.Config;
 import org.citydb.core.database.DatabaseController;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.event.EventDispatcher;
+import org.citydb.util.event.EventDispatcher;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.ade.ADEException;

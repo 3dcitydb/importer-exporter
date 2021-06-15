@@ -29,9 +29,9 @@ package org.citydb.core.util;
 
 import org.citydb.config.Config;
 import org.citydb.config.project.global.ProxyConfig;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.event.global.ProxyServerUnavailableEvent;
-import org.citydb.core.log.Logger;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.global.ProxyServerUnavailableEvent;
+import org.citydb.util.log.Logger;
 import org.citydb.core.registry.ObjectRegistry;
 
 import java.io.IOException;

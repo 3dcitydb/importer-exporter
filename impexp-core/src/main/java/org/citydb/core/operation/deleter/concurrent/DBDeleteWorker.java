@@ -27,21 +27,21 @@
  */
 package org.citydb.core.operation.deleter.concurrent;
 
-import org.citydb.core.concurrent.Worker;
+import org.citydb.util.concurrent.Worker;
 import org.citydb.config.Config;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.UpdatingPersonMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.event.EventHandler;
-import org.citydb.core.event.global.EventType;
-import org.citydb.core.event.global.InterruptEvent;
-import org.citydb.core.event.global.ObjectCounterEvent;
-import org.citydb.core.event.global.ProgressBarEventType;
-import org.citydb.core.event.global.StatusDialogProgressBar;
-import org.citydb.core.log.Logger;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
+import org.citydb.util.event.global.InterruptEvent;
+import org.citydb.util.event.global.ObjectCounterEvent;
+import org.citydb.util.event.global.ProgressBarEventType;
+import org.citydb.util.event.global.StatusDialogProgressBar;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.deleter.database.DBSplittingResult;
 import org.citydb.core.operation.deleter.util.DeleteLogger;
 import org.citydb.core.operation.deleter.util.InternalConfig;

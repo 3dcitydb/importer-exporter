@@ -29,10 +29,10 @@
 package org.citydb.gui.components;
 
 import org.citydb.config.i18n.Language;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventHandler;
-import org.citydb.core.event.global.EventType;
-import org.citydb.core.event.global.SwitchLocaleEvent;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
+import org.citydb.util.event.global.SwitchLocaleEvent;
 import org.citydb.core.registry.ObjectRegistry;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXMonthView;

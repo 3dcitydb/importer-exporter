@@ -45,7 +45,7 @@ import org.citydb.gui.operation.preferences.PreferencesPlugin;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.CliCommand;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginManager;

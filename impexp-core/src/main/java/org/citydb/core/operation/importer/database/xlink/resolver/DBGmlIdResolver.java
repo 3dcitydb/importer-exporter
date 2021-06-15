@@ -28,7 +28,7 @@
 package org.citydb.core.operation.importer.database.xlink.resolver;
 
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.IdCache;
 import org.citydb.core.operation.common.cache.IdCacheEntry;
 import org.citydb.core.operation.common.cache.IdCacheManager;

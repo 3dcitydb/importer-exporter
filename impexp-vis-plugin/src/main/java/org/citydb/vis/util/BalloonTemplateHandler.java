@@ -35,7 +35,7 @@ import org.citydb.core.ade.visExporter.ADEBalloonHandler;
 import org.citydb.core.ade.visExporter.ADEBalloonManager;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;

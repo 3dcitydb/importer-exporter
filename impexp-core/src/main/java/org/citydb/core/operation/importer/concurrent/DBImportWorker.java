@@ -27,22 +27,22 @@
  */
 package org.citydb.core.operation.importer.concurrent;
 
-import org.citydb.core.concurrent.Worker;
-import org.citydb.core.concurrent.WorkerPool;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.event.EventHandler;
-import org.citydb.core.event.global.CounterEvent;
-import org.citydb.core.event.global.CounterType;
-import org.citydb.core.event.global.EventType;
-import org.citydb.core.event.global.GeometryCounterEvent;
-import org.citydb.core.event.global.InterruptEvent;
-import org.citydb.core.event.global.ObjectCounterEvent;
-import org.citydb.core.log.Logger;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.CounterEvent;
+import org.citydb.util.event.global.CounterType;
+import org.citydb.util.event.global.EventType;
+import org.citydb.util.event.global.GeometryCounterEvent;
+import org.citydb.util.event.global.InterruptEvent;
+import org.citydb.util.event.global.ObjectCounterEvent;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.IdCacheManager;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.importer.CityGMLImportException;

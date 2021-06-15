@@ -40,7 +40,7 @@ import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;
 import org.citydb.gui.operation.preferences.preferences.RootPreferencesEntry;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.PluginManager;
 import org.citydb.core.plugin.extension.preferences.Preferences;
 import org.citydb.core.plugin.extension.preferences.PreferencesEntry;

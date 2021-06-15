@@ -27,11 +27,11 @@
  */
 package org.citydb.core.operation.importer.concurrent;
 
-import org.citydb.core.concurrent.Worker;
-import org.citydb.core.concurrent.WorkerFactory;
-import org.citydb.core.concurrent.WorkerPool;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerFactory;
+import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.core.event.EventDispatcher;
+import org.citydb.util.event.EventDispatcher;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.xml.io.reader.XMLChunk;
 

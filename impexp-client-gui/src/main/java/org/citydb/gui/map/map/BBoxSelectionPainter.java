@@ -27,7 +27,7 @@
  */
 package org.citydb.gui.map.map;
 
-import org.citydb.core.event.EventDispatcher;
+import org.citydb.util.event.EventDispatcher;
 import org.citydb.gui.map.map.event.BoundingBoxSelectionEvent;
 import org.citydb.core.registry.ObjectRegistry;
 import org.jdesktop.swingx.JXMapViewer;

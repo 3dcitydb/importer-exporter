@@ -27,7 +27,7 @@
  */
 package org.citydb.core.database.adapter;
 
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 
 import java.util.ArrayList;
 import java.util.List;

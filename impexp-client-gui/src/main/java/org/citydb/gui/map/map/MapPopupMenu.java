@@ -29,7 +29,7 @@ package org.citydb.gui.map.map;
 
 import org.citydb.config.gui.window.GeocodingServiceName;
 import org.citydb.config.i18n.Language;
-import org.citydb.core.event.EventDispatcher;
+import org.citydb.util.event.EventDispatcher;
 import org.citydb.gui.map.geocoder.Geocoder;
 import org.citydb.gui.map.geocoder.GeocoderResult;
 import org.citydb.gui.map.geocoder.Location;

@@ -29,7 +29,7 @@
 package org.citydb.core.operation.importer.reader.citygml;
 
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;

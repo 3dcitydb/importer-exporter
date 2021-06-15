@@ -29,8 +29,8 @@ package org.citydb.core.operation.exporter.database.xlink;
 
 import org.citydb.config.Config;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventDispatcher;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
 import org.citydb.core.operation.exporter.util.InternalConfig;
 
 import java.sql.Connection;

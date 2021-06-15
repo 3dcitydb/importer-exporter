@@ -31,7 +31,7 @@ import org.citydb.core.database.adapter.BlobExportAdapter;
 import org.citydb.core.database.adapter.BlobType;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.OutputFile;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.xlink.DBXlinkLibraryObject;
 import org.citydb.core.util.CoreConstants;
 

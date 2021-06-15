@@ -27,15 +27,15 @@
  */
 package org.citydb.core.operation.importer.database.xlink.resolver;
 
-import org.citydb.core.concurrent.WorkerPool;
+import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.mapping.AbstractObjectType;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.ObjectType;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventDispatcher;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.common.cache.CacheTableManager;

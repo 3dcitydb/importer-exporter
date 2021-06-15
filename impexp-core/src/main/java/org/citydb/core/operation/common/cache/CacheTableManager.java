@@ -31,7 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.h2.H2Adapter;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.model.CacheTableModel;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 

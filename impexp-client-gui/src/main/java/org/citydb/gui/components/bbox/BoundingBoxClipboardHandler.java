@@ -30,7 +30,7 @@ package org.citydb.gui.components.bbox;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.registry.ObjectRegistry;
 
 import java.awt.*;

@@ -35,7 +35,7 @@ import org.citydb.config.project.exporter.Namespace;
 import org.citydb.config.project.exporter.NamespaceMode;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.exporter.writer.FeatureWriteException;
 import org.citydb.core.operation.exporter.writer.FeatureWriter;
 import org.citydb.core.operation.exporter.writer.FeatureWriterFactory;

@@ -35,7 +35,7 @@ import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.deleter.DeleteList;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.deleter.DeleteException;
 import org.citydb.core.operation.deleter.controller.Deleter;
 import org.citydb.core.operation.deleter.util.DeleteListPreviewer;

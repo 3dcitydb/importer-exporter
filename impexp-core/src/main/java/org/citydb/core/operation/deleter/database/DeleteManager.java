@@ -27,7 +27,7 @@
  */
 package org.citydb.core.operation.deleter.database;
 
-import org.citydb.core.concurrent.WorkerPool;
+import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.deleter.DeleteListIdType;
 import org.citydb.config.project.deleter.DeleteMode;
@@ -41,11 +41,11 @@ import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.database.schema.path.InvalidSchemaPathException;
 import org.citydb.core.database.schema.path.SchemaPath;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.event.global.ObjectCounterEvent;
-import org.citydb.core.event.global.ProgressBarEventType;
-import org.citydb.core.event.global.StatusDialogProgressBar;
-import org.citydb.core.log.Logger;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.global.ObjectCounterEvent;
+import org.citydb.util.event.global.ProgressBarEventType;
+import org.citydb.util.event.global.StatusDialogProgressBar;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.deleter.util.DeleteLogger;
 import org.citydb.core.operation.deleter.util.InternalConfig;

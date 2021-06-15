@@ -40,7 +40,7 @@ import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.connection.DatabaseConnectionWarning;
 import org.citydb.core.database.version.DatabaseVersionChecker;
 import org.citydb.core.database.version.DatabaseVersionException;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
 

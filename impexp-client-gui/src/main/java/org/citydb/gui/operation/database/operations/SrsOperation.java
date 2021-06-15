@@ -35,15 +35,15 @@ import org.citydb.config.project.database.DatabaseType;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.connection.DatabaseMetaData;
-import org.citydb.core.event.global.DatabaseConnectionStateEvent;
-import org.citydb.core.event.global.PropertyChangeEvent;
+import org.citydb.util.event.global.DatabaseConnectionStateEvent;
+import org.citydb.util.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.components.srs.SrsComboBoxFactory;
 import org.citydb.gui.operation.database.util.SrsNameComboBox;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.extension.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 

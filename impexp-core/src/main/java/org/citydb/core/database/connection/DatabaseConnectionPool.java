@@ -44,8 +44,8 @@ import org.citydb.core.database.connection.DatabaseConnectionWarning.ConnectionW
 import org.citydb.core.database.version.DatabaseVersionChecker;
 import org.citydb.core.database.version.DatabaseVersionException;
 import org.citydb.core.database.version.DefaultDatabaseVersionChecker;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.event.global.DatabaseConnectionStateEvent;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.global.DatabaseConnectionStateEvent;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;

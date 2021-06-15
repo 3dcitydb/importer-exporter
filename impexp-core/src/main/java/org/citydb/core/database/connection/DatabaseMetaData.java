@@ -29,7 +29,7 @@ package org.citydb.core.database.connection;
 
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.core.database.version.DatabaseVersion;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;

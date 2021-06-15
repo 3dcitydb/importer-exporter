@@ -31,7 +31,7 @@ package org.citydb.core.operation.deleter.util;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.citydb.config.project.deleter.DeleteList;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 
 import java.nio.charset.Charset;
 import java.nio.file.Files;

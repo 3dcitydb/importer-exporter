@@ -27,7 +27,7 @@
  */
 package org.citydb.vis.database;
 
-import org.citydb.core.concurrent.WorkerPool;
+import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
@@ -42,7 +42,7 @@ import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.query.Query;
 import org.citydb.core.query.builder.QueryBuildException;
 import org.citydb.core.query.builder.sql.BuildProperties;

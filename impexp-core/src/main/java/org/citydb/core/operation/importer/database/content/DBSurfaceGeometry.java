@@ -34,7 +34,7 @@ import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.XlinkType;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.xlink.DBXlinkLinearRing;
 import org.citydb.core.operation.common.xlink.DBXlinkSolidGeometry;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;

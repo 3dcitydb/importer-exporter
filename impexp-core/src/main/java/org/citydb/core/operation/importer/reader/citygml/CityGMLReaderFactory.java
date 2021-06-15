@@ -30,7 +30,7 @@ package org.citydb.core.operation.importer.reader.citygml;
 
 import org.citydb.config.Config;
 import org.citydb.config.project.importer.CityGMLOptions;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.importer.filter.CityGMLFilter;
 import org.citydb.core.operation.importer.filter.selection.counter.CounterFilter;
 import org.citydb.core.operation.importer.reader.FeatureReadException;

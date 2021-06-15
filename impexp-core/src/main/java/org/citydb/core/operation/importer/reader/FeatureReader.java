@@ -28,7 +28,7 @@
 
 package org.citydb.core.operation.importer.reader;
 
-import org.citydb.core.concurrent.WorkerPool;
+import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.core.file.InputFile;
 import org.citygml4j.model.citygml.CityGML;
 

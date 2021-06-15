@@ -4,9 +4,9 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventHandler;
-import org.citydb.core.event.global.EventType;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;

@@ -27,12 +27,12 @@
  */
 package org.citydb.core.operation.exporter.writer.citygml;
 
-import org.citydb.core.concurrent.SingleWorkerPool;
+import org.citydb.util.concurrent.SingleWorkerPool;
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.event.EventHandler;
-import org.citydb.core.event.global.EventType;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citydb.core.operation.exporter.util.Metadata;
 import org.citydb.core.operation.exporter.writer.FeatureWriteException;
 import org.citydb.core.operation.exporter.writer.FeatureWriter;

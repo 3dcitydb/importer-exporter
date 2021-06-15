@@ -28,10 +28,10 @@
 
 package org.citydb.core.operation.validator.reader.citygml;
 
-import org.citydb.core.event.Event;
-import org.citydb.core.event.EventDispatcher;
-import org.citydb.core.event.EventHandler;
-import org.citydb.core.event.global.EventType;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.reader.Validator;

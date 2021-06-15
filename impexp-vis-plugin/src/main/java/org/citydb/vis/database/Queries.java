@@ -36,7 +36,7 @@ import org.citydb.config.project.visExporter.Lod0FootprintMode;
 import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.SequenceEnum;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 
 public class Queries implements ADEVisExportQueryHelper {
 	private AbstractDatabaseAdapter databaseAdapter;

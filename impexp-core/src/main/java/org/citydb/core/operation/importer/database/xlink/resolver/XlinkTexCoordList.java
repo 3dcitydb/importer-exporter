@@ -28,7 +28,7 @@
 package org.citydb.core.operation.importer.database.xlink.resolver;
 
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.core.log.Logger;
+import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureAssociationTarget;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureCoordList;
