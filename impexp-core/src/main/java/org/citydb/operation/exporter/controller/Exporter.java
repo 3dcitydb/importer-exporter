@@ -76,7 +76,6 @@ import org.citydb.operation.exporter.writer.FeatureWriter;
 import org.citydb.operation.exporter.writer.FeatureWriterFactory;
 import org.citydb.operation.exporter.writer.FeatureWriterFactoryBuilder;
 import org.citydb.plugin.PluginManager;
-import org.citydb.plugin.extension.exporter.FeatureExportExtension;
 import org.citydb.plugin.extension.exporter.MetadataProvider;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
@@ -104,6 +103,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -193,20 +193,10 @@ public class Exporter implements EventHandler {
             throw new CityGMLExportException("Failed to build the feature writer factory.", e);
         }
 
-        // get metadata provider
-        MetadataProvider metadataProvider = null;
-        if (config.getExportConfig().isSetMetadataProvider()) {
-            for (FeatureExportExtension plugin : PluginManager.getInstance().getExternalPlugins(FeatureExportExtension.class)) {
-                if (plugin instanceof MetadataProvider
-                        && plugin.getClass().getCanonicalName().equals(config.getExportConfig().getMetadataProvider())) {
-                    metadataProvider = (MetadataProvider) plugin;
-                    break;
-                }
-            }
-
-            if (metadataProvider == null) {
-                throw new CityGMLExportException("Failed to load metadata provider '" + config.getExportConfig().getMetadataProvider() + "'.");
-            }
+        // get metadata providers
+        List<MetadataProvider> metadataProviders = PluginManager.getInstance().getExternalPlugins(MetadataProvider.class);
+        if (metadataProviders.size() > 1) {
+            log.warn("Multiple metadata provider plugins found. This might lead to unexpected results.");
         }
 
         // set target reference system for export
@@ -502,7 +492,7 @@ public class Exporter implements EventHandler {
                                 config);
 
                         if (shouldRun) {
-                            dbSplitter.setMetadataProvider(metadataProvider);
+                            dbSplitter.setMetadataProviders(metadataProviders);
                             dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
                             dbSplitter.startQuery();
                         }

@@ -31,8 +31,9 @@ package org.citydb.plugin.extension.exporter;
 import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.operation.exporter.util.Metadata;
 import org.citydb.plugin.PluginException;
-import org.citydb.query.Query;
+import org.citydb.plugin.extension.Extension;
+import org.citydb.query.filter.tiling.Tile;
 
-public interface MetadataProvider {
-    void setMetadata(Metadata metadata, Query query, ExportConfig exportConfig) throws PluginException;
+public interface MetadataProvider extends Extension {
+    void setMetadata(Metadata metadata, Tile currentTile, ExportConfig exportConfig) throws PluginException;
 }

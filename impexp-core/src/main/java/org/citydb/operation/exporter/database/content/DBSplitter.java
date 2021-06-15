@@ -84,6 +84,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -106,7 +107,7 @@ public class DBSplitter {
 	private final SQLQueryBuilder builder;
 	private final boolean calculateExtent;
 
-	private MetadataProvider metadataProvider;
+	private List<MetadataProvider> metadataProviders;
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
 	private long sequenceId;
@@ -154,12 +155,12 @@ public class DBSplitter {
 				buildProperties);
 	}
 
-	public MetadataProvider getMetadataProvider() {
-		return metadataProvider;
+	public List<MetadataProvider> getMetadataProviders() {
+		return metadataProviders;
 	}
 
-	public void setMetadataProvider(MetadataProvider metadataProvider) {
-		this.metadataProvider = metadataProvider;
+	public void setMetadataProviders(List<MetadataProvider> metadataProviders) {
+		this.metadataProviders = metadataProviders;
 	}
 
 	public boolean isCalculateNumberMatched() {
@@ -543,11 +544,15 @@ public class DBSplitter {
 	}
 
 	private void writeDocumentHeader() throws FeatureWriteException {
-		if (metadataProvider != null) {
-			try {
-				metadataProvider.setMetadata(writer.getMetadata(), query, config.getExportConfig());
-			} catch (PluginException e) {
-				throw new FeatureWriteException("Failed to set export metadata.", e);
+		if (metadataProviders != null && !metadataProviders.isEmpty()) {
+			for (MetadataProvider metadataProvider : metadataProviders) {
+				try {
+					metadataProvider.setMetadata(writer.getMetadata(),
+							query.isSetTiling() ? query.getTiling().getActiveTile() : null,
+							config.getExportConfig());
+				} catch (PluginException e) {
+					throw new FeatureWriteException("Failed to set export metadata.", e);
+				}
 			}
 		}
 
