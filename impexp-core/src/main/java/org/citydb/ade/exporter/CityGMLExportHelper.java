@@ -53,7 +53,7 @@ import java.util.Collection;
 
 public interface CityGMLExportHelper {
 	<T extends AbstractGML> T createObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException;
-	<T extends AbstractFeature> Collection<T> exportNestedCityGMLObjects(FeatureProperty featureProperty, long parentId, Class<T> featureClass) throws CityGMLExportException, SQLException;
+	<T extends AbstractFeature> Collection<T> exportNestedFeatures(FeatureProperty featureProperty, long parentId, Class<T> featureClass) throws CityGMLExportException, SQLException;
 	ImplicitGeometry createImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException;
 	SurfaceGeometryExporter getSurfaceGeometryExporter() throws CityGMLExportException, SQLException;
 	AttributeValueSplitter getAttributeValueSplitter();

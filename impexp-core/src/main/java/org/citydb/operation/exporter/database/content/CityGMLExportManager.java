@@ -387,7 +387,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends AbstractFeature> Collection<T> exportNestedCityGMLObjects(FeatureProperty featureProperty, long parentId, Class<T> featureClass) throws CityGMLExportException, SQLException {
+	public <T extends AbstractFeature> Collection<T> exportNestedFeatures(FeatureProperty featureProperty, long parentId, Class<T> featureClass) throws CityGMLExportException, SQLException {
 		Collection<? extends AbstractFeature> features;
 		FeatureType featureType = featureProperty.getType();
 
