@@ -25,7 +25,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin;
+package org.citydb.core.plugin.internal;
+
+import org.citydb.core.plugin.Plugin;
 
 public interface InternalPlugin extends Plugin {
 	void loadSettings();

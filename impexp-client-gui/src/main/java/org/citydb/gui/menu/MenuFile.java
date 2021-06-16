@@ -39,7 +39,7 @@ import org.citydb.gui.components.srs.SrsComboBoxFactory;
 import org.citydb.gui.operation.preferences.PreferencesPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.InternalPlugin;
+import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.core.plugin.PluginException;
 import org.citydb.core.plugin.PluginManager;
 import org.citydb.core.plugin.extension.config.ConfigExtension;

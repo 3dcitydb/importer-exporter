@@ -53,7 +53,7 @@ import org.citydb.util.event.EventDispatcher;
 import org.citydb.util.event.global.EventType;
 import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.CliCommand;
-import org.citydb.core.plugin.IllegalEventSourceChecker;
+import org.citydb.core.plugin.internal.IllegalEventSourceChecker;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginException;
 import org.citydb.core.plugin.PluginManager;

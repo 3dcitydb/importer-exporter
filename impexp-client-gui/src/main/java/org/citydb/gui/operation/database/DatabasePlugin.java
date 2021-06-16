@@ -31,7 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.core.database.connection.ConnectionViewHandler;
 import org.citydb.gui.operation.database.preferences.DatabasePreferences;
 import org.citydb.gui.operation.database.view.DatabaseView;
-import org.citydb.core.plugin.InternalPlugin;
+import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.core.plugin.extension.preferences.Preferences;
 import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.core.plugin.extension.view.View;

@@ -32,7 +32,7 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;
 import org.citydb.gui.operation.preferences.view.PreferencesPanel;
 import org.citydb.gui.operation.preferences.view.PreferencesView;
-import org.citydb.core.plugin.InternalPlugin;
+import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.core.plugin.extension.preferences.Preferences;
 import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.core.plugin.extension.view.View;

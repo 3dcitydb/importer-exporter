@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin;
+package org.citydb.core.plugin.internal;
 
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.util.event.Event;

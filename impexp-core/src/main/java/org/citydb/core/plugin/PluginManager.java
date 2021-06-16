@@ -31,6 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.core.plugin.extension.Extension;
 import org.citydb.core.plugin.extension.config.ConfigExtension;
+import org.citydb.core.plugin.internal.InternalPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
