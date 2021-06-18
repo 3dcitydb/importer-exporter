@@ -28,7 +28,8 @@
 package org.citydb.core.plugin.extension.menu;
 
 import org.citydb.core.plugin.extension.Extension;
+import org.citydb.core.plugin.extension.LanguageSupport;
 
-public interface MenuExtension extends Extension {
+public interface MenuExtension extends Extension, LanguageSupport {
 	Menu getMenu();
 }

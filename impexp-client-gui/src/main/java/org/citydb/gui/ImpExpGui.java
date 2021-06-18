@@ -31,7 +31,6 @@ import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.extras.components.FlatTabbedPane;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
-import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
@@ -40,13 +39,18 @@ import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LanguageType;
+import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.DatabaseConnectionStateEvent;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.event.global.SwitchLocaleEvent;
+import org.citydb.core.plugin.Plugin;
+import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.extension.LanguageSupport;
+import org.citydb.core.plugin.extension.view.View;
+import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.core.plugin.extension.view.ViewEvent;
+import org.citydb.core.plugin.extension.view.ViewEvent.ViewState;
+import org.citydb.core.plugin.extension.view.ViewExtension;
+import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.console.ConsoleTextPane;
 import org.citydb.gui.console.ConsoleWindow;
@@ -59,17 +63,14 @@ import org.citydb.gui.operation.preferences.PreferencesPlugin;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.DatabaseConnectionStateEvent;
+import org.citydb.util.event.global.EventType;
+import org.citydb.util.event.global.SwitchLocaleEvent;
 import org.citydb.util.log.DefaultConsoleLogger;
 import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.Plugin;
-import org.citydb.core.plugin.PluginManager;
-import org.citydb.core.plugin.extension.view.View;
-import org.citydb.core.plugin.extension.view.ViewController;
-import org.citydb.core.plugin.extension.view.ViewEvent;
-import org.citydb.core.plugin.extension.view.ViewEvent.ViewState;
-import org.citydb.core.plugin.extension.view.ViewExtension;
-import org.citydb.core.registry.ObjectRegistry;
-import org.citydb.core.util.CoreConstants;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -425,8 +426,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 			// fire translation notification to plugins
 			for (Plugin plugin : pluginManager.getPlugins()) {
-				if (plugin instanceof ViewExtension)
-					((ViewExtension) plugin).switchLocale(locale);
+				if (plugin instanceof LanguageSupport)
+					((LanguageSupport) plugin).switchLocale(locale);
 			}
 
 			int index = 0;
