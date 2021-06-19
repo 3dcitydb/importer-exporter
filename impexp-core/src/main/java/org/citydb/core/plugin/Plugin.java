@@ -57,7 +57,7 @@ public abstract class Plugin {
 		}
 
 		if (metadata.getName() == null || metadata.getName().trim().isEmpty()) {
-			metadata.setName(getClass().getName());
+			metadata.setName(getClass().getSimpleName());
 		}
 	}
 }
