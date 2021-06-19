@@ -29,57 +29,52 @@ package org.citydb.gui.menu;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.gui.ImpExpGui;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.log.Logger;
+import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.PluginStateEvent;
 import org.citydb.core.plugin.extension.menu.Menu;
 import org.citydb.core.plugin.extension.menu.MenuExtension;
+import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.gui.ImpExpGui;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
+import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MenuBar extends JMenuBar {
-	private final PluginManager pluginManager;
+public class MenuBar extends JMenuBar implements EventHandler {
+	private final List<MenuExtension> menuExtensions;
 
 	private final MenuFile file;
 	private final MenuView view;
 	private final MenuHelp help;
-
 	private JMenu extensions;
 
 	public MenuBar(ImpExpGui mainView, Config config) {
-		pluginManager = PluginManager.getInstance();
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PLUGIN_STATE, this);
 		
 		file = new MenuFile(mainView, config);
 		view = new MenuView(mainView, config);
 		help = new MenuHelp(mainView, config);
-		
-		add(file);
 
-		for (MenuExtension extension : pluginManager.getExternalPlugins(MenuExtension.class)) {
+		menuExtensions = new ArrayList<>();
+		for (MenuExtension extension : PluginManager.getInstance().getExternalPlugins(MenuExtension.class)) {
 			Menu menu = extension.getMenu();
 			if (menu == null || menu.getMenuComponent() == null) {
 				Logger.getInstance().error("Failed to get menu entry from plugin " + extension.getClass().getName() + ".");
 				continue;
 			}
 
-			if (extensions == null)
-				extensions = new JMenu();
-
-			JMenu component = menu.getMenuComponent();
-			component.setText(menu.getLocalizedTitle());
-			component.setIcon(menu.getIcon());
-			GuiUtil.setMnemonic(component, component.getText(), menu.getMnemonicIndex());
-			extensions.add(component);
+			menuExtensions.add(extension);
 		}
 
-		if (extensions != null)
-			add(extensions);
-
-		add(view);
-		add(help);
+		buildMenu();
 
 		view.addMenuListener(new MenuListener() {
 			@Override
@@ -95,6 +90,35 @@ public class MenuBar extends JMenuBar {
 		});
 	}
 
+	private void buildMenu() {
+		if (getMenuCount() > 0) {
+			removeAll();
+		}
+
+		add(file);
+
+		extensions = null;
+		for (MenuExtension menuExtension : menuExtensions) {
+			if (((Plugin) menuExtension).isEnabled()) {
+				if (extensions == null) {
+					extensions = new JMenu();
+					extensions.setText(Language.I18N.getString("menu.plugins.label"));
+					GuiUtil.setMnemonic(extensions, "menu.plugins.label", "menu.plugins.label.mnemonic");
+				}
+
+				extensions.add(menuExtension.getMenu().getMenuComponent());
+			}
+		}
+
+		if (extensions != null) {
+			add(extensions);
+			translateExtensions();
+		}
+
+		add(view);
+		add(help);
+	}
+
 	public void doTranslation() {
 		file.setText(Language.I18N.getString("menu.file.label"));
 		view.setText(Language.I18N.getString("menu.view.label"));
@@ -104,22 +128,39 @@ public class MenuBar extends JMenuBar {
 		GuiUtil.setMnemonic(view, "menu.view.label", "menu.view.label.mnemonic");
 		GuiUtil.setMnemonic(help, "menu.help.label", "menu.help.label.mnemonic");
 
-		if (extensions != null) {
-			extensions.setText(Language.I18N.getString("menu.extensions.label"));
-			GuiUtil.setMnemonic(extensions, "menu.extensions.label", "menu.extensions.label.mnemonic");
-
-			int index = 0;
-			for (MenuExtension extension : pluginManager.getExternalPlugins(MenuExtension.class))
-				((JMenu)extensions.getMenuComponent(index++)).setText(extension.getMenu().getLocalizedTitle());
-		}
-
 		file.doTranslation();
 		view.doTranslation();
 		help.doTranslation();
+
+		if (extensions != null) {
+			translateExtensions();
+		}
+	}
+
+	private void translateExtensions() {
+		extensions.setText(Language.I18N.getString("menu.plugins.label"));
+		GuiUtil.setMnemonic(extensions, "menu.plugins.label", "menu.plugins.label.mnemonic");
+
+		for (int i = 0; i < extensions.getMenuComponentCount(); i++) {
+			JMenu menu = (JMenu) extensions.getMenuComponent(i);
+			for (MenuExtension menuExtension : menuExtensions) {
+				if (menu == menuExtension.getMenu().getMenuComponent()) {
+					menu.setText(menuExtension.getMenu().getLocalizedTitle());
+					GuiUtil.setMnemonic(menu, menu.getText(), menuExtension.getMenu().getMnemonicIndex());
+					break;
+				}
+			}
+		}
 	}
 
 	public void printInfo() {
 		help.printInfo();
 	}
 
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		if (((PluginStateEvent) event).getPlugins().stream().anyMatch(p -> p instanceof MenuExtension)) {
+			SwingUtilities.invokeLater(this::buildMenu);
+		}
+	}
 }

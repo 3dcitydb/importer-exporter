@@ -29,6 +29,14 @@ package org.citydb.gui.operation.preferences.view;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.core.plugin.Plugin;
+import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.PluginStateEvent;
+import org.citydb.core.plugin.extension.preferences.Preferences;
+import org.citydb.core.plugin.extension.preferences.PreferencesEntry;
+import org.citydb.core.plugin.extension.preferences.PreferencesEvent;
+import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
@@ -40,12 +48,10 @@ import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;
 import org.citydb.gui.operation.preferences.preferences.RootPreferencesEntry;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.PluginManager;
-import org.citydb.core.plugin.extension.preferences.Preferences;
-import org.citydb.core.plugin.extension.preferences.PreferencesEntry;
-import org.citydb.core.plugin.extension.preferences.PreferencesEvent;
-import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
 
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
@@ -59,11 +65,17 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Enumeration;
+import java.util.List;
 
-public class PreferencesPanel extends JPanel implements TreeSelectionListener {
+public class PreferencesPanel extends JPanel implements TreeSelectionListener, EventHandler {
 	private final Logger log = Logger.getInstance();
 	private final ImpExpGui mainView;
 	private final PluginManager pluginManager;
+	private final List<PreferencesExtension> preferencesExtensions;
 	private final Config config;
 
 	private JSplitPane splitPane;
@@ -82,12 +94,16 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 	private PreferencesTreeNode rootNode;
 	private GeneralPreferences generalPreferences;
+	private volatile boolean isRebuildingPreferencesTree;
 
 	public PreferencesPanel(ImpExpGui mainView, Config config) {
 		this.mainView = mainView;
 		this.config = config;
 
 		pluginManager = PluginManager.getInstance();
+		preferencesExtensions = new ArrayList<>();
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PLUGIN_STATE, this);
+
 		initGui();
 	}
 
@@ -116,10 +132,9 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		generalPreferences = new GeneralPreferences(mainView, config);
 
-		rootNode = new PreferencesTreeNode(new RootPreferencesEntry());
-		rootNode.add(pluginManager.getInternalPlugin(CityGMLImportPlugin.class).getPreferences().getPreferencesEntry());
-		rootNode.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getPreferences().getPreferencesEntry());
-		rootNode.add(pluginManager.getInternalPlugin(VisExportPlugin.class).getPreferences().getPreferencesEntry());
+		preferencesExtensions.add(pluginManager.getInternalPlugin(CityGMLImportPlugin.class));
+		preferencesExtensions.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class));
+		preferencesExtensions.add(pluginManager.getInternalPlugin(VisExportPlugin.class));
 
 		for (PreferencesExtension extension : pluginManager.getExternalPlugins(PreferencesExtension.class)) {
 			Preferences preferences = extension.getPreferences();
@@ -128,18 +143,20 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 				continue;
 			}
 
-			rootNode.add(preferences.getPreferencesEntry());
+			preferencesExtensions.add(extension);
 		}
 
-		rootNode.add(pluginManager.getInternalPlugin(DatabasePlugin.class).getPreferences().getPreferencesEntry());
-		rootNode.add(generalPreferences.getPreferencesEntry());
+		preferencesExtensions.add(pluginManager.getInternalPlugin(DatabasePlugin.class));
 
-		menuTree = new JTree(rootNode);
+		menuTree = new JTree();
 		menuTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		menuTree.addTreeSelectionListener(this);
 		menuTree.setRootVisible(false);
 		menuTree.setShowsRootHandles(true);
 		menuTree.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
+
+		rootNode = new PreferencesTreeNode(new RootPreferencesEntry());
+		buildPreferencesTree();
 
 		// render top-level entries in bold
 		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
@@ -216,7 +233,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		add(splitPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		setBorder(BorderFactory.createEmptyBorder());
 
-		menuTree.setSelectionPath(new TreePath(new Object[]{rootNode}));
+		menuTree.setSelectionPath(new TreePath(rootNode));
 		menuTree.addTreeExpansionListener(new TreeExpansionListener() {
 			@Override
 			public void treeExpanded(TreeExpansionEvent event) {
@@ -230,6 +247,85 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		});
 
 		PopupMenuDecorator.getInstance().decorate(menuTree);
+	}
+
+	private void buildPreferencesTree() {
+		Deque<PreferencesTreeNode> children = new ArrayDeque<>();
+		Enumeration<TreePath> expanded = null;
+
+		// store current tree state
+		if (rootNode.getChildCount() > 0) {
+			for (int i = 0; i < rootNode.getChildCount(); i++) {
+				children.add((PreferencesTreeNode) rootNode.getChildAt(i));
+			}
+
+			expanded = menuTree.getExpandedDescendants(new TreePath(rootNode));
+			isRebuildingPreferencesTree = true;
+			rootNode.removeAllChildren();
+		}
+
+		// add preferences extensions
+		for (PreferencesExtension preferencesExtension : preferencesExtensions) {
+			if (((Plugin) preferencesExtension).isEnabled()) {
+				PreferencesTreeNode child = children.stream()
+						.filter(v -> v.entry == preferencesExtension.getPreferences().getPreferencesEntry())
+						.findFirst()
+						.orElse(null);
+
+				if (child != null) {
+					rootNode.add(child);
+				} else {
+					rootNode.add(preferencesExtension.getPreferences().getPreferencesEntry());
+				}
+			}
+		}
+
+		// add general preferences
+		if (!children.isEmpty() && children.getLast().entry == generalPreferences.getPreferencesEntry()) {
+			rootNode.add(children.getLast());
+		} else {
+			rootNode.add(generalPreferences.getPreferencesEntry());
+		}
+
+		menuTree.setModel(new DefaultTreeModel(rootNode));
+
+		// restore tree state
+		if (isRebuildingPreferencesTree) {
+			if (expanded != null) {
+				while (expanded.hasMoreElements()) {
+					TreePath path = expanded.nextElement();
+					if (!path.isDescendant(activePanelPath)) {
+						Object[] pathElements = path.getPath();
+						if (replaceFirstChild(pathElements, rootNode)) {
+							menuTree.expandPath(new TreePath(pathElements));
+						}
+					}
+				}
+			}
+
+			if (activePanelPath != null) {
+				Object[] pathElements = activePanelPath.getPath();
+				menuTree.setSelectionPath(replaceFirstChild(pathElements, rootNode) ?
+						new TreePath(pathElements) :
+						new TreePath(rootNode));
+			}
+
+			isRebuildingPreferencesTree = false;
+		}
+	}
+
+	private boolean replaceFirstChild(Object[] pathElements, PreferencesTreeNode parent) {
+		if (pathElements.length > 1) {
+			for (int i = 0; i < parent.getChildCount(); i++) {
+				PreferencesTreeNode child = (PreferencesTreeNode) parent.getChildAt(i);
+				if (child.entry == ((PreferencesTreeNode) pathElements[1]).entry) {
+					pathElements[1] = child;
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public void doTranslation() {
@@ -249,7 +345,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		if (node == null || activePanelPath == menuTree.getSelectionPath())
 			return;
 
-		if (!requestChange()) {
+		if (!isRebuildingPreferencesTree && !requestChange()) {
 			menuTree.setSelectionPath(activePanelPath);
 			return;
 		}
@@ -342,6 +438,13 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		for (int i = 0; i < node.getChildCount(); i++) {
 			updateUI((PreferencesTreeNode) node.getChildAt(i));
+		}
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		if (((PluginStateEvent) event).getPlugins().stream().anyMatch(p -> p instanceof PreferencesExtension)) {
+			SwingUtilities.invokeLater(this::buildPreferencesTree);
 		}
 	}
 

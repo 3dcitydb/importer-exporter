@@ -28,8 +28,6 @@
 
 package org.citydb.cli;
 
-import org.citydb.core.ade.ADEExtension;
-import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.cli.operation.deleter.DeleteCommand;
 import org.citydb.cli.operation.exporter.ExportCommand;
 import org.citydb.cli.operation.importer.ImportCommand;
@@ -45,25 +43,27 @@ import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.LogFileMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
+import org.citydb.core.ade.ADEExtension;
+import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.database.schema.mapping.SchemaMappingException;
 import org.citydb.core.database.schema.mapping.SchemaMappingValidationException;
 import org.citydb.core.database.schema.util.SchemaMappingUtil;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.CliCommand;
-import org.citydb.core.plugin.internal.IllegalEventSourceChecker;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginException;
 import org.citydb.core.plugin.PluginManager;
 import org.citydb.core.plugin.cli.CliOption;
 import org.citydb.core.plugin.cli.StartupProgressListener;
 import org.citydb.core.plugin.extension.config.ConfigExtension;
+import org.citydb.core.plugin.internal.IllegalEventSourceChecker;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.InternalProxySelector;
 import org.citydb.core.util.Util;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.global.EventType;
+import org.citydb.util.log.Logger;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
 import org.citygml4j.model.citygml.ade.ADEException;
@@ -80,8 +80,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 import java.util.Set;
@@ -457,6 +459,16 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             } else {
                 config.getGlobalConfig().setLanguage(LanguageType.EN);
             }
+        }
+
+        // set enabled status of external plugins
+        if (!pluginManager.getExternalPlugins().isEmpty()) {
+            Map<Plugin, Boolean> plugins = new IdentityHashMap<>();
+            for (Plugin plugin : pluginManager.getExternalPlugins()) {
+                plugins.put(plugin, config.isPluginEnabled(plugin.getClass().getName()));
+            }
+
+            pluginManager.setPluginsEnabled(plugins);
         }
     }
 

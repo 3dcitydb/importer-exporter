@@ -39,7 +39,7 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 
 import java.util.Locale;
 
-public class CityGMLExportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
+public class CityGMLExportPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
 	private CityGMLExportView view;
 	private CityGMLExportPreferences preferences;
 	

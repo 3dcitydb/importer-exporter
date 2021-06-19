@@ -30,5 +30,5 @@ package org.citydb.config.project.plugin;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "PluginConfigType")
-public class PluginConfig {
+public abstract class PluginConfig {
 }

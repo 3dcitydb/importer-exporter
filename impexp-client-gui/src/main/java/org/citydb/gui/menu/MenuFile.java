@@ -33,18 +33,18 @@ import org.citydb.config.ConfigUtil;
 import org.citydb.config.ProjectConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.Logging;
-import org.citydb.util.event.global.ConfigChangedEvent;
-import org.citydb.gui.ImpExpGui;
-import org.citydb.gui.components.srs.SrsComboBoxFactory;
-import org.citydb.gui.operation.preferences.PreferencesPlugin;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.core.plugin.PluginException;
 import org.citydb.core.plugin.PluginManager;
 import org.citydb.core.plugin.extension.config.ConfigExtension;
 import org.citydb.core.plugin.extension.config.PluginConfigEvent;
+import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.gui.ImpExpGui;
+import org.citydb.gui.components.srs.SrsComboBoxFactory;
+import org.citydb.gui.operation.preferences.PreferencesPlugin;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.global.ConfigChangedEvent;
+import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -57,47 +57,45 @@ import java.io.IOException;
 import java.util.List;
 
 public class MenuFile extends JMenu {
-	private final Logger log = Logger.getInstance();
-	private final Config config;
-	private final ImpExpGui mainView;
-	private final PluginManager pluginManager;
+    private final Logger log = Logger.getInstance();
+    private final Config config;
+    private final ImpExpGui mainView;
+    private final PluginManager pluginManager;
 
-	private JMenuItem openConfig;
-	private JMenuItem saveConfig;
-	private JMenuItem saveConfigAs;
-	private JMenuItem defaults;
-	private JMenuItem xsdConfig;
-	private JMenu lastUsed;
-	private JMenuItem exit;
+    private JMenuItem openConfig;
+    private JMenuItem saveConfig;
+    private JMenuItem saveConfigAs;
+    private JMenuItem defaults;
+    private JMenuItem xsdConfig;
+    private JMenu lastUsed;
+    private JMenuItem exit;
 
-	private String exportPath;
-	private String importPath;
+    private String exportPath;
+    private String importPath;
 
-	MenuFile(ImpExpGui mainView, Config config) {
-		this.config = config;
-		this.mainView = mainView;
-		pluginManager = PluginManager.getInstance();
+    MenuFile(ImpExpGui mainView, Config config) {
+        this.config = config;
+        this.mainView = mainView;
+        pluginManager = PluginManager.getInstance();
 
-		init();
-	}
+        init();
+    }
 
-	private void init() {
-		openConfig = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/folder_open.svg"));
-		saveConfig = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/save.svg"));
-		saveConfigAs = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/save_alt.svg"));
-		defaults = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/refresh.svg"));
-		xsdConfig = new JMenuItem();
-		lastUsed = new JMenu();
-		exit = new JMenuItem();
+    private void init() {
+        openConfig = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/folder_open.svg"));
+        saveConfig = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/save.svg"));
+        saveConfigAs = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/save_alt.svg"));
+        defaults = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/refresh.svg"));
+        xsdConfig = new JMenuItem();
+        lastUsed = new JMenu();
+        exit = new JMenuItem();
 
-		lastUsed.setIcon(new FlatSVGIcon("org/citydb/gui/icons/recently_used.svg"));
+        lastUsed.setIcon(new FlatSVGIcon("org/citydb/gui/icons/recently_used.svg"));
 
-		openConfig.addActionListener(e -> {
+        openConfig.addActionListener(e -> {
             File file = loadDialog(Language.I18N.getString("menu.file.open.label"));
-
             if (file != null) {
                 openConfig(file);
-
                 addLastUsedConfig(file.getAbsolutePath());
                 lastUsed.setEnabled(true);
                 setLastUsedList();
@@ -105,33 +103,37 @@ public class MenuFile extends JMenu {
             }
         });
 
-		saveConfig.addActionListener(e -> {
+        saveConfig.addActionListener(e -> {
             // set settings on internal plugins
-            for (InternalPlugin plugin : pluginManager.getInternalPlugins())
+            for (InternalPlugin plugin : pluginManager.getInternalPlugins()) {
                 plugin.setSettings();
+            }
 
             // fire event to external plugins
-            for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
+            for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
                 plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
+            }
 
             if (mainView.saveSettings()) {
-				log.info("Settings successfully saved to file '" + mainView.getConfigFile() + "'.");
-			}
+                log.info("Settings successfully saved to file '" + mainView.getConfigFile() + "'.");
+            }
         });
 
-		saveConfigAs.addActionListener(event -> {
+        saveConfigAs.addActionListener(event -> {
             File file = saveDialog(Language.I18N.getString("menu.file.saveAs.label"), true);
 
             if (file != null) {
-                log.info("Saving settings to file '" + file.toString() + "'.");
+                log.info("Saving settings to file '" + file + "'.");
                 try {
                     // set settings on internal plugins
-                    for (InternalPlugin plugin : pluginManager.getInternalPlugins())
+                    for (InternalPlugin plugin : pluginManager.getInternalPlugins()) {
                         plugin.setSettings();
+                    }
 
                     // fire event to external plugins
-                    for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
+                    for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
                         plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
+                    }
 
                     ConfigUtil.getInstance().marshal(config.getProjectConfig(), file);
 
@@ -145,41 +147,43 @@ public class MenuFile extends JMenu {
             }
         });
 
-		defaults.addActionListener(e -> {
-			int option = mainView.showOptionDialog(Language.I18N.getString("menu.file.defaults.msg.title"),
-					Language.I18N.getString("menu.file.defaults.msg"),
-					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        defaults.addActionListener(e -> {
+            int option = mainView.showOptionDialog(Language.I18N.getString("menu.file.defaults.msg.title"),
+                    Language.I18N.getString("menu.file.defaults.msg"),
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
-			if (option == JOptionPane.YES_OPTION) {
-				mainView.clearConsole();
-				mainView.disconnectFromDatabase();
+            if (option == JOptionPane.YES_OPTION) {
+                mainView.clearConsole();
+                mainView.disconnectFromDatabase();
 
-				config.setProjectConfig(new ProjectConfig());
+                config.setProjectConfig(new ProjectConfig());
 
-				// reset contents of srs combo boxes
-				SrsComboBoxFactory.getInstance().resetAll(true);
+                // reset contents of srs combo boxes
+                SrsComboBoxFactory.getInstance().resetAll(true);
 
-				// reset defaults on internal plugins
-				for (InternalPlugin plugin : pluginManager.getInternalPlugins())
-					plugin.loadSettings();
+                // reset defaults on internal plugins
+                for (InternalPlugin plugin : pluginManager.getInternalPlugins()) {
+                    plugin.loadSettings();
+                }
 
-				// update plugin configs
-				for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
-					plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
+                // update plugin configs
+                for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
+                    plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
+                }
 
-				// trigger event
-				ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ConfigChangedEvent(this));
+                // trigger event
+                ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ConfigChangedEvent(this));
 
-				mainView.doTranslation();
-				log.info("Settings are reset to default values.");
-			}
-		});
+                mainView.doTranslation();
+                log.info("Settings are reset to default values.");
+            }
+        });
 
-		xsdConfig.addActionListener(event -> {
+        xsdConfig.addActionListener(event -> {
             File path = saveDialog(Language.I18N.getString("menu.file.saveXSDas.label"), false);
 
             if (path != null) {
-                log.info("Saving settings XSD at location '" + path.toString() + "'.");
+                log.info("Saving settings XSD at location '" + path + "'.");
                 try {
                     ConfigUtil.getInstance().generateSchema(path);
                 } catch (JAXBException | IOException e) {
@@ -188,140 +192,145 @@ public class MenuFile extends JMenu {
             }
         });
 
-		exit.addActionListener(e -> ((ImpExpGui)getTopLevelAncestor()).dispose());
+        exit.addActionListener(e -> ((ImpExpGui) getTopLevelAncestor()).dispose());
 
-		add(openConfig);
-		add(saveConfig);
-		add(saveConfigAs);
-		addSeparator();
-		add(defaults);
-		addSeparator();
-		add (xsdConfig);
-		addSeparator();
-		add(lastUsed);
-		addSeparator();
-		add(exit);
+        add(openConfig);
+        add(saveConfig);
+        add(saveConfigAs);
+        addSeparator();
+        add(defaults);
+        addSeparator();
+        add(xsdConfig);
+        addSeparator();
+        add(lastUsed);
+        addSeparator();
+        add(exit);
 
-		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		openConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMask()));
-		saveConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask()));
-		saveConfigAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask() | InputEvent.SHIFT_DOWN_MASK));
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        openConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMask()));
+        saveConfig.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask()));
+        saveConfigAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask() | InputEvent.SHIFT_DOWN_MASK));
 
-		if (!config.getGuiConfig().getRecentlyUsedConfigFiles().isEmpty())
-			setLastUsedList();			
-		else
-			lastUsed.setEnabled(false);
-	}
+        if (!config.getGuiConfig().getRecentlyUsedConfigFiles().isEmpty())
+            setLastUsedList();
+        else
+            lastUsed.setEnabled(false);
+    }
 
-	public void doTranslation() {
-		openConfig.setText(Language.I18N.getString("menu.file.open.label"));
-		saveConfig.setText(Language.I18N.getString("menu.file.save.label"));
-		saveConfigAs.setText(Language.I18N.getString("menu.file.saveAs.label"));
-		defaults.setText(Language.I18N.getString("menu.file.defaults.label"));
-		xsdConfig.setText(Language.I18N.getString("menu.file.saveXSDas.label"));
-		lastUsed.setText(Language.I18N.getString("menu.file.lastUsed.label"));
-		exit.setText(Language.I18N.getString("menu.file.exit.label"));
+    public void doTranslation() {
+        openConfig.setText(Language.I18N.getString("menu.file.open.label"));
+        saveConfig.setText(Language.I18N.getString("menu.file.save.label"));
+        saveConfigAs.setText(Language.I18N.getString("menu.file.saveAs.label"));
+        defaults.setText(Language.I18N.getString("menu.file.defaults.label"));
+        xsdConfig.setText(Language.I18N.getString("menu.file.saveXSDas.label"));
+        lastUsed.setText(Language.I18N.getString("menu.file.lastUsed.label"));
+        exit.setText(Language.I18N.getString("menu.file.exit.label"));
 
-		GuiUtil.setMnemonic(openConfig, "menu.file.open.label", "menu.file.open.label.mnemonic");
-		GuiUtil.setMnemonic(saveConfig, "menu.file.save.label", "menu.file.save.label.mnemonic");
-		GuiUtil.setMnemonic(saveConfigAs, "menu.file.saveAs.label", "menu.file.saveAs.label.mnemonic");
-		GuiUtil.setMnemonic(defaults, "menu.file.defaults.label", "menu.file.defaults.label.mnemonics");
-		GuiUtil.setMnemonic(xsdConfig, "menu.file.saveXSDas.label", "menu.file.saveXSDas.label.mnemonic");
-		GuiUtil.setMnemonic(lastUsed, "menu.file.lastUsed.label", "menu.file.lastUsed.label.mnemonic");
-		GuiUtil.setMnemonic(exit, "menu.file.exit.label", "menu.file.exit.label.mnemonic");
-	}
+        GuiUtil.setMnemonic(openConfig, "menu.file.open.label", "menu.file.open.label.mnemonic");
+        GuiUtil.setMnemonic(saveConfig, "menu.file.save.label", "menu.file.save.label.mnemonic");
+        GuiUtil.setMnemonic(saveConfigAs, "menu.file.saveAs.label", "menu.file.saveAs.label.mnemonic");
+        GuiUtil.setMnemonic(defaults, "menu.file.defaults.label", "menu.file.defaults.label.mnemonics");
+        GuiUtil.setMnemonic(xsdConfig, "menu.file.saveXSDas.label", "menu.file.saveXSDas.label.mnemonic");
+        GuiUtil.setMnemonic(lastUsed, "menu.file.lastUsed.label", "menu.file.lastUsed.label.mnemonic");
+        GuiUtil.setMnemonic(exit, "menu.file.exit.label", "menu.file.exit.label.mnemonic");
+    }
 
-	private boolean openConfig(File file) {
-		log.info("Loading settings from file '" + file.toString() + "'.");
-		boolean success = false;
+    private boolean openConfig(File file) {
+        log.info("Loading settings from file '" + file.toString() + "'.");
+        boolean success = false;
 
-		try {
-			Logging logging = config.getGlobalConfig().getLogging();
-			Object object = ConfigUtil.getInstance().unmarshal(file);
-			if (!(object instanceof ProjectConfig)) {
-				log.error("Failed to load settings.");
-				return false;
-			}
+        try {
+            Logging logging = config.getGlobalConfig().getLogging();
+            Object object = ConfigUtil.getInstance().unmarshal(file);
+            if (!(object instanceof ProjectConfig)) {
+                log.error("Failed to load settings.");
+                return false;
+            }
 
-			ProjectConfig projectConfig = (ProjectConfig)object;
-			config.setProjectConfig(projectConfig);
-			mainView.doTranslation();
+            ProjectConfig projectConfig = (ProjectConfig) object;
+            config.setProjectConfig(projectConfig);
+            mainView.doTranslation();
 
-			// reset contents of srs combo boxes
-			SrsComboBoxFactory.getInstance().resetAll(true);
+            // reset contents of srs combo boxes
+            SrsComboBoxFactory.getInstance().resetAll(true);
 
-			// load settings for internal plugins
-			for (InternalPlugin plugin : pluginManager.getInternalPlugins())
-				plugin.loadSettings();
+            // load settings for internal plugins
+            for (InternalPlugin plugin : pluginManager.getInternalPlugins()) {
+                plugin.loadSettings();
+            }
 
-			// update plugin configs
-			for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
-				try {
-					pluginManager.propagatePluginConfig(plugin, config);
-				} catch (PluginException e) {
-					log.error("Failed to load settings for plugin " + plugin.getClass().getName() + ".", e);
-					log.warn("The plugin will most likely not work.");
-				}
-			}
+            // update plugin configs
+            for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
+                try {
+                    pluginManager.propagatePluginConfig(plugin, config);
+                } catch (PluginException e) {
+                    log.error("Failed to load settings for plugin " + plugin.getClass().getName() + ".", e);
+                    log.warn("The plugin will most likely not work.");
+                }
+            }
 
-			// adapt logging subsystem
-			config.getGlobalConfig().setLogging(logging);
+            // adapt logging subsystem
+            config.getGlobalConfig().setLogging(logging);
 
-			// reset logging settings
-			pluginManager.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
-			
-			// trigger event
-			ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ConfigChangedEvent(this));
-			success = true;
-		} catch (JAXBException | IOException e) {
-			log.error("Failed to load settings file '" + file.toString() + "'.", e);
-		}
+            // reset logging settings
+            pluginManager.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
 
-		return success;
-	}
+            // trigger event
+            ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ConfigChangedEvent(this));
+            success = true;
+        } catch (JAXBException | IOException e) {
+            log.error("Failed to load settings file '" + file + "'.", e);
+        }
 
-	private void addLastUsedConfig(String fileName) {
-		List<String> lastUsedList = config.getGuiConfig().getRecentlyUsedConfigFiles();
-		lastUsedList.remove(fileName);
-		lastUsedList.add(0, fileName);
+        return success;
+    }
 
-		if (lastUsedList.size() > config.getGuiConfig().getMaxLastUsedEntries())
-			config.getGuiConfig().setRecentlyUsedConfigFiles(lastUsedList.subList(0, config.getGuiConfig().getMaxLastUsedEntries()));
-	}
+    private void addLastUsedConfig(String fileName) {
+        List<String> lastUsedList = config.getGuiConfig().getRecentlyUsedConfigFiles();
+        lastUsedList.remove(fileName);
+        lastUsedList.add(0, fileName);
 
-	private void setLastUsedList() {
-		lastUsed.removeAll();
+        if (lastUsedList.size() > config.getGuiConfig().getMaxLastUsedEntries()) {
+            config.getGuiConfig().setRecentlyUsedConfigFiles(lastUsedList.subList(0, config.getGuiConfig().getMaxLastUsedEntries()));
+        }
+    }
 
-		for (final String fileName : config.getGuiConfig().getRecentlyUsedConfigFiles()) {
-			final JMenuItem item = new JMenuItem();
+    private void setLastUsedList() {
+        lastUsed.removeAll();
 
-			File tmp = new File(fileName);
-			String name = tmp.getName();
-			String path = tmp.getParent();
-			if (path == null)
-				path = System.getProperty("user.dir");
+        for (final String fileName : config.getGuiConfig().getRecentlyUsedConfigFiles()) {
+            final JMenuItem item = new JMenuItem();
 
-			final File file = new File(path + File.separator + name);
+            File tmp = new File(fileName);
+            String name = tmp.getName();
+            String path = tmp.getParent();
+            if (path == null) {
+                path = System.getProperty("user.dir");
+            }
 
-			String descString;
-			if (path.length() > 80 && path.contains(File.separator)) {
-				String first = path.substring(0, path.indexOf(File.separator));
-				String last = path.substring(path.lastIndexOf(File.separator), path.length());
+            final File file = new File(path + File.separator + name);
 
-				descString = first + File.separator + "..." + last + File.separator + name;
-			} else
-				descString = file.getAbsolutePath();
+            String descString;
+            if (path.length() > 80 && path.contains(File.separator)) {
+                String first = path.substring(0, path.indexOf(File.separator));
+                String last = path.substring(path.lastIndexOf(File.separator));
 
-			item.setText(descString);
-			lastUsed.add(item);
+                descString = first + File.separator + "..." + last + File.separator + name;
+            } else {
+                descString = file.getAbsolutePath();
+            }
 
-			item.addActionListener(e -> {
+            item.setText(descString);
+            lastUsed.add(item);
+
+            item.addActionListener(e -> {
                 boolean success = openConfig(file);
                 if (!success) {
                     config.getGuiConfig().getRecentlyUsedConfigFiles().remove(fileName);
                     lastUsed.remove(item);
-                    if (lastUsed.getItemCount() == 0)
+                    if (lastUsed.getItemCount() == 0) {
                         lastUsed.setEnabled(false);
+                    }
                 } else {
                     importPath = file.getPath();
                     addLastUsedConfig(fileName);
@@ -330,61 +339,68 @@ public class MenuFile extends JMenu {
 
                 lastUsed.repaint();
             });
-		}
-	}
+        }
+    }
 
-	private File saveDialog(String title, boolean isXml) {
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle(title);
+    private File saveDialog(String title, boolean isXml) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
 
-		if (isXml) {
-			FileNameExtensionFilter filter = new FileNameExtensionFilter("Settings Files (*.xml)", "xml");
-			chooser.addChoosableFileFilter(filter);
-			chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-			chooser.setFileFilter(filter);
-			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);			
-		} else 
-			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (isXml) {
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Settings Files (*.xml)", "xml");
+            chooser.addChoosableFileFilter(filter);
+            chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+            chooser.setFileFilter(filter);
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        } else {
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        }
 
-		if (exportPath != null)
-			chooser.setCurrentDirectory(new File(exportPath));
+        if (exportPath != null) {
+            chooser.setCurrentDirectory(new File(exportPath));
+        }
 
-		int result = chooser.showSaveDialog(getTopLevelAncestor());
-		if (result == JFileChooser.CANCEL_OPTION) 
-			return null;
+        int result = chooser.showSaveDialog(getTopLevelAncestor());
+        if (result == JFileChooser.CANCEL_OPTION) {
+            return null;
+        }
 
-		File file = chooser.getSelectedFile();		
-		if (isXml && (!file.getName().contains(".")))
-			file = new File(file + ".xml");
+        File file = chooser.getSelectedFile();
+        if (isXml && (!file.getName().contains("."))) {
+            file = new File(file + ".xml");
+        }
 
-		exportPath = chooser.getCurrentDirectory().getAbsolutePath();
-		if (importPath == null)
-			importPath = exportPath;
+        exportPath = chooser.getCurrentDirectory().getAbsolutePath();
+        if (importPath == null) {
+            importPath = exportPath;
+        }
 
-		return file;
-	}
+        return file;
+    }
 
-	private File loadDialog(String title) {
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle(title);
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("Settings Files (*.xml)", "xml");
-		chooser.addChoosableFileFilter(filter);
-		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-		chooser.setFileFilter(filter);
+    private File loadDialog(String title) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Settings Files (*.xml)", "xml");
+        chooser.addChoosableFileFilter(filter);
+        chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+        chooser.setFileFilter(filter);
 
-		if (importPath != null) {
-			chooser.setCurrentDirectory(new File(importPath));
-		} 
+        if (importPath != null) {
+            chooser.setCurrentDirectory(new File(importPath));
+        }
 
-		int result = chooser.showOpenDialog(getTopLevelAncestor());
-		if (result == JFileChooser.CANCEL_OPTION) 
-			return null;
+        int result = chooser.showOpenDialog(getTopLevelAncestor());
+        if (result == JFileChooser.CANCEL_OPTION) {
+            return null;
+        }
 
-		importPath = chooser.getCurrentDirectory().getAbsolutePath();
-		if (exportPath == null)
-			exportPath = importPath;
+        importPath = chooser.getCurrentDirectory().getAbsolutePath();
+        if (exportPath == null) {
+            exportPath = importPath;
+        }
 
-		return chooser.getSelectedFile();
-	}
+        return chooser.getSelectedFile();
+    }
 }

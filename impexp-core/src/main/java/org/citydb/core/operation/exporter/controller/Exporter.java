@@ -194,7 +194,7 @@ public class Exporter implements EventHandler {
         }
 
         // get metadata providers
-        List<MetadataProvider> metadataProviders = PluginManager.getInstance().getExternalPlugins(MetadataProvider.class);
+        List<MetadataProvider> metadataProviders = PluginManager.getInstance().getEnabledExternalPlugins(MetadataProvider.class);
         if (metadataProviders.size() > 1) {
             log.warn("Multiple metadata provider plugins found. This might lead to unexpected results.");
         }

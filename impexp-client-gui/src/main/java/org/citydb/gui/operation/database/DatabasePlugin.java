@@ -40,7 +40,7 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 
 import java.util.Locale;
 
-public class DatabasePlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
+public class DatabasePlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
 	private DatabaseView view;
 	private DatabasePreferences preferences;
 	

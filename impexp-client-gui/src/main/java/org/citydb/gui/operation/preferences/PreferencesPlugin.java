@@ -41,7 +41,7 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 
 import java.util.Locale;
 
-public class PreferencesPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
+public class PreferencesPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
 	private PreferencesView view;
 	private GeneralPreferences preferences;
 	
