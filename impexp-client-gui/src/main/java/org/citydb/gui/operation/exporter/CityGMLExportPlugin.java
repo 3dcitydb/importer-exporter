@@ -49,7 +49,7 @@ public class CityGMLExportPlugin implements InternalPlugin, ViewExtension, Prefe
 	}
 		
 	@Override
-	public void initViewExtension(ViewController viewController, Locale locale) {
+	public void initGuiExtension(ViewController viewController, Locale locale) {
 		loadSettings();
 	}
 

@@ -49,7 +49,7 @@ public class VisExportPlugin implements InternalPlugin, ViewExtension, Preferenc
 	}
 		
 	@Override
-	public void initViewExtension(ViewController viewController, Locale locale) {
+	public void initGuiExtension(ViewController viewController, Locale locale) {
 		loadSettings();
 	}
 

@@ -37,6 +37,13 @@ import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.GuiConfig;
 import org.citydb.config.gui.style.Theme;
 import org.citydb.core.database.DatabaseController;
+import org.citydb.core.plugin.CliCommand;
+import org.citydb.core.plugin.Plugin;
+import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.cli.StartupProgressListener;
+import org.citydb.core.plugin.extension.GuiExtension;
+import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.SplashScreen;
 import org.citydb.gui.operation.database.DatabasePlugin;
 import org.citydb.gui.operation.exporter.CityGMLExportPlugin;
@@ -46,13 +53,6 @@ import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.CliCommand;
-import org.citydb.core.plugin.Plugin;
-import org.citydb.core.plugin.PluginManager;
-import org.citydb.core.plugin.cli.StartupProgressListener;
-import org.citydb.core.plugin.extension.view.ViewExtension;
-import org.citydb.core.registry.ObjectRegistry;
-import org.citydb.core.util.CoreConstants;
 import picocli.CommandLine;
 
 import javax.swing.*;
@@ -139,8 +139,8 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         // initialize all GUI plugins
         Locale locale = new Locale(config.getGlobalConfig().getLanguage().value());
         for (Plugin plugin : pluginManager.getPlugins()) {
-            if (plugin instanceof ViewExtension) {
-                ((ViewExtension) plugin).initViewExtension(impExpGui, locale);
+            if (plugin instanceof GuiExtension) {
+                ((GuiExtension) plugin).initGuiExtension(impExpGui, locale);
             }
         }
     }

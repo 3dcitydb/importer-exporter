@@ -50,7 +50,7 @@ public class DatabasePlugin implements InternalPlugin, ViewExtension, Preference
 	}
 		
 	@Override
-	public void initViewExtension(ViewController viewController, Locale locale) {
+	public void initGuiExtension(ViewController viewController, Locale locale) {
 		loadSettings();
 	}
 

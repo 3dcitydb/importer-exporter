@@ -27,9 +27,8 @@
  */
 package org.citydb.core.plugin.extension.preferences;
 
-import org.citydb.core.plugin.extension.Extension;
-import org.citydb.core.plugin.extension.LanguageSupport;
+import org.citydb.core.plugin.extension.GuiExtension;
 
-public interface PreferencesExtension extends Extension, LanguageSupport {
+public interface PreferencesExtension extends GuiExtension {
 	Preferences getPreferences();
 }

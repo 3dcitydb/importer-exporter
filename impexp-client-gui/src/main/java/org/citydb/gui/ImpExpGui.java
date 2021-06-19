@@ -43,7 +43,7 @@ import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginManager;
-import org.citydb.core.plugin.extension.LanguageSupport;
+import org.citydb.core.plugin.extension.GuiExtension;
 import org.citydb.core.plugin.extension.view.View;
 import org.citydb.core.plugin.extension.view.ViewController;
 import org.citydb.core.plugin.extension.view.ViewEvent;
@@ -426,8 +426,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 			// fire translation notification to plugins
 			for (Plugin plugin : pluginManager.getPlugins()) {
-				if (plugin instanceof LanguageSupport)
-					((LanguageSupport) plugin).switchLocale(locale);
+				if (plugin instanceof GuiExtension)
+					((GuiExtension) plugin).switchLocale(locale);
 			}
 
 			int index = 0;
