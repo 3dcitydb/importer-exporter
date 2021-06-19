@@ -151,7 +151,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		showWindow();
 		initConsole();
 
-		// log exceptions for disabled ADE extensions
+		// log exceptions for plugins
+		pluginManager.logExceptions();
+
+		// log exceptions for ADE extensions
 		ADEExtensionManager.getInstance().logExceptions();
 	}
 

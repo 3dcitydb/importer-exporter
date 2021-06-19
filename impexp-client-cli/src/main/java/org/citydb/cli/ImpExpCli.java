@@ -143,6 +143,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     private boolean useDefaultConfiguration;
     private boolean useDefaultLogLevel = true;
     private boolean failOnADEExceptions = true;
+    private boolean failOnPluginExceptions = true;
 
     public static void main(String[] args) {
         int exitCode = new ImpExpCli().start(args);
@@ -205,6 +206,11 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     public ImpExpCli failOnADEExceptions(boolean failOnADEExceptions) {
         this.failOnADEExceptions = failOnADEExceptions;
+        return this;
+    }
+
+    public ImpExpCli failOnPluginExceptions(boolean failOnPluginExceptions) {
+        this.failOnPluginExceptions = failOnPluginExceptions;
         return this;
     }
 
@@ -362,6 +368,11 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             } catch (PluginException e) {
                 throw new ImpExpException("Failed to initialize config context for plugin " + plugin.getClass().getName() + ".", e);
             }
+        }
+
+        if (pluginManager.hasExceptions() && failOnPluginExceptions) {
+            pluginManager.logExceptions();
+            throw new ImpExpException("Failed to load plugins.");
         }
     }
 

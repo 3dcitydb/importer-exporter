@@ -149,7 +149,8 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
     public void preprocess(CommandLine commandLine) throws Exception {
         // set options on parent command
         parent.useDefaultConfiguration(true)
-                .failOnADEExceptions(false);
+                .failOnADEExceptions(false)
+                .failOnPluginExceptions(false);
 
         // load GUI configuration
         guiConfig = loadGuiConfig();

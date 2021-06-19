@@ -32,10 +32,15 @@ import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.core.plugin.extension.Extension;
 import org.citydb.core.plugin.extension.config.ConfigExtension;
 import org.citydb.core.plugin.internal.InternalPlugin;
+import org.citydb.core.plugin.metadata.PluginMetadata;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.util.log.Logger;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -45,6 +50,7 @@ public class PluginManager {
     private final List<InternalPlugin> internalPlugins = new ArrayList<>();
     private final List<Plugin> externalPlugins = new ArrayList<>();
     private final List<CliCommand> commands = new ArrayList<>();
+    private Map<String, List<PluginException>> exceptions;
 
     public static synchronized PluginManager getInstance() {
         if (instance == null) {
@@ -55,9 +61,10 @@ public class PluginManager {
     }
 
     public void loadPlugins(ClassLoader loader) {
+        JAXBContext context = createJAXBContext();
         ServiceLoader<Plugin> pluginLoader = ServiceLoader.load(Plugin.class, loader);
         for (Plugin plugin : pluginLoader) {
-            registerExternalPlugin(plugin);
+            registerExternalPlugin(plugin, context);
         }
     }
 
@@ -72,13 +79,37 @@ public class PluginManager {
     }
 
     public void registerExternalPlugin(Plugin plugin) {
-        for (Plugin externalPlugin : externalPlugins) {
-            if (externalPlugin.getClass() == plugin.getClass()) {
-                return;
-            }
-        }
+        registerExternalPlugin(plugin, createJAXBContext());
+    }
 
-        externalPlugins.add(plugin);
+    private void registerExternalPlugin(Plugin plugin, JAXBContext context) {
+        try {
+            for (Plugin externalPlugin : externalPlugins) {
+                if (externalPlugin.getClass() == plugin.getClass()) {
+                    return;
+                }
+            }
+
+            if (context != null) {
+                try {
+                    Unmarshaller unmarshaller = context.createUnmarshaller();
+                    Object object = unmarshaller.unmarshal(plugin.getClass().getResource("/META-INF/plugin.xml"));
+                    if (object instanceof PluginMetadata) {
+                        plugin.setMetadata((PluginMetadata) object);
+                    }
+                } catch (Exception e) {
+                    throw new PluginException("Failed to load plugin metadata from plugin.xml.", e);
+                }
+            }
+
+            plugin.validate();
+
+            externalPlugins.add(plugin);
+        } catch (PluginException e) {
+            addException(plugin, e);
+        } catch (Throwable e) {
+            addException(plugin, new PluginException("Unexpected error while loading the plugin.", e));
+        }
     }
 
     public void setPluginsEnabled(Map<Plugin, Boolean> pluginStates) {
@@ -186,5 +217,42 @@ public class PluginManager {
         }
 
         plugin.configLoaded(pluginConfig);
+    }
+
+    public boolean hasExceptions() {
+        return exceptions != null;
+    }
+
+    public void logExceptions() {
+        if (exceptions != null) {
+            Logger log = Logger.getInstance();
+            for (Map.Entry<String, List<PluginException>> entry : exceptions.entrySet()) {
+                log.error("Failed to initialize the plugin " + entry.getKey());
+                for (PluginException e : entry.getValue()) {
+                    log.error("Caused by: " + e.getMessage(), e.getCause());
+                }
+            }
+        }
+    }
+
+    public Map<String, List<PluginException>> getExceptions() {
+        return exceptions;
+    }
+
+    private void addException(Plugin plugin, PluginException exception) {
+        if (exceptions == null) {
+            exceptions = new HashMap<>();
+        }
+
+        exceptions.computeIfAbsent(plugin.getClass().getName(), k -> new ArrayList<>())
+                .add(exception);
+    }
+
+    private JAXBContext createJAXBContext() {
+        try {
+            return JAXBContext.newInstance(PluginMetadata.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

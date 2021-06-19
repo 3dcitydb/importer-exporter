@@ -25,39 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin;
 
-import org.citydb.core.plugin.metadata.PluginMetadata;
-
-public abstract class Plugin {
-	private boolean enabled = true;
-	private PluginMetadata metadata;
-
-	public abstract void shutdown();
-
-	public final boolean isEnabled() {
-		return enabled;
-	}
-
-	final void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
-
-	public final PluginMetadata getMetadata() {
-		return metadata;
-	}
-
-	final void setMetadata(PluginMetadata metadata) {
-		this.metadata = metadata;
-	}
-
-	final void validate() throws PluginException {
-		if (metadata == null) {
-			throw new PluginException("The plugin lacks mandatory metadata.");
-		}
-
-		if (metadata.getName() == null || metadata.getName().trim().isEmpty()) {
-			metadata.setName(getClass().getName());
-		}
-	}
-}
+@javax.xml.bind.annotation.XmlAccessorType(javax.xml.bind.annotation.XmlAccessType.FIELD)
+@javax.xml.bind.annotation.XmlSchema(elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+package org.citydb.core.plugin.metadata;
