@@ -117,6 +117,7 @@ public class MenuBar extends JMenuBar implements EventHandler {
 
 		add(view);
 		add(help);
+		revalidate();
 	}
 
 	public void doTranslation() {

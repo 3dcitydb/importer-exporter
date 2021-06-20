@@ -40,14 +40,14 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 import java.util.Locale;
 
 public class CityGMLExportPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
-	private CityGMLExportView view;
-	private CityGMLExportPreferences preferences;
+	private final CityGMLExportView view;
+	private final CityGMLExportPreferences preferences;
 	
 	public CityGMLExportPlugin(ViewController viewController, Config config) {
 		view = new CityGMLExportView(viewController, config);
 		preferences = new CityGMLExportPreferences(config);
 	}
-		
+
 	@Override
 	public void initGuiExtension(ViewController viewController, Locale locale) {
 		loadSettings();

@@ -31,7 +31,7 @@ import org.citydb.core.plugin.extension.preferences.PreferencesEntry;
 import org.citydb.core.plugin.extension.preferences.PreferencesEvent;
 
 public class DefaultPreferencesEntry extends PreferencesEntry {
-	public AbstractPreferencesComponent component;
+	protected AbstractPreferencesComponent component;
 	
 	public DefaultPreferencesEntry(AbstractPreferencesComponent component) {
 		this.component = component;

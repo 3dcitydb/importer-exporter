@@ -28,26 +28,26 @@
 package org.citydb.gui.operation.preferences;
 
 import org.citydb.config.Config;
-import org.citydb.gui.ImpExpGui;
-import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;
-import org.citydb.gui.operation.preferences.view.PreferencesPanel;
-import org.citydb.gui.operation.preferences.view.PreferencesView;
-import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.core.plugin.extension.preferences.Preferences;
 import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.core.plugin.extension.view.View;
 import org.citydb.core.plugin.extension.view.ViewController;
 import org.citydb.core.plugin.extension.view.ViewExtension;
+import org.citydb.core.plugin.internal.InternalPlugin;
+import org.citydb.gui.ImpExpGui;
+import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;
+import org.citydb.gui.operation.preferences.view.PreferencesPanel;
+import org.citydb.gui.operation.preferences.view.PreferencesView;
 
 import java.util.Locale;
 
 public class PreferencesPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
-	private PreferencesView view;
-	private GeneralPreferences preferences;
+	private final PreferencesView view;
+	private final GeneralPreferences preferences;
 	
 	public PreferencesPlugin(ImpExpGui mainView, Config config) {
 		view = new PreferencesView(mainView, config);
-		preferences = ((PreferencesPanel)view.getViewComponent()).getGeneralPreferences();
+		preferences = ((PreferencesPanel) view.getViewComponent()).getGeneralPreferences();
 	}
 		
 	@Override
