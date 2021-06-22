@@ -28,11 +28,11 @@
 package org.citydb.gui.operation.database.preferences;
 
 import org.citydb.config.Config;
-import org.citydb.gui.operation.common.AbstractPreferences;
+import org.citydb.gui.operation.common.DefaultPreferences;
 import org.citydb.gui.operation.common.DefaultPreferencesEntry;
 import org.citydb.core.plugin.extension.view.ViewController;
 
-public class DatabasePreferences extends AbstractPreferences {
+public class DatabasePreferences extends DefaultPreferences {
 	
 	public DatabasePreferences(ViewController viewController, Config config) {
 		super(new DatabaseEntry());

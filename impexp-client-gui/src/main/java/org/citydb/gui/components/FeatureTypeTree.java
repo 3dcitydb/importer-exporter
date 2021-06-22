@@ -33,9 +33,9 @@ import org.citydb.core.database.schema.mapping.AppSchema;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.Namespace;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.checkboxtree.CheckboxTree;
 import org.citydb.gui.components.checkboxtree.TreeCheckingModel;
-import org.citydb.core.registry.ObjectRegistry;
 import org.citygml4j.model.module.citygml.BridgeModule;
 import org.citygml4j.model.module.citygml.BuildingModule;
 import org.citygml4j.model.module.citygml.CityFurnitureModule;
@@ -54,6 +54,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.xml.namespace.QName;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -288,5 +289,10 @@ public class FeatureTypeTree extends CheckboxTree {
 		}
 
 		return adeNodes;
+	}
+
+	@Override
+	public Dimension getMinimumSize() {
+		return getPreferredSize();
 	}
 }

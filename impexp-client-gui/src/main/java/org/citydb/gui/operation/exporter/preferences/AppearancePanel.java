@@ -32,7 +32,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.ExportAppearance;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -42,7 +42,7 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 
-public class AppearancePanel extends AbstractPreferencesComponent {
+public class AppearancePanel extends DefaultPreferencesComponent {
 	private TitledPanel exportPanel;
 	private TitledPanel pathPanel;
 

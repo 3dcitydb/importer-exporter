@@ -35,7 +35,7 @@ import org.citydb.config.project.visExporter.PointDisplayMode;
 import org.citydb.gui.components.ColorPicker;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -45,7 +45,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
+public class PointAndCurveStylingPanel extends DefaultPreferencesComponent {
 	private final Supplier<PointAndCurve> pointAndCurveSupplier;
 
 	private TitledPanel pointPanel;

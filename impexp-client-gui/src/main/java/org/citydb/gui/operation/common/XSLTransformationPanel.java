@@ -56,7 +56,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class XSLTransformationPanel extends AbstractPreferencesComponent {
+public class XSLTransformationPanel extends DefaultPreferencesComponent {
     private final boolean isExport;
 
     private TitledPanel transformationPanel;

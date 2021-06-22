@@ -36,9 +36,8 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.EventType;
+import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
 import org.citydb.gui.components.bbox.BoundingBoxListener;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
@@ -61,9 +60,10 @@ import org.citydb.gui.map.map.event.ReverseGeocoderEvent.ReverseGeocoderStatus;
 import org.citydb.gui.map.validation.BoundingBoxValidator;
 import org.citydb.gui.map.validation.BoundingBoxValidator.ValidationResult;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.extension.view.ViewController;
-import org.citydb.core.registry.ObjectRegistry;
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.TileFactory;
@@ -210,8 +210,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		int iconTextGap = new JLabel().getIconTextGap();
 		loadIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/icons/loader.gif"));
 
-		add(top, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(left, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(top, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+		add(left, GuiUtil.setConstraints(0, 1, 0, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(map.getMapKit(), GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		// top components
@@ -224,9 +224,11 @@ public class MapWindow extends JDialog implements EventHandler {
 		searchBox = new JComboBox<>();
 		searchResult = new JLabel();
 		searchResult.setPreferredSize(new Dimension(searchResult.getPreferredSize().width, loadIcon.getIconHeight()));
+		searchResult.setMinimumSize(searchResult.getPreferredSize());
 
 		searchBox.setEditable(true);
 		searchBox.setPreferredSize(new Dimension(600, (int) searchBox.getPreferredSize().getHeight()));
+		searchBox.setMinimumSize(searchBox.getPreferredSize());
 
 		applyButton = new JButton();
 		cancelButton = new JButton();
@@ -234,11 +236,11 @@ public class MapWindow extends JDialog implements EventHandler {
 		applyButton.setEnabled(false);
 
 		top.add(searchBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 15, 10, 0, 5));
-		top.add(goButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 15, 5, 0, 10));
+		top.add(goButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 15, 5, 0, 10));
 		top.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 0, 0));
-		top.add(applyButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.BOTH, 15, 0, 0, 5));
-		top.add(cancelButton, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.BOTH, 15, 5, 0, 10));
-		top.add(searchResult, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 2, 10, 5, 10));
+		top.add(applyButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 15, 0, 0, 5));
+		top.add(cancelButton, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 15, 5, 0, 10));
+		top.add(searchResult, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 2, 10, 5, 10));
 
 		// left components
 		left.setLayout(new GridBagLayout());

@@ -35,14 +35,14 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.core.database.schema.mapping.AppSchema;
 import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.gui.operation.common.AbstractPreferences;
+import org.citydb.gui.operation.common.DefaultPreferences;
 import org.citydb.gui.operation.common.DefaultPreferencesEntry;
 import org.citydb.core.plugin.extension.view.ViewController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class VisExportPreferences extends AbstractPreferences {
+public class VisExportPreferences extends DefaultPreferences {
 	
 	public VisExportPreferences(ViewController viewController, Config config) {
 		super(new VisExportEntry());

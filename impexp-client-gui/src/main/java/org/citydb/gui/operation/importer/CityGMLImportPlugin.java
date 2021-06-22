@@ -40,8 +40,8 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 import java.util.Locale;
 
 public class CityGMLImportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
-	private CityGMLImportView view;
-	private CityGMLImportPreferences preferences;
+	private final CityGMLImportView view;
+	private final CityGMLImportPreferences preferences;
 	
 	public CityGMLImportPlugin(ViewController viewController, Config config) {
 		view = new CityGMLImportView(viewController, config);

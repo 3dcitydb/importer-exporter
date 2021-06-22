@@ -30,10 +30,10 @@ package org.citydb.gui.operation.common;
 import org.citydb.core.plugin.extension.preferences.Preferences;
 import org.citydb.core.plugin.extension.preferences.PreferencesEntry;
 
-public class AbstractPreferences implements Preferences {
+public class DefaultPreferences implements Preferences {
 	protected DefaultPreferencesEntry root;
 	
-	protected AbstractPreferences(DefaultPreferencesEntry entry) {
+	protected DefaultPreferences(DefaultPreferencesEntry entry) {
 		this.root = entry;
 	}
 	

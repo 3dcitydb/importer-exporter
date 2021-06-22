@@ -72,8 +72,13 @@ public class SQLFilterView extends FilterView<SelectOperator> {
         sqlText.setAutoIndentEnabled(true);
         sqlText.setHighlightCurrentLine(true);
         sqlText.setTabSize(2);
-        rowHeight = sqlText.getFont().getSize() + 5;
-        scrollPane = new RTextScrollPane(sqlText);
+        rowHeight = sqlText.getPreferredSize().height / 5;
+        scrollPane = new RTextScrollPane(sqlText) {
+            @Override
+            public Dimension getMinimumSize() {
+                return getPreferredSize();
+            }
+        };
 
         JToolBar toolBar = new JToolBar();
         toolBar.setBorder(BorderFactory.createEmptyBorder());
@@ -92,7 +97,6 @@ public class SQLFilterView extends FilterView<SelectOperator> {
 
             scrollPane.setPreferredSize(size);
             component.revalidate();
-            component.repaint();
 
             if (!removeButton.isEnabled()) {
                 removeButton.setEnabled(true);
@@ -107,7 +111,6 @@ public class SQLFilterView extends FilterView<SelectOperator> {
 
                 scrollPane.setPreferredSize(size);
                 component.revalidate();
-                component.repaint();
 
                 if (additionalRows == 0) {
                     removeButton.setEnabled(false);
@@ -171,7 +174,6 @@ public class SQLFilterView extends FilterView<SelectOperator> {
 
             scrollPane.setPreferredSize(size);
             component.revalidate();
-            component.repaint();
 
             removeButton.setEnabled(addButton.isEnabled() && additionalRows > 0);
         });

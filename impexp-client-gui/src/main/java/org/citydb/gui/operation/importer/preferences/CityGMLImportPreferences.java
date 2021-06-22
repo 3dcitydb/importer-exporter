@@ -28,11 +28,11 @@
 package org.citydb.gui.operation.importer.preferences;
 
 import org.citydb.config.Config;
-import org.citydb.gui.operation.common.AbstractPreferences;
+import org.citydb.gui.operation.common.DefaultPreferences;
 import org.citydb.gui.operation.common.DefaultPreferencesEntry;
 import org.citydb.gui.operation.common.XSLTransformationPanel;
 
-public class CityGMLImportPreferences extends AbstractPreferences {
+public class CityGMLImportPreferences extends DefaultPreferences {
 	
 	public CityGMLImportPreferences(Config config) {
 		super(new CityGMLImportEntry());

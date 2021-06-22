@@ -40,8 +40,8 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 import java.util.Locale;
 
 public class VisExportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
-	private VisExportView view;
-	private VisExportPreferences preferences;
+	private final VisExportView view;
+	private final VisExportPreferences preferences;
 	
 	public VisExportPlugin(ViewController viewController, Config config) {
 		view = new VisExportView(viewController, config);

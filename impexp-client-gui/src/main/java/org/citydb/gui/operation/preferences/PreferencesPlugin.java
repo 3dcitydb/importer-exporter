@@ -42,12 +42,12 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 import java.util.Locale;
 
 public class PreferencesPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
-	private PreferencesView view;
-	private GeneralPreferences preferences;
+	private final PreferencesView view;
+	private final GeneralPreferences preferences;
 	
 	public PreferencesPlugin(ImpExpGui mainView, Config config) {
 		view = new PreferencesView(mainView, config);
-		preferences = ((PreferencesPanel)view.getViewComponent()).getGeneralPreferences();
+		preferences = ((PreferencesPanel) view.getViewComponent()).getGeneralPreferences();
 	}
 		
 	@Override

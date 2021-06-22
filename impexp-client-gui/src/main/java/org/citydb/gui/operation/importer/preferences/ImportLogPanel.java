@@ -32,7 +32,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportLog;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.core.util.CoreConstants;
 
@@ -40,7 +40,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-public class ImportLogPanel extends AbstractPreferencesComponent {
+public class ImportLogPanel extends DefaultPreferencesComponent {
 	private TitledPanel importLogPanel;
 	private JCheckBox logFeatures;
 	private JLabel logFileLabel;

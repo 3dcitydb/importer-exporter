@@ -42,21 +42,21 @@ import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.global.InterruptEvent;
 import org.citydb.core.file.output.OutputFileFactory;
-import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
-import org.citydb.gui.components.dialog.ExportStatusDialog;
-import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.CityGMLExportException.ErrorCode;
 import org.citydb.core.operation.exporter.controller.Exporter;
 import org.citydb.core.plugin.extension.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
+import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
+import org.citydb.gui.components.dialog.ExportStatusDialog;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.global.InterruptEvent;
+import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -142,17 +142,13 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		view.setLayout(new GridBagLayout());
 		view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.BOTH, 0, 10, 0, 10));
 
-		JScrollPane scrollPane = new JScrollPane(view);
-		scrollPane.setBorder(BorderFactory.createEmptyBorder());
-		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
-
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridBagLayout());
 		buttonPanel.add(exportButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
 		buttonPanel.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
 
 		add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
-		add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(view, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(buttonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
 
 		DropTarget dropTarget = new DropTarget(browseText, this);

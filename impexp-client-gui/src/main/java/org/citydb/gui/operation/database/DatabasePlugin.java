@@ -41,8 +41,8 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 import java.util.Locale;
 
 public class DatabasePlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
-	private DatabaseView view;
-	private DatabasePreferences preferences;
+	private final DatabaseView view;
+	private final DatabasePreferences preferences;
 	
 	public DatabasePlugin(ViewController viewController, Config config) {
 		view = new DatabaseView(viewController, config);
