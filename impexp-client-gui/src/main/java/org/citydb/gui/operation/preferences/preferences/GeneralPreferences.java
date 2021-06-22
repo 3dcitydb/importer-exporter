@@ -29,10 +29,10 @@ package org.citydb.gui.operation.preferences.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.gui.ImpExpGui;
-import org.citydb.gui.operation.common.AbstractPreferences;
+import org.citydb.gui.operation.common.DefaultPreferences;
 import org.citydb.gui.operation.common.DefaultPreferencesEntry;
 
-public class GeneralPreferences extends AbstractPreferences {
+public class GeneralPreferences extends DefaultPreferences {
 	private final LoggingPanel loggingPanel;
 	
 	public GeneralPreferences(ImpExpGui mainView, Config config) {

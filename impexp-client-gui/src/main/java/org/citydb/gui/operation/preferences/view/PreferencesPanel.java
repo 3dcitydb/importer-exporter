@@ -38,6 +38,7 @@ import org.citydb.core.plugin.extension.preferences.PreferencesEvent;
 import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.ImpExpGui;
+import org.citydb.gui.components.ScrollablePanel;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.NullComponent;
@@ -79,7 +80,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 	private final Config config;
 
 	private JSplitPane splitPane;
-	private JPanel treePanel;
+	private JScrollPane treeScrollPane;
 	private JTree menuTree;
 	private PreferencesEntry activeEntry;
 	private TreePath activePanelPath;
@@ -182,14 +183,15 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 
 		// layout
 		setLayout(new GridBagLayout());
-		treePanel = new JPanel();
-		treePanel.setLayout(new GridBagLayout());
-		{
-			JScrollPane scroll = new JScrollPane(menuTree);
-			scroll.setBorder(BorderFactory.createEmptyBorder());
-			scroll.setViewportBorder(BorderFactory.createEmptyBorder());
-			treePanel.add(scroll, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		}
+
+		treeScrollPane = new JScrollPane(menuTree) {
+			@Override
+			public Dimension getMinimumSize() {
+				return menuTree.getPreferredSize();
+			}
+		};
+		treeScrollPane.setBorder(BorderFactory.createEmptyBorder());
+		treeScrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
 
 		JPanel contentPanel = new JPanel();
 		contentPanel.setLayout(new GridBagLayout());
@@ -208,10 +210,6 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 			settingsContentPanel = new JPanel();
 			settingsContentPanel.setLayout(new GridBagLayout());
 
-			JScrollPane scrollPane = new JScrollPane(settingsContentPanel);
-			scrollPane.setBorder(BorderFactory.createEmptyBorder());
-			scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
-
 			JPanel buttons = new JPanel();
 			buttons.setLayout(new GridBagLayout());
 			{
@@ -220,14 +218,14 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 				buttons.add(applyButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.BOTH, 5, 5, 5, 0));
 			}
 
-			contentPanel.add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			contentPanel.add(settingsContentPanel, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			contentPanel.add(buttons, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 5, 10, 5, 10));
 		}
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setContinuousLayout(true);
 		splitPane.setBorder(BorderFactory.createEmptyBorder());
-		splitPane.setLeftComponent(treePanel);
+		splitPane.setLeftComponent(treeScrollPane);
 		splitPane.setRightComponent(contentPanel);
 
 		add(splitPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -237,12 +235,12 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 		menuTree.addTreeExpansionListener(new TreeExpansionListener() {
 			@Override
 			public void treeExpanded(TreeExpansionEvent event) {
-				splitPane.setDividerLocation(treePanel.getPreferredSize().width);
+				splitPane.setDividerLocation(treeScrollPane.getPreferredSize().width);
 			}
 
 			@Override
 			public void treeCollapsed(TreeExpansionEvent event) {
-				splitPane.setDividerLocation(treePanel.getPreferredSize().width);
+				splitPane.setDividerLocation(treeScrollPane.getPreferredSize().width);
 			}
 		});
 
@@ -336,7 +334,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 
 		resetPreferencesMenu();
 		settingsNameLabel.setText(menuTree.getLastSelectedPathComponent().toString());
-		splitPane.setDividerLocation(treePanel.getPreferredSize().width);
+		splitPane.setDividerLocation(treeScrollPane.getPreferredSize().width);
 	}
 
 	@Override
@@ -355,14 +353,27 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 			settingsContentPanel.add(hintPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
 			activeEntry = null;
 		} else {
-			settingsContentPanel.add(node.entry.getViewComponent(), GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
+			Component component;
+			if (node.entry.getViewComponent().isScrollable()) {
+				ScrollablePanel scrollablePanel = new ScrollablePanel();
+				scrollablePanel.setLayout(new BorderLayout());
+				scrollablePanel.add(node.entry.getViewComponent());
+
+				component = new JScrollPane(scrollablePanel);
+				((JScrollPane) component).setBorder(BorderFactory.createEmptyBorder());
+				((JScrollPane) component).setViewportBorder(BorderFactory.createEmptyBorder());
+			} else {
+				component = node.entry.getViewComponent();
+			}
+
+			settingsContentPanel.add(component, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.BOTH, 0, 10, 0, 10));
 			activeEntry = node.entry;
 		}
 
 		activePanelPath = menuTree.getSelectionPath();
 		settingsNameLabel.setText(node.toString());
 		setEnabledButtons();
-		splitPane.setDividerLocation(treePanel.getPreferredSize().width);
+		splitPane.setDividerLocation(treeScrollPane.getPreferredSize().width);
 	}
 
 	public boolean requestChange() {

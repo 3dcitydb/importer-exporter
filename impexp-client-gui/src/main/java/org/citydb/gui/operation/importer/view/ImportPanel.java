@@ -34,19 +34,20 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.global.InterruptEvent;
-import org.citydb.gui.components.dialog.ImportStatusDialog;
-import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.controller.Importer;
 import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.controller.Validator;
 import org.citydb.core.plugin.extension.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.gui.components.ScrollablePanel;
+import org.citydb.gui.components.dialog.ImportStatusDialog;
+import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.global.InterruptEvent;
+import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -164,13 +165,13 @@ public class ImportPanel extends JPanel {
         JPanel filePanel = new JPanel();
         filePanel.setLayout(new GridBagLayout());
         JScrollPane fileScroll = new JScrollPane(fileList);
-		fileScroll.setPreferredSize(fileScroll.getPreferredSize());
+		fileScroll.setMinimumSize(fileScroll.getPreferredSize());
 
         filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 0, 1, 2, GridBagConstraints.BOTH, 0, 0, 0, 5));
 		filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
 		filePanel.add(removeButton, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 5, 20, 0));
 
-        JPanel view = new JPanel();
+        JPanel view = new ScrollablePanel();
         view.setLayout(new GridBagLayout());
 		view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
 

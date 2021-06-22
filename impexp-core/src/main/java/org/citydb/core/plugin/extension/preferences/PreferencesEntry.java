@@ -27,7 +27,6 @@
  */
 package org.citydb.core.plugin.extension.preferences;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +36,7 @@ public abstract class PreferencesEntry {
 	public abstract boolean isModified();
 	public abstract boolean handleEvent(PreferencesEvent event);
 	public abstract String getLocalizedTitle();
-	public abstract Component getViewComponent();
+	public abstract PreferencesComponent getViewComponent();
 
 	public void addChildEntry(PreferencesEntry child) {
 		if (childEntries == null)

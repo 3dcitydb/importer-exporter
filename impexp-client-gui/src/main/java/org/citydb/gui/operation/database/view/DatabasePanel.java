@@ -49,6 +49,7 @@ import org.citydb.core.plugin.extension.view.ViewEvent;
 import org.citydb.core.plugin.extension.view.ViewListener;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.DatePicker;
+import org.citydb.gui.components.ScrollablePanel;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
@@ -270,18 +271,16 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		connectionDetails = new TitledPanel().build(content);
 		operationsPanel = new DatabaseOperationsPanel(viewController, config);
-        JPanel view = new JPanel();
+        JPanel view = new ScrollablePanel();
         view.setLayout(new GridBagLayout());
         view.add(chooserPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 15, 10, 15, 10));
         view.add(connectionDetails, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 10, 0, 10));
 		view.add(connectButton, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.NONE, 0, 10, 15, 10));
         view.add(operationsPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 10, 10, 0, 10));
-        view.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 4, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-        JScrollPane scrollPane = new JScrollPane();
+        JScrollPane scrollPane = new JScrollPane(view);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
-		scrollPane.setViewportView(view);
 		setLayout(new BorderLayout());
 		add(scrollPane);
 

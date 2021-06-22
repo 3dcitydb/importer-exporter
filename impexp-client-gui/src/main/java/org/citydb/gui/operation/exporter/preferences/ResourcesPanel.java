@@ -34,7 +34,7 @@ import org.citydb.config.project.resources.IdCacheConfig;
 import org.citydb.config.project.resources.ThreadPool;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -43,7 +43,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 
-public class ResourcesPanel extends AbstractPreferencesComponent{
+public class ResourcesPanel extends DefaultPreferencesComponent {
 	private TitledPanel multithreadingPanel;
 	private TitledPanel batchPanel;
 	private TitledPanel idCachePanel;

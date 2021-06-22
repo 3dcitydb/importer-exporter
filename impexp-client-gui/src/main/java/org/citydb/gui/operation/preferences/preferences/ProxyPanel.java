@@ -37,7 +37,7 @@ import org.citydb.util.event.global.EventType;
 import org.citydb.util.event.global.ProxyServerUnavailableEvent;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.CheckBoxListDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
@@ -55,7 +55,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProxyPanel extends AbstractPreferencesComponent implements EventHandler {
+public class ProxyPanel extends DefaultPreferencesComponent implements EventHandler {
 	private final Logger log = Logger.getInstance();
 	private JList<ProxyConfig> proxyList;
 	private CheckBoxListDecorator<ProxyConfig> listDecorator;

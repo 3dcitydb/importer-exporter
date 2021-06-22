@@ -40,7 +40,7 @@ import org.citydb.util.event.global.DatabaseConnectionStateEvent;
 import org.citydb.util.event.global.EventType;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
@@ -49,7 +49,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class ResourceIdPanel extends AbstractPreferencesComponent implements EventHandler {
+public class ResourceIdPanel extends DefaultPreferencesComponent implements EventHandler {
 	private TitledPanel idAssignmentPanel;
 	private JLabel idPrefixLabel;
 	private JTextField idPrefix;

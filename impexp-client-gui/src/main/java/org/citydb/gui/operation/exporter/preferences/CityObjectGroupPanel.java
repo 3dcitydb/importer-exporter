@@ -31,13 +31,13 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.ExportCityObjectGroup;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class CityObjectGroupPanel extends AbstractPreferencesComponent {
+public class CityObjectGroupPanel extends DefaultPreferencesComponent {
 	private TitledPanel exportGroupPanel;
 	private JCheckBox exportMemberAsXLink;
 	private JLabel exportMemberAsXLinkDescr;

@@ -36,7 +36,7 @@ import org.citydb.config.project.visExporter.GltfVersion;
 import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.core.plugin.extension.view.ViewController;
 import org.citydb.textureAtlas.TextureAtlasCreator;
@@ -55,7 +55,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class GeneralPanel extends AbstractPreferencesComponent {
+public class GeneralPanel extends DefaultPreferencesComponent {
 	private final ViewController viewController;
 	private final Map<String, Integer> packingAlgorithms = new HashMap<>();
 

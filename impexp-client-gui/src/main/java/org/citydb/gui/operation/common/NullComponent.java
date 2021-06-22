@@ -27,7 +27,7 @@
  */
 package org.citydb.gui.operation.common;
 
-public class NullComponent extends AbstractPreferencesComponent {
+public class NullComponent extends DefaultPreferencesComponent {
 	private static final NullComponent instance = new NullComponent();
 	
 	private NullComponent() {

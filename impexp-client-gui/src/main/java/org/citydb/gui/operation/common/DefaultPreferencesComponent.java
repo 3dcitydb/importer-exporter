@@ -30,13 +30,14 @@ package org.citydb.gui.operation.common;
 import org.citydb.config.Config;
 import org.citydb.config.ProjectConfig;
 import org.citydb.config.gui.GuiConfig;
+import org.citydb.core.plugin.extension.preferences.PreferencesComponent;
 
 import javax.swing.*;
 
-public abstract class AbstractPreferencesComponent extends JPanel {
+public abstract class DefaultPreferencesComponent extends PreferencesComponent {
 	protected Config config;
 	
-	protected AbstractPreferencesComponent(Config config) {
+	protected DefaultPreferencesComponent(Config config) {
 		this.config = config;
 	}
 

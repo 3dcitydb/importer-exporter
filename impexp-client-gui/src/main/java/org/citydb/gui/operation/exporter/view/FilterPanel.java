@@ -33,6 +33,8 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
+import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.components.ScrollablePanel;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.components.srs.SrsComboBox;
@@ -46,7 +48,6 @@ import org.citydb.gui.operation.common.filter.LodFilterView;
 import org.citydb.gui.operation.common.filter.SQLFilterView;
 import org.citydb.gui.operation.common.filter.XMLQueryView;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.plugin.extension.view.ViewController;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -135,10 +136,15 @@ public class FilterPanel extends JPanel {
 		setLayout(new GridBagLayout());
 		add(mainPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		JPanel guiPanel = new JPanel();
+		JPanel guiPanel = new ScrollablePanel();
 		xmlQuery = new XMLQueryView(viewController)
 				.withSimpleQuerySupplier(() -> config.getExportConfig().getSimpleQuery());
-		mainPanel.add(guiPanel, "simple");
+
+		JScrollPane scrollPane = new JScrollPane(guiPanel);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
+
+		mainPanel.add(scrollPane, "simple");
 		mainPanel.add(xmlQuery.getViewComponent(), "advanced");
 
 		guiPanel.setLayout(new GridBagLayout());

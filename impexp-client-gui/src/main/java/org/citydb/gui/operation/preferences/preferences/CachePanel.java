@@ -33,7 +33,7 @@ import org.citydb.config.project.global.Cache;
 import org.citydb.config.project.global.CacheMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -41,7 +41,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-public class CachePanel extends AbstractPreferencesComponent {
+public class CachePanel extends DefaultPreferencesComponent {
 	private TitledPanel cachePanel;
 	private JRadioButton useDatabase;
 	private JRadioButton useLocalCache;

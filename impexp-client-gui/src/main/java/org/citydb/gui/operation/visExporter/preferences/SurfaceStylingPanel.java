@@ -35,7 +35,7 @@ import org.citydb.config.project.visExporter.Styles;
 import org.citydb.gui.components.ColorPicker;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -48,7 +48,7 @@ import java.util.EnumSet;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-public class SurfaceStylingPanel extends AbstractPreferencesComponent {
+public class SurfaceStylingPanel extends DefaultPreferencesComponent {
 	private final String i18nTitle;
 	private final boolean showFootprintAndExtrudedOptions;
 	private final boolean showGeometryOptions;

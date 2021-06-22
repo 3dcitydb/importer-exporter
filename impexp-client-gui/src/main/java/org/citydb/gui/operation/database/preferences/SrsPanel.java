@@ -44,7 +44,7 @@ import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.components.srs.SrsComboBox;
 import org.citydb.gui.components.srs.SrsComboBoxFactory;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.operation.database.operations.SrsOperation;
 import org.citydb.gui.operation.database.util.SrsNameComboBox;
 import org.citydb.gui.util.GuiUtil;
@@ -75,7 +75,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.List;
 
-public class SrsPanel extends AbstractPreferencesComponent implements EventHandler, DropTargetListener {
+public class SrsPanel extends DefaultPreferencesComponent implements EventHandler, DropTargetListener {
 	private final Logger log = Logger.getInstance();
 	private final DatabaseConnectionPool dbPool;
 	private final ViewController viewController;

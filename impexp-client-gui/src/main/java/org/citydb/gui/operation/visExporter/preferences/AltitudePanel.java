@@ -34,7 +34,7 @@ import org.citydb.config.project.visExporter.AltitudeOffsetMode;
 import org.citydb.config.project.visExporter.Elevation;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.AbstractPreferencesComponent;
+import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -45,7 +45,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
 
-public class AltitudePanel extends AbstractPreferencesComponent {
+public class AltitudePanel extends DefaultPreferencesComponent {
 	private TitledPanel modePanel;
 	private TitledPanel offsetPanel;
 
