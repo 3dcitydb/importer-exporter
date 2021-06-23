@@ -1,9 +1,22 @@
 package org.citydb.gui.components;
 
+import com.formdev.flatlaf.util.UIScale;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class ScrollablePanel extends JPanel implements Scrollable {
+    private final boolean tracksViewportWidth;
+    private final boolean tracksViewportHeight;
+
+    public ScrollablePanel(boolean tracksViewportWidth, boolean tracksViewportHeight) {
+        this.tracksViewportWidth = tracksViewportWidth;
+        this.tracksViewportHeight = tracksViewportHeight;
+    }
+
+    public ScrollablePanel() {
+        this(false, false);
+    }
 
     @Override
     public Dimension getPreferredScrollableViewportSize() {
@@ -12,35 +25,33 @@ public class ScrollablePanel extends JPanel implements Scrollable {
 
     @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        int increment;
         switch (orientation) {
             case SwingConstants.VERTICAL:
-                return visibleRect.height / 10;
+                increment = visibleRect.height / 10;
+                break;
             case SwingConstants.HORIZONTAL:
-                return visibleRect.width / 10;
+                increment = visibleRect.width / 10;
+                break;
             default:
-                throw new IllegalArgumentException("Invalid orientation: " + orientation);
+                increment = 10;
         }
+
+        return UIScale.scale(increment);
     }
 
     @Override
     public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-        switch (orientation) {
-            case SwingConstants.VERTICAL:
-                return visibleRect.height;
-            case SwingConstants.HORIZONTAL:
-                return visibleRect.width;
-            default:
-                throw new IllegalArgumentException("Invalid orientation: " + orientation);
-        }
+        return orientation == SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
     }
 
     @Override
     public boolean getScrollableTracksViewportWidth() {
-        return true;
+        return tracksViewportWidth;
     }
 
     @Override
     public boolean getScrollableTracksViewportHeight() {
-        return false;
+        return tracksViewportHeight;
     }
 }

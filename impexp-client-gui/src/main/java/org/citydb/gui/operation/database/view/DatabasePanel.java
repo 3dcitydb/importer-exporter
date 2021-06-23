@@ -271,7 +271,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		connectionDetails = new TitledPanel().build(content);
 		operationsPanel = new DatabaseOperationsPanel(viewController, config);
-        JPanel view = new ScrollablePanel();
+        JPanel view = new ScrollablePanel(true, false);
         view.setLayout(new GridBagLayout());
         view.add(chooserPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 15, 10, 15, 10));
         view.add(connectionDetails, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 10, 0, 10));
