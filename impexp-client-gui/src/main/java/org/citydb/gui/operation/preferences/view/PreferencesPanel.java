@@ -355,7 +355,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 		} else {
 			Component component;
 			if (node.entry.getViewComponent().isScrollable()) {
-				ScrollablePanel scrollablePanel = new ScrollablePanel();
+				ScrollablePanel scrollablePanel = new ScrollablePanel(true, false);
 				scrollablePanel.setLayout(new BorderLayout());
 				scrollablePanel.add(node.entry.getViewComponent());
 

@@ -136,7 +136,7 @@ public class FilterPanel extends JPanel {
 		setLayout(new GridBagLayout());
 		add(mainPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		JPanel guiPanel = new ScrollablePanel();
+		JPanel guiPanel = new ScrollablePanel(true, false);
 		xmlQuery = new XMLQueryView(viewController)
 				.withSimpleQuerySupplier(() -> config.getExportConfig().getSimpleQuery());
 
