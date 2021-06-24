@@ -45,6 +45,7 @@ import org.citydb.gui.operation.common.NullComponent;
 import org.citydb.gui.operation.database.DatabasePlugin;
 import org.citydb.gui.operation.exporter.CityGMLExportPlugin;
 import org.citydb.gui.operation.importer.CityGMLImportPlugin;
+import org.citydb.gui.operation.preferences.plugin.PluginsOverviewPlugin;
 import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;
 import org.citydb.gui.operation.preferences.preferences.RootPreferencesEntry;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
@@ -148,6 +149,9 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 		}
 
 		preferencesExtensions.add(pluginManager.getInternalPlugin(DatabasePlugin.class));
+		if (!pluginManager.getExternalPlugins().isEmpty()) {
+			preferencesExtensions.add(pluginManager.getInternalPlugin(PluginsOverviewPlugin.class));
+		}
 
 		menuTree = new JTree();
 		menuTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);

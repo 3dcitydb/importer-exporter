@@ -3,6 +3,9 @@ package org.citydb.core.plugin.metadata;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 @XmlRootElement(name = "plugin")
 @XmlType(name = "PluginType", propOrder = {})
@@ -10,9 +13,12 @@ public class PluginMetadata {
     @XmlElement(required = true)
     private String name;
     private String version;
-    private String description;
+    @XmlElement(name = "description")
+    private List<PluginDescription> descriptions;
     private String url;
     private PluginVendor vendor;
+    @XmlElement(name = "ade-support", defaultValue = "false")
+    private Boolean adeSupport;
 
     public String getName() {
         return name;
@@ -30,12 +36,27 @@ public class PluginMetadata {
         this.version = version;
     }
 
-    public String getDescription() {
-        return description;
+    public List<PluginDescription> getDescriptions() {
+        if (descriptions == null) {
+            descriptions = new ArrayList<>();
+        }
+
+        return descriptions;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public PluginDescription getDescriptionForLocaleOrDefault(Locale locale) {
+        if (descriptions != null && !descriptions.isEmpty()) {
+            return descriptions.stream()
+                    .filter(v -> v.getLang() != null && locale.equals(Locale.forLanguageTag(v.getLang())))
+                    .findFirst()
+                    .orElse(descriptions.get(0));
+        }
+
+        return null;
+    }
+
+    public void setDescriptions(List<PluginDescription> descriptions) {
+        this.descriptions = descriptions;
     }
 
     public String getUrl() {
@@ -52,5 +73,13 @@ public class PluginMetadata {
 
     public void setVendor(PluginVendor vendor) {
         this.vendor = vendor;
+    }
+
+    public boolean hasADESupport() {
+        return adeSupport != null ? adeSupport : false;
+    }
+
+    public void setADESupport(boolean adeSupport) {
+        this.adeSupport = adeSupport;
     }
 }

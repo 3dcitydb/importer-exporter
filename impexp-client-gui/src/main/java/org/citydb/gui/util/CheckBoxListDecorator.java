@@ -45,10 +45,19 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 	private final JList<T> list;
 	private final ListSelectionModel checkBoxSelectionModel;
 	private final Map<Integer, Boolean> enabled;
-	private final int width;
+	private final Insets checkBoxMargin;
+	private final int checkBoxWidth;
+
+	private Insets margin;
+	private int iconTextGap;
 
 	public CheckBoxListDecorator(JList<T> list) {
 		this.list = list;
+
+		margin = UIManager.getInsets("List.cellMargins");
+		checkBoxMargin = UIManager.getInsets("CheckBox.margin");
+		checkBoxWidth = UIManager.getIcon("CheckBox.icon").getIconWidth();
+		iconTextGap = UIManager.getInt("CheckBox.iconTextGap");
 
 		list.setCellRenderer(new CheckBoxListCellRenderer<T>());
 		list.addMouseListener(this);
@@ -57,9 +66,23 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 
 		checkBoxSelectionModel = new DefaultListSelectionModel();
 		checkBoxSelectionModel.addListSelectionListener(this);
-
 		enabled = new HashMap<>();
-		width = new JCheckBox().getPreferredSize().width;
+	}
+
+	public Insets getMargin() {
+		return margin;
+	}
+
+	public void setMargin(Insets margin) {
+		this.margin = margin;
+	}
+
+	public int getIconTextGap() {
+		return iconTextGap;
+	}
+
+	public void setIconTextGap(int iconTextGap) {
+		this.iconTextGap = iconTextGap;
 	}
 
 	public boolean isCheckBoxSelected(int index) {
@@ -105,7 +128,8 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 			return;
 		}
 
-		if (e.getX() > list.getCellBounds(index, index).x + width && e.getClickCount() != 2) {
+		int left = list.getCellBounds(index, index).x + margin.left;
+		if ((e.getX() < left || e.getX() > left + checkBoxWidth) && e.getClickCount() != 2) {
 			return;
 		}
 
@@ -138,21 +162,22 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 		private final JCheckBox checkBox;
 
 		public CheckBoxListCellRenderer() {
+			setLayout(new GridBagLayout());
 			renderer = list.getCellRenderer();
 			checkBox = new JCheckBox();
 			checkBox.setOpaque(false);
+			checkBox.setMargin(new Insets(checkBoxMargin.top, 0, checkBoxMargin.bottom, 0));
 
-			setLayout(new BorderLayout());
-
-			Box box = Box.createHorizontalBox();
-			box.add(checkBox);
-			box.add(Box.createHorizontalStrut(5));
-			add(box, BorderLayout.WEST);
+			add(checkBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, margin.top, margin.left, margin.bottom, iconTextGap));
 		}
 
 		public Component getListCellRendererComponent(JList<? extends E> list, E value, int index, boolean isSelected, boolean cellHasFocus) {
 			Component component = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			add(component, BorderLayout.CENTER);
+			if (component instanceof JComponent) {
+				((JComponent) component).setBorder(BorderFactory.createEmptyBorder());
+			}
+
+			add(component, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, margin.top, 0, margin.bottom, margin.right));
 
 			boolean enable = component.isEnabled() && list.isEnabled();
 			checkBox.setSelected(checkBoxSelectionModel.isSelectedIndex(index));
