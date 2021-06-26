@@ -98,7 +98,7 @@ public class PluginManager {
             if (context != null) {
                 try {
                     Unmarshaller unmarshaller = context.createUnmarshaller();
-                    Object object = unmarshaller.unmarshal(plugin.getClass().getResource("/META-INF/plugin.xml"));
+                    Object object = unmarshaller.unmarshal(plugin.getClass().getResource("plugin.xml"));
                     if (object instanceof PluginMetadata) {
                         plugin.setMetadata((PluginMetadata) object);
                     }

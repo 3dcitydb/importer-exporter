@@ -109,7 +109,7 @@ public class PluginInfoPanel extends ScrollablePanel {
 
             detailsPanel.add(adeSupportPanel, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
             detailsPanel.add(extensionPointsLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-            detailsPanel.add(extensionPointsPane, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            detailsPanel.add(extensionPointsPane, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 
             extensionPointsPanel = new TitledPanel()
                     .withCollapseButton()
@@ -192,7 +192,8 @@ public class PluginInfoPanel extends ScrollablePanel {
     }
 
     ImageIcon getPluginLogo(Plugin plugin, int width, int height) {
-        FlatSVGIcon icon = new FlatSVGIcon("META-INF/pluginLogo.svg", width, height, plugin.getClass().getClassLoader());
+        String logoName = plugin.getClass().getPackage().getName().replace('.', '/') + "/pluginLogo.svg";
+        FlatSVGIcon icon = new FlatSVGIcon(logoName, width, height, plugin.getClass().getClassLoader());
         try {
             if (!icon.hasFound()) {
                 icon = null;
