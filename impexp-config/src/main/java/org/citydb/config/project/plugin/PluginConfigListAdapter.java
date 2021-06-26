@@ -46,7 +46,7 @@ public class PluginConfigListAdapter extends XmlAdapter<PluginConfigListAdapter.
 
         if (configs != null && configs.config != null && !configs.config.isEmpty()) {
             for (PluginConfig item : configs.config) {
-                if (item != null) {
+                if (item != null && item.getClass() != PluginConfig.class) {
                     map.put(item.getClass(), item);
                 }
             }
@@ -63,7 +63,7 @@ public class PluginConfigListAdapter extends XmlAdapter<PluginConfigListAdapter.
             list = new PluginConfigList();
             list.config = new ArrayList<>();
             for (Entry<Class<? extends PluginConfig>, PluginConfig> entry : configs.entrySet()) {
-                if (entry.getValue() != null) {
+                if (entry.getValue() != null && entry.getValue().getClass() != PluginConfig.class) {
                     list.config.add(entry.getValue());
                 }
             }
