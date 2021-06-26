@@ -84,6 +84,11 @@ public class PluginManager {
 
     private void registerExternalPlugin(Plugin plugin, JAXBContext context) {
         try {
+            // skip plugin if it already failed to load
+            if (exceptions != null && exceptions.containsKey(plugin.getClass().getName())) {
+                return;
+            }
+
             for (Plugin externalPlugin : externalPlugins) {
                 if (externalPlugin.getClass() == plugin.getClass()) {
                     return;
