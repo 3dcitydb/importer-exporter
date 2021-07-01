@@ -33,6 +33,8 @@ import org.citydb.cli.operation.exporter.ExportCommand;
 import org.citydb.cli.operation.importer.ImportCommand;
 import org.citydb.cli.operation.validator.ValidateCommand;
 import org.citydb.cli.operation.visExporter.ExportVisCommand;
+import org.citydb.cli.option.CliOption;
+import org.citydb.cli.option.StartupProgressListener;
 import org.citydb.cli.util.CliConstants;
 import org.citydb.cli.util.PidFile;
 import org.citydb.config.Config;
@@ -53,16 +55,11 @@ import org.citydb.core.plugin.CliCommand;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginException;
 import org.citydb.core.plugin.PluginManager;
-import org.citydb.cli.option.CliOption;
-import org.citydb.cli.option.StartupProgressListener;
 import org.citydb.core.plugin.extension.config.ConfigExtension;
-import org.citydb.core.plugin.internal.IllegalEventSourceChecker;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.InternalProxySelector;
 import org.citydb.core.util.Util;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.global.EventType;
 import org.citydb.util.log.Logger;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
@@ -452,11 +449,6 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     }
 
     private void initializeEnvironment(Config config)  {
-        // create application-wide event dispatcher
-        EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-        eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
-        eventDispatcher.addEventHandler(EventType.SWITCH_LOCALE, IllegalEventSourceChecker.getInstance());
-
         // set internal proxy selector as default selector
         ProxySelector.setDefault(InternalProxySelector.getInstance());
 
