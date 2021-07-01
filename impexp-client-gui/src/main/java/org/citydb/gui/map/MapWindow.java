@@ -36,7 +36,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
 import org.citydb.gui.components.bbox.BoundingBoxListener;

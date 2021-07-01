@@ -33,7 +33,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.components.ScrollablePanel;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;

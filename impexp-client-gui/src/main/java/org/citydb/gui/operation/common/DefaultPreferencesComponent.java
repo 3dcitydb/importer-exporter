@@ -30,9 +30,7 @@ package org.citydb.gui.operation.common;
 import org.citydb.config.Config;
 import org.citydb.config.ProjectConfig;
 import org.citydb.config.gui.GuiConfig;
-import org.citydb.core.plugin.extension.preferences.PreferencesComponent;
-
-import javax.swing.*;
+import org.citydb.gui.plugin.preferences.PreferencesComponent;
 
 public abstract class DefaultPreferencesComponent extends PreferencesComponent {
 	protected Config config;

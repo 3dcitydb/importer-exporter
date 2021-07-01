@@ -25,30 +25,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin.extension.preferences;
+package org.citydb.gui.plugin.preferences;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public abstract class PreferencesEntry {
-	private List<PreferencesEntry> childEntries;
-	
-	public abstract boolean isModified();
-	public abstract boolean handleEvent(PreferencesEvent event);
-	public abstract String getLocalizedTitle();
-	public abstract PreferencesComponent getViewComponent();
-
-	public void addChildEntry(PreferencesEntry child) {
-		if (childEntries == null)
-			childEntries = new ArrayList<>();
-		
-		childEntries.add(child);
-	}
-	
-	public List<PreferencesEntry> getChildEntries() {
-		if (childEntries == null)
-			childEntries = new ArrayList<>();
-		
-		return childEntries;
-	}
+public enum PreferencesEvent {
+	APPLY_SETTINGS,
+	RESTORE_SETTINGS,
+	SET_DEFAULT_SETTINGS
 }

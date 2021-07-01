@@ -38,7 +38,7 @@ import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.vis.util.VisConstants;

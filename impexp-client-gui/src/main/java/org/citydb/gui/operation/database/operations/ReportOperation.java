@@ -33,7 +33,7 @@ import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 
 import javax.swing.*;
 import java.awt.*;

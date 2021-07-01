@@ -1,4 +1,4 @@
-package org.citydb.core.plugin.extension.preferences;
+package org.citydb.gui.plugin.preferences;
 
 import javax.swing.*;
 import java.awt.*;

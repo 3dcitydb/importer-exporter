@@ -25,19 +25,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin.extension.view;
+package org.citydb.gui.plugin.view;
 
-import javax.swing.*;
-import java.awt.*;
-
-public interface ViewController {
-	JFrame getTopFrame();
-	void clearConsole();
-	void setStatusText(String statusText);
-	void setDefaultStatus();
-	void errorMessage(String title, Object message);
-	int warnMessage(String title, Object message);
-	int showOptionDialog(String title, Object message, int optionType, int messageType);
-	int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType);
-	int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType, Object[] options, Object initialValue);
+public interface ViewListener {
+	void viewActivated(ViewEvent e);
+	void viewDeactivated(ViewEvent e);
 }

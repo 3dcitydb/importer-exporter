@@ -29,8 +29,8 @@ package org.citydb.gui.operation.database.view;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.core.plugin.extension.view.View;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.View;
+import org.citydb.gui.plugin.view.ViewController;
 
 import javax.swing.*;
 import java.awt.*;

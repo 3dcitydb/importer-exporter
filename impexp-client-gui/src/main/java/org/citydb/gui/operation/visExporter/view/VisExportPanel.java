@@ -67,7 +67,7 @@ import org.citydb.gui.operation.common.filter.FeatureVersionFilterView;
 import org.citydb.gui.operation.common.filter.SQLFilterView;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;

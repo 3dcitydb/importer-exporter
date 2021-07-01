@@ -31,11 +31,11 @@ import org.citydb.config.Config;
 import org.citydb.gui.operation.visExporter.preferences.VisExportPreferences;
 import org.citydb.gui.operation.visExporter.view.VisExportView;
 import org.citydb.core.plugin.internal.InternalPlugin;
-import org.citydb.core.plugin.extension.preferences.Preferences;
-import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
-import org.citydb.core.plugin.extension.view.View;
-import org.citydb.core.plugin.extension.view.ViewController;
-import org.citydb.core.plugin.extension.view.ViewExtension;
+import org.citydb.gui.plugin.preferences.Preferences;
+import org.citydb.gui.plugin.preferences.PreferencesExtension;
+import org.citydb.gui.plugin.view.View;
+import org.citydb.gui.plugin.view.ViewController;
+import org.citydb.gui.plugin.view.ViewExtension;
 
 import java.util.Locale;
 

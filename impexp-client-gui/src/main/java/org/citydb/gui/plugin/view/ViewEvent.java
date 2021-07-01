@@ -25,53 +25,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.gui.operation.visExporter.view;
+package org.citydb.gui.plugin.view;
 
-import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
-import org.citydb.gui.plugin.view.View;
-import org.citydb.gui.plugin.view.ViewController;
-
-import javax.swing.*;
-import java.awt.*;
-
-public class VisExportView extends View {
-	private final VisExportPanel component;
-	
-	public VisExportView(ViewController viewController, Config config) {
-		component = new VisExportPanel(viewController, config);
+public final class ViewEvent {
+	public enum ViewState {
+		VIEW_ACTIVATED,
+		VIEW_DEACTIVATED
 	}
 	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("main.tabbedPane.visExport");
-	}
-
-	@Override
-	public Component getViewComponent() {
-		return component;
-	}
-
-	@Override
-	public String getToolTip() {
-		return null;
-	}
-
-	@Override
-	public Icon getIcon() {
-		return null;
+	private final View view;
+	private final ViewState viewState;
+	
+	public ViewEvent(View view, ViewState viewState, Object source) {
+		this.view = view;
+		this.viewState = viewState;
 	}
 	
-	public void loadSettings() {
-		component.loadSettings();
-	}
-	
-	public void setSettings() {
-		component.setSettings();
-	}
-	
-	public void doTranslation() {
-		component.doTranslation();
+	public View getView() {
+		return view;
 	}
 
+	public ViewState getViewState() {
+		return viewState;
+	}
+	
 }

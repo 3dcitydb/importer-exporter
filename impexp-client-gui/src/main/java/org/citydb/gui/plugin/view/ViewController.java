@@ -25,10 +25,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin.extension.menu;
+package org.citydb.gui.plugin.view;
 
-import org.citydb.core.plugin.extension.GuiExtension;
+import javax.swing.*;
+import java.awt.*;
 
-public interface MenuExtension extends GuiExtension {
-	Menu getMenu();
+public interface ViewController {
+	JFrame getTopFrame();
+	void clearConsole();
+	void setStatusText(String statusText);
+	void setDefaultStatus();
+	void errorMessage(String title, Object message);
+	int warnMessage(String title, Object message);
+	int showOptionDialog(String title, Object message, int optionType, int messageType);
+	int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType);
+	int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType, Object[] options, Object initialValue);
 }

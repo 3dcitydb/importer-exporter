@@ -41,7 +41,7 @@ import org.citydb.gui.components.srs.SrsComboBoxFactory;
 import org.citydb.gui.map.MapWindow;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;

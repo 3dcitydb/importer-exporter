@@ -25,10 +25,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin.extension.preferences;
+package org.citydb.gui.plugin.menu;
 
-import org.citydb.core.plugin.extension.GuiExtension;
+import org.citydb.gui.plugin.GuiExtension;
 
-public interface PreferencesExtension extends GuiExtension {
-	Preferences getPreferences();
+public interface MenuExtension extends GuiExtension {
+	Menu getMenu();
 }

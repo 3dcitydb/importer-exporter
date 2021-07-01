@@ -28,11 +28,11 @@
 package org.citydb.gui.operation.preferences;
 
 import org.citydb.config.Config;
-import org.citydb.core.plugin.extension.preferences.Preferences;
-import org.citydb.core.plugin.extension.preferences.PreferencesExtension;
-import org.citydb.core.plugin.extension.view.View;
-import org.citydb.core.plugin.extension.view.ViewController;
-import org.citydb.core.plugin.extension.view.ViewExtension;
+import org.citydb.gui.plugin.preferences.Preferences;
+import org.citydb.gui.plugin.preferences.PreferencesExtension;
+import org.citydb.gui.plugin.view.View;
+import org.citydb.gui.plugin.view.ViewController;
+import org.citydb.gui.plugin.view.ViewExtension;
 import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;

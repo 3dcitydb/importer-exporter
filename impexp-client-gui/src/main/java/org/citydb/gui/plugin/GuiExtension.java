@@ -1,6 +1,7 @@
-package org.citydb.core.plugin.extension;
+package org.citydb.gui.plugin;
 
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.core.plugin.extension.Extension;
+import org.citydb.gui.plugin.view.ViewController;
 
 import java.util.Locale;
 

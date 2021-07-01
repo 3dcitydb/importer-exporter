@@ -38,7 +38,7 @@ import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.controller.Importer;
 import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.controller.Validator;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.ScrollablePanel;
 import org.citydb.gui.components.dialog.ImportStatusDialog;

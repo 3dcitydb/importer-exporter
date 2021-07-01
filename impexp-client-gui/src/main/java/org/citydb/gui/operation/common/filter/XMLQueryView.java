@@ -61,7 +61,7 @@ import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.RSyntaxTextAreaHelper;
 import org.citydb.util.log.Logger;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
 import org.citygml4j.model.module.Module;

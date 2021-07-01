@@ -46,7 +46,7 @@ import org.citydb.core.file.output.OutputFileFactory;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.CityGMLExportException.ErrorCode;
 import org.citydb.core.operation.exporter.controller.Exporter;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;

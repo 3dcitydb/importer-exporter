@@ -25,9 +25,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin.extension.view;
+package org.citydb.gui.plugin.view;
 
-public interface ViewListener {
-	void viewActivated(ViewEvent e);
-	void viewDeactivated(ViewEvent e);
+import org.citydb.gui.plugin.GuiExtension;
+
+public interface ViewExtension extends GuiExtension {
+	View getView();
 }

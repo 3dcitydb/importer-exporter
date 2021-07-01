@@ -37,7 +37,7 @@ import org.citydb.core.database.schema.mapping.AppSchema;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.gui.operation.common.DefaultPreferences;
 import org.citydb.gui.operation.common.DefaultPreferencesEntry;
-import org.citydb.core.plugin.extension.view.ViewController;
+import org.citydb.gui.plugin.view.ViewController;
 
 import java.util.List;
 import java.util.stream.Collectors;

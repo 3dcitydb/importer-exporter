@@ -25,13 +25,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin.extension.menu;
+package org.citydb.gui.plugin.view;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public abstract class Menu {
+public abstract class View {
+	private List<ViewListener> viewListeners;
+
 	public abstract String getLocalizedTitle();
-	public abstract JMenu getMenuComponent();
+	public abstract Component getViewComponent();
+	public abstract String getToolTip();
 	public abstract Icon getIcon();
-	public abstract int getMnemonicIndex();
+
+	public final void addViewListener(ViewListener listener) {
+		if (viewListeners == null)
+			viewListeners = new ArrayList<>();
+
+		viewListeners.add(listener);
+	}
+
+	public final boolean removeViewListener(ViewListener listener) {
+		return viewListeners != null && viewListeners.remove(listener);
+	}
+
+	public final void fireViewEvent(final ViewEvent e) {
+		if (viewListeners != null) {
+			for (final ViewListener listener : viewListeners) {
+				SwingUtilities.invokeLater(() -> {
+					switch (e.getViewState()) {
+					case VIEW_ACTIVATED:
+						listener.viewActivated(e);
+						break;
+					case VIEW_DEACTIVATED:
+						listener.viewDeactivated(e);
+						break;
+					}
+				});
+			}
+		}
+	}
+
 }

@@ -27,8 +27,8 @@
  */
 package org.citydb.gui.operation.common;
 
-import org.citydb.core.plugin.extension.preferences.PreferencesEntry;
-import org.citydb.core.plugin.extension.preferences.PreferencesEvent;
+import org.citydb.gui.plugin.preferences.PreferencesEntry;
+import org.citydb.gui.plugin.preferences.PreferencesEvent;
 
 public class DefaultPreferencesEntry extends PreferencesEntry {
 	protected DefaultPreferencesComponent component;

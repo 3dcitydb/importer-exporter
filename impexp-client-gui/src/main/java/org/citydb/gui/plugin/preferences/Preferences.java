@@ -25,28 +25,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.plugin.extension.view;
+package org.citydb.gui.plugin.preferences;
 
-public final class ViewEvent {
-	public enum ViewState {
-		VIEW_ACTIVATED,
-		VIEW_DEACTIVATED
-	}
-	
-	private final View view;
-	private final ViewState viewState;
-	
-	public ViewEvent(View view, ViewState viewState, Object source) {
-		this.view = view;
-		this.viewState = viewState;
-	}
-	
-	public View getView() {
-		return view;
-	}
-
-	public ViewState getViewState() {
-		return viewState;
-	}
-	
+public interface Preferences {
+	PreferencesEntry getPreferencesEntry();
 }
