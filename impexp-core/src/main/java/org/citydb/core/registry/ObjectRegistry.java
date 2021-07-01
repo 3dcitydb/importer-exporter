@@ -53,15 +53,19 @@ public class ObjectRegistry {
 		}
 	}
 
+	private final Config config;
+	private final EventDispatcher eventDispatcher;
 	private final DatatypeFactory datatypeFactory;
+
 	private Map<String, Object> properties;
-	private Config config;
-	private EventDispatcher eventDispatcher;
 	private DatabaseController databaseController;
 	private CityGMLBuilder cityGMLBuilder;
 	private SchemaMapping schemaMapping;
 
 	private ObjectRegistry() {
+		config = new Config();
+		eventDispatcher = new EventDispatcher();
+
 		try {
 			datatypeFactory = DatatypeFactory.newInstance();
 		} catch (DatatypeConfigurationException e) {
@@ -72,6 +76,7 @@ public class ObjectRegistry {
 	public static synchronized ObjectRegistry getInstance() {
 		if (instance == null) {
 			instance = new ObjectRegistry();
+			instance.databaseController = new DatabaseController();
 		}
 
 		return instance;
@@ -107,10 +112,6 @@ public class ObjectRegistry {
 	}
 
 	public Config getConfig() {
-		if (config == null) {
-			config = new Config();
-		}
-
 		return config;
 	}
 
@@ -119,18 +120,10 @@ public class ObjectRegistry {
 	}
 
 	public EventDispatcher getEventDispatcher() {
-		if (eventDispatcher == null) {
-			eventDispatcher = new EventDispatcher();
-		}
-
 		return eventDispatcher;
 	}
 
 	public DatabaseController getDatabaseController() {
-		if (databaseController == null) {
-			databaseController = new DatabaseController();
-		}
-
 		return databaseController;
 	}
 
