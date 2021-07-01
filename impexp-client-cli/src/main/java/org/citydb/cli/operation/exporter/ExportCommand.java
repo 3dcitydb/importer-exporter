@@ -38,8 +38,8 @@ import org.citydb.util.log.Logger;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.controller.Exporter;
 import org.citydb.core.plugin.CliCommand;
-import org.citydb.core.plugin.cli.DatabaseOption;
-import org.citydb.core.plugin.cli.ThreadPoolOption;
+import org.citydb.cli.option.DatabaseOption;
+import org.citydb.cli.option.ThreadPoolOption;
 import org.citydb.core.registry.ObjectRegistry;
 import picocli.CommandLine;
 

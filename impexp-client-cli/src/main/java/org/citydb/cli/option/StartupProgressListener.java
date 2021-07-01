@@ -26,28 +26,9 @@
  * limitations under the License.
  */
 
-package org.citydb.core.plugin.cli;
+package org.citydb.cli.option;
 
-import org.citydb.config.project.query.filter.counter.CounterFilter;
-import picocli.CommandLine;
-
-public class CounterOption implements CliOption {
-    @CommandLine.Option(names = "--count",
-            description = "Maximum number of top-level features to process.")
-    private Long count;
-
-    @CommandLine.Option(names = "--start-index", paramLabel = "<index>",
-            description = "Index within the result set to process top-level features from.")
-    private Long startIndex;
-
-    private CounterFilter counterFilter;
-
-    public CounterFilter toCounterFilter() {
-        return counterFilter;
-    }
-
-    @Override
-    public void preprocess(CommandLine commandLine) throws Exception {
-        counterFilter = CliOptionBuilder.counterFilter(count, startIndex, commandLine);
-    }
+public interface StartupProgressListener {
+    void setProcessSteps(int processSteps);
+    void nextStep(String message, int step);
 }

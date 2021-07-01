@@ -26,10 +26,24 @@
  * limitations under the License.
  */
 
-package org.citydb.core.plugin.cli;
+package org.citydb.cli.option;
 
+import org.citydb.config.project.resources.ThreadPool;
 import picocli.CommandLine;
 
-public interface CliOption {
-    default void preprocess(CommandLine commandLine) throws Exception {}
+public class ThreadPoolOption implements CliOption {
+    @CommandLine.Option(names = "--worker-threads",  paramLabel = "<threads[,max]>",
+            description = "Number of worker threads to use.")
+    private String threads;
+
+    private ThreadPool threadPool;
+
+    public ThreadPool toThreadPool() {
+        return threadPool;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
+        threadPool = CliOptionBuilder.threadPool(threads, commandLine);
+    }
 }

@@ -26,24 +26,28 @@
  * limitations under the License.
  */
 
-package org.citydb.core.plugin.cli;
+package org.citydb.cli.option;
 
-import org.citydb.config.project.resources.ThreadPool;
+import org.citydb.config.project.query.filter.counter.CounterFilter;
 import picocli.CommandLine;
 
-public class ThreadPoolOption implements CliOption {
-    @CommandLine.Option(names = "--worker-threads",  paramLabel = "<threads[,max]>",
-            description = "Number of worker threads to use.")
-    private String threads;
+public class CounterOption implements CliOption {
+    @CommandLine.Option(names = "--count",
+            description = "Maximum number of top-level features to process.")
+    private Long count;
 
-    private ThreadPool threadPool;
+    @CommandLine.Option(names = "--start-index", paramLabel = "<index>",
+            description = "Index within the result set to process top-level features from.")
+    private Long startIndex;
 
-    public ThreadPool toThreadPool() {
-        return threadPool;
+    private CounterFilter counterFilter;
+
+    public CounterFilter toCounterFilter() {
+        return counterFilter;
     }
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        threadPool = CliOptionBuilder.threadPool(threads, commandLine);
+        counterFilter = CliOptionBuilder.counterFilter(count, startIndex, commandLine);
     }
 }

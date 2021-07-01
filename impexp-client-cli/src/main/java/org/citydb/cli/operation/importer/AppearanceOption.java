@@ -28,7 +28,7 @@
 
 package org.citydb.cli.operation.importer;
 
-import org.citydb.core.plugin.cli.CliOption;
+import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
 public class AppearanceOption implements CliOption {

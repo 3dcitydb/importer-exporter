@@ -34,7 +34,7 @@ import org.citydb.util.log.Logger;
 import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.controller.Validator;
 import org.citydb.core.plugin.CliCommand;
-import org.citydb.core.plugin.cli.CliOptionBuilder;
+import org.citydb.cli.option.CliOptionBuilder;
 import org.citydb.core.util.CoreConstants;
 import picocli.CommandLine;
 

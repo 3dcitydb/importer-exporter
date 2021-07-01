@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb.core.plugin.cli;
+package org.citydb.cli.option;
 
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import picocli.CommandLine;

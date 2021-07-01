@@ -40,7 +40,7 @@ import org.citydb.core.operation.deleter.DeleteException;
 import org.citydb.core.operation.deleter.controller.Deleter;
 import org.citydb.core.operation.deleter.util.DeleteListPreviewer;
 import org.citydb.core.plugin.CliCommand;
-import org.citydb.core.plugin.cli.DatabaseOption;
+import org.citydb.cli.option.DatabaseOption;
 import org.citydb.core.registry.ObjectRegistry;
 import picocli.CommandLine;
 

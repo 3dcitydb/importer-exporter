@@ -29,8 +29,8 @@
 package org.citydb.cli.operation.visExporter;
 
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.core.plugin.cli.CliOption;
-import org.citydb.core.plugin.cli.CliOptionBuilder;
+import org.citydb.cli.option.CliOption;
+import org.citydb.cli.option.CliOptionBuilder;
 import picocli.CommandLine;
 
 public class BoundingBoxOption implements CliOption {

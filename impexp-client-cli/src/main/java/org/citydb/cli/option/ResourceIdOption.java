@@ -26,9 +26,17 @@
  * limitations under the License.
  */
 
-package org.citydb.core.plugin.cli;
+package org.citydb.cli.option;
 
-public interface StartupProgressListener {
-    void setProcessSteps(int processSteps);
-    void nextStep(String message, int step);
+import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
+import picocli.CommandLine;
+
+public class ResourceIdOption implements CliOption {
+    @CommandLine.Option(names = {"-i", "--resource-id"}, split = ",", paramLabel = "<id>",
+            description = "Process top-level features with a matching identifier.")
+    private String[] ids;
+
+    public ResourceIdOperator toResourceIdOperator() {
+        return CliOptionBuilder.resourceIdOperator(ids);
+    }
 }

@@ -40,7 +40,7 @@ import org.citydb.core.database.DatabaseController;
 import org.citydb.core.plugin.CliCommand;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginManager;
-import org.citydb.core.plugin.cli.StartupProgressListener;
+import org.citydb.cli.option.StartupProgressListener;
 import org.citydb.core.plugin.extension.GuiExtension;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;

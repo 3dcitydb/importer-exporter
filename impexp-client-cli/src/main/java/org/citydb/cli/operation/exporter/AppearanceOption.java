@@ -29,7 +29,7 @@
 package org.citydb.cli.operation.exporter;
 
 import org.citydb.config.project.query.filter.appearance.AppearanceFilter;
-import org.citydb.core.plugin.cli.CliOption;
+import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
 public class AppearanceOption implements CliOption {

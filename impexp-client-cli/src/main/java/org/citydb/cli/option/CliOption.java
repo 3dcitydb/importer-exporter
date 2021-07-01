@@ -26,24 +26,10 @@
  * limitations under the License.
  */
 
-package org.citydb.core.plugin.cli;
+package org.citydb.cli.option;
 
-import org.citydb.config.project.query.filter.selection.id.DatabaseIdOperator;
 import picocli.CommandLine;
 
-public class DatabaseIdOption implements CliOption {
-    @CommandLine.Option(names = "--db-id", split = ",", paramLabel = "<id>",
-            description = "Process top-level features with a matching database id.")
-    private Long[] ids;
-
-    private DatabaseIdOperator databaseIdOperator;
-
-    public DatabaseIdOperator toDatabaseIdOperator() {
-        return databaseIdOperator;
-    }
-
-    @Override
-    public void preprocess(CommandLine commandLine) throws Exception {
-        databaseIdOperator = CliOptionBuilder.databaseIdOperator(ids, commandLine);
-    }
+public interface CliOption {
+    default void preprocess(CommandLine commandLine) throws Exception {}
 }

@@ -29,7 +29,7 @@
 package org.citydb.cli.operation.visExporter;
 
 import org.citydb.config.project.visExporter.ColladaOptions;
-import org.citydb.core.plugin.cli.CliOption;
+import org.citydb.cli.option.CliOption;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 import picocli.CommandLine;
 
