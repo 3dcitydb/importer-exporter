@@ -61,10 +61,10 @@ import java.util.ServiceLoader;
 
 public class ADEExtensionManager {
 	private static ADEExtensionManager instance;
-	private final HashMap<String, ADEExtension> extensions = new HashMap<>();
-	private final HashMap<Integer, ADEExtension> extensionsByObjectClassIds = new HashMap<>();
-	private final HashMap<String, ADEExtension> extensionsByTablePrefix = new HashMap<>();
-	private HashMap<String, List<ADEExtensionException>> exceptions;
+	private final Map<String, ADEExtension> extensions = new HashMap<>();
+	private final Map<Integer, ADEExtension> extensionsByObjectClassIds = new HashMap<>();
+	private final Map<String, ADEExtension> extensionsByTablePrefix = new HashMap<>();
+	private Map<String, List<ADEExtensionException>> exceptions;
 	private MessageDigest md5;
 
 	private ADEExtensionManager() {
@@ -123,7 +123,7 @@ public class ADEExtensionManager {
 			ADEExtension previous = extensions.put(id, extension);
 			if (previous != null) {
 				addException(extension, new ADEExtensionException("The ADE extension " + previous.getClass().getName() + " shares the same unique ID."));
-				addException(previous, new ADEExtensionException("The ADE extension " + previous.getClass().getName() + " shares the same unique ID."));					
+				addException(previous, new ADEExtensionException("The ADE extension " + extension.getClass().getName() + " shares the same unique ID."));
 				extensions.remove(id);
 			}
 		} catch (ADEExtensionException e) {

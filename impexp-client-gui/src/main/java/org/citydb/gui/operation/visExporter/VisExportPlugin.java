@@ -39,7 +39,7 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 
 import java.util.Locale;
 
-public class VisExportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
+public class VisExportPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
 	private final VisExportView view;
 	private final VisExportPreferences preferences;
 	
@@ -47,7 +47,7 @@ public class VisExportPlugin implements InternalPlugin, ViewExtension, Preferenc
 		view = new VisExportView(viewController, config);
 		preferences = new VisExportPreferences(viewController, config);
 	}
-		
+
 	@Override
 	public void initGuiExtension(ViewController viewController, Locale locale) {
 		loadSettings();

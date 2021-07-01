@@ -37,32 +37,35 @@ import java.util.Map.Entry;
 public class PluginConfigListAdapter extends XmlAdapter<PluginConfigListAdapter.PluginConfigList, Map<Class<? extends PluginConfig>, PluginConfig>> {
 
     public static class PluginConfigList {
-        private List<PluginConfigItem> plugin;
+        private List<PluginConfig> config;
     }
 
     @Override
-    public Map<Class<? extends PluginConfig>, PluginConfig> unmarshal(PluginConfigList v) throws Exception {
+    public Map<Class<? extends PluginConfig>, PluginConfig> unmarshal(PluginConfigList configs) throws Exception {
         Map<Class<? extends PluginConfig>, PluginConfig> map = new HashMap<>();
 
-        if (v != null && v.plugin != null) {
-            for (PluginConfigItem item : v.plugin)
-                if (item.getConfig() != null && !item.getConfig().getClass().equals(PluginConfig.class))
-                    map.put(item.getConfig().getClass(), item.getConfig());
+        if (configs != null && configs.config != null && !configs.config.isEmpty()) {
+            for (PluginConfig item : configs.config) {
+                if (item != null && item.getClass() != PluginConfig.class) {
+                    map.put(item.getClass(), item);
+                }
+            }
         }
 
         return map;
     }
 
     @Override
-    public PluginConfigList marshal(Map<Class<? extends PluginConfig>, PluginConfig> v) throws Exception {
-        PluginConfigList list = new PluginConfigList();
+    public PluginConfigList marshal(Map<Class<? extends PluginConfig>, PluginConfig> configs) throws Exception {
+        PluginConfigList list = null;
 
-        if (v != null) {
-            list.plugin = new ArrayList<>();
-            for (Entry<Class<? extends PluginConfig>, PluginConfig> entry : v.entrySet()) {
-                PluginConfigItem item = new PluginConfigItem();
-                item.setConfig(entry.getValue());
-                list.plugin.add(item);
+        if (configs != null && !configs.isEmpty()) {
+            list = new PluginConfigList();
+            list.config = new ArrayList<>();
+            for (Entry<Class<? extends PluginConfig>, PluginConfig> entry : configs.entrySet()) {
+                if (entry.getValue() != null && entry.getValue().getClass() != PluginConfig.class) {
+                    list.config.add(entry.getValue());
+                }
             }
         }
 

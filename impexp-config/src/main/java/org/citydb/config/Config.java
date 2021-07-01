@@ -112,6 +112,14 @@ public class Config {
 		projectConfig.setGlobalConfig(globalConfig);
 	}
 
+	public boolean isPluginEnabled(String pluginClass) {
+		return projectConfig.isPluginEnabled(pluginClass);
+	}
+
+	public void setPluginEnabled(String pluginClass, boolean enable) {
+		projectConfig.setPluginEnabled(pluginClass, enable);
+	}
+
 	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
 		return projectConfig.getPluginConfig(type);
 	}

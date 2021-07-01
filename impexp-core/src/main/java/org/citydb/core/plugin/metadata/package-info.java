@@ -25,26 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.plugin;
 
-import javax.xml.bind.annotation.XmlType;
-
-@XmlType(name = "PluginConfigItemType", propOrder = {
-        "config"
-})
-public class PluginConfigItem {
-    private PluginConfig config;
-
-    public PluginConfigItem() {
-    }
-
-    public PluginConfig getConfig() {
-        return config;
-    }
-
-    public void setConfig(PluginConfig config) {
-        if (config != null)
-            this.config = config;
-    }
-
-}
+@javax.xml.bind.annotation.XmlAccessorType(javax.xml.bind.annotation.XmlAccessType.FIELD)
+@javax.xml.bind.annotation.XmlSchema(elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+package org.citydb.core.plugin.metadata;

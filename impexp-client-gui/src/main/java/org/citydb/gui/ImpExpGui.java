@@ -43,6 +43,7 @@ import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.PluginStateEvent;
 import org.citydb.core.plugin.extension.GuiExtension;
 import org.citydb.core.plugin.extension.view.View;
 import org.citydb.core.plugin.extension.view.ViewController;
@@ -99,8 +100,9 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private final Logger log = Logger.getInstance();
 	private final Config config;
 	private final Path configFile;
-	private final PluginManager pluginManager;
 	private final DatabaseConnectionPool dbPool;
+	private final PluginManager pluginManager;
+	private final List<ViewExtension> viewExtensions;
 	private final EventDispatcher eventDispatcher;
 	private final ConsoleTextPane consoleText;
 	private final StyledConsoleLogger consoleLogger;
@@ -110,7 +112,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private JLabel statusText;
 	private JLabel connectText;
 	private MenuBar menuBar;
-	private JTabbedPane menu;
+	private JTabbedPane operationTabs;
 	private JSplitPane splitPane;
 	private JPanel console;
 	private FlatTabbedPane consolePane;
@@ -118,10 +120,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private ConsoleWindow consoleWindow;
 
 	private int consoleWidth;
-	private int activePosition;
-	private List<View> views;
+	private Component activeView;
 	private PreferencesPlugin preferencesPlugin;
 	private LanguageType currentLang;
+	private volatile boolean isRebuildingOperationTabs;
 
 	public ImpExpGui(Path configFile) {
 		this.configFile = Objects.requireNonNull(configFile, "configFile cannot be null.");
@@ -129,8 +131,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		config = ObjectRegistry.getInstance().getConfig();
 		dbPool = DatabaseConnectionPool.getInstance();
 		pluginManager = PluginManager.getInstance();
+		viewExtensions = new ArrayList<>();
+
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
+		eventDispatcher.addEventHandler(EventType.PLUGIN_STATE, this);
 
 		// required for preferences plugin
 		consoleText = new ConsoleTextPane();
@@ -146,7 +151,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		showWindow();
 		initConsole();
 
-		// log exceptions for disabled ADE extensions
+		// log exceptions for plugins
+		pluginManager.logExceptions();
+
+		// log exceptions for ADE extensions
 		ADEExtensionManager.getInstance().logExceptions();
 	}
 
@@ -166,12 +174,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorateAndGet(consoleText));
 
 		// retrieve all views
-		views = new ArrayList<>();
 		preferencesPlugin = pluginManager.getInternalPlugin(PreferencesPlugin.class);
 		DatabasePlugin databasePlugin = pluginManager.getInternalPlugin(DatabasePlugin.class);
-		views.add(pluginManager.getInternalPlugin(CityGMLImportPlugin.class).getView());
-		views.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getView());
-		views.add(pluginManager.getInternalPlugin(VisExportPlugin.class).getView());
+		viewExtensions.add(pluginManager.getInternalPlugin(CityGMLImportPlugin.class));
+		viewExtensions.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class));
+		viewExtensions.add(pluginManager.getInternalPlugin(VisExportPlugin.class));
 
 		for (ViewExtension viewExtension : pluginManager.getExternalPlugins(ViewExtension.class)) {
 			View view = viewExtension.getView();
@@ -180,39 +187,43 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				continue;
 			}
 
-			views.add(view);
+			viewExtensions.add(viewExtension);
 		}
 
-		views.add(databasePlugin.getView());
-		views.add(preferencesPlugin.getView());
+		viewExtensions.add(databasePlugin);
+		viewExtensions.add(preferencesPlugin);
 
 		// attach views to gui
-		menu = new JTabbedPane();
-		menu.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+		operationTabs = new JTabbedPane();
+		operationTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+		buildOperationTabs();
 
-		int index = 0;
-		for (View view : views)
-			menu.insertTab(null, view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
-
-		menu.addChangeListener(new ChangeListener() {
+		operationTabs.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if (menu.getSelectedIndex() == activePosition)
+				if (isRebuildingOperationTabs || operationTabs.getSelectedComponent() == activeView)
 					return;
 
-				if (menu.getComponentAt(activePosition) == preferencesPlugin.getView().getViewComponent()) {
+				if (activeView == preferencesPlugin.getView().getViewComponent()) {
 					if (!preferencesPlugin.requestChange()) {
-						menu.setSelectedIndex(activePosition);
+						operationTabs.setSelectedComponent(activeView);
 						return;
 					}
 				}
 
-				// fire events for main views
-				View newView = views.get(menu.getSelectedIndex());
-				View oldView = views.get(activePosition);
-				newView.fireViewEvent(new ViewEvent(newView, ViewState.VIEW_ACTIVATED, this));
-				oldView.fireViewEvent(new ViewEvent(oldView, ViewState.VIEW_DEACTIVATED, this));
+				// fire view events
+				ViewExtension newView = getViewExtensionFor(operationTabs.getSelectedComponent());
+				ViewExtension oldView = getViewExtensionFor(activeView);
 
-				activePosition = menu.getSelectedIndex();
+				if (newView != null && ((Plugin) newView).isEnabled()) {
+					View view = newView.getView();
+					view.fireViewEvent(new ViewEvent(view, ViewState.VIEW_ACTIVATED, this));
+					activeView = operationTabs.getSelectedComponent();
+				}
+
+				if (oldView != null) {
+					View view = oldView.getView();
+					view.fireViewEvent(new ViewEvent(view, ViewState.VIEW_DEACTIVATED, this));
+				}
 			}
 		});
 
@@ -251,7 +262,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				status.add(connectText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 			}
 
-			main.add(menu, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			main.add(operationTabs, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			main.add(status, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 5, 5, 5));
 		}
 
@@ -289,9 +300,42 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		updateComponentUI();
 	}
 
+	private void buildOperationTabs() {
+		if (operationTabs.getTabCount() > 0) {
+			isRebuildingOperationTabs = true;
+			operationTabs.removeAll();
+		}
+
+		int index = 0;
+		for (ViewExtension viewExtension : viewExtensions) {
+			if (((Plugin) viewExtension).isEnabled()) {
+				View view = viewExtension.getView();
+				operationTabs.insertTab(view.getLocalizedTitle(), view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
+			}
+		}
+
+		ViewExtension viewExtension = activeView != null ? getViewExtensionFor(activeView) : null;
+		if (viewExtension == null || !((Plugin) viewExtension).isEnabled()) {
+			activeView = operationTabs.getComponentAt(0);
+		}
+
+		isRebuildingOperationTabs = false;
+		operationTabs.setSelectedComponent(activeView);
+	}
+
+	private ViewExtension getViewExtensionFor(Component component) {
+		for (ViewExtension viewExtension : viewExtensions) {
+			if (viewExtension.getView().getViewComponent() == component) {
+				return viewExtension;
+			}
+		}
+
+		return null;
+	}
+
 	private void updateComponentUI() {
 		consoleText.setBackground(UIManager.getColor("TextField.background"));
-		menu.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Component.borderColor")));
+		operationTabs.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Component.borderColor")));
 		consolePane.setUI(new FlatTabbedPaneUI() {
 			protected void paintTabBackground(Graphics g, int p, int i, int x, int y, int w, int h, boolean s) {
 				// do not paint tab background
@@ -430,9 +474,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 					((GuiExtension) plugin).switchLocale(locale);
 			}
 
-			int index = 0;
-			for (View view : views)
-				menu.setTitleAt(index++, view.getLocalizedTitle());
+			for (int i = 0; i < operationTabs.getTabCount(); i++) {
+				ViewExtension viewExtension = getViewExtensionFor(operationTabs.getComponentAt(i));
+				if (viewExtension != null) {
+					operationTabs.setTitleAt(i, viewExtension.getView().getLocalizedTitle());
+					operationTabs.setToolTipTextAt(i, viewExtension.getView().getToolTip());
+				}
+			}
 
 			menuBar.doTranslation();
 			consolePopup.doTranslation();
@@ -625,7 +673,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	public void showPreferences() {
 		// preferences handler for Mac OS X
-		menu.setSelectedIndex(menu.indexOfComponent(preferencesPlugin.getView().getViewComponent()));
+		operationTabs.setSelectedIndex(operationTabs.indexOfComponent(preferencesPlugin.getView().getViewComponent()));
 	}
 
 	public void shutdown() {
@@ -664,7 +712,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	@Override
 	public void handleEvent(Event event) {
-		setDatabaseStatus(((DatabaseConnectionStateEvent)event).isConnected());
+		if (event.getEventType() == EventType.DATABASE_CONNECTION_STATE) {
+			setDatabaseStatus(((DatabaseConnectionStateEvent) event).isConnected());
+		} else if (event.getEventType() == EventType.PLUGIN_STATE) {
+			if (((PluginStateEvent) event).getPlugins().stream().anyMatch(p -> p instanceof ViewExtension)) {
+				SwingUtilities.invokeLater(this::buildOperationTabs);
+			}
+		}
 	}
 
 	private final class ConsolePopupMenuWrapper {

@@ -34,6 +34,7 @@ import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.config.project.plugin.PluginConfigListAdapter;
+import org.citydb.config.project.plugin.PluginListAdapter;
 import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.config.util.ConfigNamespaceFilter;
 
@@ -53,6 +54,7 @@ import java.util.Map;
         "deleteConfig",
         "visExportConfig",
         "globalConfig",
+        "plugins",
         "extensions"
 })
 public class ProjectConfig {
@@ -68,6 +70,8 @@ public class ProjectConfig {
     private VisExportConfig visExportConfig;
     @XmlElement(name = "global")
     private GlobalConfig globalConfig;
+    @XmlJavaTypeAdapter(PluginListAdapter.class)
+    private final Map<String, Boolean> plugins;
     @XmlJavaTypeAdapter(PluginConfigListAdapter.class)
     private final Map<Class<? extends PluginConfig>, PluginConfig> extensions;
 
@@ -88,6 +92,7 @@ public class ProjectConfig {
         this.globalConfig = globalConfig;
 
         namespaceFilter = new ConfigNamespaceFilter();
+        plugins = new HashMap<>();
         extensions = new HashMap<>();
     }
 
@@ -158,6 +163,14 @@ public class ProjectConfig {
         if (globalConfig != null) {
             this.globalConfig = globalConfig;
         }
+    }
+
+    boolean isPluginEnabled(String pluginClass) {
+        return plugins.getOrDefault(pluginClass, true);
+    }
+
+    void setPluginEnabled(String pluginClass, boolean enable) {
+        plugins.put(pluginClass, enable);
     }
 
     <T extends PluginConfig> T getPluginConfig(Class<T> type) {

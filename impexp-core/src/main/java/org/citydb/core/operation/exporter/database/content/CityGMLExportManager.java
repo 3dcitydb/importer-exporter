@@ -200,7 +200,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 		adeManager = ADEExtensionManager.getInstance();
 		hasADESupport = !adeManager.getEnabledExtensions().isEmpty();
-		plugins = PluginManager.getInstance().getExternalPlugins(FeatureExportExtension.class);
+		plugins = PluginManager.getInstance().getEnabledExternalPlugins(FeatureExportExtension.class);
 
 		localGeometryCache = new HashSet<>();
 		attributeValueSplitter = new AttributeValueSplitter();

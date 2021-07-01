@@ -32,7 +32,7 @@ import org.citydb.core.plugin.extension.preferences.PreferencesEvent;
 
 public class DefaultPreferencesEntry extends PreferencesEntry {
 	protected DefaultPreferencesComponent component;
-	
+
 	public DefaultPreferencesEntry(DefaultPreferencesComponent component) {
 		this.component = component;
 	}

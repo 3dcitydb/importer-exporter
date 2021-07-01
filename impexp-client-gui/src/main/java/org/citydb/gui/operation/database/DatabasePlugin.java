@@ -40,7 +40,7 @@ import org.citydb.core.plugin.extension.view.ViewExtension;
 
 import java.util.Locale;
 
-public class DatabasePlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
+public class DatabasePlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
 	private final DatabaseView view;
 	private final DatabasePreferences preferences;
 	
@@ -48,7 +48,7 @@ public class DatabasePlugin implements InternalPlugin, ViewExtension, Preference
 		view = new DatabaseView(viewController, config);
 		preferences = new DatabasePreferences(viewController, config);
 	}
-		
+
 	@Override
 	public void initGuiExtension(ViewController viewController, Locale locale) {
 		loadSettings();

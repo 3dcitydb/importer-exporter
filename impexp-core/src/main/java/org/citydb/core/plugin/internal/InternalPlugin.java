@@ -29,7 +29,7 @@ package org.citydb.core.plugin.internal;
 
 import org.citydb.core.plugin.Plugin;
 
-public interface InternalPlugin extends Plugin {
-	void loadSettings();
-	void setSettings();
+public abstract class InternalPlugin extends Plugin {
+	public abstract void loadSettings();
+	public abstract void setSettings();
 }

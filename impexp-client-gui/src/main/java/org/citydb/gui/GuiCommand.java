@@ -49,6 +49,7 @@ import org.citydb.gui.operation.database.DatabasePlugin;
 import org.citydb.gui.operation.exporter.CityGMLExportPlugin;
 import org.citydb.gui.operation.importer.CityGMLImportPlugin;
 import org.citydb.gui.operation.preferences.PreferencesPlugin;
+import org.citydb.gui.operation.preferences.plugin.PluginsOverviewPlugin;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
@@ -134,6 +135,12 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         pluginManager.registerInternalPlugin(new CityGMLExportPlugin(impExpGui, config));
         pluginManager.registerInternalPlugin(new VisExportPlugin(impExpGui, config));
         pluginManager.registerInternalPlugin(databasePlugin);
+
+        // only register plugins settings if external plugins are installed
+        if (!pluginManager.getExternalPlugins().isEmpty()) {
+            pluginManager.registerInternalPlugin(new PluginsOverviewPlugin(config));
+        }
+
         pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
 
         // initialize all GUI plugins
@@ -149,7 +156,8 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
     public void preprocess(CommandLine commandLine) throws Exception {
         // set options on parent command
         parent.useDefaultConfiguration(true)
-                .failOnADEExceptions(false);
+                .failOnADEExceptions(false)
+                .failOnPluginExceptions(false);
 
         // load GUI configuration
         guiConfig = loadGuiConfig();
