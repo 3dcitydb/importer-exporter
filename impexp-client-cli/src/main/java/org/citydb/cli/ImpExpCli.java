@@ -79,14 +79,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -124,6 +117,12 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     @CommandLine.Option(names = "--plugins", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<folder>",
             description = "Load plugins from this folder.")
     private Path pluginsFolder;
+
+    @CommandLine.Option(names = "--use-plugin", scope = CommandLine.ScopeType.INHERIT, split = ",",
+            paramLabel = "<plugin[=true|false]>", mapFallbackValue = "true",
+            description = "Enable or disable plugins with a matching fully qualified class name " +
+                    "(default: ${MAP-FALLBACK-VALUE}).")
+    private Map<String, Boolean> enabledPlugins;
 
     @CommandLine.Option(names = "--ade-extensions", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<folder>",
             description = "Load ADE extensions from this folder.")
@@ -476,7 +475,11 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         if (!pluginManager.getExternalPlugins().isEmpty()) {
             Map<Plugin, Boolean> plugins = new IdentityHashMap<>();
             for (Plugin plugin : pluginManager.getExternalPlugins()) {
-                plugins.put(plugin, config.isPluginEnabled(plugin.getClass().getName()));
+                boolean enable = enabledPlugins != null ?
+                        enabledPlugins.getOrDefault(plugin.getClass().getName(), false) :
+                        config.isPluginEnabled(plugin.getClass().getName());
+
+                plugins.put(plugin, enable);
             }
 
             pluginManager.setPluginsEnabled(plugins);

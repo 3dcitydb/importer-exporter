@@ -32,7 +32,7 @@ public class PluginsOverviewPanel extends DefaultPreferencesComponent {
     public boolean isModified() {
         for (int i = 0; i < plugins.getModel().getSize(); i++) {
             Plugin plugin = plugins.getModel().getElementAt(i);
-            if (decorator.isCheckBoxSelected(i) != config.isPluginEnabled(plugin.getClass().getName())) {
+            if (decorator.isCheckBoxSelected(i) != plugin.isEnabled()) {
                 return true;
             }
         }
@@ -102,7 +102,7 @@ public class PluginsOverviewPanel extends DefaultPreferencesComponent {
     public void loadSettings() {
         for (int i = 0; i < plugins.getModel().getSize(); i++) {
             Plugin plugin = plugins.getModel().getElementAt(i);
-            decorator.setCheckBoxSelected(i, config.isPluginEnabled(plugin.getClass().getName()));
+            decorator.setCheckBoxSelected(i, plugin.isEnabled());
         }
     }
 
@@ -111,7 +111,7 @@ public class PluginsOverviewPanel extends DefaultPreferencesComponent {
         Map<Plugin, Boolean> pluginStates = new HashMap<>();
         for (int i = 0; i < plugins.getModel().getSize(); i++) {
             Plugin plugin = plugins.getModel().getElementAt(i);
-            if (decorator.isCheckBoxSelected(i) != config.isPluginEnabled(plugin.getClass().getName())) {
+            if (decorator.isCheckBoxSelected(i) != plugin.isEnabled()) {
                 pluginStates.put(plugin, decorator.isCheckBoxSelected(i));
             }
 
