@@ -215,7 +215,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				}
 
 				long id;
-				if (work instanceof Appearance) {
+				if (feature instanceof Appearance) {
 					// global appearance
 					id = importer.importGlobalAppearance((Appearance) feature);
 					if (id != 0) {
