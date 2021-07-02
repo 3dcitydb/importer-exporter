@@ -80,6 +80,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	private final int batchSize;
 	private final boolean exportAppearance;
 	private final boolean useXLink;
+	private final boolean affineTransformation;
 
 	public DBSurfaceGeometry(Connection connection, CityGMLExportManager exporter) throws SQLException {
 		this.exporter = exporter;
@@ -88,6 +89,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		batchSize = exporter.getGeometryBatchSize();
 		exportAppearance = exporter.getInternalConfig().isExportGlobalAppearances();
 		useXLink = exporter.getInternalConfig().isExportGeometryReferences();
+		affineTransformation = exporter.getExportConfig().getAffineTransformation().isEnabled();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		Table table = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
@@ -201,7 +203,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				for (SurfaceGeometryContext batch : batches) {
 					GeometryTree geomTree = geomTrees.get(batch.id);
 					if (geomTree != null && geomTree.root != 0) {
-						SurfaceGeometry geometry = rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
+						SurfaceGeometry geometry = rebuildGeometry(geomTree.getNode(geomTree.root), false, false, geomTree.isImplicit);
 						if (geometry != null)
 							batch.handler.handle(geometry);
 					} else
@@ -230,7 +232,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				addSurfaceGeometry(geomTree, rs);
 
 			if (geomTree.root != 0)
-				return rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
+				return rebuildGeometry(geomTree.getNode(geomTree.root), false, false, isImplicit);
 			else {
 				exporter.logOrThrowErrorMessage("Failed to read surface geometry for root id " + rootId + ".");
 				return null;
@@ -270,7 +272,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		geomTree.insertNode(geomNode, geomNode.parentId);
 	}
 
-	private SurfaceGeometry rebuildGeometry(GeometryNode geomNode, boolean isSetOrientableSurface, boolean wasXlink) throws CityGMLExportException, SQLException {
+	private SurfaceGeometry rebuildGeometry(GeometryNode geomNode, boolean isSetOrientableSurface, boolean wasXlink, boolean isImplicit) {
 		SurfaceGeometry result = null;
 
 		// try and determine the geometry type
@@ -318,7 +320,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 			} else {
 				geomNode.isXlink = XlinkType.NONE.value();
 				geomNode.gmlId = exporter.generateGeometryGmlId(geomNode.gmlId);
-				return rebuildGeometry(geomNode, isSetOrientableSurface, true);
+				return rebuildGeometry(geomNode, isSetOrientableSurface, true, isImplicit);
 			}
 		}
 
@@ -357,6 +359,10 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 					}
 				}
 
+				if (affineTransformation && !isImplicit) {
+					exporter.getAffineTransformer().transformCoordinates(values);
+				}
+
 				LinearRing linearRing = new LinearRing();
 				DirectPositionList posList = new DirectPositionList();
 				if (forceRingIds)
@@ -386,7 +392,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				compositeSurface.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink, isImplicit);
 				if (member != null) {
 					AbstractGeometry geometry = member.getGeometry();
 					SurfaceProperty property = null;
@@ -417,7 +423,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				compositeSolid.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink, isImplicit);
 				if (member != null) {
 					AbstractGeometry geometry = member.getGeometry();
 					SolidProperty property = null;
@@ -443,7 +449,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				solid.setId(geomNode.gmlId);
 
 			if (geomNode.childNodes.size() == 1) {
-				SurfaceGeometry exterior = rebuildGeometry(geomNode.childNodes.get(0), isSetOrientableSurface, wasXlink);
+				SurfaceGeometry exterior = rebuildGeometry(geomNode.childNodes.get(0), isSetOrientableSurface, wasXlink, isImplicit);
 				if (exterior != null) {
 					AbstractGeometry geometry = exterior.getGeometry();
 					SurfaceProperty property = null;
@@ -469,7 +475,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				multiSolid.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink, isImplicit);
 				if (member != null) {
 					AbstractGeometry geometry = member.getGeometry();
 					SolidProperty property = null;
@@ -495,7 +501,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				multiSurface.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink, isImplicit);
 				if (member != null) {
 					AbstractGeometry geometry = member.getGeometry();
 					SurfaceProperty property = null;
@@ -522,7 +528,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 
 			TrianglePatchArrayProperty property = new TrianglePatchArrayProperty();
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink, isImplicit);
 				if (member != null) {
 					AbstractGeometry geometry = member.getGeometry();
 

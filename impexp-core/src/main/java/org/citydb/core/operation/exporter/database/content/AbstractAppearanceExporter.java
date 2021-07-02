@@ -95,6 +95,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final boolean useXLink;
 	private final String separator;
 	private final HashSet<Long> texImageIds;
+	private final boolean affineTransformation;
 
 	private final List<Table> appearanceADEHookTables;
 	private final List<Table> surfaceDataADEHookTables;
@@ -108,6 +109,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		uniqueFileNames = exporter.getExportConfig().getAppearances().isSetUniqueTextureFileNames();
 		noOfBuckets = exporter.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets();
 		useBuckets = exporter.getExportConfig().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
+		affineTransformation = exporter.getExportConfig().getAffineTransformation().isEnabled();
 
 		textureURI = exporter.getInternalConfig().getExportTextureURI();
 		separator = new File(textureURI).isAbsolute() ? File.separator : "/";
@@ -412,6 +414,11 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 				if (m.size() >= 4) {
 					Matrix matrix = new Matrix(2, 2);
 					matrix.setMatrix(m.subList(0, 4));
+
+					if (affineTransformation) {
+						matrix = exporter.getAffineTransformer().transformGeoreferencedTextureOrientation(matrix);
+					}
+
 					georeferencedTexture.setOrientation(new TransformationMatrix2x2(matrix));
 				}
 			}
@@ -512,6 +519,10 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 				if (m.size() >= 12) {
 					Matrix matrix = new Matrix(3, 4);
 					matrix.setMatrix(m.subList(0, 12));
+
+					if (affineTransformation) {
+						matrix = exporter.getAffineTransformer().transformWorldToTexture(matrix);
+					}
 
 					WorldToTexture worldToTextureMatrix = new WorldToTexture();
 					worldToTextureMatrix.setMatrix(matrix);

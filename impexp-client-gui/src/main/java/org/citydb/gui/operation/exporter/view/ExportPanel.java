@@ -30,11 +30,7 @@ package org.citydb.gui.operation.exporter.view;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.exporter.OutputFormat;
-import org.citydb.config.project.exporter.SimpleQuery;
-import org.citydb.config.project.exporter.SimpleTiling;
-import org.citydb.config.project.exporter.SimpleTilingMode;
-import org.citydb.config.project.exporter.SimpleTilingOptions;
+import org.citydb.config.project.exporter.*;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
@@ -46,12 +42,12 @@ import org.citydb.core.file.output.OutputFileFactory;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.CityGMLExportException.ErrorCode;
 import org.citydb.core.operation.exporter.controller.Exporter;
-import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventDispatcher;
@@ -64,12 +60,7 @@ import javax.xml.datatype.DatatypeConstants;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -324,6 +315,23 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					}
 
 					useTiling = true;
+				}
+			}
+
+			// affine transformation
+			if (config.getExportConfig().getAffineTransformation().isEnabled()
+					&& config.getGuiConfig().getExportGuiConfig().isShowAffineTransformationWarning()) {
+				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
+						.withParentComponent(viewController.getTopFrame())
+						.withMessageType(JOptionPane.WARNING_MESSAGE)
+						.withOptionType(JOptionPane.YES_NO_OPTION)
+						.withTitle(Language.I18N.getString("common.dialog.warning.title"))
+						.addMessage(Language.I18N.getString("export.dialog.warn.affineTransformation"));
+
+				int result = dialog.show();
+				config.getGuiConfig().getExportGuiConfig().setShowAffineTransformationWarning(dialog.keepShowingDialog());
+				if (result != JOptionPane.YES_OPTION) {
+					return;
 				}
 			}
 

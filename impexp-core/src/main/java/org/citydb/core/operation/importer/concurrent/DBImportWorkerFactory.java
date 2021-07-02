@@ -40,7 +40,7 @@ import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.IdCacheManager;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.importer.filter.CityGMLFilter;
-import org.citydb.core.operation.importer.util.AffineTransformer;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.importer.util.ImportLogger;
 import org.citydb.core.operation.importer.util.InternalConfig;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;

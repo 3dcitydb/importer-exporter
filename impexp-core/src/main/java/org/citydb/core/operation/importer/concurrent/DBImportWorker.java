@@ -48,7 +48,7 @@ import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.database.content.CityGMLImportManager;
 import org.citydb.core.operation.importer.filter.CityGMLFilter;
-import org.citydb.core.operation.importer.util.AffineTransformer;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.importer.util.ImportLogger;
 import org.citydb.core.operation.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.core.operation.importer.util.InternalConfig;

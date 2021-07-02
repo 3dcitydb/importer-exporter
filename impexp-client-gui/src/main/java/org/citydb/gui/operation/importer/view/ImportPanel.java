@@ -38,11 +38,12 @@ import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.controller.Importer;
 import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.controller.Validator;
-import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.ScrollablePanel;
+import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ImportStatusDialog;
 import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventDispatcher;
@@ -56,12 +57,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -112,7 +108,7 @@ public class ImportPanel extends JPanel {
 		fileList.setModel(fileListModel);
 		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		fileList.setTransferHandler(handler);
-		fileList.setVisibleRowCount(6);
+		fileList.setVisibleRowCount(7);
 
 		DropTarget dropTarget = new DropTarget(fileList, handler);
 		fileList.setDropTarget(dropTarget);
@@ -165,9 +161,10 @@ public class ImportPanel extends JPanel {
         JPanel filePanel = new JPanel();
         filePanel.setLayout(new GridBagLayout());
         JScrollPane fileScroll = new JScrollPane(fileList);
-		fileScroll.setMinimumSize(fileScroll.getPreferredSize());
+		fileScroll.setMinimumSize(fileList.getPreferredScrollableViewportSize());
+		fileScroll.setPreferredSize(fileList.getPreferredScrollableViewportSize());
 
-        filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 0, 1, 2, GridBagConstraints.BOTH, 0, 0, 0, 5));
+        filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 2, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
 		filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
 		filePanel.add(removeButton, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 5, 20, 0));
 
@@ -267,10 +264,18 @@ public class ImportPanel extends JPanel {
 			}
 
 			// affine transformation
-			if (config.getImportConfig().getAffineTransformation().isEnabled()) {
-				if (viewController.showOptionDialog(Language.I18N.getString("common.dialog.warning.title"),
-						Language.I18N.getString("import.dialog.warning.affineTransformation"),
-						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION) {
+			if (config.getImportConfig().getAffineTransformation().isEnabled()
+					&& config.getGuiConfig().getImportGuiConfig().isShowAffineTransformationWarning()) {
+				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
+						.withParentComponent(viewController.getTopFrame())
+						.withMessageType(JOptionPane.WARNING_MESSAGE)
+						.withOptionType(JOptionPane.YES_NO_OPTION)
+						.withTitle(Language.I18N.getString("common.dialog.warning.title"))
+						.addMessage(Language.I18N.getString("import.dialog.warn.affineTransformation"));
+
+				int result = dialog.show();
+				config.getGuiConfig().getImportGuiConfig().setShowAffineTransformationWarning(dialog.keepShowingDialog());
+				if (result != JOptionPane.YES_OPTION) {
 					return;
 				}
 			}

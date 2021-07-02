@@ -30,6 +30,7 @@ package org.citydb.gui.operation.exporter.preferences;
 import org.citydb.config.Config;
 import org.citydb.gui.operation.common.DefaultPreferences;
 import org.citydb.gui.operation.common.DefaultPreferencesEntry;
+import org.citydb.gui.operation.common.GeometryPanel;
 import org.citydb.gui.operation.common.XSLTransformationPanel;
 
 public class CityGMLExportPreferences extends DefaultPreferences {
@@ -41,6 +42,7 @@ public class CityGMLExportPreferences extends DefaultPreferences {
 		root.addChildEntry(new DefaultPreferencesEntry(new TilingOptionsPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(true, config)));
 
 		DefaultPreferencesEntry cityGMLOptions = new CityGMLOptionsPanel();
 		root.addChildEntry(cityGMLOptions);

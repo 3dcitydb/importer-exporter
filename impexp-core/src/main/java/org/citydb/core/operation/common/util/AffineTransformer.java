@@ -25,9 +25,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.operation.importer.util;
+package org.citydb.core.operation.common.util;
 
-import org.citydb.config.Config;
+import org.citydb.config.project.common.AffineTransformation;
 import org.citydb.config.project.common.TransformationMatrix;
 import org.citygml4j.geometry.Matrix;
 
@@ -39,8 +39,8 @@ public class AffineTransformer {
 	private final Matrix inverse4x4;
 	private final Matrix inverse2x2;
 	
-	public AffineTransformer(Config config) throws Exception {
-		matrix4x4 = toMatrix4x4(config.getImportConfig().getAffineTransformation().getTransformationMatrix());
+	public AffineTransformer(AffineTransformation affineTransformation) throws Exception {
+		matrix4x4 = toMatrix4x4(affineTransformation.getTransformationMatrix());
 		matrix3x4 = matrix4x4.getMatrix(3, 4);
 		inverse4x4 = matrix4x4.inverse();
 		inverse2x2 = inverse4x4.getMatrix(2, 2);
@@ -62,6 +62,18 @@ public class AffineTransformer {
 			points.set(i, v.get(0, 0));
 			points.set(i+1, v.get(1, 0));
 			points.set(i+2, v.get(2, 0));
+		}
+	}
+
+	public void transformCoordinates(double[] points) {
+		for (int i = 0; i < points.length; i += 3) {
+			double[] vals = new double[]{ points[i], points[i+1], points[i+2], 1};
+			Matrix v = new Matrix(vals, 4);
+
+			v = matrix3x4.times(v);
+			points[i] = v.get(0, 0);
+			points[i+1] = v.get(1, 0);
+			points[i+2] = v.get(2, 0);
 		}
 	}
 	

@@ -28,8 +28,6 @@
 package org.citydb.core.operation.importer.controller;
 
 import org.apache.tika.exception.TikaException;
-import org.citydb.util.concurrent.PoolSizeAdaptationStrategy;
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
@@ -41,26 +39,14 @@ import org.citydb.core.database.adapter.IndexStatusInfo.IndexStatus;
 import org.citydb.core.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.CounterEvent;
-import org.citydb.util.event.global.CounterType;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.event.global.GeometryCounterEvent;
-import org.citydb.util.event.global.InterruptEvent;
-import org.citydb.util.event.global.ObjectCounterEvent;
-import org.citydb.util.event.global.StatusDialogMessage;
-import org.citydb.util.event.global.StatusDialogProgressBar;
-import org.citydb.util.event.global.StatusDialogTitle;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.file.input.AbstractArchiveInputFile;
 import org.citydb.core.file.input.DirectoryScanner;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.cache.IdCacheManager;
 import org.citydb.core.operation.common.cache.IdCacheType;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.cache.GeometryGmlIdCache;
@@ -76,13 +62,19 @@ import org.citydb.core.operation.importer.reader.FeatureReadException;
 import org.citydb.core.operation.importer.reader.FeatureReader;
 import org.citydb.core.operation.importer.reader.FeatureReaderFactory;
 import org.citydb.core.operation.importer.reader.FeatureReaderFactoryBuilder;
-import org.citydb.core.operation.importer.util.AffineTransformer;
 import org.citydb.core.operation.importer.util.ImportLogger;
 import org.citydb.core.operation.importer.util.InternalConfig;
 import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;
+import org.citydb.util.concurrent.PoolSizeAdaptationStrategy;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.*;
+import org.citydb.util.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.gml.GMLClass;
@@ -238,7 +230,7 @@ public class Importer implements EventHandler {
         if (config.getImportConfig().getAffineTransformation().isEnabled()) {
             try {
                 log.info("Applying affine coordinates transformation.");
-                affineTransformer = new AffineTransformer(config);
+                affineTransformer = new AffineTransformer(config.getImportConfig().getAffineTransformation());
             } catch (Exception e) {
                 throw new CityGMLImportException("Failed to create affine transformer.", e);
             }

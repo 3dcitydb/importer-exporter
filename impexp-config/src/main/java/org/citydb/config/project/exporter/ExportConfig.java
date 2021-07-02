@@ -27,6 +27,7 @@
  */
 package org.citydb.config.project.exporter;
 
+import org.citydb.config.project.common.AffineTransformation;
 import org.citydb.config.project.common.Path;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.resources.Resources;
@@ -45,6 +46,7 @@ import javax.xml.bind.annotation.XmlType;
         "continuation",
         "cityObjectGroup",
         "appearances",
+        "affineTransformation",
         "cityGMLOptions",
         "cityJSONOptions",
         "resources"
@@ -60,6 +62,7 @@ public class ExportConfig {
     private Continuation continuation;
     private ExportCityObjectGroup cityObjectGroup;
     private ExportAppearance appearances;
+    private AffineTransformation affineTransformation;
     private CityGMLOptions cityGMLOptions;
     private CityJSONOptions cityJSONOptions;
     private Resources resources;
@@ -72,6 +75,7 @@ public class ExportConfig {
         continuation = new Continuation();
         cityObjectGroup = new ExportCityObjectGroup();
         appearances = new ExportAppearance();
+        affineTransformation = new AffineTransformation();
         cityGMLOptions = new CityGMLOptions();
         cityJSONOptions = new CityJSONOptions();
         resources = new Resources();
@@ -152,6 +156,16 @@ public class ExportConfig {
     public void setCityObjectGroup(ExportCityObjectGroup cityObjectGroup) {
         if (cityObjectGroup != null) {
             this.cityObjectGroup = cityObjectGroup;
+        }
+    }
+
+    public AffineTransformation getAffineTransformation() {
+        return affineTransformation;
+    }
+
+    public void setAffineTransformation(AffineTransformation affineTransformation) {
+        if (affineTransformation != null) {
+            this.affineTransformation = affineTransformation;
         }
     }
 

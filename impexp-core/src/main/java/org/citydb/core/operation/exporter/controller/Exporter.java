@@ -27,40 +27,22 @@
  */
 package org.citydb.core.operation.exporter.controller;
 
-import org.citydb.util.concurrent.PoolSizeAdaptationStrategy;
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
-import org.citydb.config.project.exporter.OutputFormat;
-import org.citydb.config.project.exporter.SimpleTilingOptions;
-import org.citydb.config.project.exporter.TileNameSuffixMode;
-import org.citydb.config.project.exporter.TileSuffixMode;
-import org.citydb.config.project.exporter.XLink;
+import org.citydb.config.project.exporter.*;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.CounterEvent;
-import org.citydb.util.event.global.CounterType;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.event.global.GeometryCounterEvent;
-import org.citydb.util.event.global.InterruptEvent;
-import org.citydb.util.event.global.ObjectCounterEvent;
-import org.citydb.util.event.global.StatusDialogMessage;
-import org.citydb.util.event.global.StatusDialogProgressBar;
-import org.citydb.util.event.global.StatusDialogTitle;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.OutputFile;
 import org.citydb.core.file.output.OutputFileFactory;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.cache.IdCacheManager;
 import org.citydb.core.operation.common.cache.IdCacheType;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.CityGMLExportException.ErrorCode;
@@ -89,6 +71,13 @@ import org.citydb.core.query.filter.tiling.Tiling;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;
+import org.citydb.util.concurrent.PoolSizeAdaptationStrategy;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.*;
+import org.citydb.util.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.gml.GMLClass;
@@ -199,6 +188,20 @@ public class Exporter implements EventHandler {
             log.warn("Multiple metadata provider plugins found. This might lead to unexpected results.");
         }
 
+        // check and log index status
+        try {
+            if ((query.isSetTiling() || (query.isSetSelection() && query.getSelection().containsSpatialOperators()))
+                    && !databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {
+                throw new CityGMLExportException(ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED, "Spatial indexes are not activated.");
+            }
+
+            for (IndexType type : IndexType.values()) {
+                databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
+            }
+        } catch (SQLException e) {
+            throw new CityGMLExportException("Database error while querying index status.", e);
+        }
+
         // set target reference system for export
         DatabaseSrs targetSrs = query.getTargetSrs();
         internalConfig.setTransformCoordinates(targetSrs.isSupported()
@@ -213,18 +216,15 @@ public class Exporter implements EventHandler {
             }
         }
 
-        // check and log index status
-        try {
-            if ((query.isSetTiling() || (query.isSetSelection() && query.getSelection().containsSpatialOperators()))
-                    && !databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {
-                throw new CityGMLExportException(ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED, "Spatial indexes are not activated.");
+        // affine transformation
+        AffineTransformer affineTransformer = null;
+        if (config.getExportConfig().getAffineTransformation().isEnabled()) {
+            try {
+                log.info("Applying affine coordinates transformation.");
+                affineTransformer = new AffineTransformer(config.getExportConfig().getAffineTransformation());
+            } catch (Exception e) {
+                throw new CityGMLExportException("Failed to create affine transformer.", e);
             }
-
-            for (IndexType type : IndexType.values()) {
-            	databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
-			}
-        } catch (SQLException e) {
-            throw new CityGMLExportException("Database error while querying index status.", e);
         }
 
         // check whether database contains global appearances and set internal flag
@@ -461,6 +461,7 @@ public class Exporter implements EventHandler {
                                     idCacheManager,
                                     cacheTableManager,
                                     query,
+                                    affineTransformer,
                                     internalConfig,
                                     config,
                                     eventDispatcher),

@@ -27,8 +27,6 @@
  */
 package org.citydb.core.operation.exporter.concurrent;
 
-import org.citydb.util.concurrent.Worker;
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Point;
@@ -37,19 +35,9 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.CounterEvent;
-import org.citydb.util.event.global.CounterType;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.event.global.GeometryCounterEvent;
-import org.citydb.util.event.global.InterruptEvent;
-import org.citydb.util.event.global.ObjectCounterEvent;
-import org.citydb.util.event.global.ProgressBarEventType;
-import org.citydb.util.event.global.StatusDialogProgressBar;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.cache.IdCacheManager;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.database.content.CityGMLExportManager;
@@ -59,6 +47,12 @@ import org.citydb.core.operation.exporter.writer.FeatureWriter;
 import org.citydb.core.query.Query;
 import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.query.filter.tiling.Tile;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.*;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
@@ -93,6 +87,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
 			Query query,
+			AffineTransformer affineTransformer,
 			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) throws CityGMLExportException {
@@ -117,6 +112,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				xlinkPool,
 				idCacheManager,
 				cacheTableManager,
+				affineTransformer,
 				internalConfig,
 				config);
 

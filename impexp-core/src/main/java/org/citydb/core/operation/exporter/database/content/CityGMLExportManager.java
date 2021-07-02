@@ -27,42 +27,25 @@
  */
 package org.citydb.core.operation.exporter.database.content;
 
-import org.citydb.core.ade.ADEExtension;
-import org.citydb.core.ade.ADEExtensionManager;
-import org.citydb.core.ade.exporter.ADEExportManager;
-import org.citydb.core.ade.exporter.CityGMLExportHelper;
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.config.project.exporter.XLinkConfig;
 import org.citydb.config.project.exporter.XLinkFeatureConfig;
+import org.citydb.core.ade.ADEExtension;
+import org.citydb.core.ade.ADEExtensionManager;
+import org.citydb.core.ade.exporter.ADEExportManager;
+import org.citydb.core.ade.exporter.CityGMLExportHelper;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.TableEnum;
-import org.citydb.core.database.schema.mapping.AbstractObjectType;
-import org.citydb.core.database.schema.mapping.AbstractProperty;
-import org.citydb.core.database.schema.mapping.AppSchema;
-import org.citydb.core.database.schema.mapping.FeatureProperty;
-import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.database.schema.mapping.InjectedProperty;
-import org.citydb.core.database.schema.mapping.MappingConstants;
-import org.citydb.core.database.schema.mapping.ObjectType;
-import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.log.Logger;
-import org.citydb.core.operation.common.cache.CacheTable;
-import org.citydb.core.operation.common.cache.CacheTableManager;
-import org.citydb.core.operation.common.cache.IdCache;
-import org.citydb.core.operation.common.cache.IdCacheManager;
-import org.citydb.core.operation.common.cache.IdCacheType;
+import org.citydb.core.database.schema.mapping.*;
+import org.citydb.core.operation.common.cache.*;
 import org.citydb.core.operation.common.cache.model.CacheTableModel;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.exporter.CityGMLExportException;
-import org.citydb.core.operation.exporter.util.AppearanceRemover;
-import org.citydb.core.operation.exporter.util.AttributeValueSplitter;
-import org.citydb.core.operation.exporter.util.ExportCounter;
-import org.citydb.core.operation.exporter.util.InternalConfig;
-import org.citydb.core.operation.exporter.util.LodGeometryChecker;
+import org.citydb.core.operation.exporter.util.*;
 import org.citydb.core.operation.exporter.writer.FeatureWriteException;
 import org.citydb.core.operation.exporter.writer.FeatureWriter;
 import org.citydb.core.plugin.PluginException;
@@ -72,49 +55,34 @@ import org.citydb.core.query.Query;
 import org.citydb.core.query.filter.lod.LodFilter;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.core.query.filter.projection.ProjectionFilter;
+import org.citydb.core.util.CoreConstants;
+import org.citydb.core.util.Util;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.projection.Function;
-import org.citydb.core.util.CoreConstants;
-import org.citydb.core.util.Util;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
 import org.citygml4j.builder.jaxb.unmarshal.JAXBUnmarshaller;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
 import org.citygml4j.model.citygml.ade.generic.ADEGenericElement;
 import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.bridge.AbstractBridge;
-import org.citygml4j.model.citygml.bridge.BridgeConstructionElement;
-import org.citygml4j.model.citygml.bridge.BridgeFurniture;
-import org.citygml4j.model.citygml.bridge.BridgeInstallation;
-import org.citygml4j.model.citygml.bridge.BridgeRoom;
-import org.citygml4j.model.citygml.bridge.IntBridgeInstallation;
+import org.citygml4j.model.citygml.bridge.*;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
-import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.AbstractOpening;
-import org.citygml4j.model.citygml.building.BuildingFurniture;
-import org.citygml4j.model.citygml.building.BuildingInstallation;
-import org.citygml4j.model.citygml.building.IntBuildingInstallation;
-import org.citygml4j.model.citygml.building.Room;
+import org.citygml4j.model.citygml.building.*;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
-import org.citygml4j.model.citygml.core.Address;
-import org.citygml4j.model.citygml.core.ExternalObject;
-import org.citygml4j.model.citygml.core.ExternalReference;
-import org.citygml4j.model.citygml.core.ImplicitGeometry;
+import org.citygml4j.model.citygml.core.*;
 import org.citygml4j.model.citygml.generics.GenericCityObject;
 import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
 import org.citygml4j.model.citygml.relief.ReliefFeature;
 import org.citygml4j.model.citygml.transportation.AbstractTransportationObject;
 import org.citygml4j.model.citygml.transportation.TransportationComplex;
-import org.citygml4j.model.citygml.tunnel.AbstractTunnel;
-import org.citygml4j.model.citygml.tunnel.HollowSpace;
-import org.citygml4j.model.citygml.tunnel.IntTunnelInstallation;
-import org.citygml4j.model.citygml.tunnel.TunnelFurniture;
-import org.citygml4j.model.citygml.tunnel.TunnelInstallation;
+import org.citygml4j.model.citygml.tunnel.*;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
@@ -135,14 +103,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.Reader;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CityGMLExportManager implements CityGMLExportHelper {
 	private final Logger log = Logger.getInstance();
@@ -172,6 +133,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private GMLConverter gmlConverter;
 	private LodGeometryChecker lodGeometryChecker;
 	private AppearanceRemover appearanceRemover;
+	private AffineTransformer affineTransformer;
 	private Document document;
 	private boolean failOnError;
 
@@ -184,6 +146,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			WorkerPool<DBXlink> xlinkPool,
 			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
+			AffineTransformer affineTransformer,
 			InternalConfig internalConfig,
 			Config config) throws CityGMLExportException {
 		this.connection = connection;
@@ -210,6 +173,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			lodGeometryChecker = new LodGeometryChecker(this, schemaMapping);
 			if (config.getExportConfig().getAppearances().isSetExportAppearance())
 				appearanceRemover = new AppearanceRemover();
+		}
+
+		if (config.getExportConfig().getAffineTransformation().isEnabled()) {
+			this.affineTransformer = affineTransformer;
 		}
 
 		try {
@@ -566,9 +533,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public GMLConverter getGMLConverter() {
-		if (gmlConverter == null) {		
-			gmlConverter = new GMLConverter(query.isSetTargetSrs() ? query.getTargetSrs().getGMLSrsName() :
-				databaseAdapter.getConnectionMetaData().getReferenceSystem().getGMLSrsName());
+		if (gmlConverter == null) {
+			gmlConverter = new GMLConverter(query.isSetTargetSrs() ?
+					query.getTargetSrs().getGMLSrsName() :
+					databaseAdapter.getConnectionMetaData().getReferenceSystem().getGMLSrsName(),
+					affineTransformer, config);
 		}
 
 		return gmlConverter;
@@ -615,6 +584,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	@Override
 	public ExportConfig getExportConfig() {
 		return config.getExportConfig();
+	}
+
+	public AffineTransformer getAffineTransformer() {
+		return affineTransformer;
 	}
 
 	public InternalConfig getInternalConfig() {

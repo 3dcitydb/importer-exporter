@@ -27,8 +27,10 @@
  */
 package org.citydb.core.operation.exporter.database.content;
 
+import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.GeometryType;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
@@ -37,22 +39,7 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
-import org.citygml4j.model.gml.geometry.primitives.ControlPoint;
-import org.citygml4j.model.gml.geometry.primitives.CurveProperty;
-import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
-import org.citygml4j.model.gml.geometry.primitives.DirectPositionList;
-import org.citygml4j.model.gml.geometry.primitives.Exterior;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPositionGroup;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
-import org.citygml4j.model.gml.geometry.primitives.Interior;
-import org.citygml4j.model.gml.geometry.primitives.LineString;
-import org.citygml4j.model.gml.geometry.primitives.LineStringSegment;
-import org.citygml4j.model.gml.geometry.primitives.LineStringSegmentArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.LinearRing;
-import org.citygml4j.model.gml.geometry.primitives.Point;
-import org.citygml4j.model.gml.geometry.primitives.PointProperty;
-import org.citygml4j.model.gml.geometry.primitives.Polygon;
-import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
+import org.citygml4j.model.gml.geometry.primitives.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,8 +47,20 @@ import java.util.List;
 public class GMLConverter {
 	private final String srsName;
 
+	private AffineTransformer affineTransformer;
+	private boolean affineTransformation;
+
 	public GMLConverter(String srsName) {
 		this.srsName = srsName;
+	}
+
+	public GMLConverter(String srsName, AffineTransformer affineTransformer, Config config) {
+		this(srsName);
+
+		affineTransformation = config.getExportConfig().getAffineTransformation().isEnabled();
+		if (affineTransformation) {
+			this.affineTransformer = affineTransformer;
+		}
 	}
 
 	public Point getPoint(GeometryObject geomObj) {
@@ -79,6 +78,10 @@ public class GMLConverter {
 			List<Double> value = new ArrayList<>(dimension);
 			for (int i = 0; i < dimension; i++)
 				value.add(coordinates[i]);
+
+			if (affineTransformation) {
+				affineTransformer.transformCoordinates(value);
+			}
 
 			DirectPosition pos = new DirectPosition();
 			pos.setValue(value);
@@ -128,6 +131,10 @@ public class GMLConverter {
 					List<Double> value = new ArrayList<>(dimension);
 					for (int j = 0; j < dimension; j++)
 						value.add(coordiantes[j]);
+
+					if (affineTransformation) {
+						affineTransformer.transformCoordinates(value);
+					}
 
 					DirectPosition pos = new DirectPosition();
 					pos.setValue(value);
@@ -212,8 +219,13 @@ public class GMLConverter {
 		if (geomObj != null && geomObj.getGeometryType() == GeometryType.LINE_STRING) {
 			lineString = new LineString();
 
+			List<Double> value = geomObj.getCoordinatesAsList(0);
+			if (affineTransformation) {
+				affineTransformer.transformCoordinates(value);
+			}
+
 			DirectPositionList directPositionList = new DirectPositionList();
-			directPositionList.setValue(geomObj.getCoordinatesAsList(0));
+			directPositionList.setValue(value);
 			directPositionList.setSrsDimension(geomObj.getDimension());
 			if (setSrsName)
 				directPositionList.setSrsName(srsName);
@@ -253,9 +265,14 @@ public class GMLConverter {
 
 				for (int i = 0; i < geomObj.getNumElements(); i++) {
 					LineString lineString = new LineString();
-					
+
+					List<Double> value = geomObj.getCoordinatesAsList(i);
+					if (affineTransformation) {
+						affineTransformer.transformCoordinates(value);
+					}
+
 					DirectPositionList directPositionList = new DirectPositionList();
-					directPositionList.setValue(geomObj.getCoordinatesAsList(i));
+					directPositionList.setValue(value);
 					directPositionList.setSrsDimension(geomObj.getDimension());
 					if (setSrsName)
 						directPositionList.setSrsName(srsName);
@@ -446,9 +463,14 @@ public class GMLConverter {
 			for (int i = 0; i < geomObj.getNumElements(); i++) {
 				if (isExterior) {
 					LinearRing linearRing = new LinearRing();
+
+					List<Double> value = geomObj.getCoordinatesAsList(i);
+					if (affineTransformation) {
+						affineTransformer.transformCoordinates(value);
+					}
 					
 					DirectPositionList directPositionList = new DirectPositionList();
-					directPositionList.setValue(geomObj.getCoordinatesAsList(i));
+					directPositionList.setValue(value);
 					directPositionList.setSrsDimension(geomObj.getDimension());
 					if (setSrsName)
 						directPositionList.setSrsName(srsName);
@@ -459,9 +481,14 @@ public class GMLConverter {
 					isExterior = false;
 				} else {
 					LinearRing linearRing = new LinearRing();
+
+					List<Double> value = geomObj.getCoordinatesAsList(i);
+					if (affineTransformation) {
+						affineTransformer.transformCoordinates(value);
+					}
 					
 					DirectPositionList directPositionList = new DirectPositionList();
-					directPositionList.setValue(geomObj.getCoordinatesAsList(i));
+					directPositionList.setValue(value);
 					directPositionList.setSrsDimension(geomObj.getDimension());
 					if (setSrsName)
 						directPositionList.setSrsName(srsName);

@@ -40,6 +40,7 @@ import javax.xml.bind.annotation.XmlType;
         "collapseCounterFilter",
         "collapseBoundingBoxFilter",
         "collapseFeatureTypeFilter",
+        "showAffineTransformationWarning",
         "showCityJSONTilingWarning",
         "sqlFilter"
 })
@@ -51,6 +52,7 @@ public class ExportGuiConfig {
     private boolean collapseCounterFilter = true;
     private boolean collapseBoundingBoxFilter = true;
     private boolean collapseFeatureTypeFilter = true;
+    private boolean showAffineTransformationWarning = true;
     private boolean showCityJSONTilingWarning = true;
     private SQLExportFilterComponent sqlFilter;
 
@@ -112,6 +114,14 @@ public class ExportGuiConfig {
 
     public void setCollapseFeatureTypeFilter(boolean collapseFeatureTypeFilter) {
         this.collapseFeatureTypeFilter = collapseFeatureTypeFilter;
+    }
+
+    public boolean isShowAffineTransformationWarning() {
+        return showAffineTransformationWarning;
+    }
+
+    public void setShowAffineTransformationWarning(boolean showAffineTransformationWarning) {
+        this.showAffineTransformationWarning = showAffineTransformationWarning;
     }
 
     public boolean isShowCityJSONTilingWarning() {
