@@ -28,9 +28,9 @@
 
 package org.citydb.cli.operation.deleter;
 
-import org.citydb.config.project.deleter.DeleteList;
-import org.citydb.config.project.common.IdColumnType;
 import org.citydb.cli.option.CliOption;
+import org.citydb.config.project.common.IdColumnType;
+import org.citydb.config.project.common.IdList;
 import picocli.CommandLine;
 
 import java.nio.charset.Charset;
@@ -88,8 +88,8 @@ public class DeleteListOption implements CliOption {
         return preview;
     }
 
-    public DeleteList toDeleteList() {
-        DeleteList deleteList = new DeleteList();
+    public IdList toDeleteList() {
+        IdList deleteList = new IdList();
 
         deleteList.setFile(file.toAbsolutePath().toString());
         deleteList.setEncoding(encoding);

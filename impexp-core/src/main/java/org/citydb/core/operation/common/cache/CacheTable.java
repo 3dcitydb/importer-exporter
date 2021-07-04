@@ -30,7 +30,7 @@ package org.citydb.core.operation.common.cache;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 import org.citydb.core.operation.common.cache.model.AbstractCacheTableModel;
 import org.citydb.core.operation.common.cache.model.CacheTableBasic;
-import org.citydb.core.operation.common.cache.model.CacheTableDeleteList;
+import org.citydb.core.operation.common.cache.model.CacheTableIdList;
 import org.citydb.core.operation.common.cache.model.CacheTableDeprecatedMaterial;
 import org.citydb.core.operation.common.cache.model.CacheTableGeometryGmlId;
 import org.citydb.core.operation.common.cache.model.CacheTableGlobalAppearance;
@@ -119,8 +119,8 @@ public class CacheTable extends AbstractCacheTable {
 			case GLOBAL_APPEARANCE:
 				this.model = CacheTableGlobalAppearance.getInstance();
 				break;
-			case DELETE_LIST:
-				this.model = CacheTableDeleteList.getInstance();
+			case ID_LIST:
+				this.model = CacheTableIdList.getInstance();
 				break;
 			default:
 				throw new IllegalArgumentException("Unsupported cache table type " + model);

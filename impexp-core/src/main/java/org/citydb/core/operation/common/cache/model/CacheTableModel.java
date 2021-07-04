@@ -47,7 +47,7 @@ public enum CacheTableModel {
 	DEPRECATED_MATERIAL("DP"),
 	GROUP_TO_CITYOBJECT("GTC"),
 	GLOBAL_APPEARANCE("GA"),
-	DELETE_LIST("DEL");
+	ID_LIST("IDL");
 
 	private final String value;
 

@@ -33,19 +33,19 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class CacheTableDeleteList extends AbstractCacheTableModel {
-	private static CacheTableDeleteList instance;
+public class CacheTableIdList extends AbstractCacheTableModel {
+	private static CacheTableIdList instance;
 
-	public synchronized static CacheTableDeleteList getInstance() {
+	public synchronized static CacheTableIdList getInstance() {
 		if (instance == null)
-			instance = new CacheTableDeleteList();
+			instance = new CacheTableIdList();
 
 		return instance;
 	}
 	
 	@Override
 	public CacheTableModel getType() {
-		return CacheTableModel.DELETE_LIST;
+		return CacheTableModel.ID_LIST;
 	}
 
 	@Override

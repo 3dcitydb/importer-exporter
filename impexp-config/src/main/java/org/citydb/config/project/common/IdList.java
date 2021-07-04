@@ -44,6 +44,8 @@ public class IdList {
     private String idColumnName;
     @XmlElement(defaultValue = "1")
     private Integer idColumnIndex;
+    @XmlElement(defaultValue = "resource")
+    private IdColumnType idColumnType;
     @XmlElement(defaultValue = ",")
     private String delimiter;
     @XmlElement(defaultValue = "\"")
@@ -77,6 +79,14 @@ public class IdList {
 
     public void setIdColumnIndex(Integer idColumnIndex) {
         this.idColumnIndex = idColumnIndex;
+    }
+
+    public IdColumnType getIdColumnType() {
+        return idColumnType != null ? idColumnType : IdColumnType.RESOURCE_ID;
+    }
+
+    public void setIdColumnType(IdColumnType idColumnType) {
+        this.idColumnType = idColumnType;
     }
 
     public String getDelimiter() {
