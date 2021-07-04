@@ -29,19 +29,19 @@
 package org.citydb.cli.operation.deleter;
 
 import org.citydb.cli.ImpExpCli;
+import org.citydb.cli.option.DatabaseOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.deleter.DeleteList;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.util.log.Logger;
+import org.citydb.core.operation.common.csv.IdListPreviewer;
 import org.citydb.core.operation.deleter.DeleteException;
 import org.citydb.core.operation.deleter.controller.Deleter;
-import org.citydb.core.operation.deleter.util.DeleteListPreviewer;
 import org.citydb.core.plugin.CliCommand;
-import org.citydb.cli.option.DatabaseOption;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.util.log.Logger;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
@@ -95,7 +95,7 @@ public class DeleteCommand extends CliCommand {
 
             if (deleteListOption.isPreview()) {
                 try {
-                    DeleteListPreviewer.of(deleteList)
+                    IdListPreviewer.of(deleteList)
                             .withNumberOfRecords(20)
                             .printToConsole();
                     log.info("Delete list preview successfully finished.");

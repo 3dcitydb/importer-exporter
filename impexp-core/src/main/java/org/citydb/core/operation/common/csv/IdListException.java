@@ -26,23 +26,23 @@
  * limitations under the License.
  */
 
-package org.citydb.core.operation.deleter.util;
+package org.citydb.core.operation.common.csv;
 
-public class DeleteListException extends Exception {
+public class IdListException extends Exception {
 
-	public DeleteListException() {
+	public IdListException() {
 		super();
 	}
 
-	public DeleteListException(String message) {
+	public IdListException(String message) {
 		super(message);
 	}
 
-	public DeleteListException(Throwable cause) {
+	public IdListException(Throwable cause) {
 		super(cause);
 	}
 
-	public DeleteListException(String message, Throwable cause) {
+	public IdListException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }
