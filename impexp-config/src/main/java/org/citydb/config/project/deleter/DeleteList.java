@@ -28,6 +28,7 @@
 
 package org.citydb.config.project.deleter;
 
+import org.citydb.config.project.common.IdColumnType;
 import org.citydb.config.project.common.IdList;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -36,13 +37,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "DeleteListType", propOrder = {})
 public class DeleteList extends IdList {
     @XmlElement(defaultValue = "resource")
-    private DeleteListIdType idType;
+    private IdColumnType idColumnType;
 
-    public DeleteListIdType getIdType() {
-        return idType != null ? idType : DeleteListIdType.RESOURCE_ID;
+    public IdColumnType getIdColumnType() {
+        return idColumnType != null ? idColumnType : IdColumnType.RESOURCE_ID;
     }
 
-    public void setIdType(DeleteListIdType idType) {
-        this.idType = idType;
+    public void setIdColumnType(IdColumnType idColumnType) {
+        this.idColumnType = idColumnType;
     }
 }

@@ -195,7 +195,7 @@ public class Deleter implements EventHandler {
 
 					try {
 						int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
-						new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser, deleteList.getIdType());
+						new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser, deleteList.getIdColumnType());
 					} catch (IdListException e) {
 						throw new DeleteException("Failed to parse delete list.", e);
 					} catch (SQLException e) {

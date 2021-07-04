@@ -29,7 +29,7 @@
 package org.citydb.cli.operation.deleter;
 
 import org.citydb.config.project.deleter.DeleteList;
-import org.citydb.config.project.deleter.DeleteListIdType;
+import org.citydb.config.project.common.IdColumnType;
 import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
@@ -95,7 +95,7 @@ public class DeleteListOption implements CliOption {
         deleteList.setEncoding(encoding);
         deleteList.setIdColumnName(name);
         deleteList.setIdColumnIndex(index != null ? index : 1);
-        deleteList.setIdType(type == Type.db ? DeleteListIdType.DATABASE_ID : DeleteListIdType.RESOURCE_ID);
+        deleteList.setIdColumnType(type == Type.db ? IdColumnType.DATABASE_ID : IdColumnType.RESOURCE_ID);
         deleteList.setDelimiter(delimiter);
         deleteList.setHasHeader(header);
         deleteList.setQuoteCharacter(quote);
