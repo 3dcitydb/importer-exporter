@@ -26,23 +26,12 @@
  * limitations under the License.
  */
 
-package org.citydb.core.operation.deleter.util;
+package org.citydb.core.plugin.extension.importer;
 
-public class DeleteListException extends Exception {
+import org.citydb.core.plugin.PluginException;
+import org.citydb.core.plugin.extension.Extension;
+import org.citygml4j.model.gml.feature.AbstractFeature;
 
-	public DeleteListException() {
-		super();
-	}
-
-	public DeleteListException(String message) {
-		super(message);
-	}
-
-	public DeleteListException(Throwable cause) {
-		super(cause);
-	}
-
-	public DeleteListException(String message, Throwable cause) {
-		super(message, cause);
-	}
+public interface FeatureImportExtension extends Extension {
+    AbstractFeature process(AbstractFeature feature) throws PluginException;
 }

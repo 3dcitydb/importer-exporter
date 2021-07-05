@@ -28,11 +28,11 @@
 
 package org.citydb.core.operation.deleter.database;
 
-import org.citydb.config.project.deleter.DeleteListIdType;
+import org.citydb.config.project.common.IdColumnType;
 import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.operation.common.cache.CacheTable;
-import org.citydb.core.operation.deleter.util.DeleteListException;
-import org.citydb.core.operation.deleter.util.DeleteListParser;
+import org.citydb.core.operation.common.csv.IdListException;
+import org.citydb.core.operation.common.csv.IdListParser;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -48,10 +48,9 @@ public class DeleteListImporter {
         this.maxBatchSize = maxBatchSize;
     }
 
-    public void doImport(DeleteListParser parser) throws DeleteListException, SQLException {
-        DeleteListIdType idType = parser.getDeleteList().getIdType();
+    public void doImport(IdListParser parser, IdColumnType idColumnType) throws IdListException, SQLException {
         String sql = "insert into " + cacheTable.getTableName() + " " +
-                (idType == DeleteListIdType.DATABASE_ID ?
+                (idColumnType == IdColumnType.DATABASE_ID ?
                         "(" + MappingConstants.ID + ") values (?)" :
                         "(" + MappingConstants.GMLID + ") values (?)");
 
@@ -61,11 +60,11 @@ public class DeleteListImporter {
                 String id = parser.nextId();
 
                 if (id != null) {
-                    if (idType == DeleteListIdType.DATABASE_ID) {
+                    if (idColumnType == IdColumnType.DATABASE_ID) {
                         try {
                             ps.setLong(1, Long.parseLong(id));
                         } catch (NumberFormatException e) {
-                            throw new DeleteListException("Invalid database ID: '" + id + "' (line " +
+                            throw new IdListException("Invalid database ID: '" + id + "' (line " +
                                     lineNumber + ") is not an integer.");
                         }
                     } else {

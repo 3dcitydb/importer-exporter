@@ -27,28 +27,20 @@
  */
 package org.citydb.core.operation.deleter.controller;
 
-import org.citydb.util.concurrent.SingleWorkerPool;
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.common.IdList;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.event.global.InterruptEvent;
-import org.citydb.util.event.global.ObjectCounterEvent;
-import org.citydb.util.event.global.StatusDialogMessage;
-import org.citydb.util.event.global.StatusDialogProgressBar;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.cache.model.CacheTableModel;
+import org.citydb.core.operation.common.csv.IdListException;
+import org.citydb.core.operation.common.csv.IdListParser;
 import org.citydb.core.operation.deleter.DeleteException;
 import org.citydb.core.operation.deleter.DeleteException.ErrorCode;
 import org.citydb.core.operation.deleter.concurrent.DBDeleteWorkerFactory;
@@ -56,8 +48,6 @@ import org.citydb.core.operation.deleter.database.BundledConnection;
 import org.citydb.core.operation.deleter.database.DBSplittingResult;
 import org.citydb.core.operation.deleter.database.DeleteListImporter;
 import org.citydb.core.operation.deleter.database.DeleteManager;
-import org.citydb.core.operation.deleter.util.DeleteListException;
-import org.citydb.core.operation.deleter.util.DeleteListParser;
 import org.citydb.core.operation.deleter.util.DeleteLogger;
 import org.citydb.core.operation.deleter.util.InternalConfig;
 import org.citydb.core.query.Query;
@@ -66,6 +56,13 @@ import org.citydb.core.query.builder.config.ConfigQueryBuilder;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;
+import org.citydb.util.concurrent.SingleWorkerPool;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.*;
+import org.citydb.util.log.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -181,13 +178,14 @@ public class Deleter implements EventHandler {
 
 		try {
 			if (config.getDeleteConfig().isUseDeleteList() && config.getDeleteConfig().isSetDeleteList()) {
-				log.info("Using delete list '" + config.getDeleteConfig().getDeleteList().getFile() + "'.");
+				IdList deleteList = config.getDeleteConfig().getDeleteList();
+				log.info("Using delete list '" + deleteList.getFile() + "'.");
 
-				try (DeleteListParser parser = new DeleteListParser(config.getDeleteConfig().getDeleteList())) {
+				try (IdListParser parser = new IdListParser(deleteList)) {
 					// create instance of the cache table manager
 					try {
 						cacheTableManager = new CacheTableManager(1, config);
-						cacheTable = cacheTableManager.createCacheTableInDatabase(CacheTableModel.DELETE_LIST);
+						cacheTable = cacheTableManager.createCacheTableInDatabase(CacheTableModel.ID_LIST);
 					} catch (SQLException e) {
 						throw new DeleteException("Failed to initialize temporary delete list cache.", e);
 					}
@@ -197,8 +195,8 @@ public class Deleter implements EventHandler {
 
 					try {
 						int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
-						new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser);
-					} catch (DeleteListException e) {
+						new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser, deleteList.getIdColumnType());
+					} catch (IdListException e) {
 						throw new DeleteException("Failed to parse delete list.", e);
 					} catch (SQLException e) {
 						throw new DeleteException("Failed to load delete list into temporary database table.", e);

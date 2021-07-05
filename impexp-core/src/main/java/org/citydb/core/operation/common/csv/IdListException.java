@@ -25,37 +25,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.operation.common.cache.model;
 
-public enum CacheTableModel {
-	// provide a unique id for the tmp table
-	// that does not extend 6 chars!
-	OBJECT_GMLID("OID"),
-	GEOMETRY_GMLID("GID"),
-	SURFACE_GEOMETRY("SG"),
-	SOLID_GEOMETRY("SOG"),
-	BASIC("BA"),
-	LINEAR_RING("LR"),
-	TEXTURE_COORD_LIST("TC"),
-	TEXTUREPARAM("TP"),
-	TEXTUREASSOCIATION("TA"),
-	TEXTUREASSOCIATION_TARGET("TAT"),
-	TEXTURE_FILE_ID("TID"),
-	TEXTURE_FILE("TF"),
-	SURFACE_DATA_TO_TEX_IMAGE("STT"),
-	LIBRARY_OBJECT("LO"),
-	DEPRECATED_MATERIAL("DP"),
-	GROUP_TO_CITYOBJECT("GTC"),
-	GLOBAL_APPEARANCE("GA"),
-	ID_LIST("IDL");
+package org.citydb.core.operation.common.csv;
 
-	private final String value;
+public class IdListException extends Exception {
 
-	CacheTableModel(String v) {
-        value = v;
-    }
+	public IdListException() {
+		super();
+	}
 
-    public String value() {
-        return value;
-    }
+	public IdListException(String message) {
+		super(message);
+	}
+
+	public IdListException(Throwable cause) {
+		super(cause);
+	}
+
+	public IdListException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

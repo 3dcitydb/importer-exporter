@@ -27,9 +27,8 @@
  */
 package org.citydb.core.operation.deleter.database;
 
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.project.deleter.DeleteListIdType;
+import org.citydb.config.project.common.IdColumnType;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.UpdatingPersonMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
@@ -41,11 +40,6 @@ import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.database.schema.path.InvalidSchemaPathException;
 import org.citydb.core.database.schema.path.SchemaPath;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.global.ObjectCounterEvent;
-import org.citydb.util.event.global.ProgressBarEventType;
-import org.citydb.util.event.global.StatusDialogProgressBar;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.deleter.util.DeleteLogger;
 import org.citydb.core.operation.deleter.util.InternalConfig;
@@ -71,14 +65,16 @@ import org.citydb.sqlbuilder.select.operator.comparison.InOperator;
 import org.citydb.sqlbuilder.select.projection.Function;
 import org.citydb.sqlbuilder.update.Update;
 import org.citydb.sqlbuilder.update.UpdateToken;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.global.ObjectCounterEvent;
+import org.citydb.util.event.global.ProgressBarEventType;
+import org.citydb.util.event.global.StatusDialogProgressBar;
+import org.citydb.util.log.Logger;
 import org.citygml4j.model.module.citygml.CoreModule;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.Instant;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -384,7 +380,7 @@ public class DeleteManager {
 				.findFirst()
 				.orElseThrow(() -> new QueryBuildException("Failed to build delete query due to unexpected SQL projection clause."));
 
-		String columnName = config.getDeleteConfig().getDeleteList().getIdType() == DeleteListIdType.DATABASE_ID ?
+		String columnName = config.getDeleteConfig().getDeleteList().getIdColumnType() == IdColumnType.DATABASE_ID ?
 				MappingConstants.ID :
 				MappingConstants.GMLID;
 

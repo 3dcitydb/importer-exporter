@@ -27,22 +27,10 @@
  */
 package org.citydb.core.operation.importer.concurrent;
 
-import org.citydb.util.concurrent.Worker;
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.CounterEvent;
-import org.citydb.util.event.global.CounterType;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.event.global.GeometryCounterEvent;
-import org.citydb.util.event.global.InterruptEvent;
-import org.citydb.util.event.global.ObjectCounterEvent;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.IdCacheManager;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.importer.CityGMLImportException;
@@ -52,6 +40,16 @@ import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.importer.util.ImportLogger;
 import org.citydb.core.operation.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.core.operation.importer.util.InternalConfig;
+import org.citydb.core.plugin.PluginException;
+import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.extension.importer.FeatureImportExtension;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.*;
+import org.citydb.util.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.appearance.Appearance;
@@ -62,6 +60,7 @@ import org.citygml4j.util.bbox.BoundingBoxOptions;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBImportWorker extends Worker<CityGML> implements EventHandler {
@@ -77,6 +76,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 
 	private final BoundingBoxOptions bboxOptions;
 	private final CityGMLImportManager importer;
+	private final List<FeatureImportExtension> plugins;
 
 	private int globalAppearanceCounter = 0;
 	private int topLevelFeatureCounter = 0;
@@ -112,14 +112,16 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				config);
 
 		commitAfter = config.getDatabaseConfig().getImportBatching().getFeatureBatchSize();
-		if (commitAfter > databaseAdapter.getMaxBatchSize())
+		if (commitAfter > databaseAdapter.getMaxBatchSize()) {
 			commitAfter = databaseAdapter.getMaxBatchSize();
+		}
 
 		bboxOptions = BoundingBoxOptions.defaults()				
 				.useExistingEnvelopes(true)
 				.assignResultToFeatures(true)
 				.useReferencePointAsFallbackForImplicitGeometries(true);
 
+		plugins = PluginManager.getInstance().getEnabledExternalPlugins(FeatureImportExtension.class);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
@@ -148,8 +150,9 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			try {
 				if (shouldWork) {
 					importer.executeBatch();					
-					if (!isManagedTransaction)
+					if (!isManagedTransaction) {
 						connection.commit();
+					}
 
 					updateImportContext();
 				}
@@ -190,56 +193,71 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 		runLock.lock();
 
 		try {
-			if (!shouldWork)
+			if (!shouldWork) {
 				return;
-
-			long id;
-
-			if (work instanceof Appearance) {
-				// global appearances
-				Appearance appearance = (Appearance)work;
-				id = importer.importGlobalAppearance(appearance);
-
-				if (id != 0)
-					globalAppearanceCounter++;
-			} 
-
-			else if (work instanceof AbstractFeature) {
-				AbstractFeature feature = (AbstractFeature)work;
-
-				// compute bounding box
-				feature.calcBoundedBy(bboxOptions);
-
-				// check import filter
-				if (!filter.getSelectionFilter().isSatisfiedBy(feature))
-					return;			
-
-				id = importer.importObject(feature);
-				if (id == 0)
-					importer.logOrThrowErrorMessage("Failed to import object " + importer.getObjectSignature(feature) + ".");
-				else
-					topLevelFeatureCounter++;
 			}
 
-			else {
+			if (work instanceof AbstractFeature) {
+				AbstractFeature feature = (AbstractFeature) work;
+
+				// invoke import plugins
+				if (!plugins.isEmpty()) {
+					for (FeatureImportExtension plugin : plugins) {
+						try {
+							feature = plugin.process(feature);
+							if (feature == null) {
+								return;
+							}
+						} catch (PluginException e) {
+							throw new CityGMLImportException("Import plugin " + plugin.getClass().getName() + " threw an exception.", e);
+						}
+					}
+				}
+
+				long id;
+				if (feature instanceof Appearance) {
+					// global appearance
+					id = importer.importGlobalAppearance((Appearance) feature);
+					if (id != 0) {
+						globalAppearanceCounter++;
+					}
+				} else {
+					// compute bounding box
+					feature.calcBoundedBy(bboxOptions);
+
+					// check import filter
+					if (!filter.getSelectionFilter().isSatisfiedBy(feature)) {
+						return;
+					}
+
+					id = importer.importObject(feature);
+					if (id != 0) {
+						topLevelFeatureCounter++;
+					}
+				}
+
+				if (id == 0) {
+					importer.logOrThrowErrorMessage("Failed to import object " + importer.getObjectSignature(feature) + ".");
+				} else if (globalAppearanceCounter + topLevelFeatureCounter == commitAfter) {
+					importer.executeBatch();
+					if (!isManagedTransaction) {
+						connection.commit();
+					}
+
+					updateImportContext();
+				}
+			} else {
 				String msg = (work instanceof AbstractGML ?
-						importer.getObjectSignature((AbstractGML) work) : work.getCityGMLClass()) +
+						importer.getObjectSignature((AbstractGML) work) :
+						work.getCityGMLClass()) +
 						": Unsupported top-level object type. Skipping import.";
 
-				if (!importer.isFailOnError())
+				if (!importer.isFailOnError()) {
 					Logger.getInstance().error(msg);
-				else
+				} else {
 					throw new CityGMLImportException(msg);
+				}
 			}
-
-			if (globalAppearanceCounter + topLevelFeatureCounter == commitAfter) {
-				importer.executeBatch();
-				if (!isManagedTransaction)
-					connection.commit();
-
-				updateImportContext();
-			}
-
 		} catch (IOException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel, this));
 		} catch (Throwable e) {
@@ -265,15 +283,16 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 
 		// log imported top-level features
 		if (importLogger != null) {
-			for (ImportLogEntry entry : importer.getAndResetImportLogEntries())
+			for (ImportLogEntry entry : importer.getAndResetImportLogEntries()) {
 				importLogger.write(entry);
+			}
 		}
 	}
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		if (event.getChannel() == eventChannel)
+		if (event.getChannel() == eventChannel) {
 			shouldWork = false;
+		}
 	}
-
 }

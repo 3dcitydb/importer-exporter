@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.deleter;
+package org.citydb.config.project.common;
 
 import org.citydb.config.i18n.Language;
 
@@ -33,9 +33,9 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "DeleteListIdType")
+@XmlType(name = "IdColumnType")
 @XmlEnum
-public enum DeleteListIdType {
+public enum IdColumnType {
     @XmlEnumValue("resource")
     RESOURCE_ID("resource"),
     @XmlEnumValue("database")
@@ -43,7 +43,7 @@ public enum DeleteListIdType {
 
     private final String value;
 
-    DeleteListIdType(String v) {
+    IdColumnType(String v) {
         value = v;
     }
 
@@ -51,8 +51,8 @@ public enum DeleteListIdType {
         return value;
     }
 
-    public static DeleteListIdType fromValue(String v) {
-        for (DeleteListIdType c : DeleteListIdType.values()) {
+    public static IdColumnType fromValue(String v) {
+        for (IdColumnType c : IdColumnType.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
@@ -66,9 +66,9 @@ public enum DeleteListIdType {
     public String toString() {
         switch (this) {
             case RESOURCE_ID:
-                return Language.I18N.getString("delete.list.id.resource");
+                return Language.I18N.getString("filter.idList.id.resource");
             case DATABASE_ID:
-                return Language.I18N.getString("delete.list.id.database");
+                return Language.I18N.getString("filter.idList.id.database");
             default:
                 return "";
         }

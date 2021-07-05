@@ -26,11 +26,11 @@
  * limitations under the License.
  */
 
-package org.citydb.core.operation.deleter.util;
+package org.citydb.core.operation.common.csv;
 
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import org.citydb.config.project.deleter.DeleteList;
+import org.citydb.config.project.common.IdList;
 import org.citydb.util.log.Logger;
 
 import java.nio.charset.Charset;
@@ -42,20 +42,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class DeleteListPreviewer {
+public class IdListPreviewer {
     private final Logger log = Logger.getInstance();
-    private final DeleteList deleteList;
+    private final IdList idList;
     private long numberOfRecords = 20;
 
-    private DeleteListPreviewer(DeleteList deleteList) {
-        this.deleteList = deleteList;
+    private IdListPreviewer(IdList idList) {
+        this.idList = idList;
     }
 
-    public static DeleteListPreviewer of(DeleteList deleteList) {
-        return new DeleteListPreviewer(deleteList);
+    public static IdListPreviewer of(IdList idList) {
+        return new IdListPreviewer(idList);
     }
 
-    public DeleteListPreviewer withNumberOfRecords(long numberOfRecords) {
+    public IdListPreviewer withNumberOfRecords(long numberOfRecords) {
         this.numberOfRecords = numberOfRecords;
         return this;
     }
@@ -65,20 +65,20 @@ public class DeleteListPreviewer {
     }
 
     public void printToConsole() throws Exception {
-        log.info("Creating preview for the delete list file '" + deleteList.getFile() + "'.");
-        log.info("Printing the first " + numberOfRecords + " records of the delete list based on the provided CSV settings.");
+        log.info("Creating preview for the CSV file '" + idList.getFile() + "'.");
+        log.info("Printing the first " + numberOfRecords + " records based on the provided CSV settings.");
 
         List<List<String>> records = new ArrayList<>();
         List<Long> lineNumbers = new ArrayList<>();
         int lineNumberWidth = (int) (Math.log10(numberOfRecords) + 1);
 
-        CsvParserSettings settings = DeleteListParser.defaultParserSettings(deleteList);
+        CsvParserSettings settings = IdListParser.defaultParserSettings(idList);
         settings.setNumberOfRecordsToRead(numberOfRecords);
         settings.setEmptyValue("");
 
         CsvParser parser = new CsvParser(settings);
-        parser.beginParsing(Files.newBufferedReader(Paths.get(deleteList.getFile()),
-                Charset.forName(deleteList.getEncoding())));
+        parser.beginParsing(Files.newBufferedReader(Paths.get(idList.getFile()),
+                Charset.forName(idList.getEncoding())));
 
         String[] row;
         while ((row = parser.parseNext()) != null) {
@@ -90,7 +90,7 @@ public class DeleteListPreviewer {
 
         // get header names
         List<String> headerNames;
-        if (deleteList.getIdColumnName() != null) {
+        if (idList.getIdColumnName() != null) {
             headerNames = Arrays.asList(parser.getContext().headers());
         } else {
             headerNames = new ArrayList<>();
@@ -116,10 +116,8 @@ public class DeleteListPreviewer {
         // calculate column widths
         int[] columnWidths = new int[headerNames.size()];
         IntStream.range(0, headerNames.size()).forEach(i -> columnWidths[i] = headerNames.get(i).length());
-        records.forEach(record -> {
-            IntStream.range(0, record.size())
-                    .forEach(i -> columnWidths[i] = Math.max(columnWidths[i], record.get(i).length()));
-        });
+        records.forEach(record -> IntStream.range(0, record.size())
+                .forEach(i -> columnWidths[i] = Math.max(columnWidths[i], record.get(i).length())));
 
         // print header line
         log.printToConsole(repeat(' ', lineNumberWidth + 1) +

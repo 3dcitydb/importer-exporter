@@ -26,14 +26,14 @@
  * limitations under the License.
  */
 
-package org.citydb.config.project.deleter;
+package org.citydb.config.project.common;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import java.nio.charset.StandardCharsets;
 
-@XmlType(name = "DeleteListType", propOrder = {})
-public class DeleteList {
+@XmlType(name = "IdListType", propOrder = {})
+public class IdList {
     public static final String DEFAULT_DELIMITER = ",";
     public static final char DEFAULT_QUOTE_CHARACTER = '"';
     public static final char DEFAULT_COMMENT_CHARACTER = '#';
@@ -45,7 +45,7 @@ public class DeleteList {
     @XmlElement(defaultValue = "1")
     private Integer idColumnIndex;
     @XmlElement(defaultValue = "resource")
-    private DeleteListIdType idType;
+    private IdColumnType idColumnType;
     @XmlElement(defaultValue = ",")
     private String delimiter;
     @XmlElement(defaultValue = "\"")
@@ -56,6 +56,11 @@ public class DeleteList {
     private Boolean hasHeader;
     @XmlElement(defaultValue = "UTF-8")
     private String encoding;
+
+    public IdList withDefaultCommentCharacter(Character commentCharacter) {
+        setCommentCharacter(commentCharacter);
+        return this;
+    }
 
     public String getFile() {
         return file;
@@ -81,12 +86,12 @@ public class DeleteList {
         this.idColumnIndex = idColumnIndex;
     }
 
-    public DeleteListIdType getIdType() {
-        return idType != null ? idType : DeleteListIdType.RESOURCE_ID;
+    public IdColumnType getIdColumnType() {
+        return idColumnType != null ? idColumnType : IdColumnType.RESOURCE_ID;
     }
 
-    public void setIdType(DeleteListIdType idType) {
-        this.idType = idType;
+    public void setIdColumnType(IdColumnType idColumnType) {
+        this.idColumnType = idColumnType;
     }
 
     public String getDelimiter() {
