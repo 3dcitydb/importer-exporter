@@ -41,13 +41,17 @@ public class CityGMLImportPreferences extends DefaultPreferences {
 		root.addChildEntry(new DefaultPreferencesEntry(new ContinuationPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ResourceIdPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(false, config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(
+				() -> config.getImportConfig().getAffineTransformation(),
+				config)));
 
 		DefaultPreferencesEntry cityGMLOptions = new CityGMLOptionsPanel();
 		root.addChildEntry(cityGMLOptions);
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XMLValidationPanel(config)));
-		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(false, config)));
+		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(
+				() -> config.getImportConfig().getCityGMLOptions().getXSLTransformation(),
+				config)));
 
 		root.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config)));

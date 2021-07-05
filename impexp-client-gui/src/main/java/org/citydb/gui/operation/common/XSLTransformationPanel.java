@@ -32,22 +32,17 @@ import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.common.XSLTransformation;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.util.CoreConstants;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -55,9 +50,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class XSLTransformationPanel extends DefaultPreferencesComponent {
-    private final boolean isExport;
+    private final Supplier<XSLTransformation> transformationSupplier;
 
     private TitledPanel transformationPanel;
     private JPanel content;
@@ -65,18 +61,15 @@ public class XSLTransformationPanel extends DefaultPreferencesComponent {
     private JCheckBox applyStylesheets;
     private File lastPath;
 
-    public XSLTransformationPanel(boolean isExport, Config config) {
+    public XSLTransformationPanel(Supplier<XSLTransformation> transformationSupplier, Config config) {
         super(config);
-        this.isExport = isExport;
-
+        this.transformationSupplier = transformationSupplier;
         initGui();
     }
 
     @Override
     public boolean isModified() {
-        XSLTransformation transformation = isExport ?
-                config.getExportConfig().getCityGMLOptions().getXSLTransformation() :
-                config.getImportConfig().getCityGMLOptions().getXSLTransformation();
+        XSLTransformation transformation = transformationSupplier.get();
 
         if (transformation.isEnabled() != applyStylesheets.isSelected()) return true;
         if (!transformation.isSetStylesheets() && !first.stylesheet.getText().trim().isEmpty()) return true;
@@ -115,10 +108,7 @@ public class XSLTransformationPanel extends DefaultPreferencesComponent {
 
     @Override
     public void setSettings() {
-        XSLTransformation transformation = isExport ?
-                config.getExportConfig().getCityGMLOptions().getXSLTransformation() :
-                config.getImportConfig().getCityGMLOptions().getXSLTransformation();
-
+        XSLTransformation transformation = transformationSupplier.get();
         transformation.setEnabled(applyStylesheets.isSelected());
 
         List<String> stylesheets = new ArrayList<>();
@@ -159,10 +149,7 @@ public class XSLTransformationPanel extends DefaultPreferencesComponent {
 
     @Override
     public void loadSettings() {
-        XSLTransformation transformation = isExport ?
-                config.getExportConfig().getCityGMLOptions().getXSLTransformation() :
-                config.getImportConfig().getCityGMLOptions().getXSLTransformation();
-
+        XSLTransformation transformation = transformationSupplier.get();
         applyStylesheets.setSelected(transformation.isEnabled());
 
         first.next = null;

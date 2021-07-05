@@ -45,9 +45,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 public class GeometryPanel extends DefaultPreferencesComponent {
-	private final boolean isExport;
+	private final Supplier<AffineTransformation> transformationSupplier;
 
 	private TitledPanel matrixPanel;
 	private JCheckBox useAffineTransformation;
@@ -57,17 +58,15 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 	private JButton identityMatrixButton;
 	private JButton swapXYMatrixButton;
 	
-	public GeometryPanel(boolean isExport, Config config) {
+	public GeometryPanel(Supplier<AffineTransformation> transformationSupplier, Config config) {
 		super(config);
-		this.isExport = isExport;
+		this.transformationSupplier = transformationSupplier;
 		initGui();
 	}
 
 	@Override
 	public boolean isModified() {
-		AffineTransformation affineTransformation = isExport ?
-				config.getExportConfig().getAffineTransformation() :
-				config.getImportConfig().getAffineTransformation();
+		AffineTransformation affineTransformation = transformationSupplier.get();
 
 		if (useAffineTransformation.isSelected() != affineTransformation.isEnabled()) return true;
 		
@@ -201,10 +200,7 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		AffineTransformation affineTransformation = isExport ?
-				config.getExportConfig().getAffineTransformation() :
-				config.getImportConfig().getAffineTransformation();
-			
+		AffineTransformation affineTransformation = transformationSupplier.get();
 		useAffineTransformation.setSelected(affineTransformation.isEnabled());
 
 		Matrix matrix = toMatrix3x4(affineTransformation.getTransformationMatrix());
@@ -219,10 +215,7 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		AffineTransformation affineTransformation = isExport ?
-				config.getExportConfig().getAffineTransformation() :
-				config.getImportConfig().getAffineTransformation();
-		
+		AffineTransformation affineTransformation = transformationSupplier.get();
 		affineTransformation.setEnabled(useAffineTransformation.isSelected());
 		
 		List<Double> values = new ArrayList<>();
