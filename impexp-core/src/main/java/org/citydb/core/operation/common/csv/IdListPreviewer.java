@@ -88,6 +88,13 @@ public class IdListPreviewer {
                     .collect(Collectors.toList()));
         }
 
+        if (records.isEmpty() && parser.getContext().headers() == null) {
+            log.warn("No records read from CSV file.");
+            return;
+        }
+
+        log.printToConsole("");
+
         // get header names
         List<String> headerNames;
         if (idList.getIdColumnName() != null) {
@@ -139,6 +146,8 @@ public class IdListPreviewer {
                             .map(j -> String.format("%-" + columnWidths[j] + "s", record.get(j)))
                             .collect(Collectors.joining(" | ")));
         }
+
+        log.printToConsole("");
     }
 
     private String repeat(char c, int count) {
