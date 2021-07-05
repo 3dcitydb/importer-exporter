@@ -57,6 +57,11 @@ public class IdList {
     @XmlElement(defaultValue = "UTF-8")
     private String encoding;
 
+    public IdList withDefaultCommentCharacter(Character commentCharacter) {
+        setCommentCharacter(commentCharacter);
+        return this;
+    }
+
     public String getFile() {
         return file;
     }
