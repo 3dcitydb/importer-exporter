@@ -27,6 +27,7 @@
  */
 package org.citydb.config.project.importer;
 
+import org.citydb.config.project.common.IdList;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
@@ -38,6 +39,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SimpleImportFilterType", propOrder = {
         "featureTypeFilter",
         "attributeFilter",
+        "idList",
         "counterFilter",
         "bboxFilter"
 
@@ -48,6 +50,8 @@ public class ImportFilter {
     @XmlAttribute
     private boolean useAttributeFilter;
     @XmlAttribute
+    private boolean useIdListFilter;
+    @XmlAttribute
     private boolean useCountFilter;
     @XmlAttribute
     private boolean useBboxFilter;
@@ -56,6 +60,8 @@ public class ImportFilter {
     private FeatureTypeFilter featureTypeFilter;
     @XmlElement(name = "attributes")
     private SimpleAttributeFilter attributeFilter;
+    @XmlElement(name = "idList")
+    private ImportIdList idList;
     @XmlElement(name = "limit")
     private CounterFilter counterFilter;
     @XmlElement(name = "bbox")
@@ -64,6 +70,7 @@ public class ImportFilter {
     public ImportFilter() {
         featureTypeFilter = new FeatureTypeFilter();
         attributeFilter = new SimpleAttributeFilter();
+        idList = new ImportIdList().withDefaultCommentCharacter(IdList.DEFAULT_COMMENT_CHARACTER);
         counterFilter = new CounterFilter();
         bboxFilter = new SimpleBBOXOperator();
     }
@@ -82,6 +89,14 @@ public class ImportFilter {
 
     public void setUseAttributeFilter(boolean useAttributeFilter) {
         this.useAttributeFilter = useAttributeFilter;
+    }
+
+    public boolean isUseIdListFilter() {
+        return useIdListFilter;
+    }
+
+    public void setUseIdListFilter(boolean useIdListFilter) {
+        this.useIdListFilter = useIdListFilter;
     }
 
     public boolean isUseCountFilter() {
@@ -122,6 +137,18 @@ public class ImportFilter {
 
     public void setAttributeFilter(SimpleAttributeFilter attributeFilter) {
         this.attributeFilter = attributeFilter;
+    }
+
+    public ImportIdList getIdList() {
+        return idList;
+    }
+
+    public boolean isSetIdList() {
+        return idList != null;
+    }
+
+    public void setIdList(ImportIdList idList) {
+        this.idList = idList;
     }
 
     public CounterFilter getCounterFilter() {

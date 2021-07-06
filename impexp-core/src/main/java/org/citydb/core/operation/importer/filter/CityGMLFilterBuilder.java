@@ -35,6 +35,7 @@ import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.operation.importer.filter.selection.comparison.LikeFilter;
 import org.citydb.core.operation.importer.filter.selection.counter.CounterFilter;
+import org.citydb.core.operation.importer.filter.selection.id.IdListFilter;
 import org.citydb.core.operation.importer.filter.selection.id.ResourceIdFilter;
 import org.citydb.core.operation.importer.filter.selection.spatial.SimpleBBOXFilter;
 import org.citydb.core.operation.importer.filter.type.FeatureTypeFilter;
@@ -54,10 +55,11 @@ public class CityGMLFilterBuilder {
 
 		// feature type filter
 		if (filterConfig.isUseTypeNames()) {
-			if (filterConfig.isSetFeatureTypeFilter() && !filterConfig.getFeatureTypeFilter().getTypeNames().isEmpty())
+			if (filterConfig.isSetFeatureTypeFilter() && !filterConfig.getFeatureTypeFilter().getTypeNames().isEmpty()) {
 				filter.setFeatureTypeFilter(new FeatureTypeFilter(filterConfig.getFeatureTypeFilter(), schemaMapping));
-			else
+			} else {
 				throw new FilterException("The feature type filter must not be empty.");
+			}
 		}
 
 		// simple attribute filter
@@ -65,45 +67,60 @@ public class CityGMLFilterBuilder {
 			SimpleAttributeFilter attributeFilterConfig = filterConfig.getAttributeFilter();
 
 			// resource id filter
-			if (attributeFilterConfig.isSetResourceIdFilter() && attributeFilterConfig.getResourceIdFilter().isSetResourceIds())
+			if (attributeFilterConfig.isSetResourceIdFilter()
+					&& attributeFilterConfig.getResourceIdFilter().isSetResourceIds()) {
 				filter.getSelectionFilter().setResourceIdFilter(new ResourceIdFilter(attributeFilterConfig.getResourceIdFilter()));
+			}
 
 			// name filter
 			if (attributeFilterConfig.isSetNameFilter() && attributeFilterConfig.getNameFilter().isSetLiteral()) {
 				LikeOperator likeOperator = attributeFilterConfig.getNameFilter();
-				if (!likeOperator.isSetWildCard() || likeOperator.getWildCard().length() > 1)
+				if (!likeOperator.isSetWildCard() || likeOperator.getWildCard().length() > 1) {
 					throw new FilterException("Wildcards must be defined by a single character.");
+				}
 
-				if (!likeOperator.isSetSingleCharacter() || likeOperator.getSingleCharacter().length() > 1)
+				if (!likeOperator.isSetSingleCharacter() || likeOperator.getSingleCharacter().length() > 1) {
 					throw new FilterException("Wildcards must be defined by a single character.");
+				}
 
-				if (!likeOperator.isSetEscapeCharacter() || likeOperator.getEscapeCharacter().length() > 1)
+				if (!likeOperator.isSetEscapeCharacter() || likeOperator.getEscapeCharacter().length() > 1) {
 					throw new FilterException("An escape character must be defined by a single character.");
+				}
 
 				filter.getSelectionFilter().setNameFilter(new LikeFilter(attributeFilterConfig.getNameFilter()));
 			}
 		}
 
+		// ID list filter
+		if (filterConfig.isUseIdListFilter() && filterConfig.isSetIdList()) {
+			filter.getSelectionFilter().setIdListFilter(new IdListFilter(filterConfig.getIdList()));
+		}
+
 		// counter filter
 		if (filterConfig.isUseCountFilter() && filterConfig.isSetCounterFilter()) {
 			org.citydb.config.project.query.filter.counter.CounterFilter counterFilterConfig = filterConfig.getCounterFilter();
-			if (!counterFilterConfig.isSetCount() && !counterFilterConfig.isSetStartIndex())
+			if (!counterFilterConfig.isSetCount() && !counterFilterConfig.isSetStartIndex()) {
 				throw new FilterException("Either count or startIndex must be defined for a counter filter.");
+			}
 
 			CounterFilter counterFilter = new CounterFilter();
-			if (counterFilterConfig.isSetCount())
+			if (counterFilterConfig.isSetCount()) {
 				counterFilter.setCount(counterFilterConfig.getCount());
+			}
 
-			if (counterFilterConfig.isSetStartIndex())
+			if (counterFilterConfig.isSetStartIndex()) {
 				counterFilter.setStartIndex(counterFilterConfig.getStartIndex());
+			}
 
 			filter.setCounterFilter(counterFilter);
 		}
 
 		// bbox filter
 		if (filterConfig.isUseBboxFilter()) {
-			if (!filterConfig.getBboxFilter().isSetExtent())
-				throw new FilterException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
+			if (!filterConfig.getBboxFilter().isSetExtent()) {
+				throw new FilterException("The bounding box filter requires an " + GeometryType.ENVELOPE +
+						" as spatial operand.");
+			}
 
 			SimpleBBOXFilter bboxFilter = new SimpleBBOXFilter(filterConfig.getBboxFilter());
 			bboxFilter.transform(databaseAdapter.getConnectionMetaData().getReferenceSystem(), databaseAdapter);

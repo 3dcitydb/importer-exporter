@@ -28,6 +28,7 @@
 package org.citydb.core.operation.importer.filter.selection;
 
 import org.citydb.core.operation.importer.filter.selection.comparison.LikeFilter;
+import org.citydb.core.operation.importer.filter.selection.id.IdListFilter;
 import org.citydb.core.operation.importer.filter.selection.id.ResourceIdFilter;
 import org.citydb.core.operation.importer.filter.selection.spatial.SimpleBBOXFilter;
 import org.citydb.core.query.filter.FilterException;
@@ -36,6 +37,7 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 public class SelectionFilter {
 	private ResourceIdFilter resourceIdFilter;
 	private LikeFilter nameFilter;
+	private IdListFilter idListFilter;
 	private SimpleBBOXFilter bboxFilter;
 
 	public ResourceIdFilter getResourceIdFilter() {
@@ -62,6 +64,18 @@ public class SelectionFilter {
 		this.nameFilter = nameFilter;
 	}
 
+	public IdListFilter getIdListFilter() {
+		return idListFilter;
+	}
+
+	public boolean isSetIdListFilter() {
+		return idListFilter != null;
+	}
+
+	public void setIdListFilter(IdListFilter idListFilter) {
+		this.idListFilter = idListFilter;
+	}
+
 	public SimpleBBOXFilter getBboxFilter() {
 		return bboxFilter;
 	}
@@ -75,14 +89,21 @@ public class SelectionFilter {
 	}
 
 	public boolean isSatisfiedBy(AbstractFeature feature) throws FilterException {
-		if (resourceIdFilter != null && !resourceIdFilter.isSatisfiedBy(feature))
+		if (resourceIdFilter != null && !resourceIdFilter.isSatisfiedBy(feature)) {
 			return false;
+		}
 
-		if (nameFilter != null && !nameFilter.isSatisfiedBy(feature))
+		if (nameFilter != null && !nameFilter.isSatisfiedBy(feature)) {
 			return false;
+		}
 
-		if (bboxFilter != null && !bboxFilter.isSatisfiedBy(feature))
-			return false;			
+		if (idListFilter != null && !idListFilter.isSatisfiedBy(feature)) {
+			return false;
+		}
+
+		if (bboxFilter != null && !bboxFilter.isSatisfiedBy(feature)) {
+			return false;
+		}
 
 		return true;
 	}

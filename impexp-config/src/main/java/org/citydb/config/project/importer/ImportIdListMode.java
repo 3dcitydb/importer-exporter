@@ -25,31 +25,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.operation.importer.filter.selection.id;
+package org.citydb.config.project.importer;
 
-import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
-import org.citydb.core.query.filter.FilterException;
-import org.citygml4j.model.gml.feature.AbstractFeature;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+@XmlType(name = "ImportIdListModeType")
+@XmlEnum
+public enum ImportIdListMode {
+    @XmlEnumValue("import")
+    IMPORT("import"),
+    @XmlEnumValue("skip")
+    SKIP("skip");
 
-public class ResourceIdFilter {
-	private final Set<String> ids;
-	
-	public ResourceIdFilter(ResourceIdOperator idOperator) throws FilterException {
-		if (idOperator == null)
-			throw new FilterException("The resource id operator must not be null.");
-		
-		if (idOperator.isSetResourceIds())
-			ids = new HashSet<>(idOperator.getResourceIds());
-		else
-			ids = Collections.emptySet();
-	}
-	
-	public boolean isSatisfiedBy(AbstractFeature feature) {
-		return feature.isSetId() && ids.contains(feature.getId());
-	}
-	
+    private final String value;
+
+    ImportIdListMode(String v) {
+        value = v;
+    }
+
+    public String value() {
+        return value;
+    }
+
+    public static ImportIdListMode fromValue(String v) {
+        for (ImportIdListMode c : ImportIdListMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+
+        return IMPORT;
+    }
 }

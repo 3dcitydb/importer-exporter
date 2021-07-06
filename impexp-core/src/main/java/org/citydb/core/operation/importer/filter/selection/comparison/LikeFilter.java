@@ -37,13 +37,12 @@ import java.util.regex.Pattern;
 
 public class LikeFilter {
 	private final String literal;
-	
+	private final Matcher matcher;
+
 	private char wildCard = '*';
 	private char singleCharacter = '.';
 	private char escapeCharacter = '\\';
-	
-	private Matcher matcher;
-	
+
 	public LikeFilter(LikeOperator likeOperator) throws FilterException {
 		if (likeOperator == null || !likeOperator.isSetLiteral())
 			throw new FilterException("The like operator must not be null.");

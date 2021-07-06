@@ -33,20 +33,13 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
-import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.components.ScrollablePanel;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.components.srs.SrsComboBox;
 import org.citydb.gui.components.srs.SrsComboBoxFactory;
-import org.citydb.gui.operation.common.filter.AttributeFilterView;
-import org.citydb.gui.operation.common.filter.BoundingBoxFilterView;
-import org.citydb.gui.operation.common.filter.CounterFilterView;
-import org.citydb.gui.operation.common.filter.FeatureTypeFilterView;
-import org.citydb.gui.operation.common.filter.FeatureVersionFilterView;
-import org.citydb.gui.operation.common.filter.LodFilterView;
-import org.citydb.gui.operation.common.filter.SQLFilterView;
-import org.citydb.gui.operation.common.filter.XMLQueryView;
+import org.citydb.gui.operation.common.filter.*;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -373,14 +366,6 @@ public class FilterPanel extends JPanel {
 		tilingRowsText.setValue(tiling.getRows());
 		tilingColumnsText.setValue(tiling.getColumns());
 
-		setEnabledFeatureVersionFilter();
-		setEnabledAttributeFilter();
-		setEnabledSQLFilter();
-		setEnabledCounterFilter();
-		setEnabledLodFilter();
-		setEnabledBBoxFilter();
-		setEnabledFeatureFilter();
-
 		featureVersionFilter.loadSettings(query.getFeatureVersionFilter());
 		attributeFilter.loadSettings(query.getAttributeFilter());
 		sqlFilter.loadSettings(query.getSQLFilter());
@@ -389,6 +374,14 @@ public class FilterPanel extends JPanel {
 		bboxFilter.loadSettings(query.getBboxFilter().getExtent());
 		featureTypeFilter.loadSettings(query.getFeatureTypeFilter());
 		xmlQuery.loadSettings(config.getExportConfig().getQuery());
+
+		setEnabledFeatureVersionFilter();
+		setEnabledAttributeFilter();
+		setEnabledSQLFilter();
+		setEnabledCounterFilter();
+		setEnabledLodFilter();
+		setEnabledBBoxFilter();
+		setEnabledFeatureFilter();
 
 		// GUI specific settings
 		ExportGuiConfig guiConfig = config.getGuiConfig().getExportGuiConfig();

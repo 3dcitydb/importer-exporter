@@ -229,6 +229,11 @@ public class ImportPanel extends JPanel {
 				return;
 			}
 
+			// ID list filter
+			if (filter.isUseIdListFilter() && !filterPanel.checkIdListSettings()) {
+				return;
+			}
+
 			// counter filter
 			if (filter.isUseCountFilter()) {
 				CounterFilter counterFilter = filter.getCounterFilter();
