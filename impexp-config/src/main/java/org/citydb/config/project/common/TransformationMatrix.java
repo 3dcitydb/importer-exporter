@@ -29,6 +29,7 @@ package org.citydb.config.project.common;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,12 +38,9 @@ import java.util.List;
 })
 public class TransformationMatrix {
     @XmlValue
-    private List<Double> value;
+    private List<Double> value = new ArrayList<>();
 
     public List<Double> getValue() {
-        if (value == null)
-            value = Arrays.asList(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
         return value;
     }
 

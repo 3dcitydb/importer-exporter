@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.gui.operation.importer.preferences;
+package org.citydb.gui.operation.common;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
@@ -33,7 +33,6 @@ import org.citydb.config.project.common.AffineTransformation;
 import org.citydb.config.project.common.TransformationMatrix;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citygml4j.geometry.Matrix;
 
@@ -46,10 +45,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 public class GeometryPanel extends DefaultPreferencesComponent {
+	private final Supplier<AffineTransformation> transformationSupplier;
+
 	private TitledPanel matrixPanel;
-	private JPanel buttonsPanel;
 	private JCheckBox useAffineTransformation;
 	private JLabel matrixDescr;
 	private JFormattedTextField[][] matrixField;
@@ -57,14 +58,15 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 	private JButton identityMatrixButton;
 	private JButton swapXYMatrixButton;
 	
-	public GeometryPanel(Config config) {
+	public GeometryPanel(Supplier<AffineTransformation> transformationSupplier, Config config) {
 		super(config);
+		this.transformationSupplier = transformationSupplier;
 		initGui();
 	}
 
 	@Override
 	public boolean isModified() {
-		AffineTransformation affineTransformation = config.getImportConfig().getAffineTransformation();
+		AffineTransformation affineTransformation = transformationSupplier.get();
 
 		if (useAffineTransformation.isSelected() != affineTransformation.isEnabled()) return true;
 		
@@ -127,7 +129,7 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 				}
 			}
 
-			buttonsPanel = new JPanel();
+			JPanel buttonsPanel = new JPanel();
 			buttonsPanel.setLayout(new GridBagLayout());
 			{
 				buttonsPanel.add(identityMatrixButton, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
@@ -198,8 +200,7 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		AffineTransformation affineTransformation = config.getImportConfig().getAffineTransformation();
-			
+		AffineTransformation affineTransformation = transformationSupplier.get();
 		useAffineTransformation.setSelected(affineTransformation.isEnabled());
 
 		Matrix matrix = toMatrix3x4(affineTransformation.getTransformationMatrix());
@@ -214,8 +215,7 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		AffineTransformation affineTransformation = config.getImportConfig().getAffineTransformation();
-		
+		AffineTransformation affineTransformation = transformationSupplier.get();
 		affineTransformation.setEnabled(useAffineTransformation.isSelected());
 		
 		List<Double> values = new ArrayList<>();
@@ -235,7 +235,7 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.import.geometry");
+		return Language.I18N.getString("common.pref.tree.geometry");
 	}
 	
 	private Matrix toMatrix3x4(TransformationMatrix transformationMatrix) {

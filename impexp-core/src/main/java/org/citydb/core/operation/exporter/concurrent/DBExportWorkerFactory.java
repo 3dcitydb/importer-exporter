@@ -27,23 +27,24 @@
  */
 package org.citydb.core.operation.exporter.concurrent;
 
-import org.citydb.util.concurrent.Worker;
-import org.citydb.util.concurrent.WorkerFactory;
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.cache.IdCacheManager;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.database.content.DBSplittingResult;
 import org.citydb.core.operation.exporter.util.InternalConfig;
 import org.citydb.core.operation.exporter.writer.FeatureWriter;
 import org.citydb.core.query.Query;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerFactory;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
 import java.sql.Connection;
@@ -59,6 +60,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final IdCacheManager idCacheManager;
 	private final CacheTableManager cacheTableManager;
 	private final Query query;
+	private final AffineTransformer affineTransformer;
 	private final InternalConfig internalConfig;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -70,6 +72,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			IdCacheManager idCacheManager,
 			CacheTableManager cacheTableManager,
 			Query query,
+			AffineTransformer affineTransformer,
 			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) {
@@ -80,6 +83,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 		this.idCacheManager = idCacheManager;
 		this.cacheTableManager = cacheTableManager;
 		this.query = query;
+		this.affineTransformer = affineTransformer;
 		this.internalConfig = internalConfig;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -95,7 +99,8 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			connection.setAutoCommit(false);
 
 			dbWorker = new DBExportWorker(connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
-					xlinkExporterPool, idCacheManager, cacheTableManager, query, internalConfig, config, eventDispatcher);
+					xlinkExporterPool, idCacheManager, cacheTableManager, query, affineTransformer, internalConfig,
+					config, eventDispatcher);
 		} catch (CityGMLExportException | SQLException e) {
 			log.error("Failed to create export worker.", e);
 		}

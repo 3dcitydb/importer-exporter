@@ -33,6 +33,7 @@ import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.operation.common.xlink.DBXlinkLibraryObject;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.util.AttributeValueSplitter;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
@@ -40,7 +41,6 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.projection.Function;
-import org.citydb.core.util.CoreConstants;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.TransformationMatrix4x4;
@@ -64,6 +64,7 @@ public class DBImplicitGeometry implements DBExporter {
 	private final GMLConverter gmlConverter;
 	private final MessageDigest md5;
 	private final AttributeValueSplitter valueSplitter;
+	private final boolean affineTransformation;
 
 	public DBImplicitGeometry(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		this.exporter = exporter;
@@ -71,6 +72,7 @@ public class DBImplicitGeometry implements DBExporter {
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 		gmlConverter = exporter.getGMLConverter();
 		valueSplitter = exporter.getAttributeValueSplitter();
+		affineTransformation = exporter.getExportConfig().getAffineTransformation().isEnabled();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
@@ -164,6 +166,11 @@ public class DBImplicitGeometry implements DBExporter {
 				if (m.size() >= 16) {
 					Matrix matrix = new Matrix(4, 4);
 					matrix.setMatrix(m.subList(0, 16));
+
+					if (affineTransformation) {
+						matrix = exporter.getAffineTransformer().transformImplicitGeometryTransformationMatrix(matrix);
+					}
+
 					implicit.setTransformationMatrix(new TransformationMatrix4x4(matrix));
 				}
 			}

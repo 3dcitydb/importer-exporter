@@ -40,6 +40,7 @@ import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.controller.Validator;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.ScrollablePanel;
+import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ImportStatusDialog;
 import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
 import org.citydb.gui.plugin.view.ViewController;
@@ -263,10 +264,18 @@ public class ImportPanel extends JPanel {
 			}
 
 			// affine transformation
-			if (config.getImportConfig().getAffineTransformation().isEnabled()) {
-				if (viewController.showOptionDialog(Language.I18N.getString("common.dialog.warning.title"),
-						Language.I18N.getString("import.dialog.warning.affineTransformation"),
-						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION) {
+			if (config.getImportConfig().getAffineTransformation().isEnabled()
+					&& config.getGuiConfig().getImportGuiConfig().isShowAffineTransformationWarning()) {
+				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
+						.withParentComponent(viewController.getTopFrame())
+						.withMessageType(JOptionPane.WARNING_MESSAGE)
+						.withOptionType(JOptionPane.YES_NO_OPTION)
+						.withTitle(Language.I18N.getString("common.dialog.warning.title"))
+						.addMessage(Language.I18N.getString("import.dialog.warn.affineTransformation"));
+
+				int result = dialog.show();
+				config.getGuiConfig().getImportGuiConfig().setShowAffineTransformationWarning(dialog.keepShowingDialog());
+				if (result != JOptionPane.YES_OPTION) {
 					return;
 				}
 			}

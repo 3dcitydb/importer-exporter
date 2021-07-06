@@ -32,7 +32,7 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.operation.importer.CityGMLImportException;
-import org.citydb.core.operation.importer.util.AffineTransformer;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.importer.util.RingValidator;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;

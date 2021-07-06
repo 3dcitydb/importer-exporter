@@ -34,13 +34,15 @@ import javax.xml.bind.annotation.XmlType;
         "collapseAttributeFilter",
         "collapseCounterFilter",
         "collapseBoundingBoxFilter",
-        "collapseFeatureTypeFilter"
+        "collapseFeatureTypeFilter",
+        "showAffineTransformationWarning"
 })
 public class ImportGuiConfig {
     private boolean collapseAttributeFilter = true;
     private boolean collapseCounterFilter = true;
     private boolean collapseBoundingBoxFilter = true;
     private boolean collapseFeatureTypeFilter = true;
+    private boolean showAffineTransformationWarning = true;
 
     public boolean isCollapseAttributeFilter() {
         return collapseAttributeFilter;
@@ -72,5 +74,13 @@ public class ImportGuiConfig {
 
     public void setCollapseFeatureTypeFilter(boolean collapseFeatureTypeFilter) {
         this.collapseFeatureTypeFilter = collapseFeatureTypeFilter;
+    }
+
+    public boolean isShowAffineTransformationWarning() {
+        return showAffineTransformationWarning;
+    }
+
+    public void setShowAffineTransformationWarning(boolean showAffineTransformationWarning) {
+        this.showAffineTransformationWarning = showAffineTransformationWarning;
     }
 }

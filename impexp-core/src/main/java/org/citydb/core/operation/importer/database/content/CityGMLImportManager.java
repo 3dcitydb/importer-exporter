@@ -55,7 +55,7 @@ import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.database.SequenceHelper;
 import org.citydb.core.operation.importer.database.TableHelper;
 import org.citydb.core.operation.importer.util.ADEPropertyCollector;
-import org.citydb.core.operation.importer.util.AffineTransformer;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.importer.util.AttributeValueJoiner;
 import org.citydb.core.operation.importer.util.ExternalFileChecker;
 import org.citydb.core.operation.importer.util.ImportLogger.ImportLogEntry;

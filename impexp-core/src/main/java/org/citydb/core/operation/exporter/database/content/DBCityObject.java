@@ -56,11 +56,7 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
-import org.citygml4j.model.citygml.core.ExternalObject;
-import org.citygml4j.model.citygml.core.ExternalReference;
-import org.citygml4j.model.citygml.core.RelativeToTerrain;
-import org.citygml4j.model.citygml.core.RelativeToWater;
+import org.citygml4j.model.citygml.core.*;
 import org.citygml4j.model.citygml.generics.GenericAttributeSet;
 import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.gml.base.AbstractGML;
@@ -79,14 +75,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DBCityObject extends AbstractTypeExporter {
 	private final Query query;
@@ -101,6 +90,7 @@ public class DBCityObject extends AbstractTypeExporter {
 	private final String gmlSrsName;
 	private final boolean exportAppearance;
 	private final boolean exportCityDBMetadata;
+	private final boolean affineTransformation;
 
 	private final AttributeValueSplitter valueSplitter;
 	private final String coreModule;
@@ -124,6 +114,7 @@ public class DBCityObject extends AbstractTypeExporter {
 		batchSize = exporter.getFeatureBatchSize();
 		gmlSrsName = query.getTargetSrs().getGMLSrsName();
 		exportAppearance = exporter.getExportConfig().getAppearances().isSetExportAppearance();
+		affineTransformation = exporter.getExportConfig().getAffineTransformation().isEnabled();
 
 		if (query.isSetTiling()) {
 			Tiling tiling = query.getTiling();
@@ -305,11 +296,14 @@ public class DBCityObject extends AbstractTypeExporter {
 
 		// gml:boundedBy
 		if (setEnvelope) {
-			BoundingShape boundedBy = null;
 			Object geom = rs.getObject("envelope");
 			if (!rs.wasNull()) {
 				GeometryObject geomObj = exporter.getDatabaseAdapter().getGeometryConverter().getEnvelope(geom);
 				double[] coordinates = geomObj.getCoordinates(0);
+
+				if (affineTransformation) {
+					exporter.getAffineTransformer().transformCoordinates(coordinates);
+				}
 
 				Envelope envelope = new Envelope();
 				envelope.setLowerCorner(new Point(coordinates[0], coordinates[1], coordinates[2]));
