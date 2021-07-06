@@ -26,29 +26,28 @@
  * limitations under the License.
  */
 
-package org.citydb.core.operation.deleter.database;
+package org.citydb.core.operation.common.csv;
 
 import org.citydb.config.project.common.IdColumnType;
 import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.operation.common.cache.CacheTable;
-import org.citydb.core.operation.common.csv.IdListException;
-import org.citydb.core.operation.common.csv.IdListParser;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class DeleteListImporter {
+public class IdListImporter {
     private final CacheTable cacheTable;
     private final int maxBatchSize;
 
     private int batchCounter;
 
-    public DeleteListImporter(CacheTable cacheTable, int maxBatchSize) {
+    public IdListImporter(CacheTable cacheTable, int maxBatchSize) {
         this.cacheTable = cacheTable;
         this.maxBatchSize = maxBatchSize;
     }
 
-    public void doImport(IdListParser parser, IdColumnType idColumnType) throws IdListException, SQLException {
+    public void doImport(IdListParser parser) throws IdListException, SQLException {
+        IdColumnType idColumnType = parser.getIdList().getIdColumnType();
         String sql = "insert into " + cacheTable.getTableName() + " " +
                 (idColumnType == IdColumnType.DATABASE_ID ?
                         "(" + MappingConstants.ID + ") values (?)" :

@@ -40,13 +40,13 @@ import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.cache.model.CacheTableModel;
 import org.citydb.core.operation.common.csv.IdListException;
+import org.citydb.core.operation.common.csv.IdListImporter;
 import org.citydb.core.operation.common.csv.IdListParser;
 import org.citydb.core.operation.deleter.DeleteException;
 import org.citydb.core.operation.deleter.DeleteException.ErrorCode;
 import org.citydb.core.operation.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.core.operation.deleter.database.BundledConnection;
 import org.citydb.core.operation.deleter.database.DBSplittingResult;
-import org.citydb.core.operation.deleter.database.DeleteListImporter;
 import org.citydb.core.operation.deleter.database.DeleteManager;
 import org.citydb.core.operation.deleter.util.DeleteLogger;
 import org.citydb.core.operation.deleter.util.InternalConfig;
@@ -195,7 +195,7 @@ public class Deleter implements EventHandler {
 
 					try {
 						int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
-						new DeleteListImporter(cacheTable, maxBatchSize).doImport(parser, deleteList.getIdColumnType());
+						new IdListImporter(cacheTable, maxBatchSize).doImport(parser);
 					} catch (IdListException e) {
 						throw new DeleteException("Failed to parse delete list.", e);
 					} catch (SQLException e) {
