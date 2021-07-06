@@ -163,7 +163,7 @@ public class ImportPanel extends JPanel {
 		fileScroll.setMinimumSize(fileList.getPreferredScrollableViewportSize());
 		fileScroll.setPreferredSize(fileList.getPreferredScrollableViewportSize());
 
-        filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+        filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 2, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
 		filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
 		filePanel.add(removeButton, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 5, 20, 0));
 
