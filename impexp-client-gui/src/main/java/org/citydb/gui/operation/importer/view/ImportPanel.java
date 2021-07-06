@@ -108,7 +108,7 @@ public class ImportPanel extends JPanel {
 		fileList.setModel(fileListModel);
 		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		fileList.setTransferHandler(handler);
-		fileList.setVisibleRowCount(7);
+		fileList.setVisibleRowCount(6);
 
 		DropTarget dropTarget = new DropTarget(fileList, handler);
 		fileList.setDropTarget(dropTarget);
