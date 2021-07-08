@@ -122,17 +122,30 @@ public class CachePanel extends DefaultPreferencesComponent {
 			useDatabase.setSelected(true);
 		else
 			useLocalCache.setSelected(true);
-		
-		localCachePath.setText(cache.getLocalCachePath());
+
+		if (cache.isSetLocalCachePath()) {
+			localCachePath.setText(cache.getLocalCachePath());
+		} else {
+			String defaultDir = Cache.DEFAULT_LOCAL_CACHE_DIR.toString();
+			localCachePath.setText(defaultDir);
+			cache.setLocalCachePath(defaultDir);
+		}
+
 		setEnabledLocalCachePath();
 	}
 
 	@Override
 	public void setSettings() {		
 		Cache cache = config.getGlobalConfig().getCache();
-		
 		cache.setCacheMode(useDatabase.isSelected() ? CacheMode.DATABASE : CacheMode.LOCAL);
-		cache.setLocalCachePath(localCachePath.getText());
+
+		if (!localCachePath.getText().isEmpty()) {
+			cache.setLocalCachePath(localCachePath.getText());
+		} else {
+			String defaultDir = Cache.DEFAULT_LOCAL_CACHE_DIR.toString();
+			localCachePath.setText(defaultDir);
+			cache.setLocalCachePath(defaultDir);
+		}
 	}
 	
 	@Override
