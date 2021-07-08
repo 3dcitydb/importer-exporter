@@ -302,7 +302,7 @@ public class Importer implements EventHandler {
 
                 // create instance of the cache table manager
                 try {
-                    cacheTableManager = new CacheTableManager(maxThreads, config);
+                    cacheTableManager = new CacheTableManager(config.getGlobalConfig().getCache());
                 } catch (SQLException | IOException e) {
                     throw new CityGMLImportException("Failed to initialize internal cache manager.", e);
                 }

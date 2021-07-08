@@ -404,9 +404,7 @@ public class Exporter implements EventHandler {
 
                     // create instance of temp table manager
                     try {
-                        cacheTableManager = new CacheTableManager(
-                                config.getExportConfig().getResources().getThreadPool().getMaxThreads(),
-                                config);
+                        cacheTableManager = new CacheTableManager(config.getGlobalConfig().getCache());
                     } catch (SQLException | IOException e) {
                         throw new CityGMLExportException("Failed to initialize internal cache manager.", e);
                     }

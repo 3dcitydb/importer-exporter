@@ -32,6 +32,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.common.IdList;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.deleter.DeleteMode;
+import org.citydb.config.project.global.CacheMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
@@ -184,8 +185,8 @@ public class Deleter implements EventHandler {
 				try (IdListParser parser = new IdListParser(deleteList)) {
 					// create instance of the cache table manager
 					try {
-						cacheTableManager = new CacheTableManager(1, config);
-						cacheTable = cacheTableManager.createCacheTableInDatabase(CacheTableModel.ID_LIST);
+						cacheTableManager = new CacheTableManager(config.getGlobalConfig().getCache());
+						cacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.DATABASE);
 					} catch (SQLException e) {
 						throw new DeleteException("Failed to initialize temporary delete list cache.", e);
 					}

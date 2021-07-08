@@ -155,7 +155,7 @@ public class DBXlinkImporterManager {
 	}
 	
 	public AbstractDatabaseAdapter getCacheAdapter() {
-		return cacheTableManager.getDatabaseAdapter();
+		return cacheTableManager.getCacheAdapter();
 	}
 
 	public void executeBatch() throws SQLException {
