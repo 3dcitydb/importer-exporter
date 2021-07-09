@@ -118,6 +118,7 @@ public class Exporter implements EventHandler {
 
     private volatile boolean shouldRun = true;
     private CityGMLExportException exception;
+    private CacheTableManager cacheTableManager;
 
 	public Exporter() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
@@ -145,6 +146,15 @@ public class Exporter implements EventHandler {
             return process(outputFile);
         } finally {
             eventDispatcher.removeEventHandler(this);
+
+            if (cacheTableManager != null) {
+                try {
+                    log.debug("Closing temporary cache.");
+                    cacheTableManager.close();
+                } catch (SQLException e) {
+                    log.error("Failed to close the temporary cache.", e);
+                }
+            }
         }
     }
 
@@ -264,6 +274,13 @@ public class Exporter implements EventHandler {
             log.warn("To avoid memory issues, a tiled export should be used for CityJSON.");
         }
 
+        // create instance of temp table manager
+        try {
+            cacheTableManager = new CacheTableManager(config.getGlobalConfig().getCache());
+        } catch (SQLException | IOException e) {
+            throw new CityGMLExportException("Failed to initialize internal cache manager.", e);
+        }
+
         // create output file factory
         OutputFileFactory fileFactory = new OutputFileFactory(config, eventDispatcher);
 
@@ -367,7 +384,6 @@ public class Exporter implements EventHandler {
                     }
                 }
 
-                CacheTableManager cacheTableManager = null;
                 IdCacheManager idCacheManager = null;
                 FeatureWriter writer = null;
                 OutputFile file = null;
@@ -400,15 +416,6 @@ public class Exporter implements EventHandler {
                         writer = writerFactory.createFeatureWriter(file.openStream());
                     } catch (FeatureWriteException | IOException e) {
                         throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
-                    }
-
-                    // create instance of temp table manager
-                    try {
-                        cacheTableManager = new CacheTableManager(
-                                config.getExportConfig().getResources().getThreadPool().getMaxThreads(),
-                                config);
-                    } catch (SQLException | IOException e) {
-                        throw new CityGMLExportException("Failed to initialize internal cache manager.", e);
                     }
 
                     // create instance of gml:id lookup server manager...

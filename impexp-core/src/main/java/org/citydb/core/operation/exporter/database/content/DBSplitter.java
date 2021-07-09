@@ -27,6 +27,7 @@
  */
 package org.citydb.core.operation.exporter.database.content;
 
+import org.citydb.config.project.global.CacheMode;
 import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
@@ -139,7 +140,7 @@ public class DBSplitter {
 
 		// create temporary table for global appearances if needed
 		if (internalConfig.isExportGlobalAppearances()) {
-			cacheTableManager.createCacheTableInDatabase(CacheTableModel.GLOBAL_APPEARANCE);
+			cacheTableManager.createCacheTable(CacheTableModel.GLOBAL_APPEARANCE, CacheMode.DATABASE);
 		}
 
 		BuildProperties buildProperties = BuildProperties.defaults()

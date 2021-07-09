@@ -32,6 +32,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.common.IdList;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.deleter.DeleteMode;
+import org.citydb.config.project.global.CacheMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
@@ -88,6 +89,7 @@ public class Deleter implements EventHandler {
 	private GlobalAppearanceCleaner globalAppearanceCleaner;
 	private volatile boolean shouldRun = true;
 	private DeleteException exception;
+	private DeleteLogger deleteLogger;
 
 	public Deleter() {
 		config = ObjectRegistry.getInstance().getConfig();
@@ -100,22 +102,6 @@ public class Deleter implements EventHandler {
 	public boolean doDelete(boolean preview) throws DeleteException {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-
-		// create delete logger
-		DeleteLogger deleteLogger = null;
-		if (!preview && config.getDeleteConfig().getDeleteLog().isSetLogDeletedFeatures()) {
-			try {
-				Path logFile = config.getDeleteConfig().getDeleteLog().isSetLogFile() ?
-						Paths.get(config.getDeleteConfig().getDeleteLog().getLogFile()) :
-						CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.DELETE_LOG_DIR);
-				deleteLogger = new DeleteLogger(logFile,
-						config.getDeleteConfig().getMode(),
-						config.getDatabaseConfig().getActiveConnection());
-				log.info("Log file of deleted top-level features: " + deleteLogger.getLogFilePath().toString());
-			} catch (IOException e) {
-				throw new DeleteException("Failed to create log file for deleted top-level features.", e);
-			}
-		}
 
 		try {
 			return process(preview, deleteLogger);
@@ -143,6 +129,22 @@ public class Deleter implements EventHandler {
 			if (!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
 				log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") +
 						" from workspace " + databaseAdapter.getConnectionDetails().getWorkspace() + ".");
+			}
+		}
+
+		// create delete logger
+		deleteLogger = null;
+		if (!preview && config.getDeleteConfig().getDeleteLog().isSetLogDeletedFeatures()) {
+			try {
+				Path logFile = config.getDeleteConfig().getDeleteLog().isSetLogFile() ?
+						Paths.get(config.getDeleteConfig().getDeleteLog().getLogFile()) :
+						CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.DELETE_LOG_DIR);
+				deleteLogger = new DeleteLogger(logFile,
+						config.getDeleteConfig().getMode(),
+						config.getDatabaseConfig().getActiveConnection());
+				log.info("Log file of deleted top-level features: " + deleteLogger.getLogFilePath().toString());
+			} catch (IOException e) {
+				throw new DeleteException("Failed to create log file for deleted top-level features.", e);
 			}
 		}
 
@@ -184,8 +186,8 @@ public class Deleter implements EventHandler {
 				try (IdListParser parser = new IdListParser(deleteList)) {
 					// create instance of the cache table manager
 					try {
-						cacheTableManager = new CacheTableManager(1, config);
-						cacheTable = cacheTableManager.createCacheTableInDatabase(CacheTableModel.ID_LIST);
+						cacheTableManager = new CacheTableManager(config.getGlobalConfig().getCache());
+						cacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.DATABASE);
 					} catch (SQLException e) {
 						throw new DeleteException("Failed to initialize temporary delete list cache.", e);
 					}
@@ -302,7 +304,7 @@ public class Deleter implements EventHandler {
 			if (cacheTableManager != null) {
 				try {
 					log.info("Cleaning temporary cache.");
-					cacheTableManager.dropAll();
+					cacheTableManager.close();
 				} catch (SQLException e) {
 					setException("Failed to clean the temporary cache.", e);
 					shouldRun = false;
