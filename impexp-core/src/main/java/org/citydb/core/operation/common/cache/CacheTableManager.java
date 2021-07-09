@@ -136,6 +136,9 @@ public class CacheTableManager {
 		for (Cache cache : caches.values()) {
 			cache.connection.rollback();
 		}
+
+		cacheTables.clear();
+		branchCacheTables.clear();
 	}
 
 	public synchronized void close() throws SQLException {
@@ -152,8 +155,6 @@ public class CacheTableManager {
 		}
 
 		caches.clear();
-		cacheTables.clear();
-		branchCacheTables.clear();
 	}
 
 	private <T extends AbstractCacheTable> T getOrCreateCacheTable(Cache cache, CacheTableModel model, boolean createIndexes, Class<T> type) throws SQLException {
