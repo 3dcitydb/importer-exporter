@@ -204,7 +204,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				if (!plugins.isEmpty()) {
 					for (FeatureImportExtension plugin : plugins) {
 						try {
-							feature = plugin.process(feature);
+							feature = plugin.preprocess(feature);
 							if (feature == null) {
 								return;
 							}
