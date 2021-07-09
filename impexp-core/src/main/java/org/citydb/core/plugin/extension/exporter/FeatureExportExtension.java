@@ -33,5 +33,7 @@ import org.citydb.core.plugin.extension.Extension;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
 public interface FeatureExportExtension extends Extension {
+    void beforeExport() throws PluginException;
+    void afterExport(ExportStatus status);
     AbstractFeature process(AbstractFeature feature) throws PluginException;
 }
