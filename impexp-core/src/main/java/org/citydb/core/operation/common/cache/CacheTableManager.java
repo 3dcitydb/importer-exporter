@@ -135,6 +135,13 @@ public class CacheTableManager {
 
 		for (Cache cache : caches.values()) {
 			cache.connection.rollback();
+		}
+	}
+
+	public synchronized void close() throws SQLException {
+		dropAll();
+
+		for (Cache cache : caches.values()) {
 			cache.connection.close();
 
 			try {
