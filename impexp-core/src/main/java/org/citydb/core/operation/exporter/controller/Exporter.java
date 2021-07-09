@@ -209,9 +209,7 @@ public class Exporter implements EventHandler {
 
         if (internalConfig.isTransformCoordinates()) {
             log.info("Transforming geometry representation to reference system '" + targetSrs.getDescription() + "' (SRID: " + targetSrs.getSrid() + ").");
-            if (!targetSrs.is3D() && !databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
-                log.warn("Transformation is NOT applied to height reference system.");
-            } else if (targetSrs.is3D() != databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
+            if (targetSrs.is3D() != databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
                 throw new CityGMLExportException("Dimensionality of reference system for geometry transformation does not match.");
             }
         }
