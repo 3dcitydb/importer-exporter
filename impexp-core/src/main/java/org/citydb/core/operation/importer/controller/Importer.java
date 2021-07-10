@@ -158,17 +158,17 @@ public class Importer implements EventHandler {
         } finally {
             eventDispatcher.removeEventHandler(this);
 
+            // shutdown import plugins
+            for (FeatureImportExtension plugin : pluginManager.getEnabledExternalPlugins(FeatureImportExtension.class)) {
+                plugin.afterImport(success ? ImportStatus.SUCCESS : ImportStatus.ABORTED);
+            }
+
             if (importLogger != null) {
                 try {
                     importLogger.close(shouldRun);
                 } catch (IOException e) {
                     log.error("Failed to close the feature import log. It is most likely corrupt.", e);
                 }
-            }
-
-            // shutdown import plugins
-            for (FeatureImportExtension plugin : pluginManager.getEnabledExternalPlugins(FeatureImportExtension.class)) {
-                plugin.afterImport(success ? ImportStatus.SUCCESS : ImportStatus.ABORTED);
             }
         }
 
@@ -224,15 +224,6 @@ public class Importer implements EventHandler {
             }
         }
 
-        // initialize import plugins
-        for (FeatureImportExtension plugin : pluginManager.getEnabledExternalPlugins(FeatureImportExtension.class)) {
-            try {
-                plugin.beforeImport();
-            } catch (PluginException e) {
-                throw new CityGMLImportException("Failed to initialize import plugin " + plugin.getClass().getName() + ".", e);
-            }
-        }
-
         // build list of import files
         List<InputFile> files;
         try {
@@ -272,6 +263,15 @@ public class Importer implements EventHandler {
             filter = builder.buildCityGMLFilter(config.getImportConfig().getFilter());
         } catch (FilterException e) {
             throw new CityGMLImportException("Failed to build the import filter.", e);
+        }
+
+        // initialize import plugins
+        for (FeatureImportExtension plugin : pluginManager.getEnabledExternalPlugins(FeatureImportExtension.class)) {
+            try {
+                plugin.beforeImport();
+            } catch (PluginException e) {
+                throw new CityGMLImportException("Failed to initialize import plugin " + plugin.getClass().getName() + ".", e);
+            }
         }
 
         // create reader factory builder
