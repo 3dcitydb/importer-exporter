@@ -64,6 +64,10 @@ import org.citydb.core.operation.importer.reader.FeatureReaderFactory;
 import org.citydb.core.operation.importer.reader.FeatureReaderFactoryBuilder;
 import org.citydb.core.operation.importer.util.ImportLogger;
 import org.citydb.core.operation.importer.util.InternalConfig;
+import org.citydb.core.plugin.PluginException;
+import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.extension.importer.FeatureImportExtension;
+import org.citydb.core.plugin.extension.importer.ImportStatus;
 import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
@@ -95,6 +99,7 @@ public class Importer implements EventHandler {
     private final CityGMLBuilder cityGMLBuilder;
     private final AbstractDatabaseAdapter databaseAdapter;
     private final SchemaMapping schemaMapping;
+    private final PluginManager pluginManager;
     private final Config config;
     private final EventDispatcher eventDispatcher;
 
@@ -111,6 +116,7 @@ public class Importer implements EventHandler {
     public Importer() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+        pluginManager = PluginManager.getInstance();
         config = ObjectRegistry.getInstance().getConfig();
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
         databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
@@ -128,10 +134,22 @@ public class Importer implements EventHandler {
         eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
         eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+        boolean success = true;
         try {
-            return process(inputFiles);
+            success = process(inputFiles);
+        } catch (CityGMLImportException e) {
+            success = false;
+            throw e;
+        } catch (Throwable e) {
+            success = false;
+            throw new CityGMLImportException("An unexpected error occurred.", e);
         } finally {
             eventDispatcher.removeEventHandler(this);
+
+            // shutdown import plugins
+            for (FeatureImportExtension plugin : pluginManager.getEnabledExternalPlugins(FeatureImportExtension.class)) {
+                plugin.afterImport(success ? ImportStatus.SUCCESS : ImportStatus.ABORTED);
+            }
 
             if (importLogger != null) {
                 try {
@@ -151,6 +169,8 @@ public class Importer implements EventHandler {
                 }
             }
         }
+
+        return success;
     }
 
     private boolean process(List<Path> inputFiles) throws CityGMLImportException {
@@ -213,6 +233,15 @@ public class Importer implements EventHandler {
                 log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
             } catch (IOException e) {
                 throw new CityGMLImportException("Failed to create log file for imported top-level features.", e);
+            }
+        }
+
+        // initialize import plugins
+        for (FeatureImportExtension plugin : pluginManager.getEnabledExternalPlugins(FeatureImportExtension.class)) {
+            try {
+                plugin.beforeImport();
+            } catch (PluginException e) {
+                throw new CityGMLImportException("Failed to initialize import plugin " + plugin.getClass().getName() + ".", e);
             }
         }
 
@@ -472,12 +501,8 @@ public class Importer implements EventHandler {
 
                 eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.finish.msg"), this));
                 eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
-            } catch (CityGMLImportException e) {
-                throw e;
             } catch (IOException e) {
                 throw new CityGMLImportException("Failed to process import file.", e);
-            } catch (Throwable e) {
-                throw new CityGMLImportException("An unexpected error occurred.", e);
             } finally {
                 if (dbWorkerPool != null && !dbWorkerPool.isTerminated()) {
                 	dbWorkerPool.shutdownNow();

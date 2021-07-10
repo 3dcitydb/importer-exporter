@@ -8,4 +8,5 @@ import java.util.Locale;
 public interface GuiExtension extends Extension {
     void initGuiExtension(ViewController viewController, Locale locale);
     void switchLocale(Locale locale);
+    void shutdownGui();
 }
