@@ -54,7 +54,7 @@ public class CityGMLExportPlugin extends InternalPlugin implements ViewExtension
 	}
 
 	@Override
-	public void shutdown() {
+	public void shutdownGui() {
 		setSettings();
 	}
 

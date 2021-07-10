@@ -55,7 +55,7 @@ public class DatabasePlugin extends InternalPlugin implements ViewExtension, Pre
 	}
 
 	@Override
-	public void shutdown() {
+	public void shutdownGui() {
 		setSettings();
 	}
 

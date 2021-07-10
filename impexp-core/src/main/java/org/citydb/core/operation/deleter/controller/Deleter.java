@@ -119,6 +119,10 @@ public class Deleter implements EventHandler {
 
 		try {
 			return process(preview, deleteLogger);
+		} catch (DeleteException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new DeleteException("An unexpected error occurred.", e);
 		} finally {
 			objectCounter.clear();
 			eventDispatcher.removeEventHandler(this);
@@ -278,10 +282,6 @@ public class Deleter implements EventHandler {
 					throw new DeleteException("Failed to query global appearances from database.", e);
 				}
 			}
-		} catch (DeleteException e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new DeleteException("An unexpected error occurred.", e);
 		} finally {
 			if (dbWorkerPool != null) {
 				dbWorkerPool.shutdownNow();

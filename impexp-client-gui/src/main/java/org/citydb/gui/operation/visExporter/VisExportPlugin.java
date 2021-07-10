@@ -54,7 +54,7 @@ public class VisExportPlugin extends InternalPlugin implements ViewExtension, Pr
 	}
 
 	@Override
-	public void shutdown() {
+	public void shutdownGui() {
 		setSettings();
 	}
 

@@ -44,12 +44,6 @@ import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginManager;
 import org.citydb.core.plugin.PluginStateEvent;
-import org.citydb.gui.plugin.GuiExtension;
-import org.citydb.gui.plugin.view.View;
-import org.citydb.gui.plugin.view.ViewController;
-import org.citydb.gui.plugin.view.ViewEvent;
-import org.citydb.gui.plugin.view.ViewEvent.ViewState;
-import org.citydb.gui.plugin.view.ViewExtension;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
@@ -62,6 +56,12 @@ import org.citydb.gui.operation.exporter.CityGMLExportPlugin;
 import org.citydb.gui.operation.importer.CityGMLImportPlugin;
 import org.citydb.gui.operation.preferences.PreferencesPlugin;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
+import org.citydb.gui.plugin.GuiExtension;
+import org.citydb.gui.plugin.view.View;
+import org.citydb.gui.plugin.view.ViewController;
+import org.citydb.gui.plugin.view.ViewEvent;
+import org.citydb.gui.plugin.view.ViewEvent.ViewState;
+import org.citydb.gui.plugin.view.ViewExtension;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.util.event.Event;
@@ -89,12 +89,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger log = Logger.getInstance();
@@ -689,8 +685,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			if (!pluginManager.getExternalPlugins().isEmpty())
 				log.info("Shutting down plugins");
 
-			for (Plugin plugin : pluginManager.getPlugins())
-				plugin.shutdown();
+			for (Plugin plugin : pluginManager.getPlugins()) {
+				if (plugin instanceof GuiExtension) {
+					((GuiExtension) plugin).shutdownGui();
+				}
+			}
 
 			log.info("Saving project settings");
 			saveSettings(true);

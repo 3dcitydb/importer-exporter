@@ -33,8 +33,6 @@ public abstract class Plugin {
 	private boolean enabled = true;
 	private PluginMetadata metadata;
 
-	public abstract void shutdown();
-
 	public final boolean isEnabled() {
 		return enabled;
 	}
