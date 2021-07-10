@@ -57,7 +57,10 @@ import org.citydb.core.operation.exporter.writer.FeatureWriteException;
 import org.citydb.core.operation.exporter.writer.FeatureWriter;
 import org.citydb.core.operation.exporter.writer.FeatureWriterFactory;
 import org.citydb.core.operation.exporter.writer.FeatureWriterFactoryBuilder;
+import org.citydb.core.plugin.PluginException;
 import org.citydb.core.plugin.PluginManager;
+import org.citydb.core.plugin.extension.exporter.ExportStatus;
+import org.citydb.core.plugin.extension.exporter.FeatureExportExtension;
 import org.citydb.core.plugin.extension.exporter.MetadataProvider;
 import org.citydb.core.query.Query;
 import org.citydb.core.query.builder.QueryBuildException;
@@ -102,6 +105,7 @@ public class Exporter implements EventHandler {
     private final CityGMLBuilder cityGMLBuilder;
     private final AbstractDatabaseAdapter databaseAdapter;
     private final SchemaMapping schemaMapping;
+    private final PluginManager pluginManager;
     private final Config config;
     private final EventDispatcher eventDispatcher;
     private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
@@ -123,6 +127,7 @@ public class Exporter implements EventHandler {
 	public Exporter() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+        pluginManager = PluginManager.getInstance();
         config = ObjectRegistry.getInstance().getConfig();
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
         databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
@@ -142,10 +147,22 @@ public class Exporter implements EventHandler {
         eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
         eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+        boolean success = true;
         try {
-            return process(outputFile);
+            success = process(outputFile);
+        } catch (CityGMLExportException e) {
+            success = false;
+            throw e;
+        } catch (Throwable e) {
+            success = false;
+            throw new CityGMLExportException("An unexpected error occurred.", e);
         } finally {
             eventDispatcher.removeEventHandler(this);
+
+            // shutdown export plugins
+            for (FeatureExportExtension plugin : pluginManager.getEnabledExternalPlugins(FeatureExportExtension.class)) {
+                plugin.afterExport(success ? ExportStatus.SUCCESS : ExportStatus.ABORTED);
+            }
 
             if (cacheTableManager != null) {
                 try {
@@ -156,6 +173,8 @@ public class Exporter implements EventHandler {
                 }
             }
         }
+
+        return success;
     }
 
     private boolean process(Path outputFile) throws CityGMLExportException {
@@ -184,20 +203,6 @@ public class Exporter implements EventHandler {
             throw new CityGMLExportException("Failed to build the export query expression.", e);
         }
 
-        // create feature writer factory
-        FeatureWriterFactory writerFactory;
-        try {
-            writerFactory = FeatureWriterFactoryBuilder.buildFactory(outputFormat, query, schemaMapping, config);
-        } catch (FeatureWriteException e) {
-            throw new CityGMLExportException("Failed to build the feature writer factory.", e);
-        }
-
-        // get metadata providers
-        List<MetadataProvider> metadataProviders = PluginManager.getInstance().getEnabledExternalPlugins(MetadataProvider.class);
-        if (metadataProviders.size() > 1) {
-            log.warn("Multiple metadata provider plugins found. This might lead to unexpected results.");
-        }
-
         // check and log index status
         try {
             if ((query.isSetTiling() || (query.isSetSelection() && query.getSelection().containsSpatialOperators()))
@@ -210,6 +215,29 @@ public class Exporter implements EventHandler {
             }
         } catch (SQLException e) {
             throw new CityGMLExportException("Database error while querying index status.", e);
+        }
+
+        // get metadata providers
+        List<MetadataProvider> metadataProviders = pluginManager.getEnabledExternalPlugins(MetadataProvider.class);
+        if (metadataProviders.size() > 1) {
+            log.warn("Multiple metadata provider plugins found. This might lead to unexpected results.");
+        }
+
+        // initialize export plugins
+        for (FeatureExportExtension plugin : pluginManager.getEnabledExternalPlugins(FeatureExportExtension.class)) {
+            try {
+                plugin.beforeExport();
+            } catch (PluginException e) {
+                throw new CityGMLExportException("Failed to initialize export plugin " + plugin.getClass().getName() + ".", e);
+            }
+        }
+
+        // create feature writer factory
+        FeatureWriterFactory writerFactory;
+        try {
+            writerFactory = FeatureWriterFactoryBuilder.buildFactory(outputFormat, query, schemaMapping, config);
+        } catch (FeatureWriteException e) {
+            throw new CityGMLExportException("Failed to build the feature writer factory.", e);
         }
 
         // set target reference system for export
@@ -517,10 +545,6 @@ public class Exporter implements EventHandler {
 
                     eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
                     eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
-                } catch (CityGMLExportException e) {
-                    throw e;
-                } catch (Throwable e) {
-                    throw new CityGMLExportException("An unexpected error occurred.", e);
                 } finally {
                     // close writer before closing output file
                     if (writer != null) {

@@ -30,25 +30,20 @@ package org.citydb.core.operation.validator.controller;
 import org.apache.tika.exception.TikaException;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.CounterEvent;
-import org.citydb.util.event.global.CounterType;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.event.global.InterruptEvent;
-import org.citydb.util.event.global.StatusDialogMessage;
-import org.citydb.util.event.global.StatusDialogTitle;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.file.input.AbstractArchiveInputFile;
 import org.citydb.core.file.input.DirectoryScanner;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.reader.ValidatorFactory;
 import org.citydb.core.operation.validator.reader.ValidatorFactoryBuilder;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.*;
+import org.citydb.util.log.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -81,6 +76,10 @@ public class Validator implements EventHandler {
 
 		try {
 			return process(inputFiles);
+		} catch (ValidationException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new ValidationException("An unexpected error occurred.", e);
 		} finally {
 			try {
 				eventDispatcher.flushEvents();
@@ -153,12 +152,8 @@ public class Validator implements EventHandler {
 				}
 
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.finish.msg"), this));
-			} catch (ValidationException e) {
-				throw e;
 			} catch (IOException e) {
 				throw new ValidationException("Failed to validate input file.", e);
-			} catch (Throwable e) {
-				throw new ValidationException("An unexpected error occurred.", e);
 			}
 		}
 

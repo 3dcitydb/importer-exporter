@@ -22,7 +22,7 @@ public class PluginsOverviewPlugin extends InternalPlugin implements Preferences
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownGui() {
         isShuttingDown = true;
         setSettings();
     }

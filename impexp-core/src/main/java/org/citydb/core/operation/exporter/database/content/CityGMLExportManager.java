@@ -217,7 +217,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				if (!plugins.isEmpty()) {
 					for (FeatureExportExtension plugin : plugins) {
 						try {
-							feature = plugin.process(feature);
+							feature = plugin.postprocess(feature);
 							if (feature == null)
 								return null;
 						} catch (PluginException e) {
