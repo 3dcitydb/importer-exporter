@@ -229,7 +229,7 @@ public class Importer implements EventHandler {
             try {
                 plugin.beforeImport();
             } catch (PluginException e) {
-                throw new CityGMLImportException("Failed to initialize export plugin " + plugin.getClass().getName() + ".", e);
+                throw new CityGMLImportException("Failed to initialize import plugin " + plugin.getClass().getName() + ".", e);
             }
         }
 
