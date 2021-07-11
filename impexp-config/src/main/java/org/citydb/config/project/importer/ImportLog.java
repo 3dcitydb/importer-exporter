@@ -52,7 +52,7 @@ public class ImportLog {
     }
 
     public boolean isSetLogFile() {
-        return logFile != null;
+        return logFile != null && !logFile.isEmpty();
     }
 
     public String getLogFile() {

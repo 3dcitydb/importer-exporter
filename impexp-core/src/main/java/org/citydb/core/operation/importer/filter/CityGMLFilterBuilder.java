@@ -33,6 +33,7 @@ import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
+import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.importer.filter.selection.comparison.LikeFilter;
 import org.citydb.core.operation.importer.filter.selection.counter.CounterFilter;
 import org.citydb.core.operation.importer.filter.selection.id.IdListFilter;
@@ -50,7 +51,7 @@ public class CityGMLFilterBuilder {
 		this.databaseAdapter = databaseAdapter;
 	}
 
-	public CityGMLFilter buildCityGMLFilter(ImportFilter filterConfig) throws FilterException {
+	public CityGMLFilter buildCityGMLFilter(ImportFilter filterConfig, CacheTable idListCacheTable) throws FilterException {
 		CityGMLFilter filter = new CityGMLFilter(schemaMapping);
 
 		// feature type filter
@@ -93,7 +94,7 @@ public class CityGMLFilterBuilder {
 
 		// ID list filter
 		if (filterConfig.isUseIdListFilter() && filterConfig.isSetIdList()) {
-			filter.getSelectionFilter().setIdListFilter(new IdListFilter(filterConfig.getIdList()));
+			filter.getSelectionFilter().setIdListFilter(new IdListFilter(filterConfig.getIdList(), idListCacheTable));
 		}
 
 		// counter filter
