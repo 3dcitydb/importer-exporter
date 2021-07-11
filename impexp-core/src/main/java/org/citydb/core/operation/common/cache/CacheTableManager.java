@@ -46,6 +46,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -121,6 +122,20 @@ public class CacheTableManager {
 			branchCacheTables.remove(cacheTable.getModelType());
 		} else {
 			cacheTables.remove(cacheTable.getModelType());
+		}
+	}
+
+	public synchronized void dropIf(Predicate<AbstractCacheTable> filter) throws SQLException {
+		dropIf(filter, cacheTables);
+		dropIf(filter, branchCacheTables);
+	}
+
+	private void dropIf(Predicate<AbstractCacheTable> filter, Map<CacheTableModel, ? extends AbstractCacheTable> cacheTables) throws SQLException {
+		for (AbstractCacheTable cacheTable : cacheTables.values()) {
+			if (filter.test(cacheTable)) {
+				cacheTable.drop();
+				cacheTables.remove(cacheTable.getModelType());
+			}
 		}
 	}
 
