@@ -26,45 +26,38 @@
  * limitations under the License.
  */
 
-package org.citydb.cli.operation.deleter;
+package org.citydb.cli.option;
 
-import org.citydb.cli.option.CliOption;
-import org.citydb.cli.option.IdListOption;
+import org.citydb.config.project.common.IdColumnType;
 import org.citydb.config.project.common.IdList;
 import picocli.CommandLine;
 
-import java.nio.file.Path;
+import java.util.function.Supplier;
 
-public class DeleteListOption implements CliOption {
-    @CommandLine.Option(names = {"-f", "--delete-list"}, required = true,
-            description = "Name of the CSV file containing the delete list.")
-    private Path file;
+public class IdListOption implements CliOption {
+    enum Type {resource, db}
 
-    @CommandLine.Option(names = {"-w", "--delete-list-preview"},
-            description = "Print a preview of the delete list and exit.")
-    private boolean preview;
+    @CommandLine.Option(names = {"-C", "--id-column-type"}, paramLabel = "<type>", defaultValue = "resource",
+            description = "Type of id column value: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
+    private Type type;
 
     @CommandLine.ArgGroup(exclusive = false)
-    private IdListOption deleteListOption;
+    private ResourceIdListOption resourceIdListOption;
 
-    public boolean isPreview() {
-        return preview;
-    }
-
-    public IdList toDeleteList() {
-        if (deleteListOption == null) {
-            deleteListOption = new IdListOption();
+    public <T extends IdList> T toIdList(Supplier<T> idListSupplier) {
+        if (resourceIdListOption == null) {
+            resourceIdListOption = new ResourceIdListOption();
         }
 
-        IdList deleteList = deleteListOption.toIdList(IdList::new);
-        deleteList.setFile(file.toAbsolutePath().toString());
-        return deleteList;
+        T idList = resourceIdListOption.toIdList(idListSupplier);
+        idList.setIdColumnType(type == Type.db ? IdColumnType.DATABASE_ID : IdColumnType.RESOURCE_ID);
+        return idList;
     }
 
     @Override
     public void preprocess(CommandLine commandLine) {
-        if (deleteListOption != null) {
-            deleteListOption.preprocess(commandLine);
+        if (resourceIdListOption != null) {
+            resourceIdListOption.preprocess(commandLine);
         }
     }
 }

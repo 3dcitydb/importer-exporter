@@ -230,7 +230,7 @@ public class ImportPanel extends JPanel {
 			}
 
 			// ID list filter
-			if (filter.isUseIdListFilter() && !filterPanel.checkIdListSettings()) {
+			if (filter.isUseImportListFilter() && !filterPanel.checkImportListSettings()) {
 				return;
 			}
 

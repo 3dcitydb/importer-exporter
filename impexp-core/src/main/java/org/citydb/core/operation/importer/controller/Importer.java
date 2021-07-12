@@ -32,7 +32,7 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.CacheMode;
-import org.citydb.config.project.importer.ImportIdList;
+import org.citydb.config.project.importer.ImportList;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractUtilAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo;
@@ -119,7 +119,7 @@ public class Importer implements EventHandler {
     private DirectoryScanner directoryScanner;
     private ImportLogger importLogger;
     private CacheTableManager cacheTableManager;
-    private CacheTable idListCacheTable;
+    private CacheTable importListCacheTable;
 
     public Importer() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
@@ -292,32 +292,32 @@ public class Importer implements EventHandler {
             throw new CityGMLImportException("Failed to initialize internal cache manager.", e);
         }
 
-        // load identifier list into local cache
-        idListCacheTable = null;
-        if (config.getImportConfig().getFilter().isUseIdListFilter()
-                && config.getImportConfig().getFilter().isSetIdList()) {
-            log.info("Loading identifier list into local cache...");
-            ImportIdList importIdList = config.getImportConfig().getFilter().getIdList();
+        // load import list into local cache
+        importListCacheTable = null;
+        if (config.getImportConfig().getFilter().isUseImportListFilter()
+                && config.getImportConfig().getFilter().isSetImportList()) {
+            log.info("Loading import list into local cache...");
+            ImportList importList = config.getImportConfig().getFilter().getImportList();
 
-            try (IdListParser parser = new IdListParser(importIdList)) {
+            try (IdListParser parser = new IdListParser(importList)) {
                 // create local cache manager
                 try {
-                    idListCacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.LOCAL);
+                    importListCacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.LOCAL);
                 } catch (SQLException e) {
-                    throw new CityGMLImportException("Failed to create identifier list cache.", e);
+                    throw new CityGMLImportException("Failed to create import list cache.", e);
                 }
 
                 try {
                     int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
-                    new IdListImporter(idListCacheTable, maxBatchSize).doImport(parser);
-                    idListCacheTable.createIndexes();
+                    new IdListImporter(importListCacheTable, maxBatchSize).doImport(parser);
+                    importListCacheTable.createIndexes();
                 } catch (IdListException e) {
-                    throw new CityGMLImportException("Failed to parse identifier list.", e);
+                    throw new CityGMLImportException("Failed to parse import list.", e);
                 } catch (SQLException e) {
-                    throw new CityGMLImportException("Failed to load identifier list into cache.", e);
+                    throw new CityGMLImportException("Failed to load import list into cache.", e);
                 }
             } catch (IOException e) {
-                throw new CityGMLImportException("Failed to create identifier list parser.", e);
+                throw new CityGMLImportException("Failed to create import list parser.", e);
             }
         }
 
@@ -325,7 +325,7 @@ public class Importer implements EventHandler {
         CityGMLFilter filter;
         try {
             CityGMLFilterBuilder builder = new CityGMLFilterBuilder(schemaMapping, databaseAdapter);
-            filter = builder.buildCityGMLFilter(config.getImportConfig().getFilter(), idListCacheTable);
+            filter = builder.buildCityGMLFilter(config.getImportConfig().getFilter(), importListCacheTable);
         } catch (FilterException e) {
             throw new CityGMLImportException("Failed to build the import filter.", e);
         }
@@ -571,7 +571,7 @@ public class Importer implements EventHandler {
                 if (cacheTableManager != null) {
                     try {
                         log.info("Cleaning temporary cache.");
-                        cacheTableManager.dropIf(table -> table != idListCacheTable);
+                        cacheTableManager.dropIf(table -> table != importListCacheTable);
                     } catch (SQLException e) {
                         setException("Failed to clean the temporary cache.", e);
                         shouldRun = false;

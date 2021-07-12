@@ -5,20 +5,20 @@ import org.citydb.config.project.common.IdList;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "ImportIdListType", propOrder = {})
-public class ImportIdList extends IdList {
-    private ImportIdListMode mode = ImportIdListMode.IMPORT;
+@XmlType(name = "ImportListType", propOrder = {})
+public class ImportList extends IdList {
+    private ImportListMode mode = ImportListMode.IMPORT;
 
     @Override
-    public ImportIdList withDefaultCommentCharacter(Character commentCharacter) {
-        return (ImportIdList) super.withDefaultCommentCharacter(commentCharacter);
+    public ImportList withDefaultCommentCharacter(Character commentCharacter) {
+        return (ImportList) super.withDefaultCommentCharacter(commentCharacter);
     }
 
-    public ImportIdListMode getMode() {
-        return mode != null ? mode : ImportIdListMode.IMPORT;
+    public ImportListMode getMode() {
+        return mode != null ? mode : ImportListMode.IMPORT;
     }
 
-    public void setMode(ImportIdListMode mode) {
+    public void setMode(ImportListMode mode) {
         this.mode = mode;
     }
 

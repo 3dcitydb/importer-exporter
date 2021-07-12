@@ -36,7 +36,7 @@ import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.importer.filter.selection.comparison.LikeFilter;
 import org.citydb.core.operation.importer.filter.selection.counter.CounterFilter;
-import org.citydb.core.operation.importer.filter.selection.id.IdListFilter;
+import org.citydb.core.operation.importer.filter.selection.id.ImportListFilter;
 import org.citydb.core.operation.importer.filter.selection.id.ResourceIdFilter;
 import org.citydb.core.operation.importer.filter.selection.spatial.SimpleBBOXFilter;
 import org.citydb.core.operation.importer.filter.type.FeatureTypeFilter;
@@ -51,7 +51,7 @@ public class CityGMLFilterBuilder {
 		this.databaseAdapter = databaseAdapter;
 	}
 
-	public CityGMLFilter buildCityGMLFilter(ImportFilter filterConfig, CacheTable idListCacheTable) throws FilterException {
+	public CityGMLFilter buildCityGMLFilter(ImportFilter filterConfig, CacheTable importListCacheTable) throws FilterException {
 		CityGMLFilter filter = new CityGMLFilter(schemaMapping);
 
 		// feature type filter
@@ -92,9 +92,9 @@ public class CityGMLFilterBuilder {
 			}
 		}
 
-		// ID list filter
-		if (filterConfig.isUseIdListFilter() && filterConfig.isSetIdList()) {
-			filter.getSelectionFilter().setIdListFilter(new IdListFilter(filterConfig.getIdList(), idListCacheTable));
+		// import list filter
+		if (filterConfig.isUseImportListFilter() && filterConfig.isSetImportList()) {
+			filter.getSelectionFilter().setImportListFilter(new ImportListFilter(filterConfig.getImportList(), importListCacheTable));
 		}
 
 		// counter filter

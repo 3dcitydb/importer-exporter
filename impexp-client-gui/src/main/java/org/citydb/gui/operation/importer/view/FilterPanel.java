@@ -31,8 +31,8 @@ import org.citydb.config.Config;
 import org.citydb.config.gui.importer.ImportGuiConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportFilter;
-import org.citydb.config.project.importer.ImportIdList;
-import org.citydb.config.project.importer.ImportIdListMode;
+import org.citydb.config.project.importer.ImportList;
+import org.citydb.config.project.importer.ImportListMode;
 import org.citydb.config.project.importer.SimpleBBOXMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
@@ -47,26 +47,26 @@ public class FilterPanel extends JPanel {
 	private final Config config;
 
 	private JCheckBox useAttributeFilter;
-	private JCheckBox useIdListFilter;
+	private JCheckBox useImportListFilter;
 	private JCheckBox useCounterFilter;
 	private JCheckBox useBBoxFilter;
 	private JCheckBox useFeatureFilter;
 
 	private TitledPanel attributeFilterPanel;
-	private TitledPanel idListFilterPanel;
+	private TitledPanel importListFilterPanel;
 	private TitledPanel counterFilterPanel;
 	private TitledPanel bboxFilterPanel;
 	private TitledPanel featureFilterPanel;
 
 	private AttributeFilterView attributeFilter;
-	private IdListFilterView<ImportIdList> idListFilter;
+	private IdListFilterView<ImportList> importListFilter;
 	private CounterFilterView counterFilter;
 	private BoundingBoxFilterView bboxFilter;
 	private FeatureTypeFilterView featureTypeFilter;
 
-	private JLabel idListMode;
-	private JToggleButton idListImport;
-	private JToggleButton idListSkip;
+	private JLabel importListMode;
+	private JToggleButton importListImport;
+	private JToggleButton importListSkip;
 	private JRadioButton bboxOverlaps;
 	private JRadioButton bboxWithin;
 
@@ -77,18 +77,18 @@ public class FilterPanel extends JPanel {
 
 	private void initGui(ViewController viewController) {
 		useAttributeFilter = new JCheckBox();
-		useIdListFilter = new JCheckBox();
+		useImportListFilter = new JCheckBox();
 		useCounterFilter = new JCheckBox();
 		useBBoxFilter = new JCheckBox();
 		useFeatureFilter = new JCheckBox();
 
-		idListMode = new JLabel();
-		idListImport = new JToggleButton();
-		idListSkip = new JToggleButton();
+		importListMode = new JLabel();
+		importListImport = new JToggleButton();
+		importListSkip = new JToggleButton();
 
-		ButtonGroup idListGroup = new ButtonGroup();
-		idListGroup.add(idListImport);
-		idListGroup.add(idListSkip);
+		ButtonGroup importListGroup = new ButtonGroup();
+		importListGroup.add(importListImport);
+		importListGroup.add(importListSkip);
 
 		bboxOverlaps = new JRadioButton();
 		bboxWithin = new JRadioButton();
@@ -115,20 +115,21 @@ public class FilterPanel extends JPanel {
 			JToolBar toolBar = new JToolBar();
 			toolBar.setBorder(BorderFactory.createEmptyBorder());
 			toolBar.setFloatable(false);
-			toolBar.add(idListImport);
-			toolBar.add(idListSkip);
+			toolBar.add(importListImport);
+			toolBar.add(importListSkip);
 			toolBar.setEnabled(false);
 
-			idListFilter = new IdListFilterView<>(viewController, ImportIdList::new)
-					.addFooterRow(idListMode, toolBar);
+			importListFilter = new IdListFilterView<>(viewController, ImportList::new)
+					.withLocalizedTitle(() -> Language.I18N.getString("import.list.title"))
+					.addFooterRow(importListMode, toolBar);
 
-			idListFilterPanel = new TitledPanel()
-					.withIcon(idListFilter.getIcon())
-					.withToggleButton(useIdListFilter)
+			importListFilterPanel = new TitledPanel()
+					.withIcon(importListFilter.getIcon())
+					.withToggleButton(useImportListFilter)
 					.withCollapseButton()
-					.build(idListFilter.getViewComponent());
+					.build(importListFilter.getViewComponent());
 
-			add(idListFilterPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			add(importListFilterPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
 			counterFilter = new CounterFilterView();
@@ -173,12 +174,12 @@ public class FilterPanel extends JPanel {
 		}
 
 		useAttributeFilter.addItemListener(e -> setEnabledAttributeFilter());
-		useIdListFilter.addItemListener(e -> setEnabledIdListFilter());
+		useImportListFilter.addItemListener(e -> setEnabledImportListFilter());
 		useCounterFilter.addItemListener(e -> setEnabledCounterFilter());
 		useBBoxFilter.addItemListener(e -> setEnabledBBoxFilter());
 		useFeatureFilter.addItemListener(e -> setEnabledFeatureFilter());
 
-		PopupMenuDecorator.getInstance().decorateTitledPanelGroup(attributeFilterPanel, idListFilterPanel,
+		PopupMenuDecorator.getInstance().decorateTitledPanelGroup(attributeFilterPanel, importListFilterPanel,
 				counterFilterPanel, bboxFilterPanel, featureFilterPanel);
 	}
 
@@ -186,11 +187,11 @@ public class FilterPanel extends JPanel {
 		attributeFilter.setEnabled(useAttributeFilter.isSelected());
 	}
 
-	private void setEnabledIdListFilter() {
-		idListFilter.setEnabled(useIdListFilter.isSelected());
-		idListMode.setEnabled(useIdListFilter.isSelected());
-		idListImport.setEnabled(useIdListFilter.isSelected());
-		idListSkip.setEnabled(useIdListFilter.isSelected());
+	private void setEnabledImportListFilter() {
+		importListFilter.setEnabled(useImportListFilter.isSelected());
+		importListMode.setEnabled(useImportListFilter.isSelected());
+		importListImport.setEnabled(useImportListFilter.isSelected());
+		importListSkip.setEnabled(useImportListFilter.isSelected());
 	}
 
 	private void setEnabledCounterFilter() {
@@ -209,20 +210,20 @@ public class FilterPanel extends JPanel {
 
 	public void doTranslation() {
 		attributeFilterPanel.setTitle(attributeFilter.getLocalizedTitle());
-		idListFilterPanel.setTitle(idListFilter.getLocalizedTitle());
+		importListFilterPanel.setTitle(importListFilter.getLocalizedTitle());
 		counterFilterPanel.setTitle(counterFilter.getLocalizedTitle());
 		bboxFilterPanel.setTitle(bboxFilter.getLocalizedTitle());
 		featureFilterPanel.setTitle(featureTypeFilter.getLocalizedTitle());
 
-		idListMode.setText(Language.I18N.getString("import.idList.mode"));
-		idListImport.setText(Language.I18N.getString("import.idList.mode.import"));
-		idListSkip.setText(Language.I18N.getString("import.idList.mode.skip"));
+		importListMode.setText(Language.I18N.getString("import.list.mode"));
+		importListImport.setText(Language.I18N.getString("import.list.mode.import"));
+		importListSkip.setText(Language.I18N.getString("import.list.mode.skip"));
 
 		bboxOverlaps.setText(Language.I18N.getString("filter.label.boundingBox.overlaps"));
 		bboxWithin.setText(Language.I18N.getString("filter.label.boundingBox.within"));
 
 		attributeFilter.doTranslation();
-		idListFilter.doTranslation();
+		importListFilter.doTranslation();
 		counterFilter.doTranslation();
 		featureTypeFilter.doTranslation();
 	}
@@ -231,16 +232,16 @@ public class FilterPanel extends JPanel {
 		ImportFilter filter = config.getImportConfig().getFilter();
 
 		useAttributeFilter.setSelected(filter.isUseAttributeFilter());
-		useIdListFilter.setSelected(filter.isUseIdListFilter());
+		useImportListFilter.setSelected(filter.isUseImportListFilter());
 		useCounterFilter.setSelected(filter.isUseCountFilter());
 		useBBoxFilter.setSelected(filter.isUseBboxFilter());
 		useFeatureFilter.setSelected(filter.isUseTypeNames());
 
 		// ID list mode
-		if (filter.getIdList().getMode() == ImportIdListMode.SKIP) {
-			idListSkip.setSelected(true);
+		if (filter.getImportList().getMode() == ImportListMode.SKIP) {
+			importListSkip.setSelected(true);
 		} else {
-			idListImport.setSelected(true);
+			importListImport.setSelected(true);
 		}
 
 		// bbox filter
@@ -251,13 +252,13 @@ public class FilterPanel extends JPanel {
 		}
 
 		attributeFilter.loadSettings(filter.getAttributeFilter());
-		idListFilter.loadSettings(filter.getIdList());
+		importListFilter.loadSettings(filter.getImportList());
 		counterFilter.loadSettings(filter.getCounterFilter());
 		bboxFilter.loadSettings(filter.getBboxFilter().getExtent());
 		featureTypeFilter.loadSettings(filter.getFeatureTypeFilter());
 
 		setEnabledAttributeFilter();
-		setEnabledIdListFilter();
+		setEnabledImportListFilter();
 		setEnabledCounterFilter();
 		setEnabledBBoxFilter();
 		setEnabledFeatureFilter();
@@ -265,7 +266,7 @@ public class FilterPanel extends JPanel {
 		// GUI specific settings
 		ImportGuiConfig guiConfig = config.getGuiConfig().getImportGuiConfig();
 		attributeFilterPanel.setCollapsed(guiConfig.isCollapseAttributeFilter());
-		idListFilterPanel.setCollapsed(guiConfig.isCollapseIdListFilter());
+		importListFilterPanel.setCollapsed(guiConfig.isCollapseImportListFilter());
 		counterFilterPanel.setCollapsed(guiConfig.isCollapseCounterFilter());
 		bboxFilterPanel.setCollapsed(guiConfig.isCollapseBoundingBoxFilter());
 		featureFilterPanel.setCollapsed(guiConfig.isCollapseFeatureTypeFilter());
@@ -275,7 +276,7 @@ public class FilterPanel extends JPanel {
 		ImportFilter filter = config.getImportConfig().getFilter();
 
 		filter.setUseAttributeFilter(useAttributeFilter.isSelected());
-		filter.setUseIdListFilter(useIdListFilter.isSelected());
+		filter.setUseImportListFilter(useImportListFilter.isSelected());
 		filter.setUseCountFilter(useCounterFilter.isSelected());
 		filter.setUseBboxFilter(useBBoxFilter.isSelected());
 		filter.setUseTypeNames(useFeatureFilter.isSelected());
@@ -286,26 +287,26 @@ public class FilterPanel extends JPanel {
 				SimpleBBOXMode.WITHIN);
 
 		filter.setAttributeFilter(attributeFilter.toSettings());
-		filter.setIdList(idListFilter.toSettings());
+		filter.setImportList(importListFilter.toSettings());
 		filter.setCounterFilter(counterFilter.toSettings());
 		filter.getBboxFilter().setExtent(bboxFilter.toSettings());
 		filter.setFeatureTypeFilter(featureTypeFilter.toSettings());
 
 		// ID list mode
-		filter.getIdList().setMode(idListSkip.isSelected() ?
-				ImportIdListMode.SKIP :
-				ImportIdListMode.IMPORT);
+		filter.getImportList().setMode(importListSkip.isSelected() ?
+				ImportListMode.SKIP :
+				ImportListMode.IMPORT);
 
 		// GUI specific settings
 		ImportGuiConfig guiConfig = config.getGuiConfig().getImportGuiConfig();
 		guiConfig.setCollapseAttributeFilter(attributeFilterPanel.isCollapsed());
-		guiConfig.setCollapseIdListFilter(idListFilterPanel.isCollapsed());
+		guiConfig.setCollapseImportListFilter(importListFilterPanel.isCollapsed());
 		guiConfig.setCollapseCounterFilter(counterFilterPanel.isCollapsed());
 		guiConfig.setCollapseBoundingBoxFilter(bboxFilterPanel.isCollapsed());
 		guiConfig.setCollapseFeatureTypeFilter(featureFilterPanel.isCollapsed());
 	}
 
-	boolean checkIdListSettings() {
-		return idListFilter.checkSettings(false);
+	boolean checkImportListSettings() {
+		return importListFilter.checkSettings(false);
 	}
 }

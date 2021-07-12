@@ -49,6 +49,7 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
     private JLabel encodingLabel;
     private JComboBox<String> encoding;
 
+    private Supplier<String> titleSupplier;
     private Supplier<String> errorDialogTitleSupplier;
     private boolean enabled = true;
     private int row;
@@ -75,6 +76,11 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
         idColumnType = new JComboBox<>();
         Arrays.stream(IdColumnType.values()).forEach(idColumnType::addItem);
         component.add(idColumnType, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 15));
+        return this;
+    }
+
+    public IdListFilterView<T> withLocalizedTitle(Supplier<String> titleSupplier) {
+        this.titleSupplier = titleSupplier;
         return this;
     }
 
@@ -170,7 +176,9 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
         component.add(delimiterLabel, GuiUtil.setConstraints(0, row, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
         component.add(charactersPanel, GuiUtil.setConstraints(1, row++, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
 
-        idListBrowseButton.addActionListener(e -> browseIdList(Language.I18N.getString("filter.border.idList")));
+        idListBrowseButton.addActionListener(e -> browseIdList(titleSupplier != null ?
+                titleSupplier.get() :
+                Language.I18N.getString("filter.border.idList")));
         idColumnNameButton.addActionListener(e -> setEnabledIdColumn());
         idColumnIndexButton.addActionListener(e -> setEnabledIdColumn());
 
@@ -189,7 +197,7 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
 
     @Override
     public String getLocalizedTitle() {
-        return Language.I18N.getString("filter.border.idList");
+        return titleSupplier != null ? titleSupplier.get() : Language.I18N.getString("filter.border.idList");
     }
 
     @Override

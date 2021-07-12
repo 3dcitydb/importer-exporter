@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SimpleImportFilterType", propOrder = {
         "featureTypeFilter",
         "attributeFilter",
-        "idList",
+        "importList",
         "counterFilter",
         "bboxFilter"
 
@@ -50,7 +50,7 @@ public class ImportFilter {
     @XmlAttribute
     private boolean useAttributeFilter;
     @XmlAttribute
-    private boolean useIdListFilter;
+    private boolean useImportListFilter;
     @XmlAttribute
     private boolean useCountFilter;
     @XmlAttribute
@@ -60,8 +60,7 @@ public class ImportFilter {
     private FeatureTypeFilter featureTypeFilter;
     @XmlElement(name = "attributes")
     private SimpleAttributeFilter attributeFilter;
-    @XmlElement(name = "idList")
-    private ImportIdList idList;
+    private ImportList importList;
     @XmlElement(name = "limit")
     private CounterFilter counterFilter;
     @XmlElement(name = "bbox")
@@ -70,7 +69,7 @@ public class ImportFilter {
     public ImportFilter() {
         featureTypeFilter = new FeatureTypeFilter();
         attributeFilter = new SimpleAttributeFilter();
-        idList = new ImportIdList().withDefaultCommentCharacter(IdList.DEFAULT_COMMENT_CHARACTER);
+        importList = new ImportList().withDefaultCommentCharacter(IdList.DEFAULT_COMMENT_CHARACTER);
         counterFilter = new CounterFilter();
         bboxFilter = new SimpleBBOXOperator();
     }
@@ -91,12 +90,12 @@ public class ImportFilter {
         this.useAttributeFilter = useAttributeFilter;
     }
 
-    public boolean isUseIdListFilter() {
-        return useIdListFilter;
+    public boolean isUseImportListFilter() {
+        return useImportListFilter;
     }
 
-    public void setUseIdListFilter(boolean useIdListFilter) {
-        this.useIdListFilter = useIdListFilter;
+    public void setUseImportListFilter(boolean useImportListFilter) {
+        this.useImportListFilter = useImportListFilter;
     }
 
     public boolean isUseCountFilter() {
@@ -139,16 +138,16 @@ public class ImportFilter {
         this.attributeFilter = attributeFilter;
     }
 
-    public ImportIdList getIdList() {
-        return idList;
+    public ImportList getImportList() {
+        return importList;
     }
 
-    public boolean isSetIdList() {
-        return idList != null;
+    public boolean isSetImportList() {
+        return importList != null;
     }
 
-    public void setIdList(ImportIdList idList) {
-        this.idList = idList;
+    public void setImportList(ImportList importList) {
+        this.importList = importList;
     }
 
     public CounterFilter getCounterFilter() {

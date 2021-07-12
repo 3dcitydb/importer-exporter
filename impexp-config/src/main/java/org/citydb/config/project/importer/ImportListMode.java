@@ -31,9 +31,9 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "ImportIdListModeType")
+@XmlType(name = "ImportListModeType")
 @XmlEnum
-public enum ImportIdListMode {
+public enum ImportListMode {
     @XmlEnumValue("import")
     IMPORT("import"),
     @XmlEnumValue("skip")
@@ -41,7 +41,7 @@ public enum ImportIdListMode {
 
     private final String value;
 
-    ImportIdListMode(String v) {
+    ImportListMode(String v) {
         value = v;
     }
 
@@ -49,8 +49,8 @@ public enum ImportIdListMode {
         return value;
     }
 
-    public static ImportIdListMode fromValue(String v) {
-        for (ImportIdListMode c : ImportIdListMode.values()) {
+    public static ImportListMode fromValue(String v) {
+        for (ImportListMode c : ImportListMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

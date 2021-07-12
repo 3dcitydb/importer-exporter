@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ImportGuiType", propOrder = {
         "collapseAttributeFilter",
-        "collapseIdListFilter",
+        "collapseImportListFilter",
         "collapseCounterFilter",
         "collapseBoundingBoxFilter",
         "collapseFeatureTypeFilter",
@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class ImportGuiConfig {
     private boolean collapseAttributeFilter = true;
-    private boolean collapseIdListFilter = true;
+    private boolean collapseImportListFilter = true;
     private boolean collapseCounterFilter = true;
     private boolean collapseBoundingBoxFilter = true;
     private boolean collapseFeatureTypeFilter = true;
@@ -54,12 +54,12 @@ public class ImportGuiConfig {
         this.collapseAttributeFilter = collapseAttributeFilter;
     }
 
-    public boolean isCollapseIdListFilter() {
-        return collapseIdListFilter;
+    public boolean isCollapseImportListFilter() {
+        return collapseImportListFilter;
     }
 
-    public void setCollapseIdListFilter(boolean collapseIdListFilter) {
-        this.collapseIdListFilter = collapseIdListFilter;
+    public void setCollapseImportListFilter(boolean collapseImportListFilter) {
+        this.collapseImportListFilter = collapseImportListFilter;
     }
 
     public boolean isCollapseCounterFilter() {
