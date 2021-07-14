@@ -13,3 +13,6 @@ bin/
 *.iml
 *.iws
 out/
+
+# Local only files
+docker-scripts/build.sh

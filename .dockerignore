@@ -1,0 +1,25 @@
+# git and github related files
+.github/
+
+# Include .git in build context. Remove this when new ImpExp Installer
+# is available.
+# .git/
+
+.gitignore
+.gitattributes
+
+# Gradle & build output folder
+.gradle/
+*/build/
+
+# Unused impexp stuff
+resources/
+CHANGES.md
+LICENSE
+README.md
+
+# Unused docker stuff
+.dockerignore
+docker-scripts/build.sh
+Dockerfile
+Dockerfile.alpine
