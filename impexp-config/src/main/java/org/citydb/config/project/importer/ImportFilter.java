@@ -27,6 +27,7 @@
  */
 package org.citydb.config.project.importer;
 
+import org.citydb.config.project.common.IdList;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
@@ -38,6 +39,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SimpleImportFilterType", propOrder = {
         "featureTypeFilter",
         "attributeFilter",
+        "importList",
         "counterFilter",
         "bboxFilter"
 
@@ -48,6 +50,8 @@ public class ImportFilter {
     @XmlAttribute
     private boolean useAttributeFilter;
     @XmlAttribute
+    private boolean useImportListFilter;
+    @XmlAttribute
     private boolean useCountFilter;
     @XmlAttribute
     private boolean useBboxFilter;
@@ -56,6 +60,7 @@ public class ImportFilter {
     private FeatureTypeFilter featureTypeFilter;
     @XmlElement(name = "attributes")
     private SimpleAttributeFilter attributeFilter;
+    private ImportList importList;
     @XmlElement(name = "limit")
     private CounterFilter counterFilter;
     @XmlElement(name = "bbox")
@@ -64,6 +69,7 @@ public class ImportFilter {
     public ImportFilter() {
         featureTypeFilter = new FeatureTypeFilter();
         attributeFilter = new SimpleAttributeFilter();
+        importList = new ImportList().withDefaultCommentCharacter(IdList.DEFAULT_COMMENT_CHARACTER);
         counterFilter = new CounterFilter();
         bboxFilter = new SimpleBBOXOperator();
     }
@@ -82,6 +88,14 @@ public class ImportFilter {
 
     public void setUseAttributeFilter(boolean useAttributeFilter) {
         this.useAttributeFilter = useAttributeFilter;
+    }
+
+    public boolean isUseImportListFilter() {
+        return useImportListFilter;
+    }
+
+    public void setUseImportListFilter(boolean useImportListFilter) {
+        this.useImportListFilter = useImportListFilter;
     }
 
     public boolean isUseCountFilter() {
@@ -122,6 +136,18 @@ public class ImportFilter {
 
     public void setAttributeFilter(SimpleAttributeFilter attributeFilter) {
         this.attributeFilter = attributeFilter;
+    }
+
+    public ImportList getImportList() {
+        return importList;
+    }
+
+    public boolean isSetImportList() {
+        return importList != null;
+    }
+
+    public void setImportList(ImportList importList) {
+        this.importList = importList;
     }
 
     public CounterFilter getCounterFilter() {

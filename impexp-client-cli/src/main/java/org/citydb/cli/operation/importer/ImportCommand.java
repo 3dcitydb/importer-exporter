@@ -30,19 +30,21 @@ package org.citydb.cli.operation.importer;
 
 import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
-import org.citydb.config.Config;
-import org.citydb.config.project.database.DatabaseConnection;
-import org.citydb.config.project.importer.ImportConfig;
-import org.citydb.core.database.DatabaseController;
-import org.citydb.util.log.Logger;
-import org.citydb.core.operation.importer.CityGMLImportException;
-import org.citydb.core.operation.importer.controller.Importer;
-import org.citydb.core.plugin.CliCommand;
 import org.citydb.cli.option.CliOptionBuilder;
 import org.citydb.cli.option.DatabaseOption;
 import org.citydb.cli.option.ThreadPoolOption;
+import org.citydb.config.Config;
+import org.citydb.config.project.database.DatabaseConnection;
+import org.citydb.config.project.importer.ImportConfig;
+import org.citydb.config.project.importer.ImportList;
+import org.citydb.core.database.DatabaseController;
+import org.citydb.core.operation.common.csv.IdListPreviewer;
+import org.citydb.core.operation.importer.CityGMLImportException;
+import org.citydb.core.operation.importer.controller.Importer;
+import org.citydb.core.plugin.CliCommand;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
+import org.citydb.util.log.Logger;
 import picocli.CommandLine;
 
 import java.io.IOException;
@@ -76,6 +78,9 @@ public class ImportCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false, heading = "Import filter options:%n")
     private FilterOption filterOption;
 
+    @CommandLine.ArgGroup(exclusive = false, heading = "Import list options:%n")
+    private ImportListOption importListOption;
+
     @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
     private DatabaseOption databaseOption;
 
@@ -84,6 +89,25 @@ public class ImportCommand extends CliCommand {
     @Override
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
+
+        // get import list and preview it if required
+        ImportList importList = null;
+        if (importListOption != null) {
+            importList = importListOption.toImportList();
+
+            if (importListOption.isPreview()) {
+                try {
+                    IdListPreviewer.of(importList)
+                            .withNumberOfRecords(20)
+                            .printToConsole();
+                    log.info("Import list preview successfully finished.");
+                    return 0;
+                } catch (Exception e) {
+                    log.error("Failed to create a preview of the import list.", e);
+                    return 1;
+                }
+            }
+        }
 
         List<Path> inputFiles;
         try {
@@ -113,9 +137,14 @@ public class ImportCommand extends CliCommand {
         // set general import options
         setImportOptions(config.getImportConfig());
 
+        // set filter options
         if (filterOption != null) {
             config.getImportConfig().setFilter(filterOption.toImportFilter());
         }
+
+        // set import list options
+        config.getImportConfig().getFilter().setUseImportListFilter(importList != null);
+        config.getImportConfig().getFilter().setImportList(importList);
 
         try {
             new Importer().doImport(inputFiles);

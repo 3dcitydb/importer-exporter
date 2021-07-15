@@ -31,6 +31,8 @@ import org.apache.tika.exception.TikaException;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.config.project.global.CacheMode;
+import org.citydb.config.project.importer.ImportList;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractUtilAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo;
@@ -43,9 +45,14 @@ import org.citydb.core.file.FileType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.file.input.AbstractArchiveInputFile;
 import org.citydb.core.file.input.DirectoryScanner;
+import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.cache.IdCacheManager;
 import org.citydb.core.operation.common.cache.IdCacheType;
+import org.citydb.core.operation.common.cache.model.CacheTableModel;
+import org.citydb.core.operation.common.csv.IdListException;
+import org.citydb.core.operation.common.csv.IdListImporter;
+import org.citydb.core.operation.common.csv.IdListParser;
 import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.importer.CityGMLImportException;
@@ -112,6 +119,7 @@ public class Importer implements EventHandler {
     private DirectoryScanner directoryScanner;
     private ImportLogger importLogger;
     private CacheTableManager cacheTableManager;
+    private CacheTable importListCacheTable;
 
     public Importer() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
@@ -277,20 +285,49 @@ public class Importer implements EventHandler {
             }
         }
 
-        // build CityGML filter
-        CityGMLFilter filter;
-        try {
-            CityGMLFilterBuilder builder = new CityGMLFilterBuilder(schemaMapping, databaseAdapter);
-            filter = builder.buildCityGMLFilter(config.getImportConfig().getFilter());
-        } catch (FilterException e) {
-            throw new CityGMLImportException("Failed to build the import filter.", e);
-        }
-
         // create instance of the cache table manager
         try {
             cacheTableManager = new CacheTableManager(config.getGlobalConfig().getCache());
         } catch (SQLException | IOException e) {
             throw new CityGMLImportException("Failed to initialize internal cache manager.", e);
+        }
+
+        // load import list into local cache
+        importListCacheTable = null;
+        if (config.getImportConfig().getFilter().isUseImportListFilter()
+                && config.getImportConfig().getFilter().isSetImportList()) {
+            log.info("Loading import list into local cache...");
+            ImportList importList = config.getImportConfig().getFilter().getImportList();
+
+            try (IdListParser parser = new IdListParser(importList)) {
+                // create local cache manager
+                try {
+                    importListCacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.LOCAL);
+                } catch (SQLException e) {
+                    throw new CityGMLImportException("Failed to create import list cache.", e);
+                }
+
+                try {
+                    int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
+                    new IdListImporter(importListCacheTable, maxBatchSize).doImport(parser);
+                    importListCacheTable.createIndexes();
+                } catch (IdListException e) {
+                    throw new CityGMLImportException("Failed to parse import list.", e);
+                } catch (SQLException e) {
+                    throw new CityGMLImportException("Failed to load import list into cache.", e);
+                }
+            } catch (IOException e) {
+                throw new CityGMLImportException("Failed to create import list parser.", e);
+            }
+        }
+
+        // build CityGML filter
+        CityGMLFilter filter;
+        try {
+            CityGMLFilterBuilder builder = new CityGMLFilterBuilder(schemaMapping, databaseAdapter);
+            filter = builder.buildCityGMLFilter(config.getImportConfig().getFilter(), importListCacheTable);
+        } catch (FilterException e) {
+            throw new CityGMLImportException("Failed to build the import filter.", e);
         }
 
         // create reader factory builder
@@ -534,7 +571,7 @@ public class Importer implements EventHandler {
                 if (cacheTableManager != null) {
                     try {
                         log.info("Cleaning temporary cache.");
-                        cacheTableManager.dropAll();
+                        cacheTableManager.dropIf(table -> table != importListCacheTable);
                     } catch (SQLException e) {
                         setException("Failed to clean the temporary cache.", e);
                         shouldRun = false;
