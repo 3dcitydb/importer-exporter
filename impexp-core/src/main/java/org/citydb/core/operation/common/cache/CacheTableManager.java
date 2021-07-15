@@ -180,6 +180,11 @@ public class CacheTableManager {
 				cacheTables.computeIfAbsent(model, v -> new CacheTable(model, connection, sqlAdapter)) :
 				branchCacheTables.computeIfAbsent(model, v -> new BranchCacheTable(model, connection, sqlAdapter));
 
+		if (sqlAdapter != cacheTable.sqlAdapter) {
+			throw new SQLException("A cache table for '" + model + "' already exists and may not be created twice " +
+					"for the cache mode '" + cache.mode.value() + "'.");
+		}
+
 		if (!cacheTable.isCreated()) {
 			if (createIndexes) {
 				cacheTable.createAndIndex();
@@ -216,7 +221,7 @@ public class CacheTableManager {
 			}
 
 			connection.setAutoCommit(false);
-			cache = new Cache(connection, adapter, cacheDir);
+			cache = new Cache(connection, adapter, mode, cacheDir);
 			caches.put(mode, cache);
 		}
 
@@ -255,11 +260,13 @@ public class CacheTableManager {
 	private static class Cache {
 		private final Connection connection;
 		private final AbstractDatabaseAdapter adapter;
+		private final CacheMode mode;
 		private final Path cacheDir;
 
-		Cache(Connection connection, AbstractDatabaseAdapter adapter, Path cacheDir) {
+		Cache(Connection connection, AbstractDatabaseAdapter adapter, CacheMode mode, Path cacheDir) {
 			this.connection = connection;
 			this.adapter = adapter;
+			this.mode = mode;
 			this.cacheDir = cacheDir;
 		}
 
