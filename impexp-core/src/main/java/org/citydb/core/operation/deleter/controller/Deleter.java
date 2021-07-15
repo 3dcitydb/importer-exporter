@@ -104,7 +104,7 @@ public class Deleter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		try {
-			return process(preview, deleteLogger);
+			return process(preview);
 		} catch (DeleteException e) {
 			throw e;
 		} catch (Throwable e) {
@@ -123,7 +123,7 @@ public class Deleter implements EventHandler {
 		}
 	}
 
-	private boolean process(boolean preview, DeleteLogger deleteLogger) throws DeleteException {
+	private boolean process(boolean preview) throws DeleteException {
 		long start = System.currentTimeMillis();
 		DeleteMode mode = config.getDeleteConfig().getMode();
 
