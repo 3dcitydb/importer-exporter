@@ -27,241 +27,259 @@
  */
 package org.citydb.core.operation.common.cache;
 
-import org.citydb.config.Config;
+import org.citydb.config.project.global.CacheMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.core.database.adapter.AbstractSQLAdapter;
 import org.citydb.core.database.adapter.h2.H2Adapter;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.model.CacheTableModel;
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.citydb.util.log.Logger;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CacheTableManager {
-	private final Logger log = Logger.getInstance();
-	private final AbstractDatabaseAdapter cacheAdapter;	
-	private final Connection cacheConnection;
-	private final Config config;
+	private final String cacheDir;
+	private final Cache primaryCache;
 
-	private final ConcurrentHashMap<CacheTableModel, CacheTable> cacheTables;
-	private final ConcurrentHashMap<CacheTableModel, BranchCacheTable> branchCacheTables;
+	private final Map<CacheMode, Cache> caches = new ConcurrentHashMap<>();
+	private final Map<CacheTableModel, CacheTable> cacheTables = new ConcurrentHashMap<>();
+	private final Map<CacheTableModel, BranchCacheTable> branchCacheTables = new ConcurrentHashMap<>();
 
-	private String cacheDir;
-	private AbstractDatabaseAdapter databaseAdapter;
-	private Connection databaseConnection;
-
-	public CacheTableManager(int concurrencyLevel, Config config) throws SQLException, IOException {
-		if (config.getGlobalConfig().getCache().isUseDatabase()) {
-			cacheAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-			cacheConnection = DatabaseConnectionPool.getInstance().getConnection();
-		}
-
-		else {
-			File tempDir = checkTempDir(config.getGlobalConfig().getCache().getLocalCachePath());
-			log.debug("Local cache directory is '" + tempDir.getAbsolutePath() + "'.");
-			cacheAdapter = new H2Adapter();
-
-			try {
-				Class.forName(cacheAdapter.getConnectionFactoryClassName());
-			} catch (ClassNotFoundException e) {
-				throw new SQLException(e);
-			}
-
-			try {
-				cacheDir = tempDir.getAbsolutePath() + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
-				cacheConnection = DriverManager.getConnection(cacheAdapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");
-			} catch (SQLException e) {
-				deleteTempFiles(new File(cacheDir));
-				throw e;
-			}
-		}
-
-		cacheConnection.setAutoCommit(false);
-
-		cacheTables = new ConcurrentHashMap<>(CacheTableModel.values().length, 0.75f, concurrencyLevel);
-		branchCacheTables = new ConcurrentHashMap<>(CacheTableModel.values().length, 0.75f, concurrencyLevel);
-		this.config = config;
+	public CacheTableManager(org.citydb.config.project.global.Cache cacheConfig) throws SQLException, IOException {
+		cacheDir = cacheConfig.getLocalCachePath();
+		primaryCache = getOrCreateCache(cacheConfig.getCacheMode());
 	}
 
-	public AbstractDatabaseAdapter getDatabaseAdapter() {
-		return cacheAdapter;
+	public AbstractDatabaseAdapter getCacheAdapter() {
+		return primaryCache.adapter;
 	}
 
 	public CacheTable createCacheTable(CacheTableModel model) throws SQLException {
-		return createCacheTable(model, cacheConnection, cacheAdapter);		
+		return getOrCreateCacheTable(primaryCache, model, false, CacheTable.class);
 	}
 
-	public CacheTable createCacheTableInDatabase(CacheTableModel model) throws SQLException {
-		initDatabaseConnection();
-		return createCacheTable(model, databaseConnection, databaseAdapter);
-	}
-
-	private CacheTable createCacheTable(CacheTableModel model, Connection connection, AbstractDatabaseAdapter adapter) throws SQLException {
-		CacheTable cacheTable = getOrCreateCacheTable(model, adapter, connection);		
-		if (!cacheTable.isCreated())
-			cacheTable.create();
-
-		return cacheTable;
+	public CacheTable createCacheTable(CacheTableModel model, CacheMode mode) throws SQLException {
+		return getOrCreateCacheTable(getOrCreateCache(mode), model, false, CacheTable.class);
 	}
 
 	public CacheTable createAndIndexCacheTable(CacheTableModel model) throws SQLException {
-		CacheTable cacheTable = getOrCreateCacheTable(model, cacheAdapter, cacheConnection);
-		if (!cacheTable.isCreated())
-			cacheTable.createAndIndex();
+		return getOrCreateCacheTable(primaryCache, model, true, CacheTable.class);
+	}
 
-		return cacheTable;
+	public CacheTable createAndIndexCacheTable(CacheTableModel model, CacheMode mode) throws SQLException {
+		return getOrCreateCacheTable(getOrCreateCache(mode), model, true, CacheTable.class);
+	}
+
+	public CacheTable getCacheTable(CacheTableModel model) {
+		return cacheTables.get(model);
+	}
+
+	public boolean existsCacheTable(CacheTableModel model) {
+		return cacheTables.containsKey(model);
 	}
 
 	public BranchCacheTable createBranchCacheTable(CacheTableModel model) throws SQLException {
-		BranchCacheTable branchCacheTable = getOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);
-		if (!branchCacheTable.isCreated())
-			branchCacheTable.create();
+		return getOrCreateCacheTable(primaryCache, model, false, BranchCacheTable.class);
+	}
 
-		return branchCacheTable;
+	public BranchCacheTable createBranchCacheTable(CacheTableModel model, CacheMode mode) throws SQLException {
+		return getOrCreateCacheTable(getOrCreateCache(mode), model, false, BranchCacheTable.class);
 	}
 
 	public BranchCacheTable createAndIndexBranchCacheTable(CacheTableModel model) throws SQLException {
-		BranchCacheTable branchCacheTable = getOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);
-		if (!branchCacheTable.isCreated())
-			branchCacheTable.createAndIndex();
-
-		return branchCacheTable;
+		return getOrCreateCacheTable(primaryCache, model, true, BranchCacheTable.class);
 	}
 
-	public CacheTable getCacheTable(CacheTableModel type) {
-		return cacheTables.get(type);
+	public BranchCacheTable createAndIndexBranchCacheTable(CacheTableModel model, CacheMode mode) throws SQLException {
+		return getOrCreateCacheTable(getOrCreateCache(mode), model, true, BranchCacheTable.class);
 	}
 
-	public boolean existsCacheTable(CacheTableModel type) {
-		CacheTable cacheTable = cacheTables.get(type);
-		return (cacheTable != null && cacheTable.isCreated());
+	public BranchCacheTable getBranchCacheTable(CacheTableModel model) {
+		return branchCacheTables.get(model);
 	}
 
-	public void drop(AbstractCacheTable cacheTable) throws SQLException {
+	public boolean existsBranchCacheTable(CacheTableModel model) {
+		return branchCacheTables.containsKey(model);
+	}
+
+	public synchronized void drop(AbstractCacheTable cacheTable) throws SQLException {
 		cacheTable.drop();
 
-		if (cacheTable instanceof CacheTable)	
-			cacheTables.remove(cacheTable.getModelType());
-		else
+		if (cacheTable instanceof BranchCacheTable) {
 			branchCacheTables.remove(cacheTable.getModelType());
+		} else {
+			cacheTables.remove(cacheTable.getModelType());
+		}
 	}
 
-	public void dropAll() throws SQLException {
-		try {
-			for (CacheTable cacheTable : cacheTables.values())
+	public synchronized void dropIf(Predicate<AbstractCacheTable> filter) throws SQLException {
+		dropIf(filter, cacheTables);
+		dropIf(filter, branchCacheTables);
+	}
+
+	private void dropIf(Predicate<AbstractCacheTable> filter, Map<CacheTableModel, ? extends AbstractCacheTable> cacheTables) throws SQLException {
+		for (AbstractCacheTable cacheTable : cacheTables.values()) {
+			if (filter.test(cacheTable)) {
 				cacheTable.drop();
+				cacheTables.remove(cacheTable.getModelType());
+			}
+		}
+	}
 
-			for (BranchCacheTable branchCacheTable : branchCacheTables.values())
-				branchCacheTable.drop();
+	public synchronized void dropAll() throws SQLException {
+		for (CacheTable cacheTable : cacheTables.values()) {
+			cacheTable.drop();
+		}
 
-		} finally  {
-			// clean up
-			cacheTables.clear();
-			branchCacheTables.clear();
+		for (BranchCacheTable branchCacheTable : branchCacheTables.values()) {
+			branchCacheTable.drop();
+		}
+
+		for (Cache cache : caches.values()) {
+			cache.connection.rollback();
+		}
+
+		cacheTables.clear();
+		branchCacheTables.clear();
+	}
+
+	public synchronized void close() throws SQLException {
+		dropAll();
+
+		for (Cache cache : caches.values()) {
+			cache.connection.close();
 
 			try {
-				cacheConnection.rollback();
-				cacheConnection.close();
-			} catch (SQLException e) {
-				log.error("Failed to close temporary cache connection.", e);
+				cache.deleteCacheDir();
+			} catch (IOException e) {
+				throw new SQLException("Failed to delete local cache directory.", e);
 			}
-
-			if (databaseConnection != null) {
-				try {
-					if (databaseConnection != cacheConnection) {
-						databaseConnection.rollback();
-						databaseConnection.close();
-					}
-				} catch (SQLException e) {
-					log.error("Failed to close temporary cache connection.", e);
-				} finally {
-					databaseConnection = null;
-					databaseAdapter = null;
-				}
-			}
-
-			if (cacheDir != null) {
-				try {
-					deleteTempFiles(new File(cacheDir));
-				} catch (IOException e) {
-					log.error("Failed to delete temp directory.", e);
-				}
-			}			
-		}
-	}
-
-	private CacheTable getOrCreateCacheTable(CacheTableModel model, AbstractDatabaseAdapter adapter, Connection connection) {
-		CacheTable cacheTable = cacheTables.get(model);
-		if (cacheTable == null) {
-			CacheTable tmp = new CacheTable(model, connection, adapter.getSQLAdapter());
-			cacheTable = cacheTables.putIfAbsent(model, tmp);
-			if (cacheTable == null)
-				cacheTable = tmp;
 		}
 
-		return cacheTable;
+		caches.clear();
 	}
 
-	private BranchCacheTable getOrCreateBranchCacheTable(CacheTableModel model, AbstractDatabaseAdapter adapter, Connection connection) {
-		BranchCacheTable branchCacheTable = branchCacheTables.get(model);
-		if (branchCacheTable == null) {
-			BranchCacheTable tmp = new BranchCacheTable(model, connection, adapter.getSQLAdapter());
-			branchCacheTable = branchCacheTables.putIfAbsent(model, tmp);
-			if (branchCacheTable == null)
-				branchCacheTable = tmp;
+	private <T extends AbstractCacheTable> T getOrCreateCacheTable(Cache cache, CacheTableModel model, boolean createIndexes, Class<T> type) throws SQLException {
+		Connection connection = cache.connection;
+		AbstractSQLAdapter sqlAdapter = cache.adapter.getSQLAdapter();
+
+		AbstractCacheTable cacheTable = type == CacheTable.class ?
+				cacheTables.computeIfAbsent(model, v -> new CacheTable(model, connection, sqlAdapter)) :
+				branchCacheTables.computeIfAbsent(model, v -> new BranchCacheTable(model, connection, sqlAdapter));
+
+		if (sqlAdapter != cacheTable.sqlAdapter) {
+			throw new SQLException("A cache table for '" + model + "' already exists and may not be created twice " +
+					"for the cache mode '" + cache.mode.value() + "'.");
 		}
 
-		return branchCacheTable;
-	}
-
-	private File checkTempDir(String tempDir) throws IOException {
-		if (tempDir == null || tempDir.trim().length() == 0)
-			throw new IOException("No temp directory for local cache provided.");
-
-		File dir = new File(tempDir);
-
-		if (!dir.exists() && !dir.mkdirs())
-			throw new IOException("Failed to create temp directory '" + dir.getAbsolutePath() + "'.");
-
-		if (!dir.isDirectory())
-			throw new IOException("The local cache setting '" + dir.getAbsolutePath() + "' is not a directory.");
-
-		if (!dir.canRead() && !dir.setReadable(true, true))
-			throw new IOException("Lacking read permissions on temp directory '" + dir.getAbsolutePath() + "'.");
-
-		if (!dir.canWrite() && !dir.setWritable(true, true))
-			throw new IOException("Lacking write permissions on temp directory '" + dir.getAbsolutePath() + "'.");
-
-		return dir;
-	}
-
-	private void deleteTempFiles(File file) throws IOException {
-		if (file.isDirectory()) {
-			for (File nested : file.listFiles())
-				deleteTempFiles(nested);
-		}
-
-		file.delete();
-	}
-
-	private void initDatabaseConnection() throws SQLException {
-		// some cache tables need to be created in the database
-		// hence, if we use a local cache, we must create a database adapter and connection 
-		if (databaseConnection == null) {
-			if (config.getGlobalConfig().getCache().isUseDatabase()) {
-				databaseConnection = cacheConnection;
-				databaseAdapter = cacheAdapter;
+		if (!cacheTable.isCreated()) {
+			if (createIndexes) {
+				cacheTable.createAndIndex();
 			} else {
-				databaseConnection = DatabaseConnectionPool.getInstance().getConnection();
-				databaseConnection.setAutoCommit(false);
-				databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+				cacheTable.create();
+			}
+		}
+
+		return type.cast(cacheTable);
+	}
+
+	private synchronized Cache getOrCreateCache(CacheMode mode) throws SQLException {
+		Cache cache = caches.get(mode);
+		if (cache == null) {
+			AbstractDatabaseAdapter adapter;
+			Connection connection;
+			Path cacheDir = null;
+
+			if (mode == CacheMode.LOCAL) {
+				try {
+					adapter = new H2Adapter();
+					Class.forName(adapter.getConnectionFactoryClassName());
+					cacheDir = checkAndGetCacheDir().resolve(UUID.randomUUID().toString());
+					connection = DriverManager.getConnection(adapter.getJDBCUrl(cacheDir.resolve("tmp").toString(), -1, null), "sa", "");
+					Logger.getInstance().debug("Created local cache at directory '" + cacheDir + "'.");
+				} catch (IOException e) {
+					throw new SQLException("Failed to create local cache directory.", e);
+				} catch (ClassNotFoundException e) {
+					throw new SQLException("Failed to load local cache driver.", e);
+				}
+			} else {
+				adapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+				connection = DatabaseConnectionPool.getInstance().getConnection();
+			}
+
+			connection.setAutoCommit(false);
+			cache = new Cache(connection, adapter, mode, cacheDir);
+			caches.put(mode, cache);
+		}
+
+		return cache;
+	}
+
+	private Path checkAndGetCacheDir() throws IOException {
+		if (cacheDir == null || cacheDir.trim().length() == 0) {
+			throw new IOException("No local cache directory provided.");
+		}
+
+		Path cacheDir = Paths.get(this.cacheDir).toAbsolutePath();
+		if (!Files.exists(cacheDir)) {
+			try {
+				Files.createDirectories(cacheDir);
+			} catch (IOException e) {
+				throw new IOException("Failed to create local cache directory '" + cacheDir + "'.", e);
+			}
+		}
+
+		if (!Files.isDirectory(cacheDir)) {
+			throw new IOException("The local cache setting '" + cacheDir + "' is not a directory.");
+		}
+
+		if (!Files.isReadable(cacheDir)) {
+			throw new IOException("Lacking read permissions on local cache directory '" + cacheDir + "'.");
+		}
+
+		if (!Files.isWritable(cacheDir)) {
+			throw new IOException("Lacking write permissions on local cache directory '" + cacheDir + "'.");
+		}
+
+		return cacheDir;
+	}
+
+	private static class Cache {
+		private final Connection connection;
+		private final AbstractDatabaseAdapter adapter;
+		private final CacheMode mode;
+		private final Path cacheDir;
+
+		Cache(Connection connection, AbstractDatabaseAdapter adapter, CacheMode mode, Path cacheDir) {
+			this.connection = connection;
+			this.adapter = adapter;
+			this.mode = mode;
+			this.cacheDir = cacheDir;
+		}
+
+		void deleteCacheDir() throws IOException {
+			if (cacheDir != null) {
+				try (Stream<Path> stream = Files.walk(cacheDir)) {
+					for (Path path : stream
+							.sorted(Comparator.reverseOrder())
+							.collect(Collectors.toList())) {
+						Files.delete(path);
+					}
+				}
 			}
 		}
 	}
-
 }

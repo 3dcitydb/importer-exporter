@@ -203,7 +203,7 @@ public class DBXlinkResolverManager {
 	}
 
 	public AbstractDatabaseAdapter getCacheAdapter() {
-		return cacheTableManager.getDatabaseAdapter();
+		return cacheTableManager.getCacheAdapter();
 	}
 	
 	public InputStream openStream(String fileURI) throws IOException {

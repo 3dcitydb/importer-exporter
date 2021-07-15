@@ -110,6 +110,8 @@ public class Importer implements EventHandler {
     private volatile boolean shouldRun = true;
     private CityGMLImportException exception;
     private DirectoryScanner directoryScanner;
+    private ImportLogger importLogger;
+    private CacheTableManager cacheTableManager;
 
     public Importer() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
@@ -132,23 +134,9 @@ public class Importer implements EventHandler {
         eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
         eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-        // create import logger
-        ImportLogger importLogger = null;
-        if (config.getImportConfig().getImportLog().isSetLogImportedFeatures()) {
-            try {
-                Path logFile = config.getImportConfig().getImportLog().isSetLogFile() ?
-                        Paths.get(config.getImportConfig().getImportLog().getLogFile()) :
-                        CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
-                importLogger = new ImportLogger(logFile, config.getDatabaseConfig().getActiveConnection());
-                log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
-            } catch (IOException e) {
-                throw new CityGMLImportException("Failed to create log file for imported top-level features.", e);
-            }
-        }
-
         boolean success = true;
         try {
-            success = process(inputFiles, importLogger);
+            success = process(inputFiles);
         } catch (CityGMLImportException e) {
             success = false;
             throw e;
@@ -165,9 +153,19 @@ public class Importer implements EventHandler {
 
             if (importLogger != null) {
                 try {
+                    log.debug("Closing import log.");
                     importLogger.close(shouldRun);
                 } catch (IOException e) {
                     log.error("Failed to close the feature import log. It is most likely corrupt.", e);
+                }
+            }
+
+            if (cacheTableManager != null) {
+                try {
+                    log.debug("Closing temporary cache.");
+                    cacheTableManager.close();
+                } catch (SQLException e) {
+                    log.error("Failed to close the temporary cache.", e);
                 }
             }
         }
@@ -175,7 +173,7 @@ public class Importer implements EventHandler {
         return success;
     }
 
-    private boolean process(List<Path> inputFiles, ImportLogger importLogger) throws CityGMLImportException {
+    private boolean process(List<Path> inputFiles) throws CityGMLImportException {
         // worker pool settings
         int minThreads = config.getImportConfig().getResources().getThreadPool().getMinThreads();
         int maxThreads = config.getImportConfig().getResources().getThreadPool().getMaxThreads();
@@ -221,6 +219,20 @@ public class Importer implements EventHandler {
                 }
             } catch (SQLException e) {
                 throw new CityGMLImportException("Failed to query index status.", e);
+            }
+        }
+
+        // create import logger
+        importLogger = null;
+        if (config.getImportConfig().getImportLog().isSetLogImportedFeatures()) {
+            try {
+                Path logFile = config.getImportConfig().getImportLog().isSetLogFile() ?
+                        Paths.get(config.getImportConfig().getImportLog().getLogFile()) :
+                        CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
+                importLogger = new ImportLogger(logFile, config.getDatabaseConfig().getActiveConnection());
+                log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
+            } catch (IOException e) {
+                throw new CityGMLImportException("Failed to create log file for imported top-level features.", e);
             }
         }
 
@@ -274,10 +286,16 @@ public class Importer implements EventHandler {
             throw new CityGMLImportException("Failed to build the import filter.", e);
         }
 
+        // create instance of the cache table manager
+        try {
+            cacheTableManager = new CacheTableManager(config.getGlobalConfig().getCache());
+        } catch (SQLException | IOException e) {
+            throw new CityGMLImportException("Failed to initialize internal cache manager.", e);
+        }
+
         // create reader factory builder
         FeatureReaderFactoryBuilder builder = new FeatureReaderFactoryBuilder();
 
-        CacheTableManager cacheTableManager = null;
         IdCacheManager idCacheManager = null;
         WorkerPool<CityGML> dbWorkerPool = null;
         WorkerPool<DBXlink> tmpXlinkPool = null;
@@ -327,13 +345,6 @@ public class Importer implements EventHandler {
                         	internalConfig.setCurrentGmlIdCodespace(codespace);
 						}
                     }
-                }
-
-                // create instance of the cache table manager
-                try {
-                    cacheTableManager = new CacheTableManager(maxThreads, config);
-                } catch (SQLException | IOException e) {
-                    throw new CityGMLImportException("Failed to initialize internal cache manager.", e);
                 }
 
                 // create instance of gml:id lookup server manager...
