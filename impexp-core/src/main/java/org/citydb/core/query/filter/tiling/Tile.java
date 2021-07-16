@@ -76,7 +76,7 @@ public class Tile {
 			try {
 				envelope = databaseAdapter.getUtil().transform2D(extent, extentSrs, dbSrs);
 			} catch (SQLException e) {
-				throw new FilterException("Failed to transform tiling extent to SRS " + dbSrs.getDescription() + ".", e);
+				throw new FilterException("Failed to transform tiling extent to SRID " + dbSrs.getSrid() + ".", e);
 			}
 		} else {
 			envelope = new BoundingBox(extent);

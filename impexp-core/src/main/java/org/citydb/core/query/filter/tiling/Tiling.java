@@ -100,7 +100,7 @@ public class Tiling {
 		try {
 			extent = databaseAdapter.getUtil().transform2D(extent, extentSrs, targetSrs);
 		} catch (SQLException e) {
-			throw new FilterException("Failed to transform tiling extent to SRS " + targetSrs.getDescription() + ".", e);
+			throw new FilterException("Failed to transform tiling extent to SRID " + targetSrs.getSrid() + ".", e);
 		}
 		
 		// adapt tiling scheme
