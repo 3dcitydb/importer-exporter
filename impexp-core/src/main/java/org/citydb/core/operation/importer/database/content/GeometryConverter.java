@@ -31,77 +31,47 @@ import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.common.util.AffineTransformer;
+import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.RingValidator;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
-import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiGeometry;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.aggregates.*;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractCurve;
-import org.citygml4j.model.gml.geometry.primitives.AbstractGeometricPrimitive;
-import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
-import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.model.gml.geometry.primitives.ControlPoint;
-import org.citygml4j.model.gml.geometry.primitives.CurveArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.CurveProperty;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPositionGroup;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
-import org.citygml4j.model.gml.geometry.primitives.LineStringSegment;
-import org.citygml4j.model.gml.geometry.primitives.LineStringSegmentArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
-import org.citygml4j.model.gml.geometry.primitives.Point;
-import org.citygml4j.model.gml.geometry.primitives.PointArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.PointProperty;
-import org.citygml4j.model.gml.geometry.primitives.Polygon;
-import org.citygml4j.model.gml.geometry.primitives.PolygonPatch;
-import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
-import org.citygml4j.model.gml.geometry.primitives.Sign;
-import org.citygml4j.model.gml.geometry.primitives.Solid;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.*;
 import org.citygml4j.util.child.ChildInfo;
 import org.citygml4j.util.walker.GeometryWalker;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class GeometryConverter {
 	private AffineTransformer affineTransformer;
-	private RingValidator ringValidator;
+	private final RingValidator ringValidator;
+	private final int dbSrid;
+	private final boolean hasSolidSupport;
 
-	private int dbSrid;
 	private boolean affineTransformation;
-	private boolean hasSolidSupport;
 
 	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter) {
 		ringValidator = new RingValidator();
 		dbSrid = databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid();
 
 		// solid geometries are only supported in Oracle 11g or higher
-		hasSolidSupport = databaseAdapter.getDatabaseType() != DatabaseType.ORACLE ||
-				databaseAdapter.getConnectionMetaData().getDatabaseMajorVersion() > 10;
+		hasSolidSupport = databaseAdapter.getDatabaseType() != DatabaseType.ORACLE
+				|| databaseAdapter.getConnectionMetaData().getDatabaseMajorVersion() > 10;
 	}
 
 	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter, AffineTransformer affineTransformer, Config config) {
 		this(databaseAdapter);
 
 		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
-		if (affineTransformation)
+		if (affineTransformation) {
 			this.affineTransformer = affineTransformer;
+		}
 	}
 
 	public boolean isSurfaceGeometry(AbstractGeometry geometry) {
@@ -172,6 +142,9 @@ public class GeometryConverter {
 			case GEOMETRIC_COMPLEX:
 				GeometricComplex complex = (GeometricComplex) abstractGeometry;
 				return containsPointPrimitives(complex) || containsCurvePrimitives(complex);
+			case MULTI_GEOMETRY:
+				MultiGeometry multiGeometry = (MultiGeometry) abstractGeometry;
+				return containsPointPrimitives(multiGeometry) || containsCurvePrimitives(multiGeometry);
 			default:
 				return false;
 		}
@@ -180,8 +153,9 @@ public class GeometryConverter {
 	public GeometryObject getPoint(Point point) {
 		if (point != null) {
 			List<Double> coords = point.toList3d();
-			if (!coords.isEmpty())
+			if (!coords.isEmpty()) {
 				return GeometryObject.createPoint(convertPrimitive(coords), 3, dbSrid);
+			}
 		}
 
 		return null;
@@ -196,19 +170,56 @@ public class GeometryConverter {
 					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
 					if (primitive.getGMLClass() == GMLClass.POINT) {
 						List<Double> coords = ((Point)primitive).toList3d();
-						if (!coords.isEmpty())
+						if (!coords.isEmpty()) {
 							pointList.add(coords);
+						}
 					}
 				}
 			}
 
 			if (!pointList.isEmpty()) {				
 				double[][] pointArray = convertAggregate(pointList);
-				if (pointList.size() > 1)				
-					return GeometryObject.createMultiPoint(pointArray, 3, dbSrid);
-				else
-					return GeometryObject.createPoint(pointArray[0], 3, dbSrid);
+				return pointList.size() > 1 ?
+						GeometryObject.createMultiPoint(pointArray, 3, dbSrid) :
+						GeometryObject.createPoint(pointArray[0], 3, dbSrid);
 			}
+		}
+
+		return null;
+	}
+
+	public GeometryObject getPointGeometry(MultiGeometry multiGeometry) {
+		List<List<Double>> pointList = new ArrayList<>();
+
+		if (multiGeometry != null) {
+			if (multiGeometry.isSetGeometryMember()) {
+				for (GeometryProperty<?> property : multiGeometry.getGeometryMember()) {
+					if (property.isSetGeometry() && property.getGeometry().getGMLClass() == GMLClass.POINT) {
+						List<Double> coords = ((Point) property.getGeometry()).toList3d();
+						if (!coords.isEmpty()) {
+							pointList.add(coords);
+						}
+					}
+				}
+			}
+
+			if (multiGeometry.isSetGeometryMembers()) {
+				for (AbstractGeometry member : multiGeometry.getGeometryMembers().getGeometry()) {
+					if (member != null && member.getGMLClass() == GMLClass.POINT) {
+						List<Double> coords = ((Point) member).toList3d();
+						if (!coords.isEmpty()) {
+							pointList.add(coords);
+						}
+					}
+				}
+			}
+		}
+
+		if (!pointList.isEmpty()) {
+			double[][] pointArray = convertAggregate(pointList);
+			return pointList.size() > 1 ?
+					GeometryObject.createMultiPoint(pointArray, 3, dbSrid) :
+					GeometryObject.createPoint(pointArray[0], 3, dbSrid);
 		}
 
 		return null;
@@ -222,8 +233,9 @@ public class GeometryConverter {
 				for (PointProperty property : multiPoint.getPointMember())
 					if (property.isSetPoint()) {
 						List<Double> coords = property.getPoint().toList3d();
-						if (!coords.isEmpty())
+						if (!coords.isEmpty()) {
 							pointList.add(coords);
+						}
 					}
 
 			} else if (multiPoint.isSetPointMembers()) {
@@ -231,14 +243,16 @@ public class GeometryConverter {
 				for (Point point : property.getPoint()) {
 					if (point != null) {
 						List<Double> coords = point.toList3d();
-						if (!coords.isEmpty())
+						if (!coords.isEmpty()) {
 							pointList.add(coords);
+						}
 					}
 				}
 			}
 
-			if (!pointList.isEmpty())
+			if (!pointList.isEmpty()) {
 				return GeometryObject.createMultiPoint(convertAggregate(pointList), 3, dbSrid);
+			}
 		}
 
 		return null;
@@ -251,26 +265,30 @@ public class GeometryConverter {
 			if (controlPoint.isSetPosList()) {
 				List<Double> coords = controlPoint.getPosList().toList3d();
 				if (!coords.isEmpty()) {
-					for (int i = 0; i < coords.size(); i += 3)
+					for (int i = 0; i < coords.size(); i += 3) {
 						pointList.add(coords.subList(i, i + 3));
+					}
 				}
 
 			} else if (controlPoint.isSetGeometricPositionGroup()) {					
 				for (GeometricPositionGroup posGroup : controlPoint.getGeometricPositionGroup()) {
 					if (posGroup.isSetPos()) {
 						List<Double> coords = posGroup.getPos().toList3d();
-						if (!coords.isEmpty())
+						if (!coords.isEmpty()) {
 							pointList.add(coords);
+						}
 					} else if (posGroup.isSetPointProperty() && posGroup.getPointProperty().isSetPoint()) {
 						List<Double> coords = posGroup.getPointProperty().getPoint().toList3d();
-						if (!coords.isEmpty())
+						if (!coords.isEmpty()) {
 							pointList.add(coords);
+						}
 					}
 				}
 			}
 
-			if (!pointList.isEmpty())
+			if (!pointList.isEmpty()) {
 				return GeometryObject.createMultiPoint(convertAggregate(pointList), 3, dbSrid);
+			}
 		}
 
 		return null;
@@ -279,8 +297,9 @@ public class GeometryConverter {
 	public GeometryObject getCurve(AbstractCurve curve) {
 		if (curve != null) {
 			List<Double> pointList = curve.toList3d();
-			if (!pointList.isEmpty())
+			if (!pointList.isEmpty()) {
 				return GeometryObject.createCurve(convertPrimitive(pointList), 3, dbSrid);
+			}
 		}
 
 		return null;
@@ -294,8 +313,9 @@ public class GeometryConverter {
 				for (CurveProperty property : multiCurve.getCurveMember()) {
 					if (property.isSetCurve()) {
 						List<Double> points = property.getCurve().toList3d();
-						if (!points.isEmpty())
+						if (!points.isEmpty()) {
 							pointList.add(points);
+						}
 					}
 				}
 			} else if (multiCurve.isSetCurveMembers()) {
@@ -303,14 +323,16 @@ public class GeometryConverter {
 				for (AbstractCurve curve : property.getCurve()) {
 					if (curve != null) {
 						List<Double> points = curve.toList3d();
-						if (!points.isEmpty())
+						if (!points.isEmpty()) {
 							pointList.add(points);
+						}
 					}
 				}
 			}
 
-			if (!pointList.isEmpty())
+			if (!pointList.isEmpty()) {
 				return GeometryObject.createMultiCurve(convertAggregate(pointList), 3, dbSrid);
+			}
 		}
 
 		return null;
@@ -325,19 +347,56 @@ public class GeometryConverter {
 					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
 					if (primitive instanceof AbstractCurve) {
 						List<Double> points = ((AbstractCurve) primitive).toList3d();
-						if (!points.isEmpty())
+						if (!points.isEmpty()) {
 							pointList.add(points);
+						}
 					}
 				}
 			}
 
 			if (!pointList.isEmpty()) {
 				double[][] pointArray = convertAggregate(pointList);
-				if (pointList.size() > 1)
-					return GeometryObject.createMultiCurve(pointArray, 3, dbSrid);
-				else
-					return GeometryObject.createCurve(pointArray[0], 3, dbSrid);
+				return pointList.size() > 1 ?
+						GeometryObject.createMultiCurve(pointArray, 3, dbSrid) :
+						GeometryObject.createCurve(pointArray[0], 3, dbSrid);
 			}
+		}
+
+		return null;
+	}
+
+	public GeometryObject getCurveGeometry(MultiGeometry multiGeometry) {
+		List<List<Double>> pointList = new ArrayList<>();
+
+		if (multiGeometry != null) {
+			if (multiGeometry.isSetGeometryMember()) {
+				for (GeometryProperty<?> property : multiGeometry.getGeometryMember()) {
+					if (property.isSetGeometry() && property.getGeometry() instanceof AbstractCurve) {
+						List<Double> coords = ((AbstractCurve) property.getGeometry()).toList3d();
+						if (!coords.isEmpty()) {
+							pointList.add(coords);
+						}
+					}
+				}
+			}
+
+			if (multiGeometry.isSetGeometryMembers()) {
+				for (AbstractGeometry member : multiGeometry.getGeometryMembers().getGeometry()) {
+					if (member instanceof AbstractCurve) {
+						List<Double> coords = ((AbstractCurve) member).toList3d();
+						if (!coords.isEmpty()) {
+							pointList.add(coords);
+						}
+					}
+				}
+			}
+		}
+
+		if (!pointList.isEmpty()) {
+			double[][] pointArray = convertAggregate(pointList);
+			return pointList.size() > 1 ?
+					GeometryObject.createMultiCurve(pointArray, 3, dbSrid) :
+					GeometryObject.createCurve(pointArray[0], 3, dbSrid);
 		}
 
 		return null;
@@ -353,46 +412,59 @@ public class GeometryConverter {
 
 					for (LineStringSegment segment : property.getLineStringSegment()) {
 						List<Double> coords = segment.toList3d();
-						if (!coords.isEmpty())
+						if (!coords.isEmpty()) {
 							points.addAll(coords);
+						}
 					}
 
-					if (!points.isEmpty())
+					if (!points.isEmpty()) {
 						pointList.add(points);
+					}
 				}
 			}
 
-			if (!pointList.isEmpty())
+			if (!pointList.isEmpty()) {
 				return GeometryObject.createMultiCurve(convertAggregate(pointList), 3, dbSrid);
+			}
 		}
 
 		return null;
 	}
 
 	public GeometryObject getPoint(PointProperty pointProperty) {
-		return pointProperty != null ? getPoint(pointProperty.getPoint()) : null;
+		return pointProperty != null ?
+				getPoint(pointProperty.getPoint()) :
+				null;
 	}
 
 	public GeometryObject getMultiPoint(MultiPointProperty multiPointProperty) {
-		return multiPointProperty != null ? getMultiPoint(multiPointProperty.getMultiPoint()) : null;
+		return multiPointProperty != null ?
+				getMultiPoint(multiPointProperty.getMultiPoint()) :
+				null;
 	}
 
 	public GeometryObject getPointGeometry(GeometricComplexProperty complexProperty) {
-		return (complexProperty != null && complexProperty.isSetGeometricComplex()) ? 
-				getPointGeometry(complexProperty.getGeometricComplex()) : null;
+		return complexProperty != null && complexProperty.isSetGeometricComplex() ?
+				getPointGeometry(complexProperty.getGeometricComplex()) :
+				null;
 	}
 
 	public GeometryObject getCurve(CurveProperty curveProperty) {
-		return curveProperty != null ? getCurve(curveProperty.getCurve()) : null;
+		return curveProperty != null ?
+				getCurve(curveProperty.getCurve()) :
+				null;
 	}
 
 	public GeometryObject getMultiCurve(MultiCurveProperty multiCurveProperty) {
-		return multiCurveProperty != null ? getMultiCurve(multiCurveProperty.getMultiCurve()) : null;
+		return multiCurveProperty != null ?
+				getMultiCurve(multiCurveProperty.getMultiCurve()) :
+				null;
 	}
 
 	public GeometryObject getCurveGeometry(GeometricComplexProperty complexProperty) {
-		return (complexProperty != null && complexProperty.isSetGeometricComplex()) ? 
-				getCurveGeometry(complexProperty.getGeometricComplex()) : null;
+		return complexProperty != null && complexProperty.isSetGeometricComplex() ?
+				getCurveGeometry(complexProperty.getGeometricComplex()) :
+				null;
 	}
 
 	public GeometryObject getPointOrCurveGeometry(AbstractGeometry abstractGeometry) {
@@ -410,26 +482,38 @@ public class GeometryConverter {
 				return getMultiCurve((MultiCurve) abstractGeometry);
 			case GEOMETRIC_COMPLEX:
 				GeometricComplex complex = (GeometricComplex) abstractGeometry;
-				if (containsPointPrimitives(complex))
+				if (containsPointPrimitives(complex)) {
 					return getPointGeometry((GeometricComplex) abstractGeometry);
-				else if (containsCurvePrimitives(complex))
+				} else if (containsCurvePrimitives(complex)) {
 					return getCurveGeometry((GeometricComplex) abstractGeometry);
-				else
+				} else {
 					return null;
+				}
+			case MULTI_GEOMETRY:
+				MultiGeometry multiGeometry = (MultiGeometry) abstractGeometry;
+				if (containsPointPrimitives(multiGeometry)) {
+					return getPointGeometry((MultiGeometry) abstractGeometry);
+				} else if (containsCurvePrimitives(multiGeometry)) {
+					return getCurveGeometry((MultiGeometry) abstractGeometry);
+				} else {
+					return null;
+				}
 			default:
 				return null;
 		}
 	}
 
 	private double[] convertPrimitive(List<Double> pointList) {
-		if (affineTransformation)
+		if (affineTransformation) {
 			affineTransformer.transformCoordinates(pointList);
+		}
 
 		double[] result = new double[pointList.size()];
 
 		int i = 0;
-		for (Double point : pointList)
+		for (Double point : pointList) {
 			result[i++] = point;
+		}
 
 		return result;
 	}
@@ -438,14 +522,16 @@ public class GeometryConverter {
 		double[][] result = new double[pointList.size()][];
 		int i = 0;
 		for (List<Double> points : pointList) {
-			if (affineTransformation)
+			if (affineTransformation) {
 				affineTransformer.transformCoordinates(points);
+			}
 
 			double[] coords = new double[points.size()];
 
 			int j = 0;
-			for (Double coord : points)
+			for (Double coord : points) {
 				coords[j++] = coord;
+			}
 
 			result[i++] = coords;					
 		}
@@ -453,7 +539,7 @@ public class GeometryConverter {
 		return result;
 	}
 
-	public GeometryObject get2DPolygon(Polygon polygon) throws CityGMLImportException {
+	public GeometryObject get2DPolygon(Polygon polygon) {
 		return getPolygon(polygon, true);
 	}
 
@@ -466,19 +552,24 @@ public class GeometryConverter {
 
 		if (polygon != null) {
 			List<List<Double>> pointList = generatePointList(polygon, is2d, false);
-			if (pointList != null && !pointList.isEmpty())
+			if (pointList != null && !pointList.isEmpty()) {
 				polygonGeom = GeometryObject.createPolygon(convertAggregate(pointList), is2d ? 2 : 3, dbSrid);
+			}
 		}
 
 		return polygonGeom;
 	}
 
-	public GeometryObject get2DPolygon(PolygonProperty polygonProperty) throws CityGMLImportException {
-		return polygonProperty != null ? get2DPolygon(polygonProperty.getPolygon()) : null;
+	public GeometryObject get2DPolygon(PolygonProperty polygonProperty) {
+		return polygonProperty != null ?
+				get2DPolygon(polygonProperty.getPolygon()) :
+				null;
 	}
 
 	public GeometryObject getPolygon(PolygonProperty polygonProperty) throws CityGMLImportException {
-		return polygonProperty != null ? getPolygon(polygonProperty.getPolygon()) : null;
+		return polygonProperty != null ?
+				getPolygon(polygonProperty.getPolygon()) :
+				null;
 	}
 
 	private List<List<Double>> generatePointList(Polygon polygon, boolean is2d, boolean reverse) {
@@ -488,8 +579,9 @@ public class GeometryConverter {
 			AbstractRing exteriorRing = polygon.getExterior().getRing();
 			if (exteriorRing != null) {
 				List<Double> coords = exteriorRing.toList3d(reverse);
-				if (!ringValidator.validate(coords, exteriorRing))
+				if (!ringValidator.validate(coords, exteriorRing)) {
 					return null;
+				}
 
 				pointList.add(coords);
 
@@ -498,8 +590,9 @@ public class GeometryConverter {
 						AbstractRing interiorRing = abstractRingProperty.getRing();
 						if (interiorRing != null) {
 							coords = interiorRing.toList3d(reverse);
-							if (!ringValidator.validate(coords, interiorRing))
+							if (!ringValidator.validate(coords, interiorRing)) {
 								continue;
+							}
 
 							pointList.add(coords);
 						}
@@ -530,8 +623,9 @@ public class GeometryConverter {
 	}
 
 	public GeometryObject getSolid(Solid solid) {
-		if (!hasSolidSupport)
+		if (!hasSolidSupport) {
 			return null;
+		}
 
 		if (solid != null) {
 			final List<List<Double>> pointList = new ArrayList<>();
@@ -556,8 +650,9 @@ public class GeometryConverter {
 						reverse = !reverse;
 						super.visit(orientableSurface);
 						reverse = !reverse;
-					} else
+					} else {
 						super.visit(orientableSurface);
+					}
 				}
 
 				public void visit(Polygon polygon) {
@@ -596,8 +691,9 @@ public class GeometryConverter {
 				int[] exteriorRings = new int[rings.size()];
 
 				int i = 0;
-				for (Integer ringNo : rings)
+				for (Integer ringNo : rings) {
 					exteriorRings[i++] = ringNo;
+				}
 
 				return GeometryObject.createSolid(convertAggregate(pointList), exteriorRings, dbSrid);
 			}
@@ -607,8 +703,9 @@ public class GeometryConverter {
 	}
 
 	public GeometryObject getCompositeSolid(CompositeSolid compositeSolid) {
-		if (!hasSolidSupport)
+		if (!hasSolidSupport) {
 			return null;
+		}
 
 		if (compositeSolid != null) {
 			final List<GeometryObject> solidMembers = new ArrayList<>();
@@ -616,9 +713,9 @@ public class GeometryConverter {
 			compositeSolid.accept(new GeometryWalker() {
 				public void visit(Solid solid) {
 					GeometryObject solidMember = getSolid(solid);
-					if (solidMember != null)
+					if (solidMember != null) {
 						solidMembers.add(solidMember);
-					else {
+					} else {
 						setShouldWalk(false);
 						solidMembers.clear();
 					}
@@ -629,8 +726,9 @@ public class GeometryConverter {
 				GeometryObject[] tmp = new GeometryObject[solidMembers.size()];
 
 				int i = 0;
-				for (GeometryObject solidMember : solidMembers)
+				for (GeometryObject solidMember : solidMembers) {
 					tmp[i++] = solidMember;
+				}
 
 				return GeometryObject.createCompositeSolid(tmp, dbSrid);
 			}
@@ -640,8 +738,9 @@ public class GeometryConverter {
 	}
 
 	public MultiSurface convertToMultiSurface(AbstractGeometry geometry) {
-		if (geometry instanceof MultiSurface)
+		if (geometry instanceof MultiSurface) {
 			return (MultiSurface) geometry;
+		}
 
 		MultiSurface multiSurface = new MultiSurface();
 		if (geometry instanceof AbstractSurface) {
@@ -656,15 +755,17 @@ public class GeometryConverter {
 				final ChildInfo childInfo = new ChildInfo();
 
 				public void visit(AbstractSurface surface) {
-					if (!visited(surface))
+					if (!visited(surface)) {
 						properties.add(new SurfaceProperty(surface));
+					}
 				}
 
 				public void visit(MultiSurface multiSurface) {
 					List<SurfaceProperty> tmp = new ArrayList<>(multiSurface.getSurfaceMember());
 					if (multiSurface.isSetSurfaceMembers()) {
-						for (AbstractSurface surface : multiSurface.getSurfaceMembers().getSurface())
+						for (AbstractSurface surface : multiSurface.getSurfaceMembers().getSurface()) {
 							tmp.add(new SurfaceProperty(surface));
+						}
 					}
 
 					if (multiSurface.isSetId()) {
@@ -675,27 +776,31 @@ public class GeometryConverter {
 						compositeSurface.setId(multiSurface.getId());
 						compositeSurface.setSurfaceMember(tmp);
 						properties.add(new SurfaceProperty(compositeSurface));
-					} else
+					} else {
 						properties.addAll(tmp);
+					}
 				}
 
 				public <T extends AbstractGeometry> void visit(GeometryProperty<T> property) {
-					if (!property.isSetGeometry() && property.isSetHref())
+					if (!property.isSetGeometry() && property.isSetHref()) {
 						properties.add(new SurfaceProperty(property.getHref()));
-					else
+					} else {
 						super.visit(property);
+					}
 				}
 
 				private boolean visited(AbstractSurface surface) {
 					if (visited.add(surface)) {
 						while ((surface = childInfo.getParentGeometry(surface, AbstractSurface.class)) != null) {
-							if (visited.contains(surface))
+							if (visited.contains(surface)) {
 								return true;
+							}
 						}
 
 						return false;
-					} else
+					} else {
 						return true;
+					}
 				}
 			});
 		}
@@ -704,24 +809,54 @@ public class GeometryConverter {
 	}
 
 	private boolean containsPointPrimitives(GeometricComplex geometricComplex) {
+		return containsPrimitives(geometricComplex, Point.class);
+	}
+
+	private boolean containsCurvePrimitives(GeometricComplex geometricComplex) {
+		return containsPrimitives(geometricComplex, AbstractCurve.class);
+	}
+
+	private boolean containsPrimitives(GeometricComplex geometricComplex, Class<? extends AbstractGeometry> type) {
 		if (geometricComplex != null && geometricComplex.isSetElement()) {
 			for (GeometricPrimitiveProperty property : geometricComplex.getElement()) {
-				if (!(property.getGeometricPrimitive() instanceof Point))
+				if (!type.isInstance(property.getGeometricPrimitive())) {
 					return false;
+				}
 			}
 		}
 
 		return true;
 	}
 
-	private boolean containsCurvePrimitives(GeometricComplex geometricComplex) {
-		if (geometricComplex != null && geometricComplex.isSetElement()) {
-			for (GeometricPrimitiveProperty property : geometricComplex.getElement()) {
-				if (!(property.getGeometricPrimitive() instanceof AbstractCurve))
-					return false;
+	private boolean containsPointPrimitives(MultiGeometry multiGeometry) {
+		return containsPrimitives(multiGeometry, Point.class);
+	}
+
+	private boolean containsCurvePrimitives(MultiGeometry multiGeometry) {
+		return containsPrimitives(multiGeometry, AbstractCurve.class);
+	}
+
+	private boolean containsPrimitives(MultiGeometry multiGeometry, Class<? extends AbstractGeometry> type) {
+		boolean hasUnsupportedGeometry = false;
+
+		for (GeometryProperty<?> property : multiGeometry.getGeometryMember()) {
+			if (property.isSetGeometry()) {
+				if (!type.isInstance(property.getGeometry())) {
+					hasUnsupportedGeometry = true;
+					break;
+				}
 			}
 		}
 
-		return true;
+		if (!hasUnsupportedGeometry && multiGeometry.isSetGeometryMembers()) {
+			for (AbstractGeometry member : multiGeometry.getGeometryMembers().getGeometry()) {
+				if (!type.isInstance(member)) {
+					hasUnsupportedGeometry = true;
+					break;
+				}
+			}
+		}
+
+		return !hasUnsupportedGeometry;
 	}
 }
