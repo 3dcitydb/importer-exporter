@@ -49,7 +49,7 @@ public class DBXlinkImporterLinearRing implements DBXlinkImporter {
 	public boolean insert(DBXlinkLinearRing xlinkEntry) throws SQLException {
 		psLinearRing.setString(1, xlinkEntry.getGmlId());
 		psLinearRing.setLong(2, xlinkEntry.getParentId());
-		psLinearRing.setLong(3, xlinkEntry.getRingNo());
+		psLinearRing.setInt(3, xlinkEntry.getRingNo());
 		psLinearRing.setInt(4, xlinkEntry.isReverse() ? 1 : 0);
 
 		psLinearRing.addBatch();

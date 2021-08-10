@@ -47,9 +47,9 @@ public class CacheTableDeprecatedMaterial extends AbstractCacheTableModel {
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
-				"ID " + sqlAdapter.getInteger() + ", " +
+				"ID " + sqlAdapter.getBigInt() + ", " +
 				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"SURFACE_GEOMETRY_ID " + sqlAdapter.getInteger() +
+				"SURFACE_GEOMETRY_ID " + sqlAdapter.getBigInt() +
 				")";
 	}
 }

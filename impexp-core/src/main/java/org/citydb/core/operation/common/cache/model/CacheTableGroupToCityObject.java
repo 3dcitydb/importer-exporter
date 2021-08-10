@@ -60,7 +60,7 @@ public class CacheTableGroupToCityObject extends AbstractCacheTableModel {
     @Override
     protected String getColumns(AbstractSQLAdapter sqlAdapter) {
         return "(" +
-                "GROUP_ID " + sqlAdapter.getInteger() + ", " +
+                "GROUP_ID " + sqlAdapter.getBigInt() + ", " +
                 "GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
                 "IS_PARENT " + sqlAdapter.getNumeric(1, 0) + ", " +
                 "ROLE " + sqlAdapter.getCharacterVarying(256) +

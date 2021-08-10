@@ -47,7 +47,7 @@ public class CacheTableBasic extends AbstractCacheTableModel {
     @Override
     protected String getColumns(AbstractSQLAdapter sqlAdapter) {
         return "(" +
-                "ID " + sqlAdapter.getInteger() + ", " +
+                "ID " + sqlAdapter.getBigInt() + ", " +
                 "TABLE_NAME " + sqlAdapter.getCharacterVarying(64) + ", " +
                 "FROM_COLUMN " + sqlAdapter.getCharacterVarying(64) + ", " +
                 "TO_COLUMN " + sqlAdapter.getCharacterVarying(64) + ", " +
