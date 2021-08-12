@@ -50,7 +50,7 @@ public class PluginsOverviewPanel extends DefaultPreferencesComponent {
                 .forEach(model::addElement);
 
         plugins = new JList<>(model);
-        plugins.setFixedCellHeight(40);
+        plugins.setFixedCellHeight(35);
         plugins.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         plugins.addListSelectionListener(this::pluginSelected);
         plugins.setCellRenderer(new DefaultListCellRenderer() {
