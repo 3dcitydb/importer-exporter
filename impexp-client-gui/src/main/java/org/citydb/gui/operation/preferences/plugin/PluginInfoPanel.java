@@ -29,6 +29,7 @@ public class PluginInfoPanel extends ScrollablePanel {
     private final JTextPane vendorPane;
     private final JTextPane homepagePane;
     private final JTextPane descriptionPane;
+    private final JLabel adeSupportLabel;
     private final JCheckBox adeSupport;
     private final JLabel extensionPointsLabel;
     private final JTextPane extensionPointsPane;
@@ -47,6 +48,7 @@ public class PluginInfoPanel extends ScrollablePanel {
         vendorPane = createTextPane(true);
         homepagePane = createTextPane(false);
         descriptionPane = createTextPane(false);
+        adeSupportLabel = new JLabel();
         adeSupport = new JCheckBox();
         extensionPointsLabel = new JLabel();
         extensionPointsPane = createTextPane(false);
@@ -107,7 +109,8 @@ public class PluginInfoPanel extends ScrollablePanel {
                     .sorted()
                     .collect(Collectors.joining(", ")));
 
-            detailsPanel.add(adeSupportPanel, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
+            detailsPanel.add(adeSupportLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+            detailsPanel.add(adeSupportPanel, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
             detailsPanel.add(extensionPointsLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
             detailsPanel.add(extensionPointsPane, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 
@@ -138,7 +141,7 @@ public class PluginInfoPanel extends ScrollablePanel {
             homepagePane.setText("<a href=\"" + metadata.getUrl() + "\">" + Language.I18N.getString("pref.plugins.homepage") + "</a>");
             PluginDescription description = metadata.getDescriptionForLocaleOrDefault(Language.I18N.getLocale());
             descriptionPane.setText(description != null ? description.getValue() : null);
-            adeSupport.setText(Language.I18N.getString("pref.plugins.adeSupport"));
+            adeSupportLabel.setText(Language.I18N.getString("pref.plugins.adeSupport") + ":");
             extensionPointsLabel.setText(Language.I18N.getString("pref.plugins.extensions") + ":");
             extensionPointsPanel.setTitle(Language.I18N.getString("pref.plugins.details"));
         }
