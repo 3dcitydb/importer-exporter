@@ -42,6 +42,7 @@ public class PluginsOverviewPanel extends DefaultPreferencesComponent {
 
     private void initGui() {
         infoPanel = new PluginInfoPanel();
+        int iconTextGap = Math.max(UIManager.getInt("CheckBox.iconTextGap"), 8);
 
         DefaultListModel<Plugin> model = new DefaultListModel<>();
         PluginManager.getInstance().getExternalPlugins().stream()
@@ -49,6 +50,7 @@ public class PluginsOverviewPanel extends DefaultPreferencesComponent {
                 .forEach(model::addElement);
 
         plugins = new JList<>(model);
+        plugins.setFixedCellHeight(40);
         plugins.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         plugins.addListSelectionListener(this::pluginSelected);
         plugins.setCellRenderer(new DefaultListCellRenderer() {
@@ -58,11 +60,13 @@ public class PluginsOverviewPanel extends DefaultPreferencesComponent {
                 super.getListCellRendererComponent(list, plugin.getMetadata().getName(), index, isSelected, cellHasFocus);
                 setFont(getFont().deriveFont(Font.BOLD));
                 setIcon(infoPanel.getPluginLogo(plugin, 30, 30));
+                setIconTextGap(iconTextGap);
                 return this;
             }
         });
 
         decorator = new CheckBoxListDecorator<>(plugins);
+        decorator.setIconTextGap(iconTextGap);
 
         JScrollPane scrollPane = new JScrollPane(infoPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());

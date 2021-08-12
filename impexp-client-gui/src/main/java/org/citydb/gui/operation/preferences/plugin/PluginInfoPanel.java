@@ -65,7 +65,7 @@ public class PluginInfoPanel extends ScrollablePanel {
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new GridBagLayout());
         {
-            headerPanel.add(logoLabel, GuiUtil.setConstraints(0, 0, 1, 3, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
+            headerPanel.add(logoLabel, GuiUtil.setConstraints(0, 0, 1, 3, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 15));
             headerPanel.add(nameLabel, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 
             int row = 1;
