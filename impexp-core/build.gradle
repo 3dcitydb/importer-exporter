@@ -9,12 +9,8 @@ dependencies {
     api 'org.locationtech.jts:jts-core:1.16.1'
     api 'org.postgresql:postgresql:42.2.23'
     api 'net.postgis:postgis-jdbc:2.5.0'
-    api('com.oracle.database.jdbc:ojdbc8:19.3.0.0') {
-        exclude group: 'com.oracle.database.jdbc', module: 'ucp'
-        exclude group: 'com.oracle.database.ha'
-        exclude group: 'com.oracle.database.security'
-    }
-    api 'com.oracle.sdoapi:sdoapi:19.3.0.0'
+    api 'com.oracle.database.jdbc:ojdbc8:21.1.0.0'
+    api 'com.oracle.sdoapi:sdoapi:21.1.0.0'
     api 'org.apache.tika:tika-core:1.27'
     api 'com.univocity:univocity-parsers:2.9.1'
     implementation 'com.h2database:h2:1.4.200'
