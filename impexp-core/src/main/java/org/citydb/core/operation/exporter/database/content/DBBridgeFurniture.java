@@ -32,7 +32,7 @@ import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.util.AttributeValueSplitter;
-import org.citydb.core.operation.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.core.operation.exporter.util.SplitValue;
 import org.citydb.core.operation.exporter.util.GeometrySetter;
 import org.citydb.core.query.filter.lod.LodFilter;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;

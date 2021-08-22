@@ -37,7 +37,7 @@ import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureFile;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.util.AttributeValueSplitter;
-import org.citydb.core.operation.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.core.operation.exporter.util.SplitValue;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
