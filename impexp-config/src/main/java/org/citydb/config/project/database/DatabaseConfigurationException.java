@@ -27,40 +27,56 @@
  */
 package org.citydb.config.project.database;
 
-import org.citydb.config.exception.ApplicationException;
-import org.citydb.config.exception.ErrorCode;
+public class DatabaseConfigurationException extends Exception {
+	private final ErrorCode errorCode;
 
-public class DatabaseConfigurationException extends ApplicationException {
+	public enum ErrorCode {
+		MISSING_DB_HOSTNAME,
+		MISSING_DB_USERNAME,
+		MISSING_DB_NAME,
+		MISSING_DB_PORT,
+		EMPTY_DB_SCHEMA,
+		INVALID_DB_WORKSPACE,
+		UNKNOWN
+	}
 
 	public DatabaseConfigurationException(ErrorCode errorCode) {
-		super(errorCode);
+		super();
+		this.errorCode = errorCode;
 	}
 
 	public DatabaseConfigurationException(ErrorCode errorCode, String message) {
-		super(errorCode, message);
+		super(message);
+		this.errorCode = errorCode;
 	}
 
 	public DatabaseConfigurationException(ErrorCode errorCode, String message, Throwable cause) {
-		super(errorCode, message, cause);
+		super(message, cause);
+		this.errorCode = errorCode;
 	}
 
 	public DatabaseConfigurationException(ErrorCode errorCode, Throwable cause) {
-		super(errorCode, cause);
+		super(cause);
+		this.errorCode = errorCode;
 	}
 
 	public DatabaseConfigurationException() {
-		super();
+		this(ErrorCode.UNKNOWN);
 	}
 
 	public DatabaseConfigurationException(String message) {
-		super(message);
+		this(ErrorCode.UNKNOWN, message);
 	}
 
 	public DatabaseConfigurationException(String message, Throwable cause) {
-		super(message, cause);
+		this(ErrorCode.UNKNOWN, message, cause);
 	}
 
 	public DatabaseConfigurationException(Throwable cause) {
-		super(cause);
+		this(ErrorCode.UNKNOWN, cause);
+	}
+
+	public ErrorCode getErrorCode() {
+		return errorCode;
 	}
 }

@@ -33,8 +33,8 @@ import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.importer.ImportConfig;
-import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.plugin.PluginConfig;
+import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.config.util.ConfigNamespaceFilter;
 
 public class Config {
@@ -96,12 +96,12 @@ public class Config {
 		projectConfig.setDeleteConfig(deleteConfig);
 	}
 
-	public KmlExportConfig getKmlExportConfig() {
-		return projectConfig.getKmlExportConfig();
+	public VisExportConfig getVisExportConfig() {
+		return projectConfig.getVisExportConfig();
 	}
 
-	public void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
-		projectConfig.setKmlExportConfig(kmlExportConfig);
+	public void setVisExportConfig(VisExportConfig visExportConfig) {
+		projectConfig.setVisExportConfig(visExportConfig);
 	}
 
 	public GlobalConfig getGlobalConfig() {
@@ -110,6 +110,14 @@ public class Config {
 
 	public void setGlobalConfig(GlobalConfig globalConfig) {
 		projectConfig.setGlobalConfig(globalConfig);
+	}
+
+	public boolean isPluginEnabled(String pluginClass) {
+		return projectConfig.isPluginEnabled(pluginClass);
+	}
+
+	public void setPluginEnabled(String pluginClass, boolean enable) {
+		projectConfig.setPluginEnabled(pluginClass, enable);
 	}
 
 	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {

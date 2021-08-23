@@ -27,7 +27,7 @@
  */
 package org.citydb.config.project.database;
 
-import org.citydb.config.exception.ErrorCode;
+import org.citydb.config.project.database.DatabaseConfigurationException.ErrorCode;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAttribute;

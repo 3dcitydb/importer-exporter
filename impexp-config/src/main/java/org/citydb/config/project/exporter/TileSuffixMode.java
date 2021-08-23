@@ -27,11 +27,11 @@
  */
 package org.citydb.config.project.exporter;
 
+import org.citydb.config.i18n.Language;
+
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.i18n.Language;
 
 @XmlType(name = "TileSuffixModeType")
 @XmlEnum

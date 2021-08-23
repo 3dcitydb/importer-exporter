@@ -1,4 +1,0 @@
-dependencies {
-    api project(':impexp-config')
-    api 'info.picocli:picocli:4.6.1'
-}

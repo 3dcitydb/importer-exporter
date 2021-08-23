@@ -27,10 +27,10 @@
  */
 package org.citydb.config.project.global;
 
-import java.io.File;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 @XmlType(name = "CacheType", propOrder = {
@@ -38,18 +38,18 @@ import javax.xml.bind.annotation.XmlType;
         "localPath"
 })
 public class Cache {
+    public static final Path DEFAULT_LOCAL_CACHE_DIR = Paths.get(System.getProperty("java.io.tmpdir"), "3dcitydb").toAbsolutePath();
+
     @XmlElement(required = true)
     private CacheMode mode = CacheMode.DATABASE;
     private String localPath;
 
     public Cache() {
-        File tmp = new File(System.getProperty("java.io.tmpdir"), "3dcitydb");
-        if ((tmp.exists() || tmp.mkdir()) && tmp.canWrite())
-            localPath = tmp.getAbsolutePath();
+        localPath = DEFAULT_LOCAL_CACHE_DIR.toString();
     }
 
     public boolean isUseDatabase() {
-        return mode == CacheMode.DATABASE;
+        return mode == null || mode == CacheMode.DATABASE;
     }
 
     public boolean isUseLocal() {
@@ -57,11 +57,15 @@ public class Cache {
     }
 
     public CacheMode getCacheMode() {
-        return mode;
+        return mode != null ? mode : CacheMode.DATABASE;
     }
 
     public void setCacheMode(CacheMode mode) {
         this.mode = mode;
+    }
+
+    public boolean isSetLocalCachePath() {
+        return localPath != null && !localPath.isEmpty();
     }
 
     public String getLocalCachePath() {
@@ -69,7 +73,9 @@ public class Cache {
     }
 
     public void setLocalCachePath(String localPath) {
-        this.localPath = localPath;
+        if (localPath != null && !localPath.isEmpty()) {
+            this.localPath = localPath;
+        }
     }
 
 }

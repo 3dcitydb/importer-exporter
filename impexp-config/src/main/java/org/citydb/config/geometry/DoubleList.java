@@ -27,11 +27,10 @@
  */
 package org.citydb.config.geometry;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlType(name = "DoubleListType")
 public class DoubleList {

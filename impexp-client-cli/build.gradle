@@ -1,0 +1,63 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    api project(':impexp-core')
+    api project(':impexp-vis-plugin')
+}
+
+jar {
+    manifest {
+        attributes('Main-Class': application.mainClass,
+                'Class-Path': configurations.runtimeClasspath.collect { it.name }.join(' ')
+        )
+    }
+}
+
+application {
+    mainClass = 'org.citydb.cli.ImpExpCli'
+    applicationName = project.appCliName
+    applicationDefaultJvmArgs = ['-Xms1G']
+    executableDir = ''
+
+    startScripts {
+        classpath = jar.outputs.files
+
+        doLast {
+            def windows = getWindowsScript()
+            def unix = getUnixScript()
+            windows.text = windows.text.replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
+            unix.text = unix.text.replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
+        }
+    }
+}
+
+distributions {
+    main {
+        distributionBaseName = project.appName
+
+        contents {
+            into('contribs') {
+                from "$rootDir/resources/contribs"
+            }
+            into('license') {
+                from "$rootDir/resources/license/APACHE-2.0.txt"
+                from processLicense
+            }
+            from(file("$buildDir/tmp/dir")) {
+                mkdir "$buildDir/tmp/dir/plugins"
+                mkdir "$buildDir/tmp/dir/ade-extensions"
+            }
+        }
+    }
+
+    docker {
+        distributionBaseName = project.appName + '-Docker'
+
+        contents {
+            with distributions.main.contents
+            exclude ('*.bat', 'collada2gltf/*osx*', 'collada2gltf/*windows*')
+        }
+    }
+}

@@ -30,9 +30,9 @@ package org.citydb.config.gui;
 import org.citydb.config.gui.database.DatabaseGuiConfig;
 import org.citydb.config.gui.exporter.ExportGuiConfig;
 import org.citydb.config.gui.importer.ImportGuiConfig;
-import org.citydb.config.gui.kmlExporter.KmlExportGuiConfig;
 import org.citydb.config.gui.preferences.PreferencesGuiConfig;
 import org.citydb.config.gui.style.Appearance;
+import org.citydb.config.gui.visExporter.VisExportGuiConfig;
 import org.citydb.config.gui.window.ConsoleWindow;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.MapWindow;
@@ -54,7 +54,7 @@ import java.util.List;
         "databaseGuiConfig",
         "importGuiConfig",
         "exportGuiConfig",
-        "kmlExportGuiConfig",
+        "visExportGuiConfig",
         "preferencesGuiConfig",
         "recentlyUsedProjects"
 })
@@ -69,8 +69,8 @@ public class GuiConfig {
     private ImportGuiConfig importGuiConfig;
     @XmlElement(name = "export")
     private ExportGuiConfig exportGuiConfig;
-    @XmlElement(name = "kmlExport")
-    private KmlExportGuiConfig kmlExportGuiConfig;
+    @XmlElement(name = "visExport")
+    private VisExportGuiConfig visExportGuiConfig;
     @XmlElement(name = "preferences")
     private PreferencesGuiConfig preferencesGuiConfig;
     @XmlElementWrapper(name = "recentlyUsedProjects")
@@ -88,7 +88,7 @@ public class GuiConfig {
         databaseGuiConfig = new DatabaseGuiConfig();
         importGuiConfig = new ImportGuiConfig();
         exportGuiConfig = new ExportGuiConfig();
-        kmlExportGuiConfig = new KmlExportGuiConfig();
+        visExportGuiConfig = new VisExportGuiConfig();
         preferencesGuiConfig = new PreferencesGuiConfig();
         recentlyUsedProjects = new ArrayList<>(maxLastUsedEntries + 1);
     }
@@ -163,13 +163,13 @@ public class GuiConfig {
         }
     }
 
-    public KmlExportGuiConfig getKmlExportGuiConfig() {
-        return kmlExportGuiConfig;
+    public VisExportGuiConfig getVisExportGuiConfig() {
+        return visExportGuiConfig;
     }
 
-    public void setKmlExportGuiConfig(KmlExportGuiConfig kmlExportGuiConfig) {
-        if (kmlExportGuiConfig != null) {
-            this.kmlExportGuiConfig = kmlExportGuiConfig;
+    public void setVisExportGuiConfig(VisExportGuiConfig visExportGuiConfig) {
+        if (visExportGuiConfig != null) {
+            this.visExportGuiConfig = visExportGuiConfig;
         }
     }
 

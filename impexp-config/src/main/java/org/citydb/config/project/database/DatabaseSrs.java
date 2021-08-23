@@ -27,12 +27,11 @@
  */
 package org.citydb.config.project.database;
 
-import java.util.UUID;
-
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.util.UUID;
 
 @XmlType(name = "DatabaseSrsType", propOrder = {
         "srid",

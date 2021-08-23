@@ -27,11 +27,11 @@
  */
 package org.citydb.config.project.importer;
 
+import org.citydb.config.project.resources.IdCacheConfig;
+import org.citydb.config.project.resources.Resources;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.project.resources.Resources;
-import org.citydb.config.project.resources.IdCacheConfig;
 
 @XmlType(name = "ImportResourcesType", propOrder = {
         "texImageCache"

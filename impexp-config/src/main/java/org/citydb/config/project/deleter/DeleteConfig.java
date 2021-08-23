@@ -28,6 +28,7 @@
 
 package org.citydb.config.project.deleter;
 
+import org.citydb.config.project.common.IdList;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.QueryConfig;
 
@@ -55,7 +56,7 @@ public class DeleteConfig {
     private DeleteMode mode = DeleteMode.DELETE;
     private QueryConfig query;
     private SimpleQuery simpleQuery;
-    private DeleteList deleteList;
+    private IdList deleteList;
     private boolean cleanupGlobalAppearances;
     private Continuation continuation;
     private DeleteLog deleteLog;
@@ -113,11 +114,11 @@ public class DeleteConfig {
         return deleteList != null;
     }
 
-    public DeleteList getDeleteList() {
+    public IdList getDeleteList() {
         return deleteList;
     }
 
-    public void setDeleteList(DeleteList deleteList) {
+    public void setDeleteList(IdList deleteList) {
         this.deleteList = deleteList;
     }
 
