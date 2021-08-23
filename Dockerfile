@@ -1,5 +1,5 @@
 # 3DCityDB Importer/Exporter Dockerfile #######################################
-#   Official website    https://www.3dcitydb.net
+#   Official website    https://www.3dcitydb.org
 #   GitHub              https://github.com/3dcitydb/importer-exporter
 ###############################################################################
 
@@ -15,12 +15,6 @@ FROM openjdk:${BUILDER_IMAGE_TAG} AS builder
 WORKDIR /build_tmp
 COPY . ./
 
-# Install git, wget
-RUN set -x && \
-  apt-get update && \
-  apt-get install -y --no-install-recommends git && \
-  rm -rf /var/lib/apt/lists/*
-
 # Build
 RUN set -x && \
   chmod u+x ./gradlew && ./gradlew installDockerDist
@@ -28,14 +22,12 @@ RUN set -x && \
 # Move dist to /impexp
 RUN set -x && \
   mkdir -p /impexp && \
-  mv impexp-client/build/install/3DCityDB-Importer-Exporter-Docker/* /impexp && \
-  mv docker-scripts/impexp-entrypoint.sh /impexp/bin
+  mv impexp-client-cli/build/install/3DCityDB-Importer-Exporter-Docker/* /impexp && \
+  mv resources/docker/impexp-entrypoint.sh /impexp
 
 # Cleanup dist
 RUN set -x && \
-  rm -rf /build_tmp /impexp/contribs/collada2gltf/*osx* /impexp/contribs/collada2gltf/*windows* \
-    /impexp/license /impexp/**/*.md /impexp/**/*.txt /impexp/**/*.bat \
-    /var/lib/apt/lists/*
+  rm -rf /build_tmp /impexp/license /impexp/**/*.md /impexp/**/*.txt
 
 # Runtime stage ###############################################################
 # Base image
@@ -46,18 +38,18 @@ RUN set -x && \
   groupadd --gid 1000 impexp && \
   useradd --uid 1000 --gid 1000 impexp
 
-USER impexp
-
 # copy from builder
 WORKDIR /impexp
 COPY --chown=impexp:impexp --from=builder /impexp .
 
 # Set permissions
 RUN set -x && \
-  chmod -v a+x /impexp/bin/* \
-    /impexp/contribs/collada2gltf/COLLADA2GLTF*linux/COLLADA2GLTF-bin
+  chmod -v a+x /impexp/impexp /impexp/impexp-entrypoint.sh \
+    /impexp/contribs/collada2gltf/*linux*/COLLADA2GLTF-bin
 
-ENV PATH=/impexp/bin:$PATH
+ENV PATH=/impexp:$PATH
+
+USER impexp
 
 ENTRYPOINT [ "impexp-entrypoint.sh" ]
 

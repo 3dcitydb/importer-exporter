@@ -1,9 +1,6 @@
 # git and github related files
 .github/
-
-# Include .git in build context. Remove this when new ImpExp Installer
-# is available.
-# .git/
+.git/
 
 .gitignore
 .gitattributes
@@ -13,13 +10,15 @@
 */build/
 
 # Unused impexp stuff
-resources/
-CHANGES.md
+resources/contribs/**/*windows*
+resources/contribs/**/*osx*
+resources/javadoc
+resources/license
+resources/samples
+resources/templates
 LICENSE
-README.md
+*.md
 
 # Unused docker stuff
 .dockerignore
-docker-scripts/build.sh
-Dockerfile
-Dockerfile.alpine
+Dockerfile*
