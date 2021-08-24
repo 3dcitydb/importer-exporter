@@ -589,8 +589,14 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             return input != null ? new String(input) : null;
         } else {
             System.out.print(prompt);
-            Scanner scanner = new Scanner(System.in);
-            return scanner.nextLine();
+            try (Scanner scanner = new Scanner(System.in)) {
+                if (scanner.hasNext()) {
+                    return scanner.nextLine();
+                } else {
+                    System.out.println("Failed to connect to console");
+                    return null;
+                }
+            }
         }
     }
 
