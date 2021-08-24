@@ -103,7 +103,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			stmt = connection.prepareCall("{? = call "
 					+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
 					+ "(?)}");
-			((CallableStatement) stmt).registerOutParameter(1, Types.INTEGER);
+			((CallableStatement) stmt).registerOutParameter(1, Types.BIGINT);
 		}
 	}
 
@@ -170,9 +170,9 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 				stmt.executeUpdate();
 				deletedObjectId = objectId;
 			} else {
-				stmt.setObject(2, objectId, Types.INTEGER);
+				stmt.setObject(2, objectId, Types.BIGINT);
 				stmt.executeUpdate();
-				deletedObjectId = ((CallableStatement) stmt).getInt(1);
+				deletedObjectId = ((CallableStatement) stmt).getLong(1);
 			}
 
 			if (deletedObjectId == objectId) {
