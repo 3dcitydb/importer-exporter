@@ -1,5 +1,5 @@
 # 3DCityDB Importer/Exporter Dockerfile #######################################
-#   Official website    https://www.3dcitydb.net
+#   Official website    https://www.3dcitydb.org
 #   GitHub              https://github.com/3dcitydb/importer-exporter
 ###############################################################################
 
@@ -12,52 +12,34 @@ ARG RUNTIME_IMAGE_TAG='11.0.12-jre-slim'
 FROM openjdk:${BUILDER_IMAGE_TAG} AS builder
 
 # Copy source code
-WORKDIR /build_tmp
-COPY . ./
-
-# Install git, wget
-RUN set -x && \
-  apt-get update && \
-  apt-get install -y --no-install-recommends git && \
-  rm -rf /var/lib/apt/lists/*
+WORKDIR /build
+COPY . /build
 
 # Build
-RUN set -x && \
-  chmod u+x ./gradlew && ./gradlew installDockerDist
-
-# Move dist to /impexp
-RUN set -x && \
-  mkdir -p /impexp && \
-  mv impexp-client-cli/build/install/3DCityDB-Importer-Exporter-Docker/* /impexp
-
-# Cleanup dist
-RUN set -x && \
-  rm -rf rm -rf /build_tmp /impexp/license /impexp/**/*.md /impexp/**/*.txt
+RUN chmod u+x ./gradlew && ./gradlew installDockerDist
 
 # Runtime stage ###############################################################
 # Base image
 FROM openjdk:${RUNTIME_IMAGE_TAG} AS runtime
 
+# Copy from builder
+COPY --from=builder /build/impexp-client-cli/build/install/3DCityDB-Importer-Exporter-Docker /opt/impexp
+
 # Run as non-root user
-RUN set -x && \
-  groupadd --gid 1000 impexp && \
-  useradd --uid 1000 --gid 1000 impexp
+RUN groupadd --gid 1000 -r impexp && \
+    useradd --uid 1000 --gid 1000 -d /data -m -r --no-log-init impexp
 
-USER impexp
-
-# copy from builder
-WORKDIR /impexp
-COPY --chown=impexp:impexp --from=builder /impexp .
+COPY --chown=1000:1000 resources/docker/impexp-entrypoint.sh /usr/local/bin/
 
 # Set permissions
-RUN set -x && \
-  chmod -v a+x /impexp/impexp \
-    /impexp/contribs/collada2gltf/COLLADA2GLTF*linux/COLLADA2GLTF-bin
+RUN chmod a+x /usr/local/bin/impexp-entrypoint.sh \
+      /opt/impexp/contribs/collada2gltf/*linux*/COLLADA2GLTF-bin
 
-ENV PATH=/impexp:$PATH
+WORKDIR /data
+USER 1000
 
-ENTRYPOINT [ "impexp" ]
-CMD [ "help" ]
+ENTRYPOINT [ "impexp-entrypoint.sh" ]
+CMD [ "--help" ]
 
 # Labels ######################################################################
 LABEL maintainer="Bruno Willenborg"
