@@ -31,8 +31,8 @@ import org.geotools.measure.Units;
 import si.uom.NonSI;
 import si.uom.SI;
 import systems.uom.common.USCustomary;
-import tec.uom.se.unit.MetricPrefix;
 
+import javax.measure.MetricPrefix;
 import javax.measure.Unit;
 
 public enum DistanceUnit {
@@ -59,16 +59,20 @@ public enum DistanceUnit {
 	}
 	
 	public static DistanceUnit fromSymbol(String symbol) {
-		if (symbol == null || symbol.length() == 0)
+		if (symbol == null || symbol.length() == 0) {
 			return null;
+		}
 		
-		if (symbol.startsWith("#"))
+		if (symbol.startsWith("#")) {
 			symbol = symbol.substring(1);
+		}
 		
 		for (DistanceUnit unit : DistanceUnit.values()) {
-			for (String tmp : unit.symbols)
-				if (tmp.toUpperCase().equals(symbol.toUpperCase()))
+			for (String tmp : unit.symbols) {
+				if (tmp.equalsIgnoreCase(symbol)) {
 					return unit;
+				}
+			}
 		}
 		
 		return null;

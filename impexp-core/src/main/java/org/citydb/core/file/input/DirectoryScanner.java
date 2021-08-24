@@ -32,6 +32,7 @@ import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypes;
 import org.citydb.core.file.InputFile;
@@ -41,19 +42,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -225,7 +216,7 @@ public class DirectoryScanner {
     private MediaType getMediaType(Path file) {
         try (InputStream stream = TikaInputStream.get(file)) {
             Metadata metadata = new Metadata();
-            metadata.set(Metadata.RESOURCE_NAME_KEY, file.toString());
+            metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, file.toString());
             return tikaConfig.getDetector().detect(stream, metadata);
         } catch (IOException e) {
             return MediaType.EMPTY;
@@ -236,7 +227,7 @@ public class DirectoryScanner {
         try {
             Metadata metadata = new Metadata();
             if (fileName != null) {
-                metadata.set(Metadata.RESOURCE_NAME_KEY, fileName);
+                metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, fileName);
             }
 
             return tikaConfig.getDetector().detect(TikaInputStream.get(stream), metadata);

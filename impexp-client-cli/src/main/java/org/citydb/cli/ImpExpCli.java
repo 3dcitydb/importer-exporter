@@ -556,9 +556,23 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
         for (int i = 0; i < args.length; i++) {
             int length = args[i].length();
-            if (length > candidate && "--plugins".startsWith(args[i])) {
-                pluginsFolder = i + 1 < args.length ? args[(i++) + 1] : null;
-                candidate = length;
+            if (length > candidate) {
+                int delimiter = args[i].indexOf('=');
+                String optionName = delimiter != -1 ?
+                        args[i].substring(0, delimiter) :
+                        args[i];
+
+                if ("--plugins".startsWith(optionName)) {
+                    if (delimiter != -1) {
+                        pluginsFolder = delimiter + 1 < args[i].length() ?
+                                args[i].substring(delimiter + 1) :
+                                null;
+                    } else if (i + 1 < args.length) {
+                        pluginsFolder = args[(i++) + 1];
+                    }
+
+                    candidate = length;
+                }
             }
         }
 

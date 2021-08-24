@@ -167,8 +167,6 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 			checkBox = new JCheckBox();
 			checkBox.setOpaque(false);
 			checkBox.setMargin(new Insets(checkBoxMargin.top, 0, checkBoxMargin.bottom, 0));
-
-			add(checkBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, margin.top, margin.left, margin.bottom, iconTextGap));
 		}
 
 		public Component getListCellRendererComponent(JList<? extends E> list, E value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -177,6 +175,7 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 				((JComponent) component).setBorder(BorderFactory.createEmptyBorder());
 			}
 
+			add(checkBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, margin.top, margin.left, margin.bottom, iconTextGap));
 			add(component, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, margin.top, 0, margin.bottom, margin.right));
 
 			boolean enable = component.isEnabled() && list.isEnabled();
