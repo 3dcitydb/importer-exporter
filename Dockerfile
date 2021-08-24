@@ -28,14 +28,11 @@ RUN set -x && \
 # Move dist to /impexp
 RUN set -x && \
   mkdir -p /impexp && \
-  mv impexp-client/build/install/3DCityDB-Importer-Exporter-Docker/* /impexp && \
-  mv docker-scripts/impexp-entrypoint.sh /impexp/bin
+  mv impexp-client-cli/build/install/3DCityDB-Importer-Exporter-Docker/* /impexp
 
 # Cleanup dist
 RUN set -x && \
-  rm -rf /build_tmp /impexp/contribs/collada2gltf/*osx* /impexp/contribs/collada2gltf/*windows* \
-    /impexp/license /impexp/**/*.md /impexp/**/*.txt /impexp/**/*.bat \
-    /var/lib/apt/lists/*
+  rm -rf rm -rf /build_tmp /impexp/license /impexp/**/*.md /impexp/**/*.txt
 
 # Runtime stage ###############################################################
 # Base image
@@ -54,12 +51,13 @@ COPY --chown=impexp:impexp --from=builder /impexp .
 
 # Set permissions
 RUN set -x && \
-  chmod -v a+x /impexp/bin/* \
+  chmod -v a+x /impexp/impexp \
     /impexp/contribs/collada2gltf/COLLADA2GLTF*linux/COLLADA2GLTF-bin
 
-ENV PATH=/impexp/bin:$PATH
+ENV PATH=/impexp:$PATH
 
-ENTRYPOINT [ "impexp-entrypoint.sh" ]
+ENTRYPOINT [ "impexp" ]
+CMD [ "help" ]
 
 # Labels ######################################################################
 LABEL maintainer="Bruno Willenborg"
