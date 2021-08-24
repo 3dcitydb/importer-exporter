@@ -22,9 +22,6 @@ jobs:
       with:
         push: false
         tags: 3dcitydb/impexp:edge
-        build-args: |
-          BUILDER_IMAGE_TAG=11.0.10-jdk-slim
-          RUNTIME_IMAGE_TAG=11.0.10-jre-slim
     -
       name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}

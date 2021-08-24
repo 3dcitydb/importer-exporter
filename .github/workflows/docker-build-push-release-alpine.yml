@@ -32,9 +32,6 @@ jobs:
         push: true
         file: Dockerfile.alpine
         tags: 3dcitydb/impexp:${{ steps.release_version.outputs.version-without-v }}-alpine
-        build-args: |
-          BUILDER_IMAGE_TAG=jdk-11.0.10_9-alpine-slim
-          RUNTIME_IMAGE_TAG=jre-11.0.10_9-alpine
     -
       name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
