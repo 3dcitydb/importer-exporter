@@ -11,7 +11,7 @@ ext {
     // 3D City Database
     citydbShortName = '3DCityDB'
     citydbName = '3D City Database'
-    citydbVersion = '4.1.x'
+    citydbVersion = '4.2.x'
     citydbWebsiteUrl = 'https://www.3dcitydb.org'
     citydbVcsUrl = 'https://github.com/3dcitydb'
 
