@@ -1,3 +1,11 @@
+![Gradle build](https://img.shields.io/github/workflow/status/3dcitydb/importer-exporter/impexp-build?logo=Gradle&logoColor=white&style=flat-square)
+[
+![Docker build 3dcitydb/impexp:edge](https://img.shields.io/github/workflow/status/3dcitydb/importer-exporter/docker-build-edge?label=debian&style=flat-square&logo=Docker&logoColor=white)
+![debian size](https://img.shields.io/docker/image-size/3dcitydb/impexp/edge?label=debian&logo=Docker&logoColor=white&style=flat-square)
+![https://hub.docker.com/repository/docker/3dcitydb/impexp](https://img.shields.io/github/workflow/status/3dcitydb/importer-exporter/docker-build-edge-alpine?label=alpine&style=flat-square&logo=Docker&logoColor=white)
+![alpine size](https://img.shields.io/docker/image-size/3dcitydb/impexp/edge-alpine?label=alpine&logo=Docker&logoColor=white&style=flat-square)
+](https://hub.docker.com/repository/docker/3dcitydb/impexp)
+
 3D City Database Importer/Exporter
 ==================================
 
@@ -53,6 +61,8 @@ System requirements
   
 The 3D City Database Importer/Exporter can be run on any platform providing appropriate Java support. 
 
+The 3D City Database Importer/Exporter can be run on any platform providing appropriate Java support.
+
 Documentation and literature
 ----------------------------
 A complete and comprehensive user manual on the 3D City Database and the Importer/Exporter is available
@@ -63,6 +73,7 @@ Software and Standards 3 (5), 2018: [Z. Yao, C. Nagel, F. Kunde, G. Hudra, P. Wi
 
 Contributing
 ------------
+
 * To file bugs found in the software create a GitHub issue.
 * To contribute code for fixing filed issues create a pull request with the issue id.
 * To propose a new feature create a GitHub issue and open a discussion.
@@ -79,8 +90,9 @@ During setup, you can additionally choose to create shortcuts on your desktop an
 preferred OS.
 
 Simply execute the start script suitable for your platform:
-   - `3DCityDB-Importer-Exporter.bat` (Microsoft Windows family)
-   - `3DCityDB-Importer-Exporter` (UNIX/Linux family, macOS)
+
+* `3DCityDB-Importer-Exporter.bat` (Microsoft Windows family)
+* `3DCityDB-Importer-Exporter` (UNIX/Linux family, macOS)
 
 On most platforms, double-clicking the start script or its shortcut launches the application.
 Please refer to the [user manual](https://3dcitydb-docs.readthedocs.io/en/release-v4.3.0/) for more information
@@ -91,8 +103,10 @@ Building
 The Importer/Exporter uses [Gradle](https://gradle.org/) as build system. To build the application from source,
 clone the repository to your local machine and run the following command from the root of the repository. 
 
+The Importer/Exporter uses [Gradle](https://gradle.org/) as build system. To build the application from source, clone the repository to your local machine and run the following command from the root of the repository.
+
     > gradlew installDist
-    
+
 The script automatically downloads all required dependencies for building and running the Importer/Exporter.
 So make sure you are connected to the internet. The build process runs on all major operating systems and only
 requires a Java 8 JDK or higher to run.
@@ -106,7 +120,7 @@ You may also choose to build an installer for the Importer/Exporter with the fol
 
 The installer package will be available under `impexp-client/build/distributions`.
 
-Cooperation partners and supporters  
+Cooperation partners and supporters
 -----------------------------------
 
 The 3D City Database Importer/Exporter has been developed by and with the support from the

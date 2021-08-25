@@ -1,0 +1,48 @@
+# 3DCityDB Importer/Exporter Dockerfile #######################################
+#   Official website    https://www.3dcitydb.org
+#   GitHub              https://github.com/3dcitydb/importer-exporter
+###############################################################################
+
+# Fetch & build stage #########################################################
+# ARGS
+ARG BUILDER_IMAGE_TAG='jdk-11.0.11_9-alpine-slim'
+ARG RUNTIME_IMAGE_TAG='jre-11.0.11_9-alpine'
+
+# Base image
+FROM adoptopenjdk/openjdk11:${BUILDER_IMAGE_TAG} AS builder
+
+# Copy source code
+WORKDIR /build
+COPY . /build
+
+# Build
+RUN chmod u+x ./gradlew && ./gradlew installDockerDist
+
+# Runtime stage ###############################################################
+# Base image
+FROM adoptopenjdk/openjdk11:${RUNTIME_IMAGE_TAG} AS runtime
+
+# Copy from builder
+COPY --from=builder /build/impexp-client-cli/build/install/3DCityDB-Importer-Exporter-Docker /opt/impexp
+
+# Run as non-root user
+RUN addgroup -g 1000 -S impexp && \
+    adduser -u 1000 -G impexp -h /data -S impexp
+
+COPY --chown=1000:1000 resources/docker/impexp-entrypoint.sh /usr/local/bin/
+
+# Set permissions
+RUN chmod a+x /usr/local/bin/impexp-entrypoint.sh \
+      /opt/impexp/contribs/collada2gltf/*linux*/COLLADA2GLTF-bin
+
+WORKDIR /data
+USER 1000
+
+ENTRYPOINT [ "impexp-entrypoint.sh" ]
+CMD [ "--help" ]
+
+# Labels ######################################################################
+LABEL maintainer="Bruno Willenborg"
+LABEL maintainer.email="b.willenborg(at)tum.de"
+LABEL maintainer.organization="Chair of Geoinformatics, Technical University of Munich (TUM)"
+LABEL source.repo="https://github.com/3dcitydb/importer-exporter"
