@@ -93,7 +93,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 			stmt = connection.prepareStatement(update.toString());
 		} else {
-			idType = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 1, 0) <= 0 ?
+			idType = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 2, 0) < 0 ?
 					Types.INTEGER :
 					Types.BIGINT;
 

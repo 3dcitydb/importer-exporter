@@ -189,7 +189,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
                     if (rs.wasNull() || !onlyIfNull) {
                         try (CallableStatement cStmt = connection.prepareCall("{? = call " +
                                 databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobject") + "(?,1)}")) {
-                            int idType = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 1, 0) <= 0 ?
+                            int idType = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 2, 0) < 0 ?
                                     Types.INTEGER :
                                     Types.BIGINT;
 
