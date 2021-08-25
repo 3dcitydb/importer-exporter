@@ -27,31 +27,23 @@
  */
 package org.citydb.core.operation.deleter.concurrent;
 
-import org.citydb.util.concurrent.Worker;
 import org.citydb.config.Config;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.UpdatingPersonMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.event.global.InterruptEvent;
-import org.citydb.util.event.global.ObjectCounterEvent;
-import org.citydb.util.event.global.ProgressBarEventType;
-import org.citydb.util.event.global.StatusDialogProgressBar;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.deleter.database.DBSplittingResult;
 import org.citydb.core.operation.deleter.util.DeleteLogger;
 import org.citydb.core.operation.deleter.util.InternalConfig;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.*;
+import org.citydb.util.log.Logger;
 
 import java.io.IOException;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Map;
@@ -70,6 +62,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
+	private int idType;
 
 	public DBDeleteWorker(
 			Connection connection,
@@ -100,10 +93,14 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 			stmt = connection.prepareStatement(update.toString());
 		} else {
+			idType = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 2, 0) < 0 ?
+					Types.INTEGER :
+					Types.BIGINT;
+
 			stmt = connection.prepareCall("{? = call "
 					+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
 					+ "(?)}");
-			((CallableStatement) stmt).registerOutParameter(1, Types.INTEGER);
+			((CallableStatement) stmt).registerOutParameter(1, idType);
 		}
 	}
 
@@ -170,9 +167,11 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 				stmt.executeUpdate();
 				deletedObjectId = objectId;
 			} else {
-				stmt.setObject(2, objectId, Types.INTEGER);
+				stmt.setObject(2, objectId, idType);
 				stmt.executeUpdate();
-				deletedObjectId = ((CallableStatement) stmt).getInt(1);
+				deletedObjectId = idType == Types.INTEGER ?
+						((CallableStatement) stmt).getInt(1) :
+						((CallableStatement) stmt).getLong(1);
 			}
 
 			if (deletedObjectId == objectId) {

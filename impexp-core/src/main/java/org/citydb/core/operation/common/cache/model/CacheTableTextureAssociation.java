@@ -47,7 +47,7 @@ public class CacheTableTextureAssociation extends AbstractCacheTableModel {
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
-				"ID " + sqlAdapter.getInteger() + ", " +
+				"ID " + sqlAdapter.getBigInt() + ", " +
 				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
 				"TARGET_URI " + sqlAdapter.getCharacterVarying(256) +
 				")";

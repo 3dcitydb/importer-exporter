@@ -60,7 +60,7 @@ public class CacheTableIdList extends AbstractCacheTableModel {
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
 				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"ID " + sqlAdapter.getInteger() +
+				"ID " + sqlAdapter.getBigInt() +
 				")";
 	}
 }

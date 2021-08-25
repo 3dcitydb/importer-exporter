@@ -30,10 +30,10 @@ package org.citydb.core.operation.common.xlink;
 public class DBXlinkLinearRing implements DBXlink {
 	private String gmlId;
 	private long parentId;
-	private long ringNo;
+	private int ringNo;
 	private boolean isReverse;
 
-	public DBXlinkLinearRing(String gmlId, long parentId, long ringNo, boolean isReverse) {
+	public DBXlinkLinearRing(String gmlId, long parentId, int ringNo, boolean isReverse) {
 		this.gmlId = gmlId;
 		this.parentId = parentId;
 		this.ringNo = ringNo;
@@ -58,11 +58,11 @@ public class DBXlinkLinearRing implements DBXlink {
 		this.parentId = parentId;
 	}
 
-	public long getRingNo() {
+	public int getRingNo() {
 		return ringNo;
 	}
 
-	public void setRingNo(long ringNo) {
+	public void setRingNo(int ringNo) {
 		this.ringNo = ringNo;
 	}
 

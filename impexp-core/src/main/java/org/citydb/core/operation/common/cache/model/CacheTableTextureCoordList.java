@@ -61,11 +61,11 @@ public class CacheTableTextureCoordList extends AbstractCacheTableModel {
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
-				"ID " + sqlAdapter.getInteger() + ", " +
+				"ID " + sqlAdapter.getBigInt() + ", " +
 				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
 				"TEXPARAM_GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
 				"TEXTURE_COORDINATES " + sqlAdapter.getPolygon2D() + ", " +
-				"TARGET_ID " + sqlAdapter.getInteger() +
+				"TARGET_ID " + sqlAdapter.getBigInt() +
 				")";
 	}
 

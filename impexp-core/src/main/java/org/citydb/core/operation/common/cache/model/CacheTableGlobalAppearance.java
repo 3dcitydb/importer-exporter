@@ -58,7 +58,7 @@ public class CacheTableGlobalAppearance extends AbstractCacheTableModel {
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
-				"ID " + sqlAdapter.getInteger() +
+				"ID " + sqlAdapter.getBigInt() +
 				")";
 	}
 }

@@ -61,7 +61,7 @@ public class CacheTableLinearRing extends AbstractCacheTableModel {
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
 				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"PARENT_ID " + sqlAdapter.getInteger() + ", " +
+				"PARENT_ID " + sqlAdapter.getBigInt() + ", " +
 				"RING_NO " + sqlAdapter.getInteger() + ", " +
 				"REVERSE " + sqlAdapter.getNumeric(1, 0) +
 				")";

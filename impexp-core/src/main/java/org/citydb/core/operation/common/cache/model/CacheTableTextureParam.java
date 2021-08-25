@@ -48,7 +48,7 @@ public class CacheTableTextureParam extends AbstractCacheTableModel {
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
-				"ID " + sqlAdapter.getInteger() + ", " +
+				"ID " + sqlAdapter.getBigInt() + ", " +
 				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
 				"TYPE " + sqlAdapter.getNumeric(3) + ", " +
 				"IS_TEXTURE_PARAMETERIZATION " + sqlAdapter.getNumeric(1, 0) + ", " +

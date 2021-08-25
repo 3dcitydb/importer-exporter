@@ -59,12 +59,12 @@ public class CacheTableSurfaceGeometry extends AbstractCacheTableModel {
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
-				"ID " + sqlAdapter.getInteger() + ", " +
-				"PARENT_ID " + sqlAdapter.getInteger() + ", " +
-				"ROOT_ID " + sqlAdapter.getInteger() + ", " +
+				"ID " + sqlAdapter.getBigInt() + ", " +
+				"PARENT_ID " + sqlAdapter.getBigInt() + ", " +
+				"ROOT_ID " + sqlAdapter.getBigInt() + ", " +
 				"REVERSE " + sqlAdapter.getNumeric(1, 0) + ", " +
 				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"CITYOBJECT_ID " + sqlAdapter.getInteger() + ", " +
+				"CITYOBJECT_ID " + sqlAdapter.getBigInt() + ", " +
 				"TABLE_NAME " + sqlAdapter.getCharacterVarying(64) + ", " +
 				"FROM_COLUMN " + sqlAdapter.getCharacterVarying(64) +
 				")";

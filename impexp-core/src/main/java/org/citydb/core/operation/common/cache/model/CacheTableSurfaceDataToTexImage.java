@@ -47,8 +47,8 @@ public class CacheTableSurfaceDataToTexImage extends AbstractCacheTableModel {
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
-				"FROM_ID " + sqlAdapter.getInteger() + ", " +
-				"TO_ID " + sqlAdapter.getInteger() +
+				"FROM_ID " + sqlAdapter.getBigInt() + ", " +
+				"TO_ID " + sqlAdapter.getBigInt() +
 				")";
 	}
 
