@@ -30,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v2.2.2
       with:
         push: true
-        tags: 3dcitydb/impexp-test:${{ steps.release_version.outputs.version-without-v }}
+        tags: 3dcitydb/impexp-test:${{ steps.release_version.outputs.version-without-v }},3dcitydb/impexp-test:latest
     -
       name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}

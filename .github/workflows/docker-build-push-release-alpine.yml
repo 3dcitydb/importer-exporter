@@ -31,7 +31,7 @@ jobs:
       with:
         push: true
         file: Dockerfile.alpine
-        tags: 3dcitydb/impexp-test:${{ steps.release_version.outputs.version-without-v }}-alpine
+        tags: 3dcitydb/impexp-test:${{ steps.release_version.outputs.version-without-v }}-alpine,3dcitydb/impexp-test:latest-alpine
     -
       name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
