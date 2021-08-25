@@ -1,9 +1,6 @@
 name: docker-build-edge
 
 on:
-  push:
-    branches:
-    - master
   pull_request:
 
 jobs:
