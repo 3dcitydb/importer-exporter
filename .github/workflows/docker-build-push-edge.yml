@@ -27,10 +27,10 @@ jobs:
       uses: docker/build-push-action@v2.2.2
       with:
         push: true
-        tags: 3dcitydb/impexp:edge
+        tags: 3dcitydb/impexp-test:edge
     -
       name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
     -
       name: Run container
-      run: docker run -t --rm 3dcitydb/impexp:edge help | grep -i -E "Usage:"
+      run: docker run -t --rm 3dcitydb/impexp-test:edge help | grep -i -E "Usage:"

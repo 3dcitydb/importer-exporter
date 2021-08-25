@@ -31,10 +31,10 @@ jobs:
       with:
         push: true
         file: Dockerfile.alpine
-        tags: 3dcitydb/impexp:${{ steps.release_version.outputs.version-without-v }}-alpine
+        tags: 3dcitydb/impexp-test:${{ steps.release_version.outputs.version-without-v }}-alpine
     -
       name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
     -
       name: Run container
-      run: docker run -t --rm 3dcitydb/impexp:${{ steps.release_version.outputs.version-without-v }}-alpine help | grep -i -E "Usage:"
+      run: docker run -t --rm 3dcitydb/impexp-test:${{ steps.release_version.outputs.version-without-v }}-alpine help | grep -i -E "Usage:"
