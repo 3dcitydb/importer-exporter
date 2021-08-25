@@ -59,7 +59,7 @@ public class CacheTableObjectGmlId extends AbstractCacheTableModel {
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
 				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"ID " + sqlAdapter.getInteger() + ", " +
+				"ID " + sqlAdapter.getBigInt() + ", " +
 				"MAPPING " + sqlAdapter.getCharacterVarying(256) + ", " +
 				"OBJECTCLASS_ID " + sqlAdapter.getInteger() +
 				")";
