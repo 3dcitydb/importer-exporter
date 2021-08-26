@@ -59,8 +59,6 @@ System requirements
   - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
   - Oracle DBMS >= 10G R2 with Spatial or Locator option
   
-The 3D City Database Importer/Exporter can be run on any platform providing appropriate Java support. 
-
 The 3D City Database Importer/Exporter can be run on any platform providing appropriate Java support.
 
 Documentation and literature
@@ -102,8 +100,6 @@ Building
 --------
 The Importer/Exporter uses [Gradle](https://gradle.org/) as build system. To build the application from source,
 clone the repository to your local machine and run the following command from the root of the repository. 
-
-The Importer/Exporter uses [Gradle](https://gradle.org/) as build system. To build the application from source, clone the repository to your local machine and run the following command from the root of the repository.
 
     > gradlew installDist
 
