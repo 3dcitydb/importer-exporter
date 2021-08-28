@@ -35,6 +35,14 @@ public class CoreConstants {
     public static final Path IMPEXP_HOME;
     public static final Path WORKING_DIR;
 
+    public static final String ENV_CITYDB_TYPE = "CITYDB_TYPE";
+    public static final String ENV_CITYDB_HOST = "CITYDB_HOST";
+    public static final String ENV_CITYDB_PORT = "CITYDB_PORT";
+    public static final String ENV_CITYDB_NAME = "CITYDB_NAME";
+    public static final String ENV_CITYDB_SCHEMA = "CITYDB_SCHEMA";
+    public static final String ENV_CITYDB_USERNAME = "CITYDB_USERNAME";
+    public static final String ENV_CITYDB_PASSWORD = "CITYDB_PASSWORD";
+
     public static final Path IMPEXP_DATA_DIR = Paths.get(System.getProperty("user.home"), "3dcitydb", "importer-exporter").toAbsolutePath();
     public static final String IMPORT_LOG_DIR = "imported-features";
     public static final String DELETE_LOG_DIR = "deleted-features";

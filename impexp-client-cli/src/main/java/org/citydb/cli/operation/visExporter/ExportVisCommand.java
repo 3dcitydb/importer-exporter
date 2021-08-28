@@ -29,15 +29,15 @@
 package org.citydb.cli.operation.visExporter;
 
 import org.citydb.cli.ImpExpCli;
+import org.citydb.cli.option.DatabaseOption;
+import org.citydb.cli.option.ThreadPoolOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.util.log.Logger;
 import org.citydb.core.plugin.CliCommand;
-import org.citydb.cli.option.DatabaseOption;
-import org.citydb.cli.option.ThreadPoolOption;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.util.log.Logger;
 import org.citydb.vis.controller.VisExportException;
 import org.citydb.vis.controller.VisExporter;
 import picocli.CommandLine;
@@ -81,7 +81,7 @@ public class ExportVisCommand extends CliCommand {
     private final ElevationOption elevationOption = new ElevationOption();
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
-    private DatabaseOption databaseOption;
+    private final DatabaseOption databaseOption = new DatabaseOption();
 
     private final Logger log = Logger.getInstance();
 
@@ -91,7 +91,7 @@ public class ExportVisCommand extends CliCommand {
 
         // connect to database
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
-        DatabaseConnection connection = databaseOption != null ?
+        DatabaseConnection connection = databaseOption.hasUserInput() ?
                 databaseOption.toDatabaseConnection() :
                 config.getDatabaseConfig().getActiveConnection();
 

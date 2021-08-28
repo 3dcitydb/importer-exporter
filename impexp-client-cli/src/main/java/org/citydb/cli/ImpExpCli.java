@@ -260,12 +260,6 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
                     useDefaultLogLevel = false;
                 }
 
-                // read password from keyboard
-                CommandLine.Model.OptionSpec passwordOption = subParseResult.matchedOption("-p");
-                if (passwordOption != null && passwordOption.getValue().equals("")) {
-                    passwordOption.setValue(readPassword(subParseResult));
-                }
-
                 // preprocess options
                 Object command = commandLine.getCommand();
                 for (Field field : command.getClass().getDeclaredFields()) {
@@ -281,6 +275,12 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
                 // preprocess command
                 if (command instanceof CliCommand) {
                     ((CliCommand) command).preprocess(commandLine);
+                }
+
+                // read password from keyboard
+                CommandLine.Model.OptionSpec passwordOption = subParseResult.matchedOption("-p");
+                if (passwordOption != null && passwordOption.getValue().equals("")) {
+                    passwordOption.setValue(readPassword(subParseResult));
                 }
             }
 
@@ -582,7 +582,8 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     }
 
     private String readPassword(CommandLine.ParseResult parseResult) {
-        String prompt = "Enter password for " + parseResult.matchedOptionValue("-u", "") + ": ";
+        String prompt = "Enter password for " +
+                parseResult.matchedOptionValue("-u", System.getenv(CoreConstants.ENV_CITYDB_USERNAME)) + ": ";
         Console console = System.console();
         if (console != null) {
             char[] input = console.readPassword(prompt);
