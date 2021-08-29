@@ -1,7 +1,6 @@
 # git and github related files
 .github/
 .git/
-
 .gitignore
 .gitattributes
 
