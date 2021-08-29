@@ -38,8 +38,8 @@ RUN chmod a+x /usr/local/bin/impexp-entrypoint.sh \
 WORKDIR /data
 USER 1000
 
-ENTRYPOINT [ "impexp-entrypoint.sh" ]
-CMD [ "--help" ]
+ENTRYPOINT ["impexp-entrypoint.sh"]
+CMD ["--help"]
 
 # Labels ######################################################################
 LABEL maintainer="Bruno Willenborg"
