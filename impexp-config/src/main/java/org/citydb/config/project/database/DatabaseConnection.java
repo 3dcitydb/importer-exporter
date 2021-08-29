@@ -30,12 +30,7 @@ package org.citydb.config.project.database;
 import org.citydb.config.project.database.DatabaseConfigurationException.ErrorCode;
 
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import java.util.UUID;
 
 @XmlType(name = "ConnectionType", propOrder = {})
@@ -214,14 +209,6 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
 
     public void setSavePassword(Boolean savePassword) {
         this.savePassword = savePassword;
-    }
-
-    public DatabaseType getType() {
-        return type;
-    }
-
-    public void setType(DatabaseType type) {
-        this.type = type;
     }
 
     public Integer getLoginTimeout() {
