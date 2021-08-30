@@ -29,16 +29,14 @@ COPY --from=builder /build/impexp-client-cli/build/install/3DCityDB-Importer-Exp
 RUN groupadd --gid 1000 -r impexp && \
     useradd --uid 1000 --gid 1000 -d /data -m -r --no-log-init impexp
 
-COPY --chown=1000:1000 resources/docker/impexp-entrypoint.sh /usr/local/bin/
-
-# Set permissions
-RUN chmod a+x /usr/local/bin/impexp-entrypoint.sh \
-      /opt/impexp/contribs/collada2gltf/*linux*/COLLADA2GLTF-bin
+# Put start script in path and set permissions
+RUN ln -sf /opt/impexp/impexp /usr/local/bin/ && \
+    chmod a+x /opt/impexp/contribs/collada2gltf/*linux*/COLLADA2GLTF-bin
 
 WORKDIR /data
 USER 1000
 
-ENTRYPOINT ["impexp-entrypoint.sh"]
+ENTRYPOINT ["impexp"]
 CMD ["--help"]
 
 # Labels ######################################################################
