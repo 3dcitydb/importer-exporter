@@ -72,7 +72,7 @@ public class ExportCommand extends CliCommand {
     private QueryOption queryOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
-    private DatabaseOption databaseOption;
+    private final DatabaseOption databaseOption = new DatabaseOption();
 
     private final Logger log = Logger.getInstance();
 
@@ -82,7 +82,7 @@ public class ExportCommand extends CliCommand {
 
         // connect to database
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
-        DatabaseConnection connection = databaseOption != null ?
+        DatabaseConnection connection = databaseOption.hasUserInput() ?
                 databaseOption.toDatabaseConnection() :
                 config.getDatabaseConfig().getActiveConnection();
 

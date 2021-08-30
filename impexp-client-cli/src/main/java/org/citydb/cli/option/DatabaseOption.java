@@ -30,38 +30,55 @@ package org.citydb.cli.option;
 
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
+import org.citydb.core.util.CoreConstants;
 import picocli.CommandLine;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseOption implements CliOption {
     enum Type {postgresql, oracle}
 
-    @CommandLine.Option(names = {"-T", "--db-type"}, paramLabel = "<database>", defaultValue = "postgresql",
-            description = "Database type: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
+    @CommandLine.Option(names = {"-T", "--db-type"}, paramLabel = "<database>",
+            defaultValue = "${env:" + CoreConstants.ENV_CITYDB_TYPE + ":-postgresql}",
+            description = "Database type: ${COMPLETION-CANDIDATES} (default: postgresql).")
     private Type type;
 
-    @CommandLine.Option(names = {"-H", "--db-host"}, required = true,
+    @CommandLine.Option(names = {"-H", "--db-host"},
+            defaultValue = "${env:" + CoreConstants.ENV_CITYDB_HOST + "}",
             description = "Name of the host on which the 3DCityDB is running.")
     private String host;
 
     @CommandLine.Option(names = {"-P", "--db-port"},
+            defaultValue = "${env:" + CoreConstants.ENV_CITYDB_PORT + "}",
             description = "Port of the 3DCityDB server (default: 5432 | 1521).")
     private Integer port;
 
-    @CommandLine.Option(names = {"-d", "--db-name"}, required = true,
+    @CommandLine.Option(names = {"-d", "--db-name"},
+            defaultValue = "${env:" + CoreConstants.ENV_CITYDB_NAME + "}",
             description = "Name of the 3DCityDB database to connect to.")
     private String name;
 
     @CommandLine.Option(names = {"-S", "--db-schema"},
+            defaultValue = "${env:" + CoreConstants.ENV_CITYDB_SCHEMA + "}",
             description = "Schema to use when connecting to the 3DCityDB (default: citydb | username).")
     private String schema;
 
     @CommandLine.Option(names = {"-u", "--db-username"}, paramLabel = "<name>",
-            required = true, description = "Username to use when connecting to the 3DCityDB.")
+            defaultValue = "${env:" + CoreConstants.ENV_CITYDB_USERNAME + "}",
+            description = "Username to use when connecting to the 3DCityDB.")
     private String user;
 
     @CommandLine.Option(names = {"-p", "--db-password"}, arity = "0..1",
+            defaultValue = "${env:" + CoreConstants.ENV_CITYDB_PASSWORD + "}",
             description = "Password to use when connecting to the 3DCityDB (leave empty to be prompted).")
     private String password;
+
+    private boolean hasUserInput;
+
+    public boolean hasUserInput() {
+        return hasUserInput;
+    }
 
     public DatabaseType getType() {
         return type == Type.oracle ? DatabaseType.ORACLE : DatabaseType.POSTGIS;
@@ -92,15 +109,49 @@ public class DatabaseOption implements CliOption {
     }
 
     public DatabaseConnection toDatabaseConnection() {
-        DatabaseConnection connection = new DatabaseConnection();
-        connection.setDatabaseType(getType());
-        connection.setSid(name);
-        connection.setSchema(schema);
-        connection.setServer(host);
-        connection.setPort(getPort());
-        connection.setUser(user);
-        connection.setPassword(password);
+        DatabaseConnection connection = null;
+        if (hasUserInput) {
+            connection = new DatabaseConnection();
+            connection.setDatabaseType(getType());
+            connection.setSid(name);
+            connection.setSchema(schema);
+            connection.setServer(host);
+            connection.setPort(getPort());
+            connection.setUser(user);
+            connection.setPassword(password);
+        }
 
         return connection;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
+        hasUserInput = commandLine.getParseResult().hasMatchedOption("-T")
+                || name != null
+                || schema != null
+                || host != null
+                || port != null
+                || user != null
+                || password != null;
+
+        if (hasUserInput) {
+            List<String> requiredOptions = new ArrayList<>();
+            if (host == null) {
+                requiredOptions.add("--db-host=<host>");
+            }
+
+            if (name == null) {
+                requiredOptions.add("--db-name=<name>");
+            }
+
+            if (user == null) {
+                requiredOptions.add("--db-username=<name>");
+            }
+
+            if (!requiredOptions.isEmpty()) {
+                throw new CommandLine.ParameterException(commandLine, "Error: Missing required argument(s): " +
+                        String.join(", ", requiredOptions));
+            }
+        }
     }
 }
