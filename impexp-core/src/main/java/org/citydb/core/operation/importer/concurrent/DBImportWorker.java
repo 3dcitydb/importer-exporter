@@ -32,11 +32,11 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.operation.common.cache.IdCacheManager;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.database.content.CityGMLImportManager;
 import org.citydb.core.operation.importer.filter.CityGMLFilter;
-import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.importer.util.ImportLogger;
 import org.citydb.core.operation.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.core.operation.importer.util.InternalConfig;
@@ -49,7 +49,6 @@ import org.citydb.util.event.Event;
 import org.citydb.util.event.EventDispatcher;
 import org.citydb.util.event.EventHandler;
 import org.citydb.util.event.global.*;
-import org.citydb.util.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.appearance.Appearance;
@@ -247,16 +246,10 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 					updateImportContext();
 				}
 			} else {
-				String msg = (work instanceof AbstractGML ?
+				importer.logOrThrowErrorMessage((work instanceof AbstractGML ?
 						importer.getObjectSignature((AbstractGML) work) :
 						work.getCityGMLClass()) +
-						": Unsupported top-level object type. Skipping import.";
-
-				if (!importer.isFailOnError()) {
-					Logger.getInstance().error(msg);
-				} else {
-					throw new CityGMLImportException(msg);
-				}
+						": Unsupported top-level object type. Skipping import.");
 			}
 		} catch (IOException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel, this));

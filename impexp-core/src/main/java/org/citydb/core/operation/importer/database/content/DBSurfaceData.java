@@ -412,12 +412,8 @@ public class DBSurfaceData implements DBImporter {
 
 									// check for even number of texture coordinates
 									if ((texCoord.getValue().size() & 1) == 1) {
-										String msg = featureSignature + ": Odd number of texture coordinates for ring '" + ringId + "'.";
-										if (!importer.isFailOnError()) {
-											log.error(msg);
-											continue;
-										} else
-											throw new CityGMLImportException(msg);
+										importer.logOrThrowErrorMessage(featureSignature + ": Odd number of texture coordinates for ring '" + ringId + "'.");
+										continue;
 									}
 
 									boolean isResolved = false;
