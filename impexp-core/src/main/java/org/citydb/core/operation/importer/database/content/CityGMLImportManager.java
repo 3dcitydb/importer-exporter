@@ -27,42 +27,38 @@
  */
 package org.citydb.core.operation.importer.database.content;
 
+import org.citydb.ade.model.CityDBADEModuleComponent;
+import org.citydb.config.Config;
+import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.core.ade.ADEExtension;
 import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.ade.importer.ADEImportManager;
 import org.citydb.core.ade.importer.ADEPropertyCollection;
 import org.citydb.core.ade.importer.CityGMLImportHelper;
 import org.citydb.core.ade.importer.ForeignKeys;
-import org.citydb.ade.model.CityDBADEModuleComponent;
-import org.citydb.util.concurrent.WorkerPool;
-import org.citydb.config.Config;
-import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.AbstractObjectType;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.ObjectType;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.IdCache;
 import org.citydb.core.operation.common.cache.IdCacheEntry;
 import org.citydb.core.operation.common.cache.IdCacheManager;
 import org.citydb.core.operation.common.cache.IdCacheType;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.common.xlink.DBXlinkBasic;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.database.SequenceHelper;
 import org.citydb.core.operation.importer.database.TableHelper;
-import org.citydb.core.operation.importer.util.ADEPropertyCollector;
-import org.citydb.core.operation.common.util.AffineTransformer;
-import org.citydb.core.operation.importer.util.AttributeValueJoiner;
-import org.citydb.core.operation.importer.util.ExternalFileChecker;
+import org.citydb.core.operation.importer.util.*;
 import org.citydb.core.operation.importer.util.ImportLogger.ImportLogEntry;
-import org.citydb.core.operation.importer.util.InternalConfig;
-import org.citydb.core.operation.importer.util.LocalAppearanceHandler;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
 import org.citygml4j.geometry.Matrix;
@@ -70,19 +66,10 @@ import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLModuleComponent;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
 import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.bridge.AbstractBridge;
-import org.citygml4j.model.citygml.bridge.BridgeConstructionElement;
-import org.citygml4j.model.citygml.bridge.BridgeFurniture;
-import org.citygml4j.model.citygml.bridge.BridgeInstallation;
-import org.citygml4j.model.citygml.bridge.BridgeRoom;
-import org.citygml4j.model.citygml.bridge.IntBridgeInstallation;
+import org.citygml4j.model.citygml.bridge.*;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
-import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.AbstractOpening;
-import org.citygml4j.model.citygml.building.BuildingFurniture;
-import org.citygml4j.model.citygml.building.BuildingInstallation;
-import org.citygml4j.model.citygml.building.IntBuildingInstallation;
-import org.citygml4j.model.citygml.building.Room;
+import org.citygml4j.model.citygml.building.*;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.core.Address;
@@ -97,11 +84,7 @@ import org.citygml4j.model.citygml.relief.ReliefFeature;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficArea;
 import org.citygml4j.model.citygml.transportation.TrafficArea;
 import org.citygml4j.model.citygml.transportation.TransportationComplex;
-import org.citygml4j.model.citygml.tunnel.AbstractTunnel;
-import org.citygml4j.model.citygml.tunnel.HollowSpace;
-import org.citygml4j.model.citygml.tunnel.IntTunnelInstallation;
-import org.citygml4j.model.citygml.tunnel.TunnelFurniture;
-import org.citygml4j.model.citygml.tunnel.TunnelInstallation;
+import org.citygml4j.model.citygml.tunnel.*;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
@@ -125,11 +108,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class CityGMLImportManager implements CityGMLImportHelper {
@@ -511,10 +490,16 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 	@Override
 	public void logOrThrowErrorMessage(String message) throws CityGMLImportException {
-		if (!failOnError)
-			log.error(message);
-		else
-			throw new CityGMLImportException(message);
+		logOrThrowErrorMessage(message, null);
+	}
+
+	@Override
+	public void logOrThrowErrorMessage(String message, Throwable cause) throws CityGMLImportException {
+		if (!failOnError) {
+			log.error(message, cause);
+		} else {
+			throw new CityGMLImportException(message, cause);
+		}
 	}
 
 	@Override

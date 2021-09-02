@@ -68,6 +68,7 @@ public interface CityGMLImportHelper {
 	void logOrThrowUnsupportedXLinkMessage(AbstractGML from, Class<? extends AbstractGML> to, String xlink) throws CityGMLImportException;
 	void logOrThrowUnsupportedGeometryMessage(AbstractGML from, AbstractGeometry geometry) throws CityGMLImportException;
 	void logOrThrowErrorMessage(String message) throws CityGMLImportException;
+	void logOrThrowErrorMessage(String message, Throwable cause) throws CityGMLImportException;
 	String getObjectSignature(AbstractGML object);
 
 	int getObjectClassId(AbstractGML object);
