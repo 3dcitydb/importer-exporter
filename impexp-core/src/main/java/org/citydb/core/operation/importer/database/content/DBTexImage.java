@@ -98,7 +98,7 @@ public class DBTexImage implements DBImporter {
 					texImageId = importer.getNextSequenceValue(SequenceEnum.TEX_IMAGE_ID_SEQ.getName());
 					insertIntoTexImage = true;
 				} catch (IOException e) {
-					log.error("Failed to read image file at '" + imageURI + "'.", e);
+					importer.logOrThrowErrorMessage("Failed to read image file at '" + imageURI + "'.", e);
 					texImageId = 0;
 				}
 

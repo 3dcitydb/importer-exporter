@@ -33,31 +33,16 @@ import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.util.log.Logger;
-import org.citydb.core.operation.common.xlink.DBXlinkSurfaceDataToTexImage;
-import org.citydb.core.operation.common.xlink.DBXlinkTextureAssociation;
-import org.citydb.core.operation.common.xlink.DBXlinkTextureAssociationTarget;
-import org.citydb.core.operation.common.xlink.DBXlinkTextureCoordList;
-import org.citydb.core.operation.common.xlink.DBXlinkTextureParam;
-import org.citydb.core.operation.common.xlink.DBXlinkTextureParamEnum;
+import org.citydb.core.operation.common.xlink.*;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.AttributeValueJoiner;
 import org.citydb.core.operation.importer.util.ExternalFileChecker;
 import org.citydb.core.operation.importer.util.LocalAppearanceHandler;
 import org.citydb.core.operation.importer.util.LocalAppearanceHandler.SurfaceGeometryTarget;
+import org.citydb.util.log.Logger;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
-import org.citygml4j.model.citygml.appearance.AbstractTexture;
-import org.citygml4j.model.citygml.appearance.AbstractTextureParameterization;
-import org.citygml4j.model.citygml.appearance.Color;
-import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
-import org.citygml4j.model.citygml.appearance.ParameterizedTexture;
-import org.citygml4j.model.citygml.appearance.TexCoordGen;
-import org.citygml4j.model.citygml.appearance.TexCoordList;
-import org.citygml4j.model.citygml.appearance.TextureAssociation;
-import org.citygml4j.model.citygml.appearance.TextureCoordinates;
-import org.citygml4j.model.citygml.appearance.X3DMaterial;
+import org.citygml4j.model.citygml.appearance.*;
 import org.citygml4j.model.citygml.core.TransformationMatrix2x2;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
@@ -75,11 +60,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DBSurfaceData implements DBImporter {
 	private final Logger log = Logger.getInstance();
@@ -592,7 +573,7 @@ public class DBSurfaceData implements DBImporter {
 		return surfaceDataId;
 	}
 
-	private void processWorldFile(GeoreferencedTexture geoTex) {
+	private void processWorldFile(GeoreferencedTexture geoTex) throws CityGMLImportException {
 		String imageFileURI = geoTex.getImageURI();
 		List<String> candidates = new ArrayList<>();
 
@@ -654,14 +635,14 @@ public class DBSurfaceData implements DBImporter {
 					point.setPos(pos);
 					geoTex.setReferencePoint(new PointProperty(point));
 				} else {
-					log.error("Error while processing world file '" + candidate + "': Content could not be interpreted.");
+					importer.logOrThrowErrorMessage("Error while processing world file '" + candidate + "': Content could not be interpreted.");
 					break;
 				}
 			} catch (IOException e) {
-				log.error("Error while processing world file '" + candidate +"'.", e);
+				importer.logOrThrowErrorMessage("Error while processing world file '" + candidate +"'.", e);
 				break;
 			} catch (NumberFormatException e) {
-				log.error("Error while processing world file '" + candidate +"': Content could not be interpreted.");
+				importer.logOrThrowErrorMessage("Error while processing world file '" + candidate +"': Content could not be interpreted.");
 				break;
 			}
 		}

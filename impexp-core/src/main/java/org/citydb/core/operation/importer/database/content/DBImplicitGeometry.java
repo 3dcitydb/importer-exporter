@@ -32,7 +32,6 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.MappingConstants;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.xlink.DBXlinkLibraryObject;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
@@ -40,16 +39,13 @@ import org.citydb.core.operation.importer.util.ConcurrentLockManager;
 import org.citydb.core.operation.importer.util.ExternalFileChecker;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;
+import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -173,7 +169,7 @@ public class DBImplicitGeometry implements DBImporter {
 								implicitGeometryId,
 								fileInfo.getKey()));
 					} catch (IOException e) {
-						log.error("Failed to read library object file at '" + libraryURI + "'.", e);
+						importer.logOrThrowErrorMessage("Failed to read library object file at '" + libraryURI + "'.", e);
 					}
 				} else
 					psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);

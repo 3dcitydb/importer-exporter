@@ -468,7 +468,7 @@ public class Importer implements EventHandler {
                     throw new CityGMLImportException("Failed to read input file '" + contentFile + "'.", e);
                 }
 
-                log.info("Importing file: " + contentFile.toString());
+                log.info("Importing file: " + contentFile);
 
                 try (FeatureReader reader = factory.createFeatureReader()) {
                     reader.read(file, dbWorkerPool);
@@ -634,7 +634,7 @@ public class Importer implements EventHandler {
             IndexStatus expectedStatus = enable ? IndexStatus.VALID : IndexStatus.DROPPED;
             for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {
                 if (indexObj.getStatus() != expectedStatus) {
-                    log.error("FAILED: " + indexObj.toString());
+                    log.error("FAILED: " + indexObj);
                     if (indexObj.hasErrorMessage())
                         log.error("Error cause: " + indexObj.getErrorMessage());
                 }
