@@ -124,6 +124,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final InternalConfig internalConfig;
 	private final Config config;
 
+	private final boolean failOnError;
 	private final Set<String> localGeometryCache;
 	private final AttributeValueSplitter attributeValueSplitter;
 	private final ExportCounter exportCounter;
@@ -135,7 +136,6 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private AppearanceRemover appearanceRemover;
 	private AffineTransformer affineTransformer;
 	private Document document;
-	private boolean failOnError;
 
 	public CityGMLExportManager(Connection connection,
 			Query query,
@@ -165,6 +165,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		hasADESupport = !adeManager.getEnabledExtensions().isEmpty();
 		plugins = PluginManager.getInstance().getEnabledExternalPlugins(FeatureExportExtension.class);
 
+		failOnError = config.getExportConfig().getGeneralOptions().isFailFastOnErrors();
 		localGeometryCache = new HashSet<>();
 		attributeValueSplitter = new AttributeValueSplitter();
 		exportCounter = new ExportCounter(schemaMapping);
@@ -784,10 +785,6 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	protected String getPropertyName(AbstractProperty property) {
 		return property.getSchema().getXMLPrefix() + ":" + property.getPath();
-	}
-
-	public void setFailOnError(boolean failOnError) {
-		this.failOnError = failOnError;
 	}
 
 	protected boolean hasADESupport() {

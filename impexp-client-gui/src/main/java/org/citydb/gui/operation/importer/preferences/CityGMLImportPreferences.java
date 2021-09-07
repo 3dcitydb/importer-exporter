@@ -37,7 +37,8 @@ public class CityGMLImportPreferences extends DefaultPreferences {
 	
 	public CityGMLImportPreferences(Config config) {
 		super(new CityGMLImportEntry());
-		
+
+		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ContinuationPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ResourceIdPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));

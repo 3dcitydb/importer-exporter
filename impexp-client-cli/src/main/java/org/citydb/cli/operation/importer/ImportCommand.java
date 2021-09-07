@@ -69,6 +69,10 @@ public class ImportCommand extends CliCommand {
             description = "Record imported top-level features to this file.")
     private Path importLogFile;
 
+    @CommandLine.Option(names = "--fail-fast", negatable = true,
+            description = "Fail fast on errors (default: true).")
+    private Boolean failFast;
+
     @CommandLine.ArgGroup
     private ThreadPoolOption threadPoolOption;
 
@@ -166,6 +170,10 @@ public class ImportCommand extends CliCommand {
         if (importLogFile != null) {
             importConfig.getImportLog().setLogFile(importLogFile.toAbsolutePath().toString());
             importConfig.getImportLog().setLogImportedFeatures(true);
+        }
+
+        if (failFast != null) {
+            importConfig.getGeneralOptions().setFailFastOnErrors(failFast);
         }
 
         if (metadataOption != null) {
