@@ -27,28 +27,40 @@
  */
 package org.citydb.core.operation.importer.util;
 
-import org.citydb.util.log.Logger;
+import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.util.CoreConstants;
+import org.citydb.util.log.Logger;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
+import org.citygml4j.util.child.ChildInfo;
 
 import java.util.List;
 
 public class RingValidator {
 	private final Logger log = Logger.getInstance();
+	private final boolean failOnError;
 
-	public boolean validate(List<Double> coordinates, AbstractRing ring) {
-		if (coordinates == null || ring.hasLocalProperty(CoreConstants.GEOMETRY_INVALID))
+	public RingValidator(boolean failOnError) {
+		this.failOnError = failOnError;
+	}
+
+	public RingValidator() {
+		this(false);
+	}
+
+	public boolean validate(List<Double> coordinates, AbstractRing ring) throws CityGMLImportException {
+		if (coordinates == null || ring.hasLocalProperty(CoreConstants.GEOMETRY_INVALID)) {
 			return false;
+		}
 
 		// check closedness
-		if (coordinates.size() >= 9 && !isClosed(coordinates))
-			log.warn(getGeometrySignature(ring) + ": Ring is not closed. Appending first coordinate to fix it.");
+		if (coordinates.size() >= 9 && !isClosed(coordinates)) {
+			log.debug(getGeometrySignature(ring) + ": Fixed unclosed ring by appending its first point.");
+		}
 
-		// too few coordinates
+		// too few points
 		if (coordinates.size() / 3 < 4) {
-			ring.setLocalProperty(CoreConstants.GEOMETRY_INVALID, "Too few coordinates");
-			log.error(getGeometrySignature(ring) + ": Ring contains less than 4 coordinates and will not be imported.");
+			logOrThrowErrorMessage(ring, "Ring has too few points.");
 			return false;
 		}
 
@@ -61,9 +73,9 @@ public class RingValidator {
 		Double z = coords.get(2);
 
 		int nrOfPoints = coords.size();
-		if (!x.equals(coords.get(nrOfPoints - 3)) ||
-				!y.equals(coords.get(nrOfPoints - 2)) ||
-				!z.equals(coords.get(nrOfPoints - 1))) {
+		if (!x.equals(coords.get(nrOfPoints - 3))
+				|| !y.equals(coords.get(nrOfPoints - 2))
+				|| !z.equals(coords.get(nrOfPoints - 1))) {
 
 			// repair unclosed ring...
 			coords.add(x);
@@ -76,17 +88,34 @@ public class RingValidator {
 		return true;
 	}
 
-	public String getGeometrySignature(AbstractGeometry object) {
-		StringBuilder signature = new StringBuilder("gml:").append(object.getGMLClass().toString());
-		String gmlId = object.hasLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) ?
-				(String)object.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) :
-				object.getId();
+	public String getGeometrySignature(AbstractRing ring) {
+		AbstractGeometry geometry = new ChildInfo().getParentGeometry(ring);
+		if (geometry == null) {
+			geometry = ring;
+		}
 
-		if (gmlId != null)
-			signature.append(" '").append(gmlId).append("'");
-		else
-			signature.append(" (unknown gml:id)");
+		String signature = "gml:" + geometry.getGMLClass().toString();
+		String gmlId = geometry.hasLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) ?
+				(String) geometry.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) :
+				geometry.getId();
 
-		return signature.toString();
+		if (gmlId != null) {
+			signature += " '" + gmlId + "'";
+		} else {
+			signature += " (unknown gml:id)";
+		}
+
+		return signature;
+	}
+
+	private void logOrThrowErrorMessage(AbstractRing ring, String message) throws CityGMLImportException {
+		ring.setLocalProperty(CoreConstants.GEOMETRY_INVALID, message);
+		message = getGeometrySignature(ring) + ": " + message;
+
+		if (!failOnError) {
+			log.error(message);
+		} else {
+			throw new CityGMLImportException(message);
+		}
 	}
 }

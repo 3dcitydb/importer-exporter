@@ -33,7 +33,7 @@ import org.citydb.core.database.schema.mapping.AbstractObjectType;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.ObjectType;
 import org.citydb.core.operation.importer.CityGMLImportException;
-import org.citydb.core.operation.importer.database.content.GeometryConverter;
+import org.citydb.core.operation.importer.util.GeometryConverter;
 import org.citydb.core.operation.importer.util.AttributeValueJoiner;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;

@@ -27,9 +27,9 @@
  */
 package org.citydb.core.operation.importer.util;
 
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.importer.database.content.CityGMLImportManager;
 import org.citydb.core.util.CoreConstants;
+import org.citydb.util.log.Logger;
 import org.citygml4j.builder.copy.CopyBuilder;
 import org.citygml4j.builder.copy.ShallowCopyBuilder;
 import org.citygml4j.model.citygml.ade.generic.ADEGenericElement;
@@ -43,11 +43,7 @@ import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.util.child.ChildInfo;
 import org.citygml4j.util.walker.GMLWalker;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class LocalGeometryXlinkResolver {
 	private final Logger log = Logger.getInstance();

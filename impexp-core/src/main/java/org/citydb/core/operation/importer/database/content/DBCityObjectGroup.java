@@ -35,6 +35,7 @@ import org.citydb.core.operation.common.xlink.DBXlinkGroupToCityObject;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.AttributeValueJoiner;
+import org.citydb.core.operation.importer.util.GeometryConverter;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.gml.basicTypes.Code;

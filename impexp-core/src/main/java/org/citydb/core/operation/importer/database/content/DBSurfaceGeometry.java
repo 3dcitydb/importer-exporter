@@ -34,14 +34,15 @@ import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.XlinkType;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.xlink.DBXlinkLinearRing;
 import org.citydb.core.operation.common.xlink.DBXlinkSolidGeometry;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
+import org.citydb.core.operation.importer.util.GeometryConverter;
 import org.citydb.core.operation.importer.util.LocalAppearanceHandler;
 import org.citydb.core.operation.importer.util.RingValidator;
 import org.citydb.core.util.CoreConstants;
+import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
 import org.citygml4j.model.citygml.texturedsurface._AppearanceProperty;
 import org.citygml4j.model.citygml.texturedsurface._SimpleTexture;
@@ -53,34 +54,10 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
-import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
-import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurfacePatch;
-import org.citygml4j.model.gml.geometry.primitives.LinearRing;
-import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
-import org.citygml4j.model.gml.geometry.primitives.Polygon;
-import org.citygml4j.model.gml.geometry.primitives.PolygonPatch;
-import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
-import org.citygml4j.model.gml.geometry.primitives.Rectangle;
-import org.citygml4j.model.gml.geometry.primitives.Sign;
-import org.citygml4j.model.gml.geometry.primitives.Solid;
-import org.citygml4j.model.gml.geometry.primitives.SolidArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
-import org.citygml4j.model.gml.geometry.primitives.Surface;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.Triangle;
-import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
+import org.citygml4j.model.gml.geometry.primitives.*;
 import org.citygml4j.util.walker.GeometryWalker;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -149,7 +126,7 @@ public class DBSurfaceGeometry implements DBImporter {
         localAppearanceHandler = importer.getLocalAppearanceHandler();
         geometryConverter = importer.getGeometryConverter();
         ids = new IdManager();
-        ringValidator = new RingValidator();
+        ringValidator = new RingValidator(importer.isFailOnError());
     }
 
     protected long doImport(AbstractGeometry geometry, long cityObjectId) throws CityGMLImportException, SQLException {

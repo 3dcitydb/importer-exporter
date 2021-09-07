@@ -37,6 +37,7 @@ import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.ConcurrentLockManager;
 import org.citydb.core.operation.importer.util.ExternalFileChecker;
+import org.citydb.core.operation.importer.util.GeometryConverter;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;
 import org.citydb.util.log.Logger;

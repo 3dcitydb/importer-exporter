@@ -34,13 +34,7 @@ import org.citydb.core.operation.common.xlink.DBXlinkBasic;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
-import org.citygml4j.model.citygml.tunnel.AbstractBoundarySurface;
-import org.citygml4j.model.citygml.tunnel.AbstractOpening;
-import org.citygml4j.model.citygml.tunnel.AbstractTunnel;
-import org.citygml4j.model.citygml.tunnel.HollowSpace;
-import org.citygml4j.model.citygml.tunnel.IntTunnelInstallation;
-import org.citygml4j.model.citygml.tunnel.OpeningProperty;
-import org.citygml4j.model.citygml.tunnel.TunnelInstallation;
+import org.citygml4j.model.citygml.tunnel.*;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 import java.sql.Connection;

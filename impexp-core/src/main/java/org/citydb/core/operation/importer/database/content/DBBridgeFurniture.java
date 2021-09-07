@@ -34,6 +34,7 @@ import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.AttributeValueJoiner;
+import org.citydb.core.operation.importer.util.GeometryConverter;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.bridge.BridgeFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;

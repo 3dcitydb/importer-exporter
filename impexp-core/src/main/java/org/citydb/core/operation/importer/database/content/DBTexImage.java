@@ -30,11 +30,11 @@ package org.citydb.core.operation.importer.database.content;
 import org.citydb.config.Config;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.core.database.schema.TableEnum;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureFile;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.ConcurrentLockManager;
 import org.citydb.core.operation.importer.util.ExternalFileChecker;
+import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.appearance.AbstractTexture;
 
 import java.io.IOException;

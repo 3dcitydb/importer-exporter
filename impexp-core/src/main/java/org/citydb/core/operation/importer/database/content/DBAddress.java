@@ -34,15 +34,11 @@ import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.operation.importer.CityGMLImportException;
+import org.citydb.core.operation.importer.util.GeometryConverter;
 import org.citydb.core.util.CoreConstants;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.module.xal.XALModuleType;
-import org.citygml4j.model.xal.CountryName;
-import org.citygml4j.model.xal.LocalityName;
-import org.citygml4j.model.xal.PostBoxNumber;
-import org.citygml4j.model.xal.PostalCodeNumber;
-import org.citygml4j.model.xal.ThoroughfareName;
-import org.citygml4j.model.xal.ThoroughfareNumber;
+import org.citygml4j.model.xal.*;
 import org.citygml4j.util.walker.XALWalker;
 
 import java.sql.Connection;

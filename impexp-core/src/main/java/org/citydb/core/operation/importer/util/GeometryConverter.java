@@ -25,15 +25,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.operation.importer.database.content;
+package org.citydb.core.operation.importer.util;
 
-import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.importer.CityGMLImportException;
-import org.citydb.core.operation.importer.util.RingValidator;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
@@ -54,10 +52,8 @@ public class GeometryConverter {
 	private final int dbSrid;
 	private final boolean hasSolidSupport;
 
-	private boolean affineTransformation;
-
-	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter) {
-		ringValidator = new RingValidator();
+	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter, boolean failOnError) {
+		ringValidator = new RingValidator(failOnError);
 		dbSrid = databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid();
 
 		// solid geometries are only supported in Oracle 11g or higher
@@ -65,13 +61,13 @@ public class GeometryConverter {
 				|| databaseAdapter.getConnectionMetaData().getDatabaseMajorVersion() > 10;
 	}
 
-	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter, AffineTransformer affineTransformer, Config config) {
-		this(databaseAdapter);
+	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter) {
+		this(databaseAdapter, false);
+	}
 
-		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
-		if (affineTransformation) {
-			this.affineTransformer = affineTransformer;
-		}
+	public GeometryConverter withAffineTransformation(AffineTransformer affineTransformer) {
+		this.affineTransformer = affineTransformer;
+		return this;
 	}
 
 	public boolean isSurfaceGeometry(AbstractGeometry geometry) {
@@ -230,14 +226,14 @@ public class GeometryConverter {
 			List<List<Double>> pointList = new ArrayList<>();
 
 			if (multiPoint.isSetPointMember()) {
-				for (PointProperty property : multiPoint.getPointMember())
+				for (PointProperty property : multiPoint.getPointMember()) {
 					if (property.isSetPoint()) {
 						List<Double> coords = property.getPoint().toList3d();
 						if (!coords.isEmpty()) {
 							pointList.add(coords);
 						}
 					}
-
+				}
 			} else if (multiPoint.isSetPointMembers()) {
 				PointArrayProperty property = multiPoint.getPointMembers();
 				for (Point point : property.getPoint()) {
@@ -269,7 +265,6 @@ public class GeometryConverter {
 						pointList.add(coords.subList(i, i + 3));
 					}
 				}
-
 			} else if (controlPoint.isSetGeometricPositionGroup()) {					
 				for (GeometricPositionGroup posGroup : controlPoint.getGeometricPositionGroup()) {
 					if (posGroup.isSetPos()) {
@@ -504,7 +499,7 @@ public class GeometryConverter {
 	}
 
 	private double[] convertPrimitive(List<Double> pointList) {
-		if (affineTransformation) {
+		if (affineTransformer != null) {
 			affineTransformer.transformCoordinates(pointList);
 		}
 
@@ -522,7 +517,7 @@ public class GeometryConverter {
 		double[][] result = new double[pointList.size()][];
 		int i = 0;
 		for (List<Double> points : pointList) {
-			if (affineTransformation) {
+			if (affineTransformer != null) {
 				affineTransformer.transformCoordinates(points);
 			}
 
@@ -539,7 +534,7 @@ public class GeometryConverter {
 		return result;
 	}
 
-	public GeometryObject get2DPolygon(Polygon polygon) {
+	public GeometryObject get2DPolygon(Polygon polygon) throws CityGMLImportException {
 		return getPolygon(polygon, true);
 	}
 
@@ -547,7 +542,7 @@ public class GeometryConverter {
 		return getPolygon(polygon, false);
 	}
 
-	private GeometryObject getPolygon(Polygon polygon, boolean is2d) {
+	private GeometryObject getPolygon(Polygon polygon, boolean is2d) throws CityGMLImportException {
 		GeometryObject polygonGeom = null;
 
 		if (polygon != null) {
@@ -560,7 +555,7 @@ public class GeometryConverter {
 		return polygonGeom;
 	}
 
-	public GeometryObject get2DPolygon(PolygonProperty polygonProperty) {
+	public GeometryObject get2DPolygon(PolygonProperty polygonProperty) throws CityGMLImportException {
 		return polygonProperty != null ?
 				get2DPolygon(polygonProperty.getPolygon()) :
 				null;
@@ -572,7 +567,7 @@ public class GeometryConverter {
 				null;
 	}
 
-	private List<List<Double>> generatePointList(Polygon polygon, boolean is2d, boolean reverse) {
+	private List<List<Double>> generatePointList(Polygon polygon, boolean is2d, boolean reverse) throws CityGMLImportException {
 		List<List<Double>> pointList = new ArrayList<>();
 
 		if (polygon.isSetExterior()) {
@@ -622,7 +617,7 @@ public class GeometryConverter {
 		return pointList;
 	}
 
-	public GeometryObject getSolid(Solid solid) {
+	public GeometryObject getSolid(Solid solid) throws CityGMLImportException {
 		if (!hasSolidSupport) {
 			return null;
 		}
@@ -630,6 +625,7 @@ public class GeometryConverter {
 		if (solid != null) {
 			final List<List<Double>> pointList = new ArrayList<>();
 			final List<Integer> rings = new ArrayList<>();
+			final CityGMLImportException[] exceptions = new CityGMLImportException[1];
 
 			solid.accept(new GeometryWalker() {
 				boolean reverse = false;
@@ -656,7 +652,13 @@ public class GeometryConverter {
 				}
 
 				public void visit(Polygon polygon) {
-					List<List<Double>> points = generatePointList(polygon, false, reverse);
+					List<List<Double>> points = null;
+					try {
+						points = generatePointList(polygon, false, reverse);
+					} catch (CityGMLImportException e) {
+						exceptions[0] = e;
+					}
+
 					if (points == null || points.isEmpty()) {
 						setShouldWalk(false);
 						pointList.clear();
@@ -678,14 +680,21 @@ public class GeometryConverter {
 				public void visit(AbstractRing ring) {
 					// required to handle surface patches such as triangles and rectangles
 					List<Double> points = ring.toList3d(reverse);
-					if (ringValidator.validate(points, ring)) {
-						pointList.add(points);
-						rings.add(ringNo);
-						ringNo++;
+					try {
+						if (ringValidator.validate(points, ring)) {
+							pointList.add(points);
+							rings.add(ringNo);
+							ringNo++;
+						}
+					} catch (CityGMLImportException e) {
+						exceptions[0] = e;
 					}
 				}
-
 			});
+
+			if (exceptions[0] != null) {
+				throw exceptions[0];
+			}
 
 			if (!pointList.isEmpty()) {
 				int[] exteriorRings = new int[rings.size()];
@@ -702,17 +711,24 @@ public class GeometryConverter {
 		return null;
 	}
 
-	public GeometryObject getCompositeSolid(CompositeSolid compositeSolid) {
+	public GeometryObject getCompositeSolid(CompositeSolid compositeSolid) throws CityGMLImportException {
 		if (!hasSolidSupport) {
 			return null;
 		}
 
 		if (compositeSolid != null) {
 			final List<GeometryObject> solidMembers = new ArrayList<>();
+			final CityGMLImportException[] exceptions = new CityGMLImportException[1];
 
 			compositeSolid.accept(new GeometryWalker() {
 				public void visit(Solid solid) {
-					GeometryObject solidMember = getSolid(solid);
+					GeometryObject solidMember = null;
+					try {
+						solidMember = getSolid(solid);
+					} catch (CityGMLImportException e) {
+						exceptions[0] = e;
+					}
+
 					if (solidMember != null) {
 						solidMembers.add(solidMember);
 					} else {
@@ -721,6 +737,10 @@ public class GeometryConverter {
 					}
 				}
 			});
+
+			if (exceptions[0] != null) {
+				throw exceptions[0];
+			}
 
 			if (!solidMembers.isEmpty()) {
 				GeometryObject[] tmp = new GeometryObject[solidMembers.size()];

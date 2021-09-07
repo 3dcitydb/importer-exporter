@@ -167,20 +167,24 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 		tableHelper = new TableHelper(schemaMapping);
 		sequenceHelper = new SequenceHelper(connection, databaseAdapter, config);
-		geometryConverter = new GeometryConverter(databaseAdapter, affineTransformer, config);
+		geometryConverter = new GeometryConverter(databaseAdapter, failOnError);
 		objectCounter = new HashMap<>();
 		geometryCounter = new HashMap<>();
 		attributeValueJoiner = new AttributeValueJoiner();
 		externalFileChecker = new ExternalFileChecker(internalConfig.getInputFile());
 
-		if (config.getImportConfig().getAppearances().isSetImportAppearance())
+		if (config.getImportConfig().getAppearances().isSetImportAppearance()) {
 			localAppearanceHandler = new LocalAppearanceHandler(this);
+		}
 
-		if (config.getImportConfig().getImportLog().isSetLogImportedFeatures())
+		if (config.getImportConfig().getImportLog().isSetLogImportedFeatures()) {
 			importLogEntries = new ArrayList<>();
+		}
 
-		if (config.getImportConfig().getAffineTransformation().isEnabled())
+		if (config.getImportConfig().getAffineTransformation().isEnabled()) {
 			this.affineTransformer = affineTransformer;
+			geometryConverter.withAffineTransformation(affineTransformer);
+		}
 
 		if (config.getImportConfig().getCityGMLOptions().isImportXalAddress()) {
 			cityGMLVersion = CityGMLVersion.DEFAULT;
@@ -188,8 +192,9 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 			saxWriter = new SAXWriter();
 		}
 
-		if (hasADESupport)
+		if (hasADESupport) {
 			propertyCollector = new ADEPropertyCollector();
+		}
 	}
 
 	@Override
