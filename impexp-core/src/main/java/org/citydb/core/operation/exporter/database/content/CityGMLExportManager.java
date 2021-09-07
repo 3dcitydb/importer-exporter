@@ -633,10 +633,16 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public void logOrThrowErrorMessage(String message) throws CityGMLExportException {
-		if (!failOnError)
-			log.error(message);
-		else
-			throw new CityGMLExportException(message);
+		logOrThrowErrorMessage(message, null);
+	}
+
+	@Override
+	public void logOrThrowErrorMessage(String message, Throwable cause) throws CityGMLExportException {
+		if (!failOnError) {
+			log.error(message, cause);
+		} else {
+			throw new CityGMLExportException(message, cause);
+		}
 	}
 
 	@Override

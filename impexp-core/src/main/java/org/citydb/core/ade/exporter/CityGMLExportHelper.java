@@ -77,8 +77,9 @@ public interface CityGMLExportHelper {
 	ProjectionToken getGeometryColumn(Column column, String asName);
 	String getGeometryColumn(String columnName);
 	String getGeometryColumn(String columnName, String asName);
-	
+
 	void logOrThrowErrorMessage(String message) throws CityGMLExportException;
+	void logOrThrowErrorMessage(String message, Throwable cause) throws CityGMLExportException;
 	String getObjectSignature(int objectClassId, long id);
 	String getObjectSignature(AbstractObjectType<?> objectType, long id);
 	
