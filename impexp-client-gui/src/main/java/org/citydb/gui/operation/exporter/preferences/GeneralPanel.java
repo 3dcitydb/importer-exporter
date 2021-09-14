@@ -33,21 +33,22 @@ import org.citydb.config.project.exporter.FeatureEnvelopeMode;
 import org.citydb.config.project.exporter.GeneralOptions;
 import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
-import org.citydb.util.event.global.PropertyChangeEvent;
+import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.core.util.Util;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.registry.ObjectRegistry;
-import org.citydb.core.util.Util;
+import org.citydb.util.event.global.PropertyChangeEvent;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class GeneralPanel extends DefaultPreferencesComponent {
-	private TitledPanel versionPanel;
+	private TitledPanel generalPanel;
 	private JRadioButton cityGMLv2;
 	private JRadioButton cityGMLv1;
 	private JLabel versionHintLabel;
+	private JCheckBox failFastOnErrors;
 	private JLabel compressedOutputFormatLabel;
 	private JComboBox<OutputFormat> compressedOutputFormat;
 
@@ -69,6 +70,7 @@ public class GeneralPanel extends DefaultPreferencesComponent {
 		if (cityGMLv1.isSelected() && version != CityGMLVersionType.v1_0_0) return true;
 
 		GeneralOptions generalOptions = config.getExportConfig().getGeneralOptions();
+		if (failFastOnErrors.isSelected() != generalOptions.isFailFastOnErrors()) return true;
 		if (compressedOutputFormat.getSelectedItem() != generalOptions.getCompressedOutputFormat()) return true;
 		if (featureEnvelope.getSelectedItem() != generalOptions.getEnvelope().getFeatureMode()) return true;
 		if (cityModelEnvelope.isSelected() != generalOptions.getEnvelope().isUseEnvelopeOnCityModel()) return true;
@@ -88,6 +90,7 @@ public class GeneralPanel extends DefaultPreferencesComponent {
 		versionHintLabel = new JLabel();
 		versionHintLabel.setFont(versionHintLabel.getFont().deriveFont(Font.ITALIC));
 
+		failFastOnErrors = new JCheckBox();
 		compressedOutputFormatLabel = new JLabel();
 		compressedOutputFormat = new JComboBox<>();
 		for (OutputFormat outputFormat : OutputFormat.values()) {
@@ -127,10 +130,11 @@ public class GeneralPanel extends DefaultPreferencesComponent {
 			content.add(cityGMLv2, GuiUtil.setConstraints(0, 0, 2, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			content.add(versionHintLabel, GuiUtil.setConstraints(0, 1, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
 			content.add(cityGMLv1, GuiUtil.setConstraints(0, 2, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			content.add(compressedOutputFormatLabel, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
-			content.add(compressedOutputFormat, GuiUtil.setConstraints(1, 3, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+			content.add(failFastOnErrors, GuiUtil.setConstraints(0, 3, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			content.add(compressedOutputFormatLabel, GuiUtil.setConstraints(0, 4, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
+			content.add(compressedOutputFormat, GuiUtil.setConstraints(1, 4, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
 
-			versionPanel = new TitledPanel().build(content);
+			generalPanel = new TitledPanel().build(content);
 		}
 		{
 			JPanel content = new JPanel();
@@ -145,7 +149,7 @@ public class GeneralPanel extends DefaultPreferencesComponent {
 			envelopePanel = new TitledPanel().build(content);
 		}
 
-		add(versionPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(generalPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(envelopePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		cityModelEnvelope.addActionListener(e -> setEnabledEnvelopeOptions());
@@ -153,10 +157,11 @@ public class GeneralPanel extends DefaultPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		versionPanel.setTitle(Language.I18N.getString("pref.export.general.border.general"));
+		generalPanel.setTitle(Language.I18N.getString("pref.export.general.border.general"));
 		cityGMLv2.setText(Language.I18N.getString("pref.export.general.label.citygmlv2"));
 		cityGMLv1.setText(Language.I18N.getString("pref.export.general.label.citygmlv1"));
 		versionHintLabel.setText(Language.I18N.getString("pref.export.general.label.versionHint"));
+		failFastOnErrors.setText(Language.I18N.getString("pref.export.general.failFastOnError"));
 		compressedOutputFormatLabel.setText(Language.I18N.getString("pref.export.general.label.compressedFormat"));
 		envelopePanel.setTitle(Language.I18N.getString("pref.export.general.border.bbox"));
 		featureEnvelopeLabel.setText(Language.I18N.getString("pref.export.general.label.feature"));
@@ -176,6 +181,7 @@ public class GeneralPanel extends DefaultPreferencesComponent {
 		firePropertyChange(version);
 
 		GeneralOptions generalOptions = config.getExportConfig().getGeneralOptions();
+		failFastOnErrors.setSelected(generalOptions.isFailFastOnErrors());
 		compressedOutputFormat.setSelectedItem(generalOptions.getCompressedOutputFormat());
 		featureEnvelope.setSelectedItem(generalOptions.getEnvelope().getFeatureMode());
 		cityModelEnvelope.setSelected(generalOptions.getEnvelope().isUseEnvelopeOnCityModel());
@@ -191,6 +197,7 @@ public class GeneralPanel extends DefaultPreferencesComponent {
 		firePropertyChange(version);
 
 		GeneralOptions generalOptions = config.getExportConfig().getGeneralOptions();
+		generalOptions.setFailFastOnErrors(failFastOnErrors.isSelected());
 		generalOptions.setCompressedOutputFormat((OutputFormat) compressedOutputFormat.getSelectedItem());
 		generalOptions.getEnvelope().setFeatureMode((FeatureEnvelopeMode) featureEnvelope.getSelectedItem());
 		generalOptions.getEnvelope().setUseEnvelopeOnCityModel(cityModelEnvelope.isSelected());

@@ -126,6 +126,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private final InternalConfig internalConfig;
 	private final Config config;
 
+	private final boolean failOnError;
 	private final TableHelper tableHelper;
 	private final SequenceHelper sequenceHelper;
 	private final GeometryConverter geometryConverter;
@@ -142,7 +143,6 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private CityGMLVersion cityGMLVersion;
 	private JAXBMarshaller jaxbMarshaller;
 	private SAXWriter saxWriter;
-	private boolean failOnError = false;
 
 	public CityGMLImportManager(Connection connection,
 			AbstractDatabaseAdapter databaseAdapter, 
@@ -165,6 +165,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		adeManager = ADEExtensionManager.getInstance();		
 		hasADESupport = !adeManager.getEnabledExtensions().isEmpty();
 
+		failOnError = config.getImportConfig().getGeneralOptions().isFailFastOnErrors();
 		tableHelper = new TableHelper(schemaMapping);
 		sequenceHelper = new SequenceHelper(connection, databaseAdapter, config);
 		geometryConverter = new GeometryConverter(databaseAdapter, failOnError);
@@ -525,10 +526,6 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 	public InternalConfig getInternalConfig() {
 		return internalConfig;
-	}
-
-	public void setFailOnError(boolean failOnError) {
-		this.failOnError = failOnError;
 	}
 
 	protected boolean hasADESupport() {

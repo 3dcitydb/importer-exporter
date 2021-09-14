@@ -33,7 +33,16 @@ import java.nio.charset.StandardCharsets;
 
 @XmlType(name="GeneralImportOptionsType", propOrder={})
 public class GeneralOptions {
+    private Boolean failFastOnErrors = true;
     private String fileEncoding;
+
+    public boolean isFailFastOnErrors() {
+        return failFastOnErrors != null ? failFastOnErrors : true;
+    }
+
+    public void setFailFastOnErrors(boolean failFastOnErrors) {
+        this.failFastOnErrors = failFastOnErrors;
+    }
 
     public boolean isSetFileEncoding() {
         return fileEncoding != null;

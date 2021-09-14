@@ -29,18 +29,18 @@
 package org.citydb.cli.operation.exporter;
 
 import org.citydb.cli.ImpExpCli;
+import org.citydb.cli.option.DatabaseOption;
+import org.citydb.cli.option.ThreadPoolOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.config.project.exporter.OutputFormat;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.controller.Exporter;
 import org.citydb.core.plugin.CliCommand;
-import org.citydb.cli.option.DatabaseOption;
-import org.citydb.cli.option.ThreadPoolOption;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.util.log.Logger;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
@@ -64,6 +64,10 @@ public class ExportCommand extends CliCommand {
     @CommandLine.Option(names = "--compressed-format", paramLabel = "<format>",
             description = "Output format to use for compressed exports: ${COMPLETION-CANDIDATES}.")
     private CompressedFormat compressedFormat;
+
+    @CommandLine.Option(names = "--fail-fast", negatable = true,
+            description = "Fail fast on errors (default: true).")
+    private Boolean failFast;
 
     @CommandLine.ArgGroup
     private ThreadPoolOption threadPoolOption;
@@ -121,6 +125,10 @@ public class ExportCommand extends CliCommand {
             exportConfig.getGeneralOptions().setCompressedOutputFormat(compressedFormat == CompressedFormat.cityjson ?
                     OutputFormat.CITYJSON :
                     OutputFormat.CITYGML);
+        }
+
+        if (failFast != null) {
+            exportConfig.getGeneralOptions().setFailFastOnErrors(failFast);
         }
 
         if (queryOption != null) {

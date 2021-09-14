@@ -33,12 +33,21 @@ import java.nio.charset.StandardCharsets;
 
 @XmlType(name="GeneralExportOptionsType", propOrder={})
 public class GeneralOptions {
+    private Boolean failFastOnErrors = true;
     private String fileEncoding;
     private OutputFormat compressedOutputFormat = OutputFormat.CITYGML;
     private ExportEnvelope envelope;
 
     public GeneralOptions() {
         envelope = new ExportEnvelope();
+    }
+
+    public boolean isFailFastOnErrors() {
+        return failFastOnErrors != null ? failFastOnErrors : true;
+    }
+
+    public void setFailFastOnErrors(boolean failFastOnErrors) {
+        this.failFastOnErrors = failFastOnErrors;
     }
 
     public boolean isSetFileEncoding() {
