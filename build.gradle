@@ -17,8 +17,13 @@ subprojects {
     version parent.version
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        compileJava.options.encoding = 'UTF-8'
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(11)
+        }
+        compileJava {
+            options.release = 8
+            options.encoding = 'UTF-8'
+        }
         withJavadocJar()
         withSourcesJar()
     }
