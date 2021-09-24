@@ -31,6 +31,8 @@ jobs:
       with:
         push: true
         tags: 3dcitydb/impexp:${{ steps.release_version.outputs.version-without-v }},3dcitydb/impexp:latest
+        build-args: |
+          IMPEXP_VERSION=${{ steps.release_version.outputs.version }}
     -
       name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}

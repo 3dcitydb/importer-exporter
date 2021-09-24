@@ -12,6 +12,10 @@ jobs:
 
     steps:
     -
+      name: Parse short sha
+      uses: benjlevesque/short-sha@v1
+      id: short-sha
+    -
       name: Checkout repo
       uses: actions/checkout@v2
     -
@@ -28,6 +32,8 @@ jobs:
       with:
         push: true
         tags: 3dcitydb/impexp:edge
+        build-args: |
+          IMPEXP_VERSION=${{ steps.short-sha.outputs.sha }}
     -
       name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
