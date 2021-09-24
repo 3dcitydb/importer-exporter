@@ -11,7 +11,7 @@ jobs:
     steps:
     -
       name: Parse short sha
-      uses: benjlevesque/short-sha@v1
+      uses: benjlevesque/short-sha@v1.2
       id: short-sha
     -
       name: Checkout repo
