@@ -28,5 +28,5 @@ ext {
     appCliName = 'impexp'
 
     // documentation
-    docUrl = 'https://3dcitydb-docs.readthedocs.io/en/release-v4.3.0/'
+    docUrl = 'https://3dcitydb-docs.readthedocs.io/en/latest/'
 }
