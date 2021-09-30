@@ -23,7 +23,7 @@ Change Log
 * CityGML/CityJSON import and export operations now fail fast on errors by default. [#215](https://github.com/3dcitydb/importer-exporter/pull/215)
 * Avoid pollution of database schema with temporary tables in case an import or export operation terminates
   abnormally. [#190](https://github.com/3dcitydb/importer-exporter/pull/190)
-* *Breaking:* Refactored of Plugin API. [#200](https://github.com/3dcitydb/importer-exporter/pull/200)
+* *Breaking:* Refactoring of the Plugin API. [#200](https://github.com/3dcitydb/importer-exporter/pull/200)
 * *Breaking:* Replaced `impexp-client` module with two separate modules `impexp-client-cli` and `impexp-client-gui` to enable
   Docker images for the command-line interface. [#187](https://github.com/3dcitydb/importer-exporter/pull/187)
 * Moved installer build script to [3dcitydb-suite](https://github.com/3dcitydb/3dcitydb-suite) repository. [#186](https://github.com/3dcitydb/importer-exporter/pull/186)
