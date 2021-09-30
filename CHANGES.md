@@ -1,6 +1,40 @@
 Change Log
 ==========
 
+### 5.0.0 - tbd
+
+##### Additions
+* Added Docker files to build your own images for the Importer/Exporter command-line interface. Pre-built Docker images
+  are available from Docker Hub at https://hub.docker.com/r/3dcitydb/impexp. [#209](https://github.com/3dcitydb/importer-exporter/pull/209)
+* Added an import list filter to the import operation for both the GUI and the CLI that allows a user to provide a CSV
+  file containing identifiers of features that shall be imported or skipped. [#202](https://github.com/3dcitydb/importer-exporter/pull/202)
+* Enhanced feature version filter to support searching for terminated features. [#192](https://github.com/3dcitydb/importer-exporter/pull/192),
+  [#185](https://github.com/3dcitydb/importer-exporter/issues/185)
+* Added *Plugins* section to the preferences tab of the Importer/Exporter GUI that lists all installed and available
+  plugins and lets a user dynamically enable and disable plugins. [#194](https://github.com/3dcitydb/importer-exporter/pull/194)
+* Added `FeatureImportExtension` plugin extension that lets you hook your code into the import operation. [#195](https://github.com/3dcitydb/importer-exporter/pull/195)
+* `MetadataProvider` is now a plugin extension in its own right and can be used without `FeatureExportExtension`.
+* Affine transformations are now also available for the CityGML/CityJSON export operation. [#196](https://github.com/3dcitydb/importer-exporter/pull/196)
+* Added support for importing `gml:MultiGeometry` objects in case they only contain points or curves.
+* Added support for providing database connection details via environment variables when running the Importer/Exporter
+  on the command line. [#212](https://github.com/3dcitydb/importer-exporter/pull/212)
+
+##### Changes
+* CityGML/CityJSON import and export operations now fail fast on errors by default. [#215](https://github.com/3dcitydb/importer-exporter/pull/215)
+* Avoid pollution of database schema with temporary tables in case an import or export operation terminates
+  abnormally. [#190](https://github.com/3dcitydb/importer-exporter/pull/190)
+* *Breaking:* Refactored of Plugin API. [#200](https://github.com/3dcitydb/importer-exporter/pull/200)
+* *Breaking:* Replaced `impexp-client` module with two separate modules `impexp-client-cli` and `impexp-client-gui` to enable
+  Docker images for the command-line interface. [#187](https://github.com/3dcitydb/importer-exporter/pull/187)
+* Moved installer build script to [3dcitydb-suite](https://github.com/3dcitydb/3dcitydb-suite) repository. [#186](https://github.com/3dcitydb/importer-exporter/pull/186)
+* *Breaking:* Restructured source code to avoid packages being spread over different modules.
+
+##### Fixes
+* Fixed inconsistent behaviour of the feature version filter for different CLI commands. [#188](https://github.com/3dcitydb/importer-exporter/pull/188)
+* Fixed NPE during imports when at least one ADE extension is loaded and the dataset contains 3DCityDB ADE properties.
+* Fixed `StatementFinalizer` of the Tomcat JDBC pool to be thread-safe to avoid that connections cannot be released
+  from the pool. [#189](https://github.com/3dcitydb/importer-exporter/pull/189)
+
 ### 4.3.0 - 2021-04-28
 
 ##### Additions
