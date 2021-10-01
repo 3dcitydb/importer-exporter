@@ -35,6 +35,10 @@ Change Log
 * Fixed `StatementFinalizer` of the Tomcat JDBC pool to be thread-safe to avoid that connections cannot be released
   from the pool. [#189](https://github.com/3dcitydb/importer-exporter/pull/189)
 
+##### Miscellaneous
+* Updated PostgreSQL driver to 42.2.23 and Oracle driver to 21.1.0.
+* Updated citygml4j to 2.11.4.
+
 ### 4.3.0 - 2021-04-28
 
 ##### Additions
