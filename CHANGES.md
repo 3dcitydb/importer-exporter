@@ -18,6 +18,7 @@ Change Log
 * Added support for importing `gml:MultiGeometry` objects in case they only contain points or curves.
 * Added support for providing database connection details via environment variables when running the Importer/Exporter
   on the command line. [#212](https://github.com/3dcitydb/importer-exporter/pull/212)
+* CityJSON output now uses the latest CityJSON version 1.0.3.
 
 ##### Changes
 * CityGML/CityJSON import and export operations now fail fast on errors by default. [#215](https://github.com/3dcitydb/importer-exporter/pull/215)
