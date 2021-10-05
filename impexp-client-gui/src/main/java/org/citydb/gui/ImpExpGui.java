@@ -416,8 +416,9 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	public void restoreDefaults() {
-		if (consoleWindow.isVisible() != config.getGuiConfig().getConsoleWindow().isDetached())
+		if (consoleWindow.isVisible() != config.getGuiConfig().getConsoleWindow().isDetached()) {
 			enableConsoleWindow(config.getGuiConfig().getConsoleWindow().isDetached(), false);
+		}
 
 		consoleWindow.setSize(0, 0);
 		showWindow();
