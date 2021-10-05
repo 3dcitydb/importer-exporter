@@ -832,9 +832,9 @@ public class MapWindow extends JDialog implements EventHandler {
 		// create default values for main window
 		if (x == null || y == null || width == null || height == null) {
 			JFrame mainFrame = viewController.getTopFrame();
-			x = mainFrame.getLocation().x + 10;
-			y = mainFrame.getLocation().y + 10;
-			width = 1024;
+			x = mainFrame.getLocation().x + 20;
+			y = mainFrame.getLocation().y + 20;
+			width = 1152;
 			height = 768;
 
 			Toolkit t = Toolkit.getDefaultToolkit();
