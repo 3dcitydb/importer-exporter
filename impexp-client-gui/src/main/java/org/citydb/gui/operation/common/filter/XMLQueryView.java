@@ -344,10 +344,11 @@ public class XMLQueryView extends FilterView<QueryConfig> {
             log.error("Validation aborted due to fatal errors.");
         }
 
-        if (errors[0] > 0)
+        if (errors[0] > 0) {
             log.warn(errors[0] + " error(s) reported while validating the XML query.");
-        else
+        } else {
             log.info("The XML query is valid.");
+        }
     }
 
     private QueryConfig unmarshalQuery() {
