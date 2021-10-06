@@ -10,9 +10,9 @@ Change Log
   file containing identifiers of features that shall be imported or skipped. [#202](https://github.com/3dcitydb/importer-exporter/pull/202)
 * Enhanced feature version filter to support searching for terminated features. [#192](https://github.com/3dcitydb/importer-exporter/pull/192),
   [#185](https://github.com/3dcitydb/importer-exporter/issues/185)
-* Added *Plugins* section to the preferences tab of the Importer/Exporter GUI that lists all installed and available
+* Added a *Plugins* section to the preferences tab of the Importer/Exporter GUI that lists all installed and available
   plugins and lets a user dynamically enable and disable plugins. [#194](https://github.com/3dcitydb/importer-exporter/pull/194)
-* Added `FeatureImportExtension` plugin extension that lets you hook your code into the import operation. [#195](https://github.com/3dcitydb/importer-exporter/pull/195)
+* Added the `FeatureImportExtension` plugin extension that lets you hook your code into the import operation. [#195](https://github.com/3dcitydb/importer-exporter/pull/195)
 * `MetadataProvider` is now a plugin extension in its own right and can be used without `FeatureExportExtension`.
 * Affine transformations are now also available for the CityGML/CityJSON export operation. [#196](https://github.com/3dcitydb/importer-exporter/pull/196)
 * Added support for importing `gml:MultiGeometry` objects in case they only contain points or curves.
