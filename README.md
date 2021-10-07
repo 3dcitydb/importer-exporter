@@ -104,17 +104,36 @@ clone the repository to your local machine and run the following command from th
     > gradlew installDist
 
 The script automatically downloads all required dependencies for building and running the Importer/Exporter.
-So make sure you are connected to the internet. The build process runs on all major operating systems and only
+So, make sure you are connected to the internet. The build process runs on all major operating systems and only
 requires a Java 8 JDK or higher to run.
 
-If the build was successful, you will find the Importer/Exporter package under `impexp-client/build/install`.
-To launch the application, simply use the starter scripts in the output folder.
+If the build was successful, you will find the Importer/Exporter package under
+`impexp-client-gui/build/install`. To launch the application with GUI, simply use the
+starter scripts in the output folder. The executables for the command-line version can be found in the `lib` subfolder.
 
-You may also choose to build an installer for the Importer/Exporter with the following command.
+If you want to build an installation wizard for the Importer/Exporter, please follow the instructions in the
+[3dcitydb-suite repository](https://github.com/3dcitydb/3dcitydb-suite).
 
-    > gradlew buildInstaller
+Using with Docker
+-----------------
 
-The installer package will be available under `impexp-client/build/distributions`.
+The Importer/Exporter command-line tool is also available as Docker image. You can either build the image
+yourself using one of the provided Docker files or use a pre-built image from Docker Hub at
+https://hub.docker.com/r/3dcitydb/impexp.
+
+To build the image, clone the repository to your local machine and run the following command from the root of the
+repository:
+
+    > docker build -t 3dcitydb/impexp .
+
+Using the Docker image of the Importer/Exporter is simple:
+
+    > docker run --rm --name impexp 3dcitydb/impexp
+
+This will show the help message and all available commands of the Importer/Exporter.
+
+More details on how to use the Importer/Exporter with Docker can be found in the
+[online documentation](https://3dcitydb-docs.readthedocs.io/en/release-v4.3.0/).
 
 Cooperation partners and supporters
 -----------------------------------
