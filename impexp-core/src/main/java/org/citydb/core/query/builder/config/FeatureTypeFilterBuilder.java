@@ -47,7 +47,6 @@ public class FeatureTypeFilterBuilder {
 	protected FeatureTypeFilterBuilder(Query query, SchemaMapping schemaMapping) {
 		this.query = query;
 		this.schemaMapping = schemaMapping;
-
 		adeManager = ADEExtensionManager.getInstance();
 	}
 
@@ -57,27 +56,40 @@ public class FeatureTypeFilterBuilder {
 
 		try {
 			for (QName typeName : featureTypeFilterConfig.getTypeNames()) {
-				if (typeName == null)
+				if (typeName == null) {
 					throw new QueryBuildException("Failed to parse the qualified names of the feature types.");
+				}
 
 				FeatureType featureType = schemaMapping.getFeatureType(typeName);
-				if (featureType == null)
+				if (featureType == null) {
 					throw new QueryBuildException("The feature type '" + typeName + "' is not supported.");
+				}
+
+				ADEExtension extension = adeManager.getExtensionByObjectClassId(featureType.getObjectClassId());
+				if (extension != null && !extension.isEnabled()) {
+					continue;
+				}
 
 				// check whether all feature types share the same CityGML version
 				CityGMLVersion featureVersion = featureType.getSchema().getCityGMLVersion(typeName.getNamespaceURI());
-				if (featureVersion == null)
+				if (featureVersion == null) {
 					throw new QueryBuildException("Failed to find CityGML version of the feature type '" + typeName + "'.");
+				}
 
-				if (version == null)
+				if (version == null) {
 					version = featureVersion;
-				else if (version != featureVersion) 
+				} else if (version != featureVersion) {
 					throw new QueryBuildException("Mixing feature types from different CityGML versions is not supported.");
+				}
 
 				featureTypeFilter.addFeatureType(featureType);
 			}
 		} catch (FilterException e) {
 			throw new QueryBuildException("Failed to build the feature type filter.", e);
+		}
+
+		if (featureTypeFilter.isEmpty()) {
+			throw new QueryBuildException("The provided feature type(s) cannot be queried from the database.");
 		}
 
 		// set the CityGML target version
@@ -91,24 +103,32 @@ public class FeatureTypeFilterBuilder {
 
 		try {
 			for (QName typeName : featureTypeFilterConfig.getTypeNames()) {
-				if (typeName == null)
+				if (typeName == null) {
 					continue;
+				}
 
 				FeatureType featureType = schemaMapping.getFeatureType(typeName);
-				if (featureType == null)
+				if (featureType == null) {
 					continue;
+				}
 
-				if (!featureType.isAvailableForCityGML(version))
+				if (!featureType.isAvailableForCityGML(version)) {
 					continue;
+				}
 
 				ADEExtension extension = adeManager.getExtensionByObjectClassId(featureType.getObjectClassId());
-				if (extension != null && !extension.isEnabled())
+				if (extension != null && !extension.isEnabled()) {
 					continue;
+				}
 
 				featureTypeFilter.addFeatureType(featureType);
 			}
 		} catch (FilterException e) {
 			throw new QueryBuildException("Failed to build the feature type filter.", e);
+		}
+
+		if (featureTypeFilter.isEmpty()) {
+			throw new QueryBuildException("The provided feature type(s) cannot be queried from the database.");
 		}
 
 		return featureTypeFilter;
