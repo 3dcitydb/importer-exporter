@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 5.0.0 - tbd
+### 5.0.0 - 2021-10-08
 
 ##### Additions
 * Added Docker files to build your own images for the Importer/Exporter command-line interface. Pre-built Docker images
