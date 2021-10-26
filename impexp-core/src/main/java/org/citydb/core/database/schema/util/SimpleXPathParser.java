@@ -67,9 +67,9 @@ import java.util.regex.Pattern;
 
 public class SimpleXPathParser {
 	// this parser only supports XPath subset as defined in OGC 09-026r2, Annex D
-	private final String simplifiedStepExpr_ = "([^\\[]+)(?:\\[(.+)\\]$)?";
+	private final String simplifiedStepExpr_ = "([^\\[]+)(?:\\[(.+)]$)?";
 	private final String nameChar_ = "[_a-zA-Z][\\w\\-.]*";
-	private final String stringLiteral_ = "\"(?:(?:\"\")|[^\"])*?\"|'(?:(?:'')|[^\"])*?'";
+	private final String stringLiteral_ = "\"(?:\"\"|[^\"])*?\"|'(?:''|[^'])*?'";
 	private final String qName_ = "(?:(" + nameChar_ + "):)??(" + nameChar_ + ")";
 	private final String nameTest_ = "@?" + qName_;
 	private final String kindTest_ = "schema-element\\(" + qName_ + "\\)";
@@ -105,7 +105,7 @@ public class SimpleXPathParser {
 		schemaPath = new SchemaPath();
 		schemaPath.appendChild(rootNode);
 
-		xpath = xpath.trim().replaceAll("^/", "");		
+		xpath = xpath.trim().replaceAll("^/+", "");
 		String[] stepExprs = xpath.split("/", -1);
 
 		for (String stepExpr : stepExprs) {
