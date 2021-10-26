@@ -27,18 +27,7 @@
  */
 package org.citydb.core.database.schema.util;
 
-import org.citydb.core.database.schema.mapping.AbstractAttribute;
-import org.citydb.core.database.schema.mapping.AbstractPathElement;
-import org.citydb.core.database.schema.mapping.AbstractProperty;
-import org.citydb.core.database.schema.mapping.AbstractType;
-import org.citydb.core.database.schema.mapping.AbstractTypeProperty;
-import org.citydb.core.database.schema.mapping.ComplexAttribute;
-import org.citydb.core.database.schema.mapping.ComplexAttributeType;
-import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.database.schema.mapping.PathElementType;
-import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.database.schema.mapping.SimpleAttribute;
-import org.citydb.core.database.schema.mapping.SimpleType;
+import org.citydb.core.database.schema.mapping.*;
 import org.citydb.core.database.schema.path.AbstractNodePredicate;
 import org.citydb.core.database.schema.path.FeatureTypeNode;
 import org.citydb.core.database.schema.path.InvalidSchemaPathException;
@@ -46,14 +35,7 @@ import org.citydb.core.database.schema.path.SchemaPath;
 import org.citydb.core.database.schema.path.predicate.comparison.EqualToPredicate;
 import org.citydb.core.database.schema.path.predicate.logical.BinaryLogicalPredicate;
 import org.citydb.core.database.schema.path.predicate.logical.LogicalPredicateName;
-import org.citydb.core.query.filter.selection.expression.AbstractLiteral;
-import org.citydb.core.query.filter.selection.expression.BooleanLiteral;
-import org.citydb.core.query.filter.selection.expression.DateLiteral;
-import org.citydb.core.query.filter.selection.expression.DoubleLiteral;
-import org.citydb.core.query.filter.selection.expression.LiteralType;
-import org.citydb.core.query.filter.selection.expression.LongLiteral;
-import org.citydb.core.query.filter.selection.expression.StringLiteral;
-import org.citydb.core.query.filter.selection.expression.TimestampLiteral;
+import org.citydb.core.query.filter.selection.expression.*;
 import org.citydb.core.registry.ObjectRegistry;
 
 import javax.xml.XMLConstants;
@@ -62,6 +44,8 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -106,7 +90,7 @@ public class SimpleXPathParser {
 		schemaPath.appendChild(rootNode);
 
 		xpath = xpath.trim().replaceAll("^/+", "");
-		String[] stepExprs = xpath.split("/", -1);
+		List<String> stepExprs = splitXPath(xpath);
 
 		for (String stepExpr : stepExprs) {
 			if (stepExpr.isEmpty())
@@ -495,4 +479,29 @@ public class SimpleXPathParser {
 		return literal;
 	}
 
+	private List<String> splitXPath(String xpath) {
+		List<String> tokens = new ArrayList<>();
+		char beginStringLiteral = 0;
+		boolean isStringLiteral = false;
+		int offset = 0;
+		int next;
+
+		for (next = 0; next < xpath.length(); next++) {
+			char ch = xpath.charAt(next);
+			if (ch == '\'' || ch == '"') {
+				if (!isStringLiteral) {
+					beginStringLiteral = ch;
+					isStringLiteral = true;
+				} else if (ch == beginStringLiteral) {
+					isStringLiteral = false;
+				}
+			} else if (ch == '/' && !isStringLiteral) {
+				tokens.add(xpath.substring(offset, next));
+				offset = next + 1;
+			}
+		}
+
+		tokens.add(xpath.substring(offset, next));
+		return tokens;
+	}
 }
