@@ -28,7 +28,6 @@
 
 package org.citydb.cli.operation.visExporter;
 
-import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.option.DatabaseOption;
 import org.citydb.cli.option.ThreadPoolOption;
 import org.citydb.config.Config;
@@ -46,8 +45,7 @@ import java.nio.file.Path;
 
 @CommandLine.Command(
         name = "export-vis",
-        description = "Exports data in KML/COLLADA/glTF format for visualization.",
-        versionProvider = ImpExpCli.class
+        description = "Exports data in KML/COLLADA/glTF format for visualization."
 )
 public class ExportVisCommand extends CliCommand {
     @CommandLine.Option(names = {"-o", "--output"}, required = true,

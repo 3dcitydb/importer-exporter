@@ -28,7 +28,6 @@
 
 package org.citydb.cli.operation.deleter;
 
-import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.option.DatabaseOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.common.IdList;
@@ -48,8 +47,7 @@ import java.nio.file.Path;
 
 @CommandLine.Command(
         name = "delete",
-        description = "Deletes top-level city objects from the database.",
-        versionProvider = ImpExpCli.class
+        description = "Deletes top-level city objects from the database."
 )
 public class DeleteCommand extends CliCommand {
     enum Mode {delete, terminate};

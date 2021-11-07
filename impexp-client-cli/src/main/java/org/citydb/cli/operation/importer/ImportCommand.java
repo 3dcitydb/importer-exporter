@@ -28,7 +28,6 @@
 
 package org.citydb.cli.operation.importer;
 
-import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
 import org.citydb.cli.option.CliOptionBuilder;
 import org.citydb.cli.option.DatabaseOption;
@@ -53,8 +52,7 @@ import java.util.List;
 
 @CommandLine.Command(
         name = "import",
-        description = "Imports data in CityGML or CityJSON format.",
-        versionProvider = ImpExpCli.class
+        description = "Imports data in CityGML or CityJSON format."
 )
 public class ImportCommand extends CliCommand {
     @CommandLine.Parameters(paramLabel = "<file>", arity = "1",

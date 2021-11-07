@@ -31,6 +31,7 @@ package org.citydb.gui;
 import com.formdev.flatlaf.FlatLightLaf;
 import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
+import org.citydb.cli.option.StartupProgressListener;
 import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
@@ -40,8 +41,6 @@ import org.citydb.core.database.DatabaseController;
 import org.citydb.core.plugin.CliCommand;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginManager;
-import org.citydb.cli.option.StartupProgressListener;
-import org.citydb.gui.plugin.GuiExtension;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.SplashScreen;
@@ -51,6 +50,7 @@ import org.citydb.gui.operation.importer.CityGMLImportPlugin;
 import org.citydb.gui.operation.preferences.PreferencesPlugin;
 import org.citydb.gui.operation.preferences.plugin.PluginsOverviewPlugin;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
+import org.citydb.gui.plugin.GuiExtension;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.util.log.Logger;
@@ -65,8 +65,7 @@ import java.util.Locale;
 
 @CommandLine.Command(
         name = GuiCommand.NAME,
-        description = "Starts the graphical user interface.",
-        versionProvider = ImpExpCli.class
+        description = "Starts the graphical user interface."
 )
 public class GuiCommand extends CliCommand implements StartupProgressListener {
     public static final String NAME = "gui";

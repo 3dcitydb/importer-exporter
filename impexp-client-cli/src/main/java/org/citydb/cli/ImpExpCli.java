@@ -82,9 +82,13 @@ import java.util.stream.Stream;
 
 @CommandLine.Command(
         name = CliConstants.CLI_NAME,
+        scope = CommandLine.ScopeType.INHERIT,
         description = "Command-line interface for the 3D City Database.",
         synopsisSubcommandLabel = "COMMAND",
+        mixinStandardHelpOptions = true,
         versionProvider = ImpExpCli.class,
+        showAtFileInUsageHelp = true,
+        sortOptions = false,
         subcommands = {
                 CommandLine.HelpCommand.class,
                 ImportCommand.class,
