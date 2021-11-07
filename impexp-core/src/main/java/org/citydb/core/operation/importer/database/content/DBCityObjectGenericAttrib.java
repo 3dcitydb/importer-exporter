@@ -36,6 +36,8 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.generics.*;
 
 import java.sql.*;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 public class DBCityObjectGenericAttrib implements DBImporter {
 	private final Connection batchConn;
@@ -177,7 +179,7 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 
 				DateAttribute dateAttribute = (DateAttribute)genericAttribute;
 				if (dateAttribute.isSetValue())
-					ps.setTimestamp(7, Timestamp.valueOf(dateAttribute.getValue().atStartOfDay()));
+					ps.setObject(7, OffsetDateTime.of(dateAttribute.getValue().atStartOfDay(), ZoneOffset.UTC));
 				else
 					ps.setNull(7, Types.TIMESTAMP);
 

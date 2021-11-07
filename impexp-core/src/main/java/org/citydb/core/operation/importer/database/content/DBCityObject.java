@@ -252,7 +252,7 @@ public class DBCityObject implements DBImporter {
 		if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
 			creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
 			if (creationDate != null)
-				creationDate = creationDate.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+				creationDate = creationDate.withZoneSameLocal(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
 		}
 
 		if (creationDate == null)
@@ -265,7 +265,7 @@ public class DBCityObject implements DBImporter {
 		if (isCityObject && (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT)) {
 			terminationDate = Util.getTerminationDate((AbstractCityObject) object, terminationDateMode == TerminationDateMode.INHERIT);
 			if (terminationDate != null)
-				terminationDate = terminationDate.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+				terminationDate = terminationDate.withZoneSameLocal(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
 		}
 
 		if (terminationDate == null)
