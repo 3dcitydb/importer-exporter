@@ -27,14 +27,7 @@
  */
 package org.citydb.core.operation.exporter.database.content;
 
-import org.citydb.core.database.schema.mapping.AbstractJoin;
-import org.citydb.core.database.schema.mapping.AbstractObjectType;
-import org.citydb.core.database.schema.mapping.AbstractTypeProperty;
-import org.citydb.core.database.schema.mapping.FeatureProperty;
-import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.database.schema.mapping.Join;
-import org.citydb.core.database.schema.mapping.JoinTable;
-import org.citydb.core.database.schema.mapping.MappingConstants;
+import org.citydb.core.database.schema.mapping.*;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.LiteralList;
@@ -51,12 +44,7 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends AbstractTypeExporter {
 	protected final Connection connection;

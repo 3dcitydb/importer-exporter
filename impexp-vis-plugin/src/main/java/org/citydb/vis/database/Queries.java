@@ -27,13 +27,13 @@
  */
 package org.citydb.vis.database;
 
+import org.citydb.config.project.visExporter.DisplayForm;
+import org.citydb.config.project.visExporter.Lod0FootprintMode;
+import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.core.ade.visExporter.ADEVisExportException;
 import org.citydb.core.ade.visExporter.ADEVisExportManager;
 import org.citydb.core.ade.visExporter.ADEVisExportQueryHelper;
 import org.citydb.core.ade.visExporter.ADEVisExporter;
-import org.citydb.config.project.visExporter.DisplayForm;
-import org.citydb.config.project.visExporter.Lod0FootprintMode;
-import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.util.log.Logger;

@@ -27,18 +27,7 @@
  */
 package org.citydb.core.database.schema.path;
 
-import org.citydb.core.database.schema.mapping.AbstractPathElement;
-import org.citydb.core.database.schema.mapping.ComplexAttribute;
-import org.citydb.core.database.schema.mapping.ComplexProperty;
-import org.citydb.core.database.schema.mapping.ComplexType;
-import org.citydb.core.database.schema.mapping.FeatureProperty;
-import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.database.schema.mapping.GeometryProperty;
-import org.citydb.core.database.schema.mapping.ImplicitGeometryProperty;
-import org.citydb.core.database.schema.mapping.ObjectProperty;
-import org.citydb.core.database.schema.mapping.ObjectType;
-import org.citydb.core.database.schema.mapping.PathElementType;
-import org.citydb.core.database.schema.mapping.SimpleAttribute;
+import org.citydb.core.database.schema.mapping.*;
 
 public class SchemaPath {
 	private int size;

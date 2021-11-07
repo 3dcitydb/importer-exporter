@@ -27,18 +27,18 @@
  */
 package org.citydb.core.operation.exporter.writer.citygml;
 
-import org.citydb.util.concurrent.SingleWorkerPool;
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.EventType;
 import org.citydb.core.operation.exporter.util.Metadata;
 import org.citydb.core.operation.exporter.writer.FeatureWriteException;
 import org.citydb.core.operation.exporter.writer.FeatureWriter;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.writer.SequentialWriter;
 import org.citydb.core.writer.XMLWriterWorkerFactory;
+import org.citydb.util.concurrent.SingleWorkerPool;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
 import org.citygml4j.geometry.Point;

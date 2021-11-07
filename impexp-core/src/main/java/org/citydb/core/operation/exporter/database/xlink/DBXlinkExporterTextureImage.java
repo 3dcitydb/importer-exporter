@@ -30,12 +30,12 @@ package org.citydb.core.operation.exporter.database.xlink;
 import org.citydb.config.Config;
 import org.citydb.core.database.adapter.BlobExportAdapter;
 import org.citydb.core.database.adapter.BlobType;
-import org.citydb.util.event.global.CounterEvent;
-import org.citydb.util.event.global.CounterType;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.OutputFile;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureFile;
+import org.citydb.util.event.global.CounterEvent;
+import org.citydb.util.event.global.CounterType;
+import org.citydb.util.log.Logger;
 
 import java.io.File;
 import java.io.IOException;

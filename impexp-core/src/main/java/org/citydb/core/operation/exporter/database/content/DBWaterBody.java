@@ -32,9 +32,9 @@ import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.util.AttributeValueSplitter;
-import org.citydb.core.operation.exporter.util.SplitValue;
 import org.citydb.core.operation.exporter.util.DefaultGeometrySetterHandler;
 import org.citydb.core.operation.exporter.util.GeometrySetterHandler;
+import org.citydb.core.operation.exporter.util.SplitValue;
 import org.citydb.core.query.filter.lod.LodFilter;
 import org.citydb.core.query.filter.lod.LodIterator;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;
@@ -55,11 +55,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 	private final DBSurfaceGeometry geometryExporter;

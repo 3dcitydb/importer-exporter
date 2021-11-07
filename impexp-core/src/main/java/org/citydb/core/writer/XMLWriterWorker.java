@@ -27,8 +27,8 @@
  */
 package org.citydb.core.writer;
 
-import org.citydb.util.concurrent.Worker;
 import org.citydb.config.project.global.LogLevel;
+import org.citydb.util.concurrent.Worker;
 import org.citydb.util.event.EventDispatcher;
 import org.citydb.util.event.global.InterruptEvent;
 import org.citygml4j.util.xml.SAXEventBuffer;

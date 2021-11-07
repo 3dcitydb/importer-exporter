@@ -32,9 +32,9 @@ import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.util.AttributeValueSplitter;
-import org.citydb.core.operation.exporter.util.SplitValue;
 import org.citydb.core.operation.exporter.util.DefaultGeometrySetterHandler;
 import org.citydb.core.operation.exporter.util.GeometrySetterHandler;
+import org.citydb.core.operation.exporter.util.SplitValue;
 import org.citydb.core.query.filter.lod.LodFilter;
 import org.citydb.core.query.filter.lod.LodIterator;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;
@@ -43,12 +43,7 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
-import org.citygml4j.model.citygml.transportation.AbstractTransportationObject;
-import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficArea;
-import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficAreaProperty;
-import org.citygml4j.model.citygml.transportation.TrafficArea;
-import org.citygml4j.model.citygml.transportation.TrafficAreaProperty;
-import org.citygml4j.model.citygml.transportation.TransportationComplex;
+import org.citygml4j.model.citygml.transportation.*;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
@@ -56,11 +51,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DBTransportationComplex extends AbstractFeatureExporter<TransportationComplex> {
 	private final DBSurfaceGeometry geometryExporter;

@@ -27,17 +27,17 @@
  */
 package org.citydb.core.operation.deleter.concurrent;
 
-import org.citydb.util.concurrent.Worker;
-import org.citydb.util.concurrent.WorkerFactory;
 import org.citydb.config.Config;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.connection.ConnectionManager;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.deleter.database.DBSplittingResult;
 import org.citydb.core.operation.deleter.util.DeleteLogger;
 import org.citydb.core.operation.deleter.util.InternalConfig;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerFactory;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.log.Logger;
 
 import java.sql.Connection;
 import java.sql.SQLException;

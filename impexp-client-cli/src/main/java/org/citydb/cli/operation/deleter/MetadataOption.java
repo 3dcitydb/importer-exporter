@@ -28,9 +28,9 @@
 
 package org.citydb.cli.operation.deleter;
 
+import org.citydb.cli.option.CliOption;
 import org.citydb.config.project.deleter.Continuation;
 import org.citydb.config.project.global.UpdatingPersonMode;
-import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
 public class MetadataOption implements CliOption {

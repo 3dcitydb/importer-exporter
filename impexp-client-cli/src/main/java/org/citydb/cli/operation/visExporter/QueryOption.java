@@ -28,16 +28,12 @@
 
 package org.citydb.cli.operation.visExporter;
 
+import org.citydb.cli.option.*;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.visExporter.SimpleVisQuery;
-import org.citydb.cli.option.CliOption;
-import org.citydb.cli.option.FeatureVersionOption;
-import org.citydb.cli.option.ResourceIdOption;
-import org.citydb.cli.option.SQLSelectOption;
-import org.citydb.cli.option.TypeNamesOption;
 import org.citydb.core.registry.ObjectRegistry;
 import picocli.CommandLine;
 

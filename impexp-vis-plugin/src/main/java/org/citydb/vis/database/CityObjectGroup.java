@@ -33,9 +33,9 @@ import org.citydb.config.project.visExporter.ColladaOptions;
 import org.citydb.config.project.visExporter.Styles;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.BlobExportAdapter;
+import org.citydb.core.query.Query;
 import org.citydb.util.event.EventDispatcher;
 import org.citydb.util.log.Logger;
-import org.citydb.core.query.Query;
 import org.citydb.vis.util.BalloonTemplateHandler;
 import org.citydb.vis.util.ElevationServiceHandler;
 

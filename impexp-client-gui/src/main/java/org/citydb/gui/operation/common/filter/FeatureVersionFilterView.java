@@ -32,10 +32,10 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.DatePicker;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;
 import javax.swing.text.DateFormatter;
@@ -48,12 +48,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Date;
 
 public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFilter> {

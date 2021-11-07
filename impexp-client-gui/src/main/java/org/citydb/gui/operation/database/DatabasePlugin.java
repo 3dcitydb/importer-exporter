@@ -29,9 +29,9 @@ package org.citydb.gui.operation.database;
 
 import org.citydb.config.Config;
 import org.citydb.core.database.connection.ConnectionViewHandler;
+import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.gui.operation.database.preferences.DatabasePreferences;
 import org.citydb.gui.operation.database.view.DatabaseView;
-import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.gui.plugin.preferences.Preferences;
 import org.citydb.gui.plugin.preferences.PreferencesExtension;
 import org.citydb.gui.plugin.view.View;

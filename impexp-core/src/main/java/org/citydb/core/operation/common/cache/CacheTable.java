@@ -28,26 +28,7 @@
 package org.citydb.core.operation.common.cache;
 
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
-import org.citydb.core.operation.common.cache.model.AbstractCacheTableModel;
-import org.citydb.core.operation.common.cache.model.CacheTableBasic;
-import org.citydb.core.operation.common.cache.model.CacheTableIdList;
-import org.citydb.core.operation.common.cache.model.CacheTableDeprecatedMaterial;
-import org.citydb.core.operation.common.cache.model.CacheTableGeometryGmlId;
-import org.citydb.core.operation.common.cache.model.CacheTableGlobalAppearance;
-import org.citydb.core.operation.common.cache.model.CacheTableGroupToCityObject;
-import org.citydb.core.operation.common.cache.model.CacheTableLibraryObject;
-import org.citydb.core.operation.common.cache.model.CacheTableLinearRing;
-import org.citydb.core.operation.common.cache.model.CacheTableModel;
-import org.citydb.core.operation.common.cache.model.CacheTableObjectGmlId;
-import org.citydb.core.operation.common.cache.model.CacheTableSolidGeometry;
-import org.citydb.core.operation.common.cache.model.CacheTableSurfaceDataToTexImage;
-import org.citydb.core.operation.common.cache.model.CacheTableSurfaceGeometry;
-import org.citydb.core.operation.common.cache.model.CacheTableTextureAssociation;
-import org.citydb.core.operation.common.cache.model.CacheTableTextureAssociationTarget;
-import org.citydb.core.operation.common.cache.model.CacheTableTextureCoordList;
-import org.citydb.core.operation.common.cache.model.CacheTableTextureFile;
-import org.citydb.core.operation.common.cache.model.CacheTableTextureFileId;
-import org.citydb.core.operation.common.cache.model.CacheTableTextureParam;
+import org.citydb.core.operation.common.cache.model.*;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import java.sql.Connection;

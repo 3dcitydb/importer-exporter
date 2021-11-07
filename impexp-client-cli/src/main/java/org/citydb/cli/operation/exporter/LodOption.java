@@ -28,10 +28,10 @@
 
 package org.citydb.cli.operation.exporter;
 
+import org.citydb.cli.option.CliOption;
 import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.lod.LodFilterMode;
 import org.citydb.config.project.query.filter.lod.LodSearchMode;
-import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
 public class LodOption implements CliOption {

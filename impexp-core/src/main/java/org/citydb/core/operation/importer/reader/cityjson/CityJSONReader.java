@@ -28,17 +28,17 @@
 
 package org.citydb.core.operation.importer.reader.cityjson;
 
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.EventType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.operation.importer.filter.selection.counter.CounterFilter;
 import org.citydb.core.operation.importer.reader.FeatureReadException;
 import org.citydb.core.operation.importer.reader.FeatureReader;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citygml4j.builder.cityjson.json.io.reader.CityJSONChunkReader;
 import org.citygml4j.builder.cityjson.json.io.reader.CityJSONInputFactory;
 import org.citygml4j.builder.cityjson.json.io.reader.CityJSONReadException;

@@ -27,16 +27,7 @@
  */
 package org.citydb.core.query.geometry.config;
 
-import org.citydb.config.geometry.AbstractGeometry;
-import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.geometry.LineString;
-import org.citydb.config.geometry.MultiLineString;
-import org.citydb.config.geometry.MultiPoint;
-import org.citydb.config.geometry.MultiPolygon;
-import org.citydb.config.geometry.Point;
-import org.citydb.config.geometry.Polygon;
-import org.citydb.config.geometry.PositionList;
+import org.citydb.config.geometry.*;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.query.geometry.GeometryParseException;

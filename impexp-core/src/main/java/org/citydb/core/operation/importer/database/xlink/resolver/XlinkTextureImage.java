@@ -29,10 +29,10 @@ package org.citydb.core.operation.importer.database.xlink.resolver;
 
 import org.citydb.core.database.adapter.BlobImportAdapter;
 import org.citydb.core.database.adapter.BlobType;
+import org.citydb.core.operation.common.xlink.DBXlinkTextureFile;
 import org.citydb.util.event.global.CounterEvent;
 import org.citydb.util.event.global.CounterType;
 import org.citydb.util.log.Logger;
-import org.citydb.core.operation.common.xlink.DBXlinkTextureFile;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

@@ -29,19 +29,13 @@ package org.citydb.core.util;
 
 import org.citydb.config.Config;
 import org.citydb.config.project.global.ProxyConfig;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.util.event.EventDispatcher;
 import org.citydb.util.event.global.ProxyServerUnavailableEvent;
 import org.citydb.util.log.Logger;
-import org.citydb.core.registry.ObjectRegistry;
 
 import java.io.IOException;
-import java.net.Authenticator;
-import java.net.InetSocketAddress;
-import java.net.PasswordAuthentication;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.SocketAddress;
-import java.net.URI;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;

@@ -27,11 +27,7 @@
  */
 package org.citydb.core.operation.importer.filter.type;
 
-import org.citydb.core.database.schema.mapping.AbstractProperty;
-import org.citydb.core.database.schema.mapping.FeatureProperty;
-import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.database.schema.mapping.PathElementType;
-import org.citydb.core.database.schema.mapping.SchemaMapping;
+import org.citydb.core.database.schema.mapping.*;
 import org.citydb.core.query.filter.FilterException;
 
 import javax.xml.namespace.QName;

@@ -34,6 +34,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LogFileMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.ColorPicker;
 import org.citydb.gui.components.TitledPanel;
@@ -41,7 +42,6 @@ import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
-import org.citydb.core.util.CoreConstants;
 
 import javax.swing.*;
 import javax.swing.text.Style;

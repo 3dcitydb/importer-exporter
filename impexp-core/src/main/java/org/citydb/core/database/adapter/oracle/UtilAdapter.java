@@ -42,15 +42,7 @@ import org.citydb.core.database.connection.DatabaseMetaData;
 import org.citydb.core.database.connection.DatabaseMetaData.Versioning;
 import org.citydb.core.database.version.DatabaseVersion;
 
-import java.sql.Array;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Struct;
-import java.sql.Types;
+import java.sql.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UtilAdapter extends AbstractUtilAdapter {

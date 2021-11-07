@@ -34,13 +34,13 @@ import org.citydb.config.project.visExporter.ColladaOptions;
 import org.citydb.config.project.visExporter.GltfOptions;
 import org.citydb.config.project.visExporter.GltfVersion;
 import org.citydb.config.project.visExporter.VisExportConfig;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.DefaultPreferencesComponent;
-import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.plugin.view.ViewController;
+import org.citydb.gui.util.GuiUtil;
 import org.citydb.textureAtlas.TextureAtlasCreator;
-import org.citydb.core.util.CoreConstants;
 import org.citydb.vis.util.VisConstants;
 
 import javax.swing.*;

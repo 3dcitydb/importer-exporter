@@ -27,10 +27,10 @@
  */
 package org.citydb.gui.operation.database.operations;
 
-import org.citydb.core.ade.ADEExtension;
-import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseOperationType;
+import org.citydb.core.ade.ADEExtension;
+import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.database.connection.ADEMetadata;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.Metadata;
@@ -38,15 +38,15 @@ import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.database.schema.mapping.SchemaMappingException;
 import org.citydb.core.database.schema.mapping.SchemaMappingValidationException;
 import org.citydb.core.database.schema.util.SchemaMappingUtil;
-import org.citydb.util.event.global.DatabaseConnectionStateEvent;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.operation.database.util.ADEInfoDialog;
 import org.citydb.gui.operation.database.util.ADEInfoRow;
 import org.citydb.gui.operation.database.util.ADETableCellRenderer;
 import org.citydb.gui.operation.database.util.ADETableModel;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.log.Logger;
 import org.citydb.gui.plugin.view.ViewController;
-import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.global.DatabaseConnectionStateEvent;
+import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import javax.xml.bind.JAXBException;

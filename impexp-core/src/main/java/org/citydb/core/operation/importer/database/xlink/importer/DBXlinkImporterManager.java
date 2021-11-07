@@ -28,11 +28,11 @@
 package org.citydb.core.operation.importer.database.xlink.importer;
 
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.cache.model.CacheTableModel;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
 
 import java.sql.SQLException;
 import java.util.HashMap;

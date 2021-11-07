@@ -28,14 +28,14 @@
 
 package org.citydb.core.operation.validator.reader.citygml;
 
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.EventType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.reader.Validator;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.stream.StreamSource;

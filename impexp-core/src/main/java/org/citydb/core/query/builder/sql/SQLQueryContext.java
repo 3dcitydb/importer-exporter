@@ -27,13 +27,7 @@
  */
 package org.citydb.core.query.builder.sql;
 
-import org.citydb.core.database.schema.mapping.AbstractJoin;
-import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.database.schema.mapping.Join;
-import org.citydb.core.database.schema.mapping.JoinTable;
-import org.citydb.core.database.schema.mapping.Joinable;
-import org.citydb.core.database.schema.mapping.PathElementType;
-import org.citydb.core.database.schema.mapping.TableRole;
+import org.citydb.core.database.schema.mapping.*;
 import org.citydb.core.database.schema.path.AbstractNode;
 import org.citydb.core.database.schema.path.FeatureTypeNode;
 import org.citydb.core.query.filter.selection.operator.logical.LogicalOperatorName;
@@ -42,13 +36,7 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SQLQueryContext {
 	private final FeatureType featureType;

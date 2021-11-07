@@ -27,13 +27,7 @@
  */
 package org.citydb.core.ade;
 
-import org.citydb.core.database.schema.mapping.AbstractObjectType;
-import org.citydb.core.database.schema.mapping.AppSchema;
-import org.citydb.core.database.schema.mapping.Metadata;
-import org.citydb.core.database.schema.mapping.Namespace;
-import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.database.schema.mapping.SchemaMappingException;
-import org.citydb.core.database.schema.mapping.SchemaMappingValidationException;
+import org.citydb.core.database.schema.mapping.*;
 import org.citydb.core.database.schema.util.SchemaMappingUtil;
 import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.ade.binding.ADEContext;
@@ -51,13 +45,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.ServiceLoader;
 
 public class ADEExtensionManager {
 	private static ADEExtensionManager instance;

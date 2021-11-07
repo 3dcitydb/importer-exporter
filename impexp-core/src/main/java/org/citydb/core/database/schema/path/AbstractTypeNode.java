@@ -27,12 +27,7 @@
  */
 package org.citydb.core.database.schema.path;
 
-import org.citydb.core.database.schema.mapping.AbstractPathElement;
-import org.citydb.core.database.schema.mapping.AbstractProperty;
-import org.citydb.core.database.schema.mapping.AbstractType;
-import org.citydb.core.database.schema.mapping.ComplexAttribute;
-import org.citydb.core.database.schema.mapping.PathElementType;
-import org.citydb.core.database.schema.mapping.SimpleAttribute;
+import org.citydb.core.database.schema.mapping.*;
 import org.citydb.core.database.schema.path.predicate.comparison.ComparisonPredicateName;
 import org.citydb.core.database.schema.path.predicate.comparison.EqualToPredicate;
 import org.citydb.core.database.schema.path.predicate.logical.BinaryLogicalPredicate;

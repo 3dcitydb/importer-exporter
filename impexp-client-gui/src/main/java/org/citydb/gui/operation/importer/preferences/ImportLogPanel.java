@@ -30,11 +30,11 @@ package org.citydb.gui.operation.importer.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportLog;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.core.util.CoreConstants;
 
 import javax.swing.*;
 import java.awt.*;

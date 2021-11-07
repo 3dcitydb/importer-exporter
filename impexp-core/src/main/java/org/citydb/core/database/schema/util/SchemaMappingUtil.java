@@ -27,38 +27,14 @@
  */
 package org.citydb.core.database.schema.util;
 
-import org.citydb.core.database.schema.mapping.AppSchemaAdapter;
-import org.citydb.core.database.schema.mapping.ComplexAttributeTypeAdapter;
-import org.citydb.core.database.schema.mapping.ComplexTypeAdapter;
-import org.citydb.core.database.schema.mapping.FeatureTypeAdapter;
-import org.citydb.core.database.schema.mapping.MarshalListener;
-import org.citydb.core.database.schema.mapping.ObjectTypeAdapter;
-import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.database.schema.mapping.SchemaMappingException;
-import org.citydb.core.database.schema.mapping.SchemaMappingValidationException;
-import org.citydb.core.database.schema.mapping.UnmarshalListener;
+import org.citydb.core.database.schema.mapping.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.ValidationEvent;
-import javax.xml.bind.ValidationEventHandler;
+import javax.xml.bind.*;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 

@@ -36,11 +36,11 @@ import org.citydb.core.database.adapter.IndexStatusInfo.IndexInfoObject;
 import org.citydb.core.database.adapter.IndexStatusInfo.IndexStatus;
 import org.citydb.core.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
-import org.citydb.util.event.global.DatabaseConnectionStateEvent;
 import org.citydb.gui.components.dialog.StatusDialog;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.log.Logger;
 import org.citydb.gui.plugin.view.ViewController;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.global.DatabaseConnectionStateEvent;
+import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import java.awt.*;

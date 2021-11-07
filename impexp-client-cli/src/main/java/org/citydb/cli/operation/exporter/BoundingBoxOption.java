@@ -28,13 +28,13 @@
 
 package org.citydb.cli.operation.exporter;
 
+import org.citydb.cli.option.CliOption;
+import org.citydb.cli.option.CliOptionBuilder;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
 import org.citydb.config.project.query.filter.tiling.Tiling;
-import org.citydb.cli.option.CliOption;
-import org.citydb.cli.option.CliOptionBuilder;
 import picocli.CommandLine;
 
 public class BoundingBoxOption implements CliOption {

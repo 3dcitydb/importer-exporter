@@ -29,15 +29,10 @@ package org.citydb.gui.operation.database.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
+import org.citydb.config.i18n.Language;
 import org.citydb.core.ade.ADEExtension;
 import org.citydb.core.ade.ADEExtensionManager;
-import org.citydb.config.i18n.Language;
-import org.citydb.core.database.schema.mapping.AbstractType;
-import org.citydb.core.database.schema.mapping.AppSchema;
-import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.database.schema.mapping.Metadata;
-import org.citydb.core.database.schema.mapping.Namespace;
-import org.citydb.core.database.schema.mapping.SchemaMapping;
+import org.citydb.core.database.schema.mapping.*;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;

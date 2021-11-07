@@ -28,6 +28,7 @@
 
 package org.citydb.cli.operation.deleter;
 
+import org.citydb.cli.option.*;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
@@ -37,14 +38,6 @@ import org.citydb.config.project.query.filter.selection.logical.AndOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
-import org.citydb.cli.option.CliOption;
-import org.citydb.cli.option.CounterOption;
-import org.citydb.cli.option.DatabaseIdOption;
-import org.citydb.cli.option.FeatureVersionOption;
-import org.citydb.cli.option.ResourceIdOption;
-import org.citydb.cli.option.SQLSelectOption;
-import org.citydb.cli.option.TypeNamesOption;
-import org.citydb.cli.option.XMLQueryOption;
 import org.citydb.core.registry.ObjectRegistry;
 import picocli.CommandLine;
 

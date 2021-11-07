@@ -37,11 +37,7 @@ import org.citydb.config.gui.window.ConsoleWindow;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.MapWindow;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 

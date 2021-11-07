@@ -36,12 +36,7 @@ import org.citydb.core.query.filter.counter.CounterFilter;
 import org.citydb.sqlbuilder.expression.LongLiteral;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.FetchToken;
-import org.citydb.sqlbuilder.select.OffsetToken;
-import org.citydb.sqlbuilder.select.OrderByToken;
-import org.citydb.sqlbuilder.select.PredicateToken;
-import org.citydb.sqlbuilder.select.ProjectionToken;
-import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.*;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.projection.Function;
 

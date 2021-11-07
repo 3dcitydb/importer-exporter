@@ -28,9 +28,9 @@
 
 package org.citydb.cli.operation.visExporter;
 
+import org.citydb.cli.option.CliOption;
 import org.citydb.config.project.visExporter.GltfOptions;
 import org.citydb.config.project.visExporter.GltfVersion;
-import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
 import java.nio.file.Path;

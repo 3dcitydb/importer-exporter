@@ -28,11 +28,11 @@
 
 package org.citydb.cli.operation.visExporter;
 
+import org.citydb.cli.option.CliOption;
 import org.citydb.config.project.visExporter.DisplayForm;
 import org.citydb.config.project.visExporter.DisplayFormType;
 import org.citydb.config.project.visExporter.DisplayForms;
 import org.citydb.config.project.visExporter.VisExportConfig;
-import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
 import java.util.Map;
