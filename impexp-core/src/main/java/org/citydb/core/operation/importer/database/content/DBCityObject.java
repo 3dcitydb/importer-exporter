@@ -65,7 +65,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class DBCityObject implements DBImporter {
@@ -252,7 +251,7 @@ public class DBCityObject implements DBImporter {
 		if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
 			creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
 			if (creationDate != null)
-				creationDate = creationDate.withZoneSameLocal(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+				creationDate = creationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
 		}
 
 		if (creationDate == null)
@@ -265,7 +264,7 @@ public class DBCityObject implements DBImporter {
 		if (isCityObject && (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT)) {
 			terminationDate = Util.getTerminationDate((AbstractCityObject) object, terminationDateMode == TerminationDateMode.INHERIT);
 			if (terminationDate != null)
-				terminationDate = terminationDate.withZoneSameLocal(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+				terminationDate = terminationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
 		}
 
 		if (terminationDate == null)
