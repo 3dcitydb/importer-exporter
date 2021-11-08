@@ -169,7 +169,7 @@ public class FeatureVersionOption implements CliOption {
                 .parseDefaulting(ChronoField.HOUR_OF_DAY, LocalTime.MAX.getHour())
                 .parseDefaulting(ChronoField.MINUTE_OF_HOUR, LocalTime.MAX.getMinute())
                 .parseDefaulting(ChronoField.SECOND_OF_MINUTE, LocalTime.MAX.getSecond())
-                .parseDefaulting(ChronoField.OFFSET_SECONDS, OffsetDateTime.now().getOffset().getTotalSeconds())
+                .parseDefaulting(ChronoField.OFFSET_SECONDS, ZoneOffset.UTC.getTotalSeconds())
                 .toFormatter()
                 .withResolverStyle(ResolverStyle.STRICT)
                 .withChronology(IsoChronology.INSTANCE);
