@@ -63,7 +63,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -91,6 +91,7 @@ public class DBCityObject implements DBImporter {
 	private String lineage;
 	private CreationDateMode creationDateMode;
 	private TerminationDateMode terminationDateMode;
+	private ZoneId timeZone;
 	private BoundingBoxOptions bboxOptions;
 
 	public DBCityObject(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
@@ -102,6 +103,7 @@ public class DBCityObject implements DBImporter {
 		importAppearance = config.getImportConfig().getAppearances().isSetImportAppearance();
 		creationDateMode = config.getImportConfig().getContinuation().getCreationDateMode();
 		terminationDateMode = config.getImportConfig().getContinuation().getTerminationDateMode();
+		timeZone = config.getGlobalConfig().getZoneId();
 
 		importCityDBMetadata = config.getImportConfig().getContinuation().isImportCityDBMetadata();
 		reasonForUpdate = importer.getInternalConfig().getReasonForUpdate();
@@ -251,7 +253,7 @@ public class DBCityObject implements DBImporter {
 		if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
 			creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
 			if (creationDate != null)
-				creationDate = creationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
+				creationDate = creationDate.toLocalDate().atStartOfDay(timeZone);
 		}
 
 		if (creationDate == null)
@@ -264,7 +266,7 @@ public class DBCityObject implements DBImporter {
 		if (isCityObject && (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT)) {
 			terminationDate = Util.getTerminationDate((AbstractCityObject) object, terminationDateMode == TerminationDateMode.INHERIT);
 			if (terminationDate != null)
-				terminationDate = terminationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
+				terminationDate = terminationDate.toLocalDate().atStartOfDay(timeZone);
 		}
 
 		if (terminationDate == null)

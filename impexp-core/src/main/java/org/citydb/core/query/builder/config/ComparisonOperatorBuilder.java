@@ -43,14 +43,18 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class ComparisonOperatorBuilder {
 	private final ValueReferenceBuilder valueReferenceBuilder;
 	private final DatatypeFactory datatypeFactory;
+	private final ZoneId timeZone;
 
 	protected ComparisonOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder) {
 		this.valueReferenceBuilder = valueReferenceBuilder;
 		datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
+		timeZone = ObjectRegistry.getInstance().getConfig().getGlobalConfig().getZoneId();
 	}
 
 	protected Predicate buildComparisonOperator(org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator operatorConfig) throws QueryBuildException {
@@ -257,10 +261,9 @@ public class ComparisonOperatorBuilder {
 	}
 
 	private Instant toInstant(XMLGregorianCalendar calendar) {
-		if (calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
-			calendar.setTimezone(0);
-		}
-
-		return calendar.toGregorianCalendar().toInstant();
+		ZonedDateTime dateTime = calendar.toGregorianCalendar().toZonedDateTime();
+		return calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED ?
+				dateTime.withZoneSameLocal(timeZone).toInstant() :
+				dateTime.toInstant();
 	}
 }

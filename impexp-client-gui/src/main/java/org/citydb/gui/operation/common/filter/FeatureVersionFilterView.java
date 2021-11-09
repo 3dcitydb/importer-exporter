@@ -54,6 +54,7 @@ import java.util.TimeZone;
 
 public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFilter> {
     private final DatatypeFactory datatypeFactory;
+    private final ZoneId timeZone;
     private JPanel component;
     private JComboBox<FeatureFilterMode> featureFilterMode;
 
@@ -70,6 +71,7 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
 
     public FeatureVersionFilterView() {
         datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
+        timeZone = ObjectRegistry.getInstance().getConfig().getGlobalConfig().getZoneId();
         init();
     }
 
@@ -78,7 +80,7 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
         component.setLayout(new GridBagLayout());
 
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-        timeFormat.setTimeZone(TimeZone.getTimeZone(ZoneOffset.UTC));
+        timeFormat.setTimeZone(TimeZone.getTimeZone(timeZone));
         DefaultFormatterFactory formatterFactory = new DefaultFormatterFactory(new DateFormatter(timeFormat));
 
         featureFilterMode = new JComboBox<>();
@@ -105,8 +107,8 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
             validEndDate = new DatePicker();
             validEndTime = new JFormattedTextField();
 
-            validStartDate.setTimeZone(TimeZone.getTimeZone(ZoneOffset.UTC));
-            validEndDate.setTimeZone(TimeZone.getTimeZone(ZoneOffset.UTC));
+            validStartDate.setTimeZone(TimeZone.getTimeZone(timeZone));
+            validEndDate.setTimeZone(TimeZone.getTimeZone(timeZone));
             validStartTime.putClientProperty("JTextField.placeholderText", "HH:MM:SS");
             validEndTime.putClientProperty("JTextField.placeholderText", "HH:MM:SS");
             validStartTime.setFormatterFactory(formatterFactory);
@@ -333,12 +335,12 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
 
     private XMLGregorianCalendar toCalendar(Date date, Date time) {
         if (date != null) {
-            LocalDate localDate = LocalDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC).toLocalDate();
+            LocalDate localDate = LocalDateTime.ofInstant(date.toInstant(), timeZone).toLocalDate();
             LocalTime localTime = time != null ?
-                    LocalDateTime.ofInstant(time.toInstant(), ZoneOffset.UTC).toLocalTime() :
+                    LocalDateTime.ofInstant(time.toInstant(), timeZone).toLocalTime() :
                     LocalTime.MAX.withNano(0);
 
-            ZonedDateTime dateTime = ZonedDateTime.of(localDate, localTime, ZoneOffset.UTC);
+            ZonedDateTime dateTime = ZonedDateTime.of(localDate, localTime, timeZone);
             return datatypeFactory.newXMLGregorianCalendar(
                     dateTime.getYear(),
                     dateTime.getMonthValue(),
@@ -356,11 +358,10 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
     }
 
     private ZonedDateTime toZonedDateTime(XMLGregorianCalendar calendar) {
-        if (calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
-            calendar.setTimezone(0);
-        }
-
-        return calendar.toGregorianCalendar().toZonedDateTime();
+        ZonedDateTime dateTime = calendar.toGregorianCalendar().toZonedDateTime();
+        return calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED ?
+                dateTime.withZoneSameLocal(timeZone) :
+                dateTime;
     }
 
     private void setDateTime(ZonedDateTime dateTime, DatePicker datePicker, JFormattedTextField timeField) {

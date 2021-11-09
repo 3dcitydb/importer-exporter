@@ -97,7 +97,7 @@ public class QueryOption implements CliOption {
             }
 
             SimpleFeatureVersionFilter versionFilter = featureVersionOption != null ?
-                    featureVersionOption.toFeatureVersionFilter(ObjectRegistry.getInstance().getDatatypeFactory()) :
+                    featureVersionOption.toFeatureVersionFilter(ObjectRegistry.getInstance().getConfig().getGlobalConfig().getZoneId()) :
                     FeatureVersionOption.defaultFeatureVersionFilter();
 
             if (versionFilter != null) {

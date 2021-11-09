@@ -941,7 +941,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			if (type == DBSurfaceGeometry.class)
 				exporter = new DBSurfaceGeometry(connection, this);
 			else if (type == DBCityObject.class)
-				exporter = new DBCityObject(connection, query, this);
+				exporter = new DBCityObject(connection, query, config, this);
 			else if (type == DBGeneralization.class)
 				exporter = new DBGeneralization(connection, this);
 			else if (type == DBCityObjectGenericAttrib.class)

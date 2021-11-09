@@ -33,6 +33,7 @@ import org.citydb.ade.model.ReasonForUpdateProperty;
 import org.citydb.ade.model.UpdatingPersonProperty;
 import org.citydb.ade.model.module.CityDBADE100Module;
 import org.citydb.ade.model.module.CityDBADE200Module;
+import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.FeatureEnvelopeMode;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
@@ -74,7 +75,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.*;
 
 public class DBCityObject extends AbstractTypeExporter {
@@ -91,6 +92,7 @@ public class DBCityObject extends AbstractTypeExporter {
 	private final boolean exportAppearance;
 	private final boolean exportCityDBMetadata;
 	private final boolean affineTransformation;
+	private final ZoneId timeZone;
 
 	private final AttributeValueSplitter valueSplitter;
 	private final String coreModule;
@@ -105,7 +107,7 @@ public class DBCityObject extends AbstractTypeExporter {
 	private SimpleTilingOptions tilingOptions;
 	private String cityDBADEModule;
 
-	public DBCityObject(Connection connection, Query query, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
+	public DBCityObject(Connection connection, Query query, Config config, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(exporter);
 		this.query = query;
 		this.connection = connection;
@@ -115,6 +117,7 @@ public class DBCityObject extends AbstractTypeExporter {
 		gmlSrsName = query.getTargetSrs().getGMLSrsName();
 		exportAppearance = exporter.getExportConfig().getAppearances().isSetExportAppearance();
 		affineTransformation = exporter.getExportConfig().getAffineTransformation().isEnabled();
+		timeZone = config.getGlobalConfig().getZoneId();
 
 		if (query.isSetTiling()) {
 			Tiling tiling = query.getTiling();
@@ -322,14 +325,14 @@ public class DBCityObject extends AbstractTypeExporter {
 			if (context.projectionFilter.containsProperty("creationDate", coreModule)) {
 				OffsetDateTime creationDate = rs.getObject("creation_date", OffsetDateTime.class);
 				if (!rs.wasNull())
-					cityObject.setCreationDate(creationDate.atZoneSameInstant(ZoneOffset.UTC));
+					cityObject.setCreationDate(creationDate.atZoneSameInstant(timeZone));
 			}
 
 			// core:terminationDate
 			if (context.projectionFilter.containsProperty("terminationDate", coreModule)) {
 				OffsetDateTime terminationDate = rs.getObject("termination_date", OffsetDateTime.class);
 				if (terminationDate != null)
-					cityObject.setTerminationDate(terminationDate.atZoneSameInstant(ZoneOffset.UTC));
+					cityObject.setTerminationDate(terminationDate.atZoneSameInstant(timeZone));
 			}
 
 			// core:relativeToTerrain
@@ -352,7 +355,7 @@ public class DBCityObject extends AbstractTypeExporter {
 					OffsetDateTime lastModificationDate = rs.getObject("last_modification_date", OffsetDateTime.class);
 					if (!rs.wasNull()) {
 						LastModificationDateProperty property = new LastModificationDateProperty(
-								lastModificationDate.atZoneSameInstant(ZoneOffset.UTC));
+								lastModificationDate.atZoneSameInstant(timeZone));
 						cityObject.addGenericApplicationPropertyOfCityObject(property);
 					}
 				}

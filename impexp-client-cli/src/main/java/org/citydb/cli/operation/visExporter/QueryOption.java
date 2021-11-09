@@ -37,7 +37,7 @@ import org.citydb.config.project.visExporter.SimpleVisQuery;
 import org.citydb.core.registry.ObjectRegistry;
 import picocli.CommandLine;
 
-import javax.xml.datatype.DatatypeFactory;
+import java.time.ZoneId;
 
 public class QueryOption implements CliOption {
     @CommandLine.ArgGroup(exclusive = false)
@@ -67,8 +67,8 @@ public class QueryOption implements CliOption {
         }
 
         if (featureVersionOption != null) {
-            DatatypeFactory datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
-            SimpleFeatureVersionFilter versionFilter = featureVersionOption.toFeatureVersionFilter(datatypeFactory);
+            ZoneId timeZone = ObjectRegistry.getInstance().getConfig().getGlobalConfig().getZoneId();
+            SimpleFeatureVersionFilter versionFilter = featureVersionOption.toFeatureVersionFilter(timeZone);
             if (versionFilter != null) {
                 query.setUseFeatureVersionFilter(true);
                 query.setFeatureVersionFilter(versionFilter);

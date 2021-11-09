@@ -27,8 +27,12 @@
  */
 package org.citydb.config.project.global;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 @XmlRootElement(name = "global")
 @XmlType(name = "GlobalType", propOrder = {
@@ -36,7 +40,8 @@ import javax.xml.bind.annotation.XmlType;
         "logging",
         "language",
         "proxies",
-        "apiKeys"
+        "apiKeys",
+        "timeZone"
 })
 public class GlobalConfig {
     private Cache cache;
@@ -44,6 +49,10 @@ public class GlobalConfig {
     private LanguageType language = LanguageType.fromValue(System.getProperty("user.language"));
     private Proxies proxies;
     private APIKeys apiKeys;
+    private String timeZone;
+
+    @XmlTransient
+    private ZoneId zoneId;
 
     public GlobalConfig() {
         cache = new Cache();
@@ -95,5 +104,24 @@ public class GlobalConfig {
     public void setApiKeys(APIKeys apiKeys) {
         if (apiKeys != null)
             this.apiKeys = apiKeys;
+    }
+
+    public ZoneId getZoneId() {
+        return zoneId != null ? zoneId : ZoneOffset.UTC;
+    }
+
+    public void setZoneId(ZoneId zoneId) {
+        this.zoneId = zoneId;
+        timeZone = zoneId != null ? zoneId.getId() : null;
+    }
+
+    void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        if (timeZone != null) {
+            try {
+                zoneId = ZoneId.of(timeZone);
+            } catch (Exception e) {
+                timeZone = null;
+            }
+        }
     }
 }

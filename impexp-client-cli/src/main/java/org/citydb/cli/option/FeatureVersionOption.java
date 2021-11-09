@@ -30,20 +30,15 @@ package org.citydb.cli.option;
 
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
+import org.citydb.core.registry.ObjectRegistry;
 import picocli.CommandLine;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.chrono.IsoChronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
-import java.time.temporal.ChronoField;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class FeatureVersionOption implements CliOption {
     @CommandLine.Option(names = {"-r", "--feature-version"}, required = true, defaultValue = "latest",
@@ -56,22 +51,22 @@ public class FeatureVersionOption implements CliOption {
                     "defining a time range with 'between'.")
     private String timestamp;
 
-    private OffsetDateTime startDateTime;
-    private OffsetDateTime endDateTime;
+    private XMLGregorianCalendar startDateTime;
+    private XMLGregorianCalendar endDateTime;
     private SimpleFeatureVersionFilter featureVersionFilter;
 
     public static SimpleFeatureVersionFilter defaultFeatureVersionFilter() {
         return new SimpleFeatureVersionFilter();
     }
 
-    public SimpleFeatureVersionFilter toFeatureVersionFilter(DatatypeFactory datatypeFactory) {
+    public SimpleFeatureVersionFilter toFeatureVersionFilter(ZoneId timeZone) {
         if (featureVersionFilter != null) {
             if (startDateTime != null) {
-                featureVersionFilter.setStartDate(toCalendar(startDateTime, datatypeFactory));
+                featureVersionFilter.setStartDate(withTimeZone(startDateTime, timeZone));
             }
 
             if (endDateTime != null) {
-                featureVersionFilter.setEndDate(toCalendar(endDateTime, datatypeFactory));
+                featureVersionFilter.setEndDate(withTimeZone(endDateTime, timeZone));
             }
         }
 
@@ -124,24 +119,34 @@ public class FeatureVersionOption implements CliOption {
                         "Error: The feature version '" + version + "' requires two timestamps defining a time range");
             }
 
-            DateTimeFormatter formatter = buildDateTimeFormatter();
+            DatatypeFactory factory = ObjectRegistry.getInstance().getDatatypeFactory();
             for (int i = 0; i < timestamps.length; i++) {
+                XMLGregorianCalendar dateTime;
                 try {
-                    OffsetDateTime dateTime = OffsetDateTime.parse(timestamps[i], formatter);
-                    if (i == 0) {
-                        startDateTime = dateTime;
-                    } else {
-                        if (!dateTime.isAfter(startDateTime)) {
-                            throw new CommandLine.ParameterException(commandLine,
-                                    "Error: The start timestamp must be lesser than the end timestamp");
-                        }
-
-                        endDateTime = dateTime;
+                    dateTime = factory.newXMLGregorianCalendar(timestamps[i]);
+                    if (dateTime.getXMLSchemaType() == DatatypeConstants.DATE) {
+                        dateTime.setTime(LocalTime.MAX.getHour(),
+                                LocalTime.MAX.getMinute(),
+                                LocalTime.MAX.getSecond());
                     }
-                } catch (DateTimeParseException e) {
+                } catch (Exception e) {
                     throw new CommandLine.ParameterException(commandLine,
                             "A feature version timestamp must be in YYYY-MM-DD or YYYY-MM-DDThh:mm:ss[(+|-)hh:mm] " +
                                     "format but was '" + timestamps[i] + "'");
+                }
+
+                if (i == 0) {
+                    startDateTime = dateTime;
+                } else {
+                    ZonedDateTime before = startDateTime.toGregorianCalendar().toZonedDateTime();
+                    ZonedDateTime after = dateTime.toGregorianCalendar().toZonedDateTime();
+
+                    if (!after.isAfter(before)) {
+                        throw new CommandLine.ParameterException(commandLine,
+                                "Error: The start timestamp must be lesser than the end timestamp");
+                    }
+
+                    endDateTime = dateTime;
                 }
             }
         } else {
@@ -155,37 +160,13 @@ public class FeatureVersionOption implements CliOption {
         }
     }
 
-    private DateTimeFormatter buildDateTimeFormatter() {
-        return new DateTimeFormatterBuilder()
-                .parseCaseInsensitive()
-                .append(DateTimeFormatter.ISO_LOCAL_DATE)
-                .optionalStart()
-                .appendLiteral('T')
-                .append(DateTimeFormatter.ISO_LOCAL_TIME)
-                .optionalStart()
-                .appendOffsetId()
-                .optionalEnd()
-                .optionalEnd()
-                .parseDefaulting(ChronoField.HOUR_OF_DAY, LocalTime.MAX.getHour())
-                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, LocalTime.MAX.getMinute())
-                .parseDefaulting(ChronoField.SECOND_OF_MINUTE, LocalTime.MAX.getSecond())
-                .parseDefaulting(ChronoField.OFFSET_SECONDS, ZoneOffset.UTC.getTotalSeconds())
-                .toFormatter()
-                .withResolverStyle(ResolverStyle.STRICT)
-                .withChronology(IsoChronology.INSTANCE);
-    }
+    private XMLGregorianCalendar withTimeZone(XMLGregorianCalendar dateTime, ZoneId timeZone) {
+        if (dateTime.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
+            dateTime.setTimezone(timeZone.getRules()
+                    .getOffset(dateTime.toGregorianCalendar().toInstant())
+                    .getTotalSeconds() / 60);
+        }
 
-    private XMLGregorianCalendar toCalendar(OffsetDateTime dateTime, DatatypeFactory datatypeFactory) {
-        return datatypeFactory.newXMLGregorianCalendar(
-                dateTime.getYear(),
-                dateTime.getMonthValue(),
-                dateTime.getDayOfMonth(),
-                dateTime.getHour(),
-                dateTime.getMinute(),
-                dateTime.getSecond(),
-                DatatypeConstants.FIELD_UNDEFINED,
-                dateTime.getOffset() != ZoneOffset.UTC ?
-                        dateTime.getOffset().getTotalSeconds() / 60 :
-                        DatatypeConstants.FIELD_UNDEFINED);
+        return dateTime;
     }
 }
