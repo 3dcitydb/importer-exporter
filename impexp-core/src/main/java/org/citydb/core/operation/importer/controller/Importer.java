@@ -77,7 +77,6 @@ import org.citydb.core.plugin.extension.importer.FeatureImportExtension;
 import org.citydb.core.plugin.extension.importer.ImportStatus;
 import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.registry.ObjectRegistry;
-import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;
 import org.citydb.util.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.util.concurrent.WorkerPool;
@@ -234,10 +233,9 @@ public class Importer implements EventHandler {
         importLogger = null;
         if (config.getImportConfig().getImportLog().isSetLogImportedFeatures()) {
             try {
-                Path logFile = config.getImportConfig().getImportLog().isSetLogFile() ?
-                        Paths.get(config.getImportConfig().getImportLog().getLogFile()) :
-                        CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
-                importLogger = new ImportLogger(logFile, config.getDatabaseConfig().getActiveConnection());
+                importLogger = new ImportLogger(
+                        config.getImportConfig().getImportLog(),
+                        config.getDatabaseConfig().getActiveConnection());
                 log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
             } catch (IOException e) {
                 throw new CityGMLImportException("Failed to create log file for imported top-level features.", e);
