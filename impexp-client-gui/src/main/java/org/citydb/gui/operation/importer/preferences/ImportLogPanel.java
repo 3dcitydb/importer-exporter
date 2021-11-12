@@ -30,7 +30,7 @@ package org.citydb.gui.operation.importer.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportLog;
-import org.citydb.config.project.importer.ImportLogMode;
+import org.citydb.config.project.importer.ImportLogFileMode;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
@@ -61,8 +61,8 @@ public class ImportLogPanel extends DefaultPreferencesComponent {
 		ImportLog log = config.getImportConfig().getImportLog();
 		if (logFeatures.isSelected() != log.isSetLogImportedFeatures()) return true;
 		if (!logFile.getText().equals(log.getLogFile())) return true;
-		if (truncateLogFile.isSelected() != (log.getLogMode() == ImportLogMode.TRUNCATE)) return true;
-		if (uniqueFileName.isSelected() != (log.getLogMode() == ImportLogMode.UNIQUE)) return true;
+		if (truncateLogFile.isSelected() != (log.getLogFileMode() == ImportLogFileMode.TRUNCATE)) return true;
+		if (uniqueFileName.isSelected() != (log.getLogFileMode() == ImportLogFileMode.UNIQUE)) return true;
 		return false;
 	}
 
@@ -145,10 +145,10 @@ public class ImportLogPanel extends DefaultPreferencesComponent {
 			log.setLogFile(defaultDir);
 		}
 
-		if (log.getLogMode() == ImportLogMode.UNIQUE) {
+		if (log.getLogFileMode() == ImportLogFileMode.UNIQUE) {
 			uniqueFileName.setSelected(true);
 		} else {
-			truncateLogFile.setSelected(log.getLogMode() == ImportLogMode.TRUNCATE);
+			truncateLogFile.setSelected(log.getLogFileMode() == ImportLogFileMode.TRUNCATE);
 		}
 		
 		setEnabledLocalCachePath();
@@ -168,11 +168,11 @@ public class ImportLogPanel extends DefaultPreferencesComponent {
 		}
 
 		if (uniqueFileName.isSelected()) {
-			log.setLogMode(ImportLogMode.UNIQUE);
+			log.setLogFileMode(ImportLogFileMode.UNIQUE);
 		} else {
-			log.setLogMode(truncateLogFile.isSelected() ?
-					ImportLogMode.TRUNCATE :
-					ImportLogMode.APPEND);
+			log.setLogFileMode(truncateLogFile.isSelected() ?
+					ImportLogFileMode.TRUNCATE :
+					ImportLogFileMode.APPEND);
 		}
 	}
 	

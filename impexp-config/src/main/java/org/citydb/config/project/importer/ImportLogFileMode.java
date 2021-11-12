@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ImportLogModeType")
 @XmlEnum
-public enum ImportLogMode {
+public enum ImportLogFileMode {
     @XmlEnumValue("truncate")
     TRUNCATE("truncate"),
     @XmlEnumValue("append")
@@ -43,7 +43,7 @@ public enum ImportLogMode {
 
     private final String value;
 
-    ImportLogMode(String v) {
+    ImportLogFileMode(String v) {
         value = v;
     }
 
@@ -51,8 +51,8 @@ public enum ImportLogMode {
         return value;
     }
 
-    public static ImportLogMode fromValue(String v) {
-        for (ImportLogMode c : ImportLogMode.values()) {
+    public static ImportLogFileMode fromValue(String v) {
+        for (ImportLogFileMode c : ImportLogFileMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

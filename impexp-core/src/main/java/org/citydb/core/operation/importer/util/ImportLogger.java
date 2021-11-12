@@ -29,7 +29,7 @@ package org.citydb.core.operation.importer.util;
 
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.importer.ImportLog;
-import org.citydb.config.project.importer.ImportLogMode;
+import org.citydb.config.project.importer.ImportLogFileMode;
 import org.citydb.core.util.CoreConstants;
 
 import java.io.BufferedWriter;
@@ -59,20 +59,20 @@ public class ImportLogger {
 			logFile = defaultLogDir.resolve("imported-features.log");
 		}
 
-		if (importLog.getLogMode() == ImportLogMode.UNIQUE) {
+		if (importLog.getLogFileMode() == ImportLogFileMode.UNIQUE) {
 			logFile = logFile.resolveSibling(getUniqueFileName(logFile.getFileName().toString()));
 		}
 
 		boolean writeHeaderLine = true;
 		if (!Files.exists(logFile.getParent())) {
 			Files.createDirectories(logFile.getParent());
-		} else if (importLog.getLogMode() == ImportLogMode.APPEND) {
+		} else if (importLog.getLogFileMode() == ImportLogFileMode.APPEND) {
 			writeHeaderLine = !Files.exists(logFile);
 		}
 
 		writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
 				StandardOpenOption.CREATE, StandardOpenOption.WRITE,
-				importLog.getLogMode() == ImportLogMode.TRUNCATE ?
+				importLog.getLogFileMode() == ImportLogFileMode.TRUNCATE ?
 						StandardOpenOption.TRUNCATE_EXISTING :
 						StandardOpenOption.APPEND);
 
