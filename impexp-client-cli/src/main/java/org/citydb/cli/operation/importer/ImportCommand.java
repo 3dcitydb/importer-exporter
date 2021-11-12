@@ -36,6 +36,7 @@ import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.config.project.importer.ImportList;
+import org.citydb.config.project.importer.ImportLogFileMode;
 import org.citydb.core.database.DatabaseController;
 import org.citydb.core.operation.common.csv.IdListPreviewer;
 import org.citydb.core.operation.importer.CityGMLImportException;
@@ -168,6 +169,7 @@ public class ImportCommand extends CliCommand {
         if (importLogFile != null) {
             importConfig.getImportLog().setLogFile(importLogFile.toAbsolutePath().toString());
             importConfig.getImportLog().setLogImportedFeatures(true);
+            importConfig.getImportLog().setLogFileMode(ImportLogFileMode.TRUNCATE);
         }
 
         if (failFast != null) {
