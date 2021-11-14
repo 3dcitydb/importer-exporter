@@ -143,8 +143,9 @@ public class DBSurfaceGeometry implements DBImporter {
                 return 0;
             }
 
-            if (geometry.isSetId())
-                geometry.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, geometry.getId());
+            String gmlId = geometry.isSetId() && !geometry.getId().isEmpty() ? geometry.getId() : null;
+            if (gmlId != null)
+                geometry.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, gmlId);
 
             return doImport(geometry, id, 0, id, false, false, false, cityObjectId);
         } finally {
@@ -187,21 +188,21 @@ public class DBSurfaceGeometry implements DBImporter {
 
         // gml:id handling
         String origGmlId, gmlId;
-        origGmlId = gmlId = geometry.getId();
+        origGmlId = gmlId = geometry.isSetId() && !geometry.getId().isEmpty() ? geometry.getId() : null;
         if (gmlId == null || replaceGmlId) {
             if (!geometry.hasLocalProperty(CoreConstants.GEOMETRY_ORIGINAL)) {
-                if (!geometry.hasLocalProperty("origGmlId")) {
+                if (!geometry.hasLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID)) {
                     gmlId = importer.generateNewGmlId();
                     geometry.setId(gmlId);
-                    geometry.setLocalProperty("origGmlId", origGmlId);
+                    geometry.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
                 } else
-                    origGmlId = (String) geometry.getLocalProperty("origGmlId");
+                    origGmlId = (String) geometry.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID);
             } else {
                 AbstractGeometry original = (AbstractGeometry) geometry.getLocalProperty(CoreConstants.GEOMETRY_ORIGINAL);
-                if (!original.hasLocalProperty("origGmlId")) {
+                if (!original.hasLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID)) {
                     gmlId = importer.generateNewGmlId();
                     original.setId(gmlId);
-                    original.setLocalProperty("origGmlId", origGmlId);
+                    original.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
                 } else
                     gmlId = original.getId();
 
