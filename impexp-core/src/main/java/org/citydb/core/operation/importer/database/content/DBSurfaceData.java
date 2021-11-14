@@ -149,19 +149,18 @@ public class DBSurfaceData implements DBImporter {
 		psSurfaceData.setLong(1, surfaceDataId);
 
 		// gml:id
-		String origGmlId = surfaceData.getId();		
+		String origGmlId = surfaceData.isSetId() && !surfaceData.getId().isEmpty() ? surfaceData.getId() : null;
 		if (replaceGmlId) {
 			String gmlId = importer.generateNewGmlId();
 
 			// mapping entry
-			if (surfaceData.isSetId())
-				importer.putObjectId(surfaceData.getId(), surfaceDataId, gmlId, featureType.getObjectClassId());
+			if (origGmlId != null)
+				importer.putObjectId(origGmlId, surfaceDataId, gmlId, featureType.getObjectClassId());
 
 			surfaceData.setId(gmlId);
-
 		} else {
-			if (surfaceData.isSetId())
-				importer.putObjectId(surfaceData.getId(), surfaceDataId, featureType.getObjectClassId());
+			if (origGmlId != null)
+				importer.putObjectId(origGmlId, surfaceDataId, featureType.getObjectClassId());
 			else
 				surfaceData.setId(importer.generateNewGmlId());
 		}

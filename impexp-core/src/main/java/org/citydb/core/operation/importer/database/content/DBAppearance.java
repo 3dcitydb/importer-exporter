@@ -92,7 +92,7 @@ public class DBAppearance implements DBImporter {
 		psAppearance.setLong(1, appearanceId);
 
 		// gml:id
-		String origGmlId = appearance.getId();
+		String origGmlId = appearance.isSetId() && !appearance.getId().isEmpty() ? appearance.getId() : null;
 		if (origGmlId != null)
 			appearance.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 		
@@ -100,14 +100,13 @@ public class DBAppearance implements DBImporter {
 			String gmlId = importer.generateNewGmlId();
 
 			// mapping entry
-			if (appearance.isSetId())
-				importer.putObjectId(appearance.getId(), appearanceId, gmlId, featureType.getObjectClassId());
+			if (origGmlId != null)
+				importer.putObjectId(origGmlId, appearanceId, gmlId, featureType.getObjectClassId());
 
 			appearance.setId(gmlId);
-
 		} else {
-			if (appearance.isSetId())
-				importer.putObjectId(appearance.getId(), appearanceId, featureType.getObjectClassId());
+			if (origGmlId != null)
+				importer.putObjectId(origGmlId, appearanceId, featureType.getObjectClassId());
 			else
 				appearance.setId(importer.generateNewGmlId());
 		}

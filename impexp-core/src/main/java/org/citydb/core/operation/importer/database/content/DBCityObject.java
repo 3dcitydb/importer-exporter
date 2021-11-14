@@ -166,7 +166,7 @@ public class DBCityObject implements DBImporter {
 		psCityObject.setInt(2, objectType.getObjectClassId());
 
 		// gml:id
-		String origGmlId = object.getId();
+		String origGmlId = object.isSetId() && !object.getId().isEmpty() ? object.getId() : null;
 		if (origGmlId != null)
 			object.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 
@@ -174,15 +174,15 @@ public class DBCityObject implements DBImporter {
 			String gmlId = importer.generateNewGmlId();
 
 			// mapping entry
-			if (object.isSetId()) {
-				importer.putObjectId(object.getId(), objectId, gmlId, objectType.getObjectClassId());
+			if (origGmlId != null) {
+				importer.putObjectId(origGmlId, objectId, gmlId, objectType.getObjectClassId());
 
 				if (rememberGmlId && isCityObject) {	
 					ExternalReference externalReference = new ExternalReference();
 					externalReference.setInformationSystem(importFileName);
 
 					ExternalObject externalObject = new ExternalObject();
-					externalObject.setName(object.getId());
+					externalObject.setName(origGmlId);
 
 					externalReference.setExternalObject(externalObject);
 					((AbstractCityObject)object).addExternalReference(externalReference);
@@ -191,8 +191,8 @@ public class DBCityObject implements DBImporter {
 
 			object.setId(gmlId);
 		} else {
-			if (object.isSetId())
-				importer.putObjectId(object.getId(), objectId, objectType.getObjectClassId());
+			if (origGmlId != null)
+				importer.putObjectId(origGmlId, objectId, objectType.getObjectClassId());
 			else
 				object.setId(importer.generateNewGmlId());
 		}
