@@ -36,16 +36,9 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.projection.Function;
 
-import java.sql.Connection;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.sql.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -163,26 +156,27 @@ public abstract class AbstractSQLAdapter {
 	
 	public void fillPlaceHolders(SQLStatement statement, PreparedStatement preparedStatement, Connection connection) throws SQLException {
 		List<PlaceHolder<?>> placeHolders = statement.getInvolvedPlaceHolders();
-		
+
 		for (int i = 0; i < placeHolders.size(); i++) {
 			Object value = placeHolders.get(i).getValue();
 
-			if (value instanceof String)
-				preparedStatement.setString(i + 1, (String)value);
-			else if (value instanceof GeometryObject)
-				preparedStatement.setObject(i + 1, databaseAdapter.getGeometryConverter().getDatabaseObject((GeometryObject)value, connection));
-			else if (value instanceof Date)
-				preparedStatement.setDate(i + 1, (Date)value);
-			else if (value instanceof Timestamp)
-				preparedStatement.setTimestamp(i + 1, (Timestamp)value);
-			else if (value instanceof Boolean)
-				preparedStatement.setBoolean(i + 1, (Boolean)value);
-			else if (value instanceof Double)
-				preparedStatement.setDouble(i + 1, (Double)value);
-			else if (value instanceof Integer)
-				preparedStatement.setInt(i + 1, (Integer)value);
-			else if (value instanceof Long)
-				preparedStatement.setLong(i + 1, (Long)value);
+			if (value instanceof String) {
+				preparedStatement.setString(i + 1, (String) value);
+			} else if (value instanceof GeometryObject) {
+				preparedStatement.setObject(i + 1, databaseAdapter.getGeometryConverter().getDatabaseObject((GeometryObject) value, connection));
+			} else if (value instanceof Date) {
+				preparedStatement.setDate(i + 1, (Date) value);
+			} else if (value instanceof Timestamp) {
+				preparedStatement.setTimestamp(i + 1, (Timestamp) value);
+			} else if (value instanceof Boolean) {
+				preparedStatement.setInt(i + 1, ((Boolean) value) ? 1 : 0);
+			} else if (value instanceof Double) {
+				preparedStatement.setDouble(i + 1, (Double) value);
+			} else if (value instanceof Integer) {
+				preparedStatement.setInt(i + 1, (Integer) value);
+			} else if (value instanceof Long) {
+				preparedStatement.setLong(i + 1, (Long) value);
+			}
 		}
 	}
 	
