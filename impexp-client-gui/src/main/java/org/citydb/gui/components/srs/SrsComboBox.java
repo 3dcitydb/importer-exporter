@@ -4,13 +4,12 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
 import org.citydb.util.event.global.EventType;
-import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class SrsComboBox extends JComboBox<DatabaseSrs> implements EventHandler {
     private final DatabaseSrs databaseSrs;
@@ -28,7 +27,6 @@ public class SrsComboBox extends JComboBox<DatabaseSrs> implements EventHandler 
         databaseSrs.setSupported(true);
         connectionPool = DatabaseConnectionPool.getInstance();
 
-        setRenderer(new SrsComboBoxRenderer());
         ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
     }
 
@@ -145,16 +143,5 @@ public class SrsComboBox extends JComboBox<DatabaseSrs> implements EventHandler 
     @Override
     public void handleEvent(Event event) throws Exception {
         doTranslation();
-    }
-
-    private class SrsComboBoxRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value != null) {
-                SrsComboBox.this.setToolTipText(value.toString());
-            }
-
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
     }
 }
