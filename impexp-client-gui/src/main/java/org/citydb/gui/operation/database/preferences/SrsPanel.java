@@ -415,7 +415,6 @@ public class SrsPanel extends DefaultPreferencesComponent implements EventHandle
 
 		srsNameComboBox.setText(refSys.getGMLSrsName());
 		descriptionText.setText(refSys.toString());
-		srsComboBox.setToolTipText(refSys.getDescription());
 		dbSrsNameText.setText(wrap(refSys.getDatabaseSrsName(), 80));
 		dbSrsTypeText.setText(refSys.getType().toString());
 
