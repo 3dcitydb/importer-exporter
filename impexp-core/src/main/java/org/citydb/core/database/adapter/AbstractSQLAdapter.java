@@ -156,26 +156,27 @@ public abstract class AbstractSQLAdapter {
 	
 	public void fillPlaceHolders(SQLStatement statement, PreparedStatement preparedStatement, Connection connection) throws SQLException {
 		List<PlaceHolder<?>> placeHolders = statement.getInvolvedPlaceHolders();
-		
+
 		for (int i = 0; i < placeHolders.size(); i++) {
 			Object value = placeHolders.get(i).getValue();
 
-			if (value instanceof String)
-				preparedStatement.setString(i + 1, (String)value);
-			else if (value instanceof GeometryObject)
-				preparedStatement.setObject(i + 1, databaseAdapter.getGeometryConverter().getDatabaseObject((GeometryObject)value, connection));
-			else if (value instanceof Date)
-				preparedStatement.setDate(i + 1, (Date)value);
-			else if (value instanceof Timestamp)
-				preparedStatement.setTimestamp(i + 1, (Timestamp)value);
-			else if (value instanceof Boolean)
-				preparedStatement.setBoolean(i + 1, (Boolean)value);
-			else if (value instanceof Double)
-				preparedStatement.setDouble(i + 1, (Double)value);
-			else if (value instanceof Integer)
-				preparedStatement.setInt(i + 1, (Integer)value);
-			else if (value instanceof Long)
-				preparedStatement.setLong(i + 1, (Long)value);
+			if (value instanceof String) {
+				preparedStatement.setString(i + 1, (String) value);
+			} else if (value instanceof GeometryObject) {
+				preparedStatement.setObject(i + 1, databaseAdapter.getGeometryConverter().getDatabaseObject((GeometryObject) value, connection));
+			} else if (value instanceof Date) {
+				preparedStatement.setDate(i + 1, (Date) value);
+			} else if (value instanceof Timestamp) {
+				preparedStatement.setTimestamp(i + 1, (Timestamp) value);
+			} else if (value instanceof Boolean) {
+				preparedStatement.setInt(i + 1, ((Boolean) value) ? 1 : 0);
+			} else if (value instanceof Double) {
+				preparedStatement.setDouble(i + 1, (Double) value);
+			} else if (value instanceof Integer) {
+				preparedStatement.setInt(i + 1, (Integer) value);
+			} else if (value instanceof Long) {
+				preparedStatement.setLong(i + 1, (Long) value);
+			}
 		}
 	}
 	
