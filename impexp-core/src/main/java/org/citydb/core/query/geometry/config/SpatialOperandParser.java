@@ -226,7 +226,7 @@ public class SpatialOperandParser {
                 validateRing(points, dimension);
             }
 
-            result[i++] = convertPrimitive(points, dimension);
+            result[i] = convertPrimitive(points, dimension);
         }
 
         return result;
