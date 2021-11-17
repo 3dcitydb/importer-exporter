@@ -121,6 +121,8 @@ public class ImportLogPanel extends DefaultPreferencesComponent {
 		logFileLabel.setEnabled(logFeatures.isSelected());
 		logFile.setEnabled(logFeatures.isSelected());
 		browseButton.setEnabled(logFeatures.isSelected());
+		truncateLogFile.setEnabled(logFeatures.isSelected());
+		uniqueFileName.setEnabled(logFeatures.isSelected());
 	}
 	
 	@Override
