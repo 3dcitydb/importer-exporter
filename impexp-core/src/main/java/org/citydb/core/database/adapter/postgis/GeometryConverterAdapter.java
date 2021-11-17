@@ -421,6 +421,22 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		return geometry;
 	}
 
+	@Override
+	public String getDatabaseObjectConstructor(GeometryObject geomObj) {
+		String constructor = null;
+
+		try {
+			Object geometry = getDatabaseObject(geomObj, null);
+			if (geometry != null) {
+				constructor = "'" + geometry + "'";
+			}
+		} catch (SQLException e) {
+			//
+		}
+
+		return constructor;
+	}
+
 	private String convertToEWKT(GeometryObject geomObj) {
 		double[][] coordinates = geomObj.getCoordinates();
 		int dimension = geomObj.getDimension();
