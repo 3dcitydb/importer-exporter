@@ -28,6 +28,8 @@
 package org.citydb.core.operation.importer.util;
 
 import org.citydb.config.project.database.DatabaseConnection;
+import org.citydb.config.project.importer.ImportLog;
+import org.citydb.config.project.importer.ImportLogFileMode;
 import org.citydb.core.util.CoreConstants;
 
 import java.io.BufferedWriter;
@@ -35,30 +37,46 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class ImportLogger {
 	private final LocalDateTime date = LocalDateTime.now();
-	private final Path logFile;
 	private final BufferedWriter writer;
+	private Path logFile;
 	private String inputFile = "";
 
-	public ImportLogger(Path logFile, DatabaseConnection connection) throws IOException {
-		Path defaultDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
-		if (logFile.toAbsolutePath().normalize().startsWith(defaultDir)) {
-			Files.createDirectories(defaultDir);
+	public ImportLogger(ImportLog importLog, DatabaseConnection connection) throws IOException {
+		Path defaultLogDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
+		if (importLog.isSetLogFile()) {
+			logFile = Paths.get(importLog.getLogFile());
+			if (logFile.equals(defaultLogDir)) {
+				logFile = logFile.resolve("imported-features.log");
+			}
+		} else {
+			logFile = defaultLogDir.resolve("imported-features.log");
 		}
 
-		if (Files.exists(logFile) && Files.isDirectory(logFile)) {
-			logFile = logFile.resolve(getDefaultLogFileName());
-		} else if (!Files.exists(logFile.getParent())) {
+		if (importLog.getLogFileMode() == ImportLogFileMode.UNIQUE) {
+			logFile = logFile.resolveSibling(getUniqueFileName(logFile.getFileName().toString()));
+		}
+
+		boolean writeHeaderLine = true;
+		if (!Files.exists(logFile.getParent())) {
 			Files.createDirectories(logFile.getParent());
+		} else if (importLog.getLogFileMode() == ImportLogFileMode.APPEND) {
+			writeHeaderLine = !Files.exists(logFile);
 		}
 
-		this.logFile = logFile;
-		writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8);
-		writeHeader(connection);
+		writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
+				StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+				importLog.getLogFileMode() == ImportLogFileMode.TRUNCATE ?
+						StandardOpenOption.TRUNCATE_EXISTING :
+						StandardOpenOption.APPEND);
+
+		writeHeader(connection, writeHeaderLine);
 	}
 
 	public Path getLogFilePath() {
@@ -69,7 +87,7 @@ public class ImportLogger {
 		this.inputFile = inputFile != null ? inputFile.toAbsolutePath().toString() : "";
 	}
 
-	private void writeHeader(DatabaseConnection connection) throws IOException {
+	private void writeHeader(DatabaseConnection connection, boolean writeHeaderLine) throws IOException {
 		writer.write('#' + getClass().getPackage().getImplementationTitle() +
 				", version \"" + getClass().getPackage().getImplementationVersion() + "\"");
 		writer.newLine();
@@ -79,20 +97,28 @@ public class ImportLogger {
 		writer.write("#Timestamp: ");
 		writer.write(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 		writer.newLine();
-		writer.write("FEATURE_TYPE,CITYOBJECT_ID,GMLID_IN_FILE,INPUT_FILE");
-		writer.newLine();
+
+		if (writeHeaderLine) {
+			writer.write("FEATURE_TYPE,CITYOBJECT_ID,GMLID_IN_FILE,INPUT_FILE");
+			writer.newLine();
+		}
 	}
 
 	private void writeFooter(boolean success) throws IOException {
 		writer.write(success ? "#Import successfully finished." : "#Import aborted.");
+		writer.newLine();
 	}
 	
 	public void write(ImportLogEntry entry) throws IOException {
 		writer.write(entry.type + "," + entry.id + "," + entry.gmlId + "," + inputFile + System.lineSeparator());
 	}
 
-	public String getDefaultLogFileName() {
-		return "imported-features-" + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS")) + ".log";
+	private String getUniqueFileName(String fileName) {
+		String suffix = date.format(DateTimeFormatter.ofPattern("-yyyy-MM-dd_HH-mm-ss-SSS"));
+		int index = fileName.lastIndexOf('.');
+		return index != -1 ?
+				fileName.substring(0, index) + suffix + fileName.substring(index) :
+				fileName + suffix;
 	}
 
 	public void close(boolean success) throws IOException {
