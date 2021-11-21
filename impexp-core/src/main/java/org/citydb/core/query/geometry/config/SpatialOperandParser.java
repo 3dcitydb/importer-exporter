@@ -36,164 +36,199 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpatialOperandParser {
-	private final AbstractDatabaseAdapter databaseAdapter;
-	
-	public SpatialOperandParser(AbstractDatabaseAdapter databaseAdapter) {
-		this.databaseAdapter = databaseAdapter;
+    private final AbstractDatabaseAdapter databaseAdapter;
+
+    public SpatialOperandParser(AbstractDatabaseAdapter databaseAdapter) {
+        this.databaseAdapter = databaseAdapter;
+    }
+
+    public GeometryObject parseOperand(AbstractGeometry operand) throws GeometryParseException {
+        if (!operand.isValid()) {
+            throw new GeometryParseException("The spatial " + operand.getGeometryType() + " operand is invalid.");
+        }
+
+        int dimension = operand.is3D() ? 3 : 2;
+        DatabaseSrs referenceSystem = operand.isSetSrs() ?
+                operand.getSrs() :
+                databaseAdapter.getConnectionMetaData().getReferenceSystem();
+
+        switch (operand.getGeometryType()) {
+            case ENVELOPE:
+                return parseEnvelope((BoundingBox) operand, referenceSystem, dimension);
+            case POINT:
+				return parsePoint((Point) operand, referenceSystem, dimension);
+            case MULTI_POINT:
+				return parseMultiPoint((MultiPoint) operand, referenceSystem, dimension);
+            case LINE_STRING:
+				return parseLineString((LineString) operand, referenceSystem, dimension);
+            case MULTI_LINE_STRING:
+				return parseMultiLineString((MultiLineString) operand, referenceSystem, dimension);
+            case POLYGON:
+				return parsePolygon((Polygon) operand, referenceSystem, dimension);
+            case MULTI_POLYGON:
+				return parseMultiPolygon((MultiPolygon) operand, referenceSystem, dimension);
+			default:
+                return null;
+        }
+    }
+
+	private GeometryObject parseEnvelope(BoundingBox envelope, DatabaseSrs referenceSystem, int dimension) {
+		if (dimension == 3) {
+			return GeometryObject.createEnvelope(new double[]{
+					envelope.getLowerCorner().getX(),
+					envelope.getLowerCorner().getY(),
+					envelope.getLowerCorner().getZ(),
+					envelope.getUpperCorner().getX(),
+					envelope.getUpperCorner().getY(),
+					envelope.getUpperCorner().getZ()
+			}, 3, referenceSystem.getSrid());
+		} else {
+			return GeometryObject.createEnvelope(new double[]{
+					envelope.getLowerCorner().getX(),
+					envelope.getLowerCorner().getY(),
+					envelope.getUpperCorner().getX(),
+					envelope.getUpperCorner().getY()
+			}, 2, referenceSystem.getSrid());
+		}
 	}
 
-	public GeometryObject parseOperand(AbstractGeometry operand) throws GeometryParseException {
-		if (!operand.isValid())
-			throw new GeometryParseException("The spatial " + operand.getGeometryType() + " operand is invalid.");
-		
-		GeometryObject geometryObject = null;
-		DatabaseSrs referenceSystem = operand.isSetSrs() ? operand.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
-		
-		switch (operand.getGeometryType()) {
-		case ENVELOPE:
-			geometryObject = parseEnvelope((BoundingBox)operand, referenceSystem);
-			break;
-		case POINT:
-			geometryObject = parsePoint((Point)operand, referenceSystem);
-			break;
-		case MULTI_POINT:
-			geometryObject = parseMultiPoint((MultiPoint)operand, referenceSystem);
-			break;
-		case LINE_STRING:
-			geometryObject = parseLineString((LineString)operand, referenceSystem);
-			break;
-		case MULTI_LINE_STRING:
-			geometryObject = parseMultiLineString((MultiLineString)operand, referenceSystem);
-			break;
-		case POLYGON:
-			geometryObject = parsePolygon((Polygon)operand, referenceSystem);
-			break;
-		case MULTI_POLYGON:
-			geometryObject = parseMultiPolygon((MultiPolygon)operand, referenceSystem);
-			break;
-		case SOLID:
-		case COMPOSITE_SOLID:
-			// nothing to do
+    private GeometryObject parsePoint(Point point, DatabaseSrs referenceSystem, int dimension) {
+		double[] coordinates = new double[dimension];
+		coordinates[0] = point.getPos().getX();
+		coordinates[1] = point.getPos().getY();
+		if (dimension == 3) {
+			coordinates[2] = point.getPos().getZ();
 		}
-		
-		return geometryObject;
-	}
-	
-	private GeometryObject parseEnvelope(BoundingBox envelope, DatabaseSrs referenceSystem) throws GeometryParseException {
-		return GeometryObject.createEnvelope(new double[]{
-				envelope.getLowerCorner().getX(),
-				envelope.getLowerCorner().getY(),
-				envelope.getUpperCorner().getX(),
-				envelope.getUpperCorner().getY()
-		}, 2, referenceSystem.getSrid());
-	}
-		
-	private GeometryObject parsePoint(Point point, DatabaseSrs referenceSystem) throws GeometryParseException {
-		return GeometryObject.createPoint(new double[]{point.getPos().getX(), point.getPos().getY()}, 2, referenceSystem.getSrid());
-	}
-	
-	private GeometryObject parseMultiPoint(MultiPoint multiPoint, DatabaseSrs referenceSystem) throws GeometryParseException {
+
+		return GeometryObject.createPoint(coordinates, dimension, referenceSystem.getSrid());
+    }
+
+    private GeometryObject parseMultiPoint(MultiPoint multiPoint, DatabaseSrs referenceSystem, int dimension) {
 		double[][] pointArray = new double[multiPoint.getPoints().size()][];
-		for (int i = 0; i < multiPoint.getPoints().size(); i++) {
-			Point point = multiPoint.getPoints().get(i);
-			pointArray[i] = new double[]{point.getPos().getX(), point.getPos().getY()};
-		}
-		
-		return GeometryObject.createMultiPoint(pointArray, 2, referenceSystem.getSrid());
-	}
-	
-	private GeometryObject parseLineString(LineString lineString, DatabaseSrs referenceSystem)throws GeometryParseException {
-		return GeometryObject.createCurve(convertPrimitive(lineString.getPosList().getCoords()), 2, referenceSystem.getSrid());
-	}
-
-	private GeometryObject parseMultiLineString(MultiLineString multiLineString, DatabaseSrs referenceSystem)throws GeometryParseException {
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
-		for (LineString lineString : multiLineString.getLineStrings())
-			pointList.add(lineString.getPosList().getCoords());		
-		
-		return GeometryObject.createMultiCurve(convertAggregate(pointList, false), 2, referenceSystem.getSrid());
-	}
-
-	private GeometryObject parsePolygon(Polygon polygon, DatabaseSrs referenceSystem) throws GeometryParseException {
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
-		pointList.add(polygon.getExterior().getCoords());
-		
-		if (polygon.isSetInterior()) {
-			for (PositionList interior : polygon.getInterior())
-				pointList.add(interior.getCoords());				
-		}
-		
-		return GeometryObject.createPolygon(convertAggregate(pointList, true), 2, referenceSystem.getSrid());
-	}
-	
-	private GeometryObject parseMultiPolygon(MultiPolygon multiPolygon, DatabaseSrs referenceSystem) throws GeometryParseException {
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
-		List<Integer> exteriorRings = new ArrayList<Integer>();
-		int exteriorRing = 0;
-		
-		for (Polygon polygon : multiPolygon.getPolygons()) {
-			pointList.add(polygon.getExterior().getCoords());
-			if (polygon.isSetInterior()) {
-				exteriorRing += polygon.getInterior().size();
-				for (PositionList interior : polygon.getInterior())
-					pointList.add(interior.getCoords());
+        for (int i = 0; i < multiPoint.getPoints().size(); i++) {
+            Point point = multiPoint.getPoints().get(i);
+			pointArray[i] = new double[dimension];
+			pointArray[i][0] = point.getPos().getX();
+			pointArray[i][1] = point.getPos().getY();
+			if (dimension == 3) {
+				pointArray[i][2] = point.getPos().getZ();
 			}
-			
-			exteriorRings.add(++exteriorRing);
+        }
+
+        return GeometryObject.createMultiPoint(pointArray, dimension, referenceSystem.getSrid());
+    }
+
+    private GeometryObject parseLineString(LineString lineString, DatabaseSrs referenceSystem, int dimension) throws GeometryParseException {
+        return GeometryObject.createCurve(
+				convertPrimitive(lineString.getPosList().getCoords(), dimension),
+				dimension, referenceSystem.getSrid());
+    }
+
+    private GeometryObject parseMultiLineString(MultiLineString multiLineString, DatabaseSrs referenceSystem, int dimension) throws GeometryParseException {
+        List<List<Double>> pointList = new ArrayList<>();
+        for (LineString lineString : multiLineString.getLineStrings()) {
+			pointList.add(lineString.getPosList().getCoords());
 		}
-		
-		int[] tmp = new int[exteriorRings.size()];
-		for (int i = 0; i < exteriorRings.size(); i++)
+
+        return GeometryObject.createMultiCurve(
+				convertAggregate(pointList, dimension, false),
+				dimension, referenceSystem.getSrid());
+    }
+
+    private GeometryObject parsePolygon(Polygon polygon, DatabaseSrs referenceSystem, int dimension) throws GeometryParseException {
+        List<List<Double>> pointList = new ArrayList<>();
+        pointList.add(polygon.getExterior().getCoords());
+        if (polygon.isSetInterior()) {
+            for (PositionList interior : polygon.getInterior()) {
+				pointList.add(interior.getCoords());
+			}
+        }
+
+        return GeometryObject.createPolygon(
+				convertAggregate(pointList, dimension, true),
+				dimension, referenceSystem.getSrid());
+    }
+
+    private GeometryObject parseMultiPolygon(MultiPolygon multiPolygon, DatabaseSrs referenceSystem, int dimension) throws GeometryParseException {
+        List<List<Double>> pointList = new ArrayList<>();
+        List<Integer> exteriorRings = new ArrayList<>();
+
+        int exteriorRing = 0;
+        for (Polygon polygon : multiPolygon.getPolygons()) {
+            pointList.add(polygon.getExterior().getCoords());
+            if (polygon.isSetInterior()) {
+                exteriorRing += polygon.getInterior().size();
+                for (PositionList interior : polygon.getInterior()) {
+					pointList.add(interior.getCoords());
+				}
+            }
+
+            exteriorRings.add(++exteriorRing);
+        }
+
+        int[] tmp = new int[exteriorRings.size()];
+        for (int i = 0; i < exteriorRings.size(); i++) {
 			tmp[i] = exteriorRings.get(i);
-		
-		return GeometryObject.createMultiPolygon(convertAggregate(pointList, true), tmp, 2, referenceSystem.getSrid());
-	}
-	
-	private void validateRing(List<Double> coords) throws GeometryParseException {
-		if (coords == null || coords.isEmpty()) {
-			throw new GeometryParseException("Linear ring contains less than 4 coordinates.");
 		}
 
-		// check closedness
-		Double x = coords.get(0);
-		Double y = coords.get(1);
+        return GeometryObject.createMultiPolygon(
+				convertAggregate(pointList, dimension, true),
+				tmp, dimension, referenceSystem.getSrid());
+    }
 
-		int nrOfPoints = coords.size();
+    private void validateRing(List<Double> coords, int dimension) throws GeometryParseException {
+        if (coords == null || coords.isEmpty()) {
+            throw new GeometryParseException("Ring has too few points.");
+        }
 
-		if (!x.equals(coords.get(nrOfPoints - 2)) ||
-				!y.equals(coords.get(nrOfPoints - 1))) {
+        // check closedness
+        int nrOfPoints = coords.size();
+        boolean closed = true;
+        for (int i = 0; i < dimension; i++) {
+            if (!coords.get(i).equals(coords.get(nrOfPoints - dimension + i))) {
+                closed = false;
+                break;
+            }
+        }
 
-			// repair unclosed ring...
-			coords.add(x);
-			coords.add(y);
+        if (!closed) {
+            // repair unclosed ring
+            for (int i = 0; i < dimension; i++) {
+                coords.add(coords.get(i));
+            }
+        }
+
+        // check for minimum number of points
+        if (coords.size() / dimension < 4) {
+			throw new GeometryParseException("Ring has too few points.");
 		}
+    }
 
-		// check for minimum number of coordinates
-		if (coords.size() / 2 < 4)
-			throw new GeometryParseException("Linear ring contains less than 4 coordinates.");
-	}
-	
-	private double[] convertPrimitive(List<Double> pointList) {
-		double[] result = new double[pointList.size()];
-		
-		for (int i = 0; i < pointList.size(); i++)
-			result[i] = pointList.get(i);
-		
-		return result;
-	}
-	
-	private double[][] convertAggregate(List<List<Double>> pointList, boolean validate) throws GeometryParseException {
-		double[][] result = new double[pointList.size()][];
+    private double[] convertPrimitive(List<Double> pointList, int dimension) throws GeometryParseException {
+        int nrOfPoints = pointList.size();
+        if (nrOfPoints % dimension != 0) {
+            throw new GeometryParseException("Number of coordinates does not match dimension.");
+        }
 
-		int i = 0;
-		for (List<Double> points : pointList) {
-			if (validate)
-				validateRing(points);
-				
-			result[i++] = convertPrimitive(points);			
-		}
+        double[] result = new double[nrOfPoints];
+        for (int i = 0; i < nrOfPoints; i++) {
+            result[i] = pointList.get(i);
+        }
 
-		return result;
-	}
-	
+        return result;
+    }
+
+    private double[][] convertAggregate(List<List<Double>> pointList, int dimension, boolean validate) throws GeometryParseException {
+        double[][] result = new double[pointList.size()][];
+        for (int i = 0; i < pointList.size(); i++) {
+            List<Double> points = pointList.get(i);
+            if (validate) {
+                validateRing(points, dimension);
+            }
+
+            result[i] = convertPrimitive(points, dimension);
+        }
+
+        return result;
+    }
 }

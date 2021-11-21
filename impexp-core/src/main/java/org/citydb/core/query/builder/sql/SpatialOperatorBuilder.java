@@ -134,11 +134,17 @@ public class SpatialOperatorBuilder {
 			PredicateToken predicate = databaseAdapter.getSQLAdapter().getBinarySpatialPredicate(operator.getOperatorName(), queryContext.getTargetColumn(), spatialDescription, negate);
 			queryContext.addPredicate(predicate);
 		} else {
-			if (operator.getOperatorName() == SpatialOperatorName.CONTAINS || operator.getOperatorName() == SpatialOperatorName.EQUALS)
-				throw new QueryBuildException("The spatial " + operator.getOperatorName() + " operator is not supported for the geometry property '" + valueReference.getSchemaPath().getLastNode() + "'.");
+			SpatialOperatorName operatorName = operator.getOperatorName();
+			if (operatorName == SpatialOperatorName.CONTAINS || operatorName == SpatialOperatorName.EQUALS)
+				throw new QueryBuildException("The spatial " + operatorName + " operator is not supported for the geometry property '" + valueReference.getSchemaPath().getLastNode() + "'.");
+
+			if (operatorName == SpatialOperatorName.DISJOINT) {
+				operatorName = SpatialOperatorName.INTERSECTS;
+				negate = !negate;
+			}
 
 			GeometryObject bbox = spatialDescription.toEnvelope();
-			boolean all = operator.getOperatorName() == SpatialOperatorName.DISJOINT || operator.getOperatorName() == SpatialOperatorName.WITHIN;
+			boolean all = operatorName == SpatialOperatorName.WITHIN;
 			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaName, schemaPathBuilder.getAliasGenerator());
 			Table cityObject = getCityObjectTable(query, queryContext, useLeftJoins);
 
@@ -146,7 +152,7 @@ public class SpatialOperatorBuilder {
 					.addProjection(surfaceGeometry.getColumn(MappingConstants.ID))
 					.addSelection(ComparisonFactory.equalTo(surfaceGeometry.getColumn(MappingConstants.ROOT_ID), targetColumn))
 					.addSelection(ComparisonFactory.isNotNull(surfaceGeometry.getColumn(MappingConstants.GEOMETRY)))
-					.addSelection(databaseAdapter.getSQLAdapter().getBinarySpatialPredicate(operator.getOperatorName(), surfaceGeometry.getColumn(MappingConstants.GEOMETRY), spatialDescription, all));
+					.addSelection(databaseAdapter.getSQLAdapter().getBinarySpatialPredicate(operatorName, surfaceGeometry.getColumn(MappingConstants.GEOMETRY), spatialDescription, all));
 
 			PredicateToken spatialPredicate = LogicalOperationFactory.AND(
 					databaseAdapter.getSQLAdapter().getBinarySpatialPredicate(SpatialOperatorName.BBOX, cityObject.getColumn(MappingConstants.ENVELOPE), bbox, false),
