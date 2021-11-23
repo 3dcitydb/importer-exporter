@@ -34,10 +34,7 @@ import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.visExporter.SimpleVisQuery;
-import org.citydb.core.registry.ObjectRegistry;
 import picocli.CommandLine;
-
-import java.time.ZoneId;
 
 public class QueryOption implements CliOption {
     @CommandLine.ArgGroup(exclusive = false)
@@ -67,8 +64,7 @@ public class QueryOption implements CliOption {
         }
 
         if (featureVersionOption != null) {
-            ZoneId timeZone = ObjectRegistry.getInstance().getConfig().getGlobalConfig().getZoneId();
-            SimpleFeatureVersionFilter versionFilter = featureVersionOption.toFeatureVersionFilter(timeZone);
+            SimpleFeatureVersionFilter versionFilter = featureVersionOption.toFeatureVersionFilter();
             if (versionFilter != null) {
                 query.setUseFeatureVersionFilter(true);
                 query.setFeatureVersionFilter(versionFilter);

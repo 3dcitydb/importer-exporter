@@ -35,12 +35,9 @@ import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.generics.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.sql.*;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 public class DBCityObjectGenericAttrib implements DBImporter {
 	private final Connection batchConn;
@@ -49,7 +46,6 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 	private PreparedStatement psAtomicGenericAttribute;
 	private PreparedStatement psGenericAttributeSet;
 	private PreparedStatement psGenericAttributeMember;
-	private ZoneId timeZone;
 	private int batchCounter;
 
 	public DBCityObjectGenericAttrib(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
@@ -57,7 +53,6 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 		this.importer = importer;
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-		timeZone = config.getGlobalConfig().getZoneId();
 
 		StringBuilder stmt = new StringBuilder()
 				.append("insert into ").append(schema).append(".cityobject_genericattrib (id, parent_genattrib_id, root_genattrib_id, attrname, datatype, genattribset_codespace, cityobject_id) values ")
@@ -183,9 +178,8 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 				ps.setInt(2, 5);
 
 				DateAttribute dateAttribute = (DateAttribute)genericAttribute;
-				ZonedDateTime dateTime = dateAttribute.getValue().atStartOfDay().atZone(timeZone);
 				if (dateAttribute.isSetValue())
-					ps.setObject(7, dateTime.toOffsetDateTime());
+					ps.setObject(7, OffsetDateTime.of(dateAttribute.getValue().atStartOfDay(), ZoneOffset.UTC));
 				else
 					ps.setNull(7, Types.TIMESTAMP);
 

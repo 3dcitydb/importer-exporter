@@ -37,7 +37,6 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 public class FeatureVersionOption implements CliOption {
@@ -59,14 +58,14 @@ public class FeatureVersionOption implements CliOption {
         return new SimpleFeatureVersionFilter();
     }
 
-    public SimpleFeatureVersionFilter toFeatureVersionFilter(ZoneId timeZone) {
+    public SimpleFeatureVersionFilter toFeatureVersionFilter() {
         if (featureVersionFilter != null) {
             if (startDateTime != null) {
-                featureVersionFilter.setStartDate(withTimeZone(startDateTime, timeZone));
+                featureVersionFilter.setStartDate(withTimeZone(startDateTime));
             }
 
             if (endDateTime != null) {
-                featureVersionFilter.setEndDate(withTimeZone(endDateTime, timeZone));
+                featureVersionFilter.setEndDate(withTimeZone(endDateTime));
             }
         }
 
@@ -160,11 +159,9 @@ public class FeatureVersionOption implements CliOption {
         }
     }
 
-    private XMLGregorianCalendar withTimeZone(XMLGregorianCalendar dateTime, ZoneId timeZone) {
+    private XMLGregorianCalendar withTimeZone(XMLGregorianCalendar dateTime) {
         if (dateTime.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
-            dateTime.setTimezone(timeZone.getRules()
-                    .getOffset(dateTime.toGregorianCalendar().toInstant())
-                    .getTotalSeconds() / 60);
+            dateTime.setTimezone(0);
         }
 
         return dateTime;
