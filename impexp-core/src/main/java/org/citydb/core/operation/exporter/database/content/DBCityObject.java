@@ -74,7 +74,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 
 public class DBCityObject extends AbstractTypeExporter {
@@ -322,14 +322,14 @@ public class DBCityObject extends AbstractTypeExporter {
 			if (context.projectionFilter.containsProperty("creationDate", coreModule)) {
 				OffsetDateTime creationDate = rs.getObject("creation_date", OffsetDateTime.class);
 				if (!rs.wasNull())
-					cityObject.setCreationDate(creationDate.atZoneSameInstant(ZoneId.systemDefault()));
+					cityObject.setCreationDate(creationDate.atZoneSameInstant(ZoneOffset.UTC));
 			}
 
 			// core:terminationDate
 			if (context.projectionFilter.containsProperty("terminationDate", coreModule)) {
 				OffsetDateTime terminationDate = rs.getObject("termination_date", OffsetDateTime.class);
 				if (terminationDate != null)
-					cityObject.setTerminationDate(terminationDate.atZoneSameInstant(ZoneId.systemDefault()));
+					cityObject.setTerminationDate(terminationDate.atZoneSameInstant(ZoneOffset.UTC));
 			}
 
 			// core:relativeToTerrain
@@ -352,7 +352,7 @@ public class DBCityObject extends AbstractTypeExporter {
 					OffsetDateTime lastModificationDate = rs.getObject("last_modification_date", OffsetDateTime.class);
 					if (!rs.wasNull()) {
 						LastModificationDateProperty property = new LastModificationDateProperty(
-								lastModificationDate.atZoneSameInstant(ZoneId.systemDefault()));
+								lastModificationDate.atZoneSameInstant(ZoneOffset.UTC));
 						cityObject.addGenericApplicationPropertyOfCityObject(property);
 					}
 				}

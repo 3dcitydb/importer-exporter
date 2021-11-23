@@ -42,11 +42,12 @@ import org.citydb.core.registry.ObjectRegistry;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.Instant;
 
 public class ComparisonOperatorBuilder {
 	private final ValueReferenceBuilder valueReferenceBuilder;
 	private final DatatypeFactory datatypeFactory;
-	
+
 	protected ComparisonOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder) {
 		this.valueReferenceBuilder = valueReferenceBuilder;
 		datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
@@ -214,9 +215,9 @@ public class ComparisonOperatorBuilder {
 				break;
 			case BOOLEAN:
 				try {
-					if ("true".equals(literalValue.toLowerCase()))
+					if ("true".equalsIgnoreCase(literalValue))
 						literal = new BooleanLiteral(true);
-					else if ("false".equals(literalValue.toLowerCase()))
+					else if ("false".equalsIgnoreCase(literalValue))
 						literal = new BooleanLiteral(false);
 					else {
 						long value = Integer.parseInt(literalValue);
@@ -228,19 +229,19 @@ public class ComparisonOperatorBuilder {
 				break;
 			case DATE:
 				try {
-					XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(literalValue);
-					literal = new DateLiteral(cal.toGregorianCalendar());
-					((DateLiteral)literal).setXMLLiteral(literalValue);
+					XMLGregorianCalendar calendar = datatypeFactory.newXMLGregorianCalendar(literalValue);
+					literal = new DateLiteral(toInstant(calendar));
+					((DateLiteral) literal).setXMLLiteral(literalValue);
 				} catch (IllegalArgumentException e) {
 					//
 				}
 				break;
 			case TIMESTAMP:
 				try {
-					XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(literalValue);
-					literal = new TimestampLiteral(cal.toGregorianCalendar());
-					((TimestampLiteral)literal).setXMLLiteral(literalValue);
-					((TimestampLiteral)literal).setDate(cal.getXMLSchemaType() == DatatypeConstants.DATE);
+					XMLGregorianCalendar calendar = datatypeFactory.newXMLGregorianCalendar(literalValue);
+					literal = new TimestampLiteral(toInstant(calendar));
+					((TimestampLiteral) literal).setXMLLiteral(literalValue);
+					((TimestampLiteral) literal).setDate(calendar.getXMLSchemaType() == DatatypeConstants.DATE);
 				} catch (IllegalArgumentException e) {
 					//
 				}
@@ -255,4 +256,11 @@ public class ComparisonOperatorBuilder {
 		return literal;
 	}
 
+	private Instant toInstant(XMLGregorianCalendar calendar) {
+		if (calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
+			calendar.setTimezone(0);
+		}
+
+		return calendar.toGregorianCalendar().toInstant();
+	}
 }

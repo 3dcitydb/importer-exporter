@@ -38,6 +38,7 @@ import org.citygml4j.model.citygml.generics.*;
 import org.citygml4j.model.gml.basicTypes.Measure;
 
 import java.sql.*;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -129,10 +130,10 @@ public class DBCityObjectGenericAttrib implements DBExporter {
                 }
                 break;
             case DATE_ATTRIBUTE:
-                Timestamp dateVal = rs.getTimestamp(prefix + "dateval");
+                OffsetDateTime dateVal = rs.getObject(prefix + "dateval", OffsetDateTime.class);
                 if (!rs.wasNull()) {
                     genericAttribute = new DateAttribute();
-                    ((DateAttribute) genericAttribute).setValue(dateVal.toLocalDateTime().toLocalDate());
+                    ((DateAttribute) genericAttribute).setValue(dateVal.toLocalDate());
                 }
                 break;
             case MEASURE_ATTRIBUTE:

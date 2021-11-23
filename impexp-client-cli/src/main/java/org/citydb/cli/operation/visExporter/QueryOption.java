@@ -34,10 +34,7 @@ import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.visExporter.SimpleVisQuery;
-import org.citydb.core.registry.ObjectRegistry;
 import picocli.CommandLine;
-
-import javax.xml.datatype.DatatypeFactory;
 
 public class QueryOption implements CliOption {
     @CommandLine.ArgGroup(exclusive = false)
@@ -67,8 +64,7 @@ public class QueryOption implements CliOption {
         }
 
         if (featureVersionOption != null) {
-            DatatypeFactory datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
-            SimpleFeatureVersionFilter versionFilter = featureVersionOption.toFeatureVersionFilter(datatypeFactory);
+            SimpleFeatureVersionFilter versionFilter = featureVersionOption.toFeatureVersionFilter();
             if (versionFilter != null) {
                 query.setUseFeatureVersionFilter(true);
                 query.setFeatureVersionFilter(versionFilter);

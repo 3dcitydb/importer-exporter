@@ -38,7 +38,6 @@ import org.citydb.config.project.query.filter.selection.logical.AndOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
-import org.citydb.core.registry.ObjectRegistry;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
@@ -97,7 +96,7 @@ public class QueryOption implements CliOption {
             }
 
             SimpleFeatureVersionFilter versionFilter = featureVersionOption != null ?
-                    featureVersionOption.toFeatureVersionFilter(ObjectRegistry.getInstance().getDatatypeFactory()) :
+                    featureVersionOption.toFeatureVersionFilter() :
                     FeatureVersionOption.defaultFeatureVersionFilter();
 
             if (versionFilter != null) {

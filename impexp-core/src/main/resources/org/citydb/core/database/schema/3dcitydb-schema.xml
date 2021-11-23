@@ -85,7 +85,7 @@
 
     <attributeType id="dateAttributeType" table="cityobject_genericattrib">
       <attribute path="@name" column="attrname" type="string" minOccurs="1" schema="gen"/>
-      <attribute path="value" column="dateval" type="date" minOccurs="1" schema="gen"/>
+      <attribute path="value" column="dateval" type="timestamp" minOccurs="1" schema="gen"/>
     </attributeType>
 
     <attributeType id="measureAttributeType" table="cityobject_genericattrib">
