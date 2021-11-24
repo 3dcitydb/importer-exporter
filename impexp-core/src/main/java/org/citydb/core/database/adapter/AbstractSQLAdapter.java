@@ -166,10 +166,10 @@ public abstract class AbstractSQLAdapter {
 				result = "'" + value + "'";
 			} else if (value instanceof Boolean) {
 				result = ((Boolean) value) ? "1" : "0";
-			} else if (value instanceof Double || value instanceof Integer || value instanceof Long) {
-				result = String.valueOf(value);
 			} else if (value instanceof GeometryObject) {
 				result = databaseAdapter.getGeometryConverter().getDatabaseObjectConstructor((GeometryObject)value);
+			} else {
+				result = String.valueOf(value);
 			}
 
 			values.add(result);
