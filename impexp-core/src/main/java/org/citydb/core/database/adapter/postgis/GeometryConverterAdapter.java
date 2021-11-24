@@ -403,7 +403,10 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case MULTI_POINT:
 		case ENVELOPE:
 		case MULTI_POLYGON:
-			geometry = new PGgeometry(GeometryBuilder.geomFromString(convertToEWKT(geomObj)));
+			String text = convertToEWKT(geomObj);
+			if (text != null) {
+				geometry = new PGgeometry(GeometryBuilder.geomFromString(text));
+			}
 			break;
 		case SOLID:
 			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
@@ -422,19 +425,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 	}
 
 	@Override
-	public String getDatabaseObjectConstructor(GeometryObject geomObj) {
-		String constructor = null;
-
-		try {
-			Object geometry = getDatabaseObject(geomObj, null);
-			if (geometry != null) {
-				constructor = "'" + geometry + "'";
-			}
-		} catch (SQLException e) {
-			//
-		}
-
-		return constructor;
+	public String getDatabaseObjectConstructor(GeometryObject geomObj) throws SQLException {
+		return "'" + getDatabaseObject(geomObj, null) + "'";
 	}
 
 	private String convertToEWKT(GeometryObject geomObj) {

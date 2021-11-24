@@ -300,11 +300,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException {
-		JGeometry geometry = convertToJGeometry(geomObj);
-		if (geometry == null)
-			throw new SQLException("Failed to convert geometry to internal database representation.");
-
 		try {
+			JGeometry geometry = convertToJGeometry(geomObj);
 			return JGeometry.storeJS(connection.unwrap(OracleConnection.class), geometry);
 		} catch (Exception e) {
 			throw new SQLException(e.getMessage(), e);
@@ -312,28 +309,25 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 	}
 
 	@Override
-	public String getDatabaseObjectConstructor(GeometryObject geomObj) {
-		JGeometry geom = convertToJGeometry(geomObj);
+	public String getDatabaseObjectConstructor(GeometryObject geomObj) throws SQLException {
+		JGeometry geometry = convertToJGeometry(geomObj);
 
-		String constructor = null;
-		if (geom != null) {
-			constructor = "SDO_GEOMETRY(" +
-					geom.getDimensions() + "00" + geom.getType() + ", " +
-					geom.getSRID() + ", ";
-			if (geom.getType() == 1) {
-				double[] pointXYZ = geom.getLabelPointXYZ();
-				constructor += "SDO_POINT_TYPE(" + pointXYZ[0] + ", " + pointXYZ[1] + ", " +
-						(Double.isNaN(pointXYZ[2]) ? "NULL" : pointXYZ[2]) + "), NULL, NULL)";
-			} else {
-				constructor += "NULL, SDO_ELEM_INFO_ARRAY(" + IntStream.of(geom.getElemInfo())
-						.mapToObj(Integer::toString)
-						.collect(Collectors.joining(", ")) +
-						"), " +
-						"SDO_ORDINATE_ARRAY(" + DoubleStream.of(geom.getOrdinatesArray())
-						.mapToObj(Double::toString)
-						.collect(Collectors.joining(", ")) +
-						"))";
-			}
+		String constructor = "SDO_GEOMETRY(" +
+				geometry.getDimensions() + "00" + geometry.getType() + ", " +
+				geometry.getSRID() + ", ";
+		if (geometry.getType() == 1) {
+			double[] pointXYZ = geometry.getLabelPointXYZ();
+			constructor += "SDO_POINT_TYPE(" + pointXYZ[0] + ", " + pointXYZ[1] + ", " +
+					(Double.isNaN(pointXYZ[2]) ? "NULL" : pointXYZ[2]) + "), NULL, NULL)";
+		} else {
+			constructor += "NULL, SDO_ELEM_INFO_ARRAY(" + IntStream.of(geometry.getElemInfo())
+					.mapToObj(Integer::toString)
+					.collect(Collectors.joining(", ")) +
+					"), " +
+					"SDO_ORDINATE_ARRAY(" + DoubleStream.of(geometry.getOrdinatesArray())
+					.mapToObj(Double::toString)
+					.collect(Collectors.joining(", ")) +
+					"))";
 		}
 
 		return constructor;
@@ -517,7 +511,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		return JGeometry.createLinearPolygon(coordinates, geomObj.getDimension(), geomObj.getSrid());
 	}
 
-	private JGeometry convertToJGeometry(GeometryObject geomObj) {
+	private JGeometry convertToJGeometry(GeometryObject geomObj) throws SQLException {
 		JGeometry geometry = null;
 
 		switch (geomObj.getGeometryType()) {
@@ -548,6 +542,10 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			case COMPOSITE_SOLID:
 				geometry = convertCompositeSolidToJGeometry(geomObj);
 				break;
+		}
+
+		if (geometry == null) {
+			throw new SQLException("Failed to convert geometry to internal database representation.");
 		}
 
 		return geometry;

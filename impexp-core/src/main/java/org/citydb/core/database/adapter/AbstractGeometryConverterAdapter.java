@@ -48,7 +48,7 @@ public abstract class AbstractGeometryConverterAdapter {
 	public abstract GeometryObject getMultiPolygon(Object geomObj) throws SQLException;
 	public abstract GeometryObject getGeometry(Object geomObj) throws SQLException;
 	public abstract Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException;
-	public abstract String getDatabaseObjectConstructor(GeometryObject geomObj);
+	public abstract String getDatabaseObjectConstructor(GeometryObject geomObj) throws SQLException;
 	public abstract int getNullGeometryType();
 	public abstract String getNullGeometryTypeName();
 }

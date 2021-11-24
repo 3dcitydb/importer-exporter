@@ -30,6 +30,7 @@ package org.citydb.config.gui.exporter;
 
 import org.citydb.config.gui.components.SQLExportFilterComponent;
 
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ExportGuiType", propOrder = {
@@ -55,6 +56,9 @@ public class ExportGuiConfig {
     private boolean showAffineTransformationWarning = true;
     private boolean showCityJSONTilingWarning = true;
     private SQLExportFilterComponent sqlFilter;
+
+    @XmlTransient
+    private String sqlFile;
 
     public ExportGuiConfig() {
         sqlFilter = new SQLExportFilterComponent();
@@ -140,5 +144,13 @@ public class ExportGuiConfig {
         if (sqlExportFilter != null) {
             this.sqlFilter = sqlExportFilter;
         }
+    }
+
+    public String getSQLFile() {
+        return sqlFile;
+    }
+
+    public void setSQLFile(String sqlFile) {
+        this.sqlFile = sqlFile;
     }
 }

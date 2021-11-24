@@ -59,7 +59,6 @@ import org.citydb.config.util.QueryWrapper;
 import org.citydb.core.database.DatabaseController;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
-import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
@@ -116,7 +115,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
     private final Logger log = Logger.getInstance();
     private final ViewController viewController;
     private final SchemaMapping schemaMapping;
-    private final DatabaseConnectionPool connectionPool;
+    private final DatabaseController databaseController;
 
     private JPanel component;
     private RSyntaxTextArea xmlText;
@@ -130,7 +129,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
     public XMLQueryView(ViewController viewController) {
         this.viewController = viewController;
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
-        connectionPool = DatabaseConnectionPool.getInstance();
+        databaseController = ObjectRegistry.getInstance().getDatabaseController();
 
         init();
     }
@@ -174,7 +173,13 @@ public class XMLQueryView extends FilterView<QueryConfig> {
 
         newButton.addActionListener(e -> SwingUtilities.invokeLater(this::setEmptyQuery));
         validateButton.addActionListener(e -> SwingUtilities.invokeLater(this::validate));
-        generateSqlButton.addActionListener(e -> SwingUtilities.invokeLater(this::createSQLQuery));
+        generateSqlButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+            protected Void doInBackground() {
+                createSQLQuery();
+                return null;
+            }
+        }.execute());
+
         duplicateButton.setVisible(false);
 
         RSyntaxTextAreaHelper.installDefaultTheme(xmlText);
@@ -434,23 +439,20 @@ public class XMLQueryView extends FilterView<QueryConfig> {
     }
 
     private void createSQLQuery() {
-        DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
         DatabaseConnection conn = ObjectRegistry.getInstance().getConfig().getDatabaseConfig().getActiveConnection();
         if (!databaseController.isConnected() && viewController.showOptionDialog(
                 Language.I18N.getString("common.dialog.dbConnect.title"),
                 MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message"),
                         conn.getDescription(), conn.toConnectString()),
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION && !databaseController.connect()) {
-            databaseController.connect();
-        }
-
-        if (!databaseController.isConnected()) {
-            return;
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+            if (!databaseController.connect()) {
+                return;
+            }
         }
 
         log.info("Generating SQL query expression.");
 
-        AbstractDatabaseAdapter databaseAdapter = connectionPool.getActiveDatabaseAdapter();
+        AbstractDatabaseAdapter databaseAdapter = databaseController.getActiveDatabaseAdapter();
         SQLQueryBuilder sqlBuilder = new SQLQueryBuilder(
                 schemaMapping,
                 databaseAdapter,
@@ -524,8 +526,8 @@ public class XMLQueryView extends FilterView<QueryConfig> {
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {
         return srs.getSrid() == 0
-                || (connectionPool.isConnected()
-                && srs.getSrid() == connectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
+                || (databaseController.isConnected()
+                && srs.getSrid() == databaseController.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
     }
 }
 

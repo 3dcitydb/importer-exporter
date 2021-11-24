@@ -158,16 +158,16 @@ public abstract class AbstractSQLAdapter {
 		List<PlaceHolder<?>> placeHolders = statement.getInvolvedPlaceHolders();
 
 		List<String> values = new ArrayList<>();
-		for (int i = 0; i < placeHolders.size(); i++) {
-			Object value = placeHolders.get(i).getValue();
+		for (PlaceHolder<?> placeHolder : placeHolders) {
+			Object value = placeHolder.getValue();
 
-			String result = null;
+			String result;
 			if (value instanceof String || value instanceof Date || value instanceof Timestamp) {
 				result = "'" + value + "'";
 			} else if (value instanceof Boolean) {
 				result = ((Boolean) value) ? "1" : "0";
 			} else if (value instanceof GeometryObject) {
-				result = databaseAdapter.getGeometryConverter().getDatabaseObjectConstructor((GeometryObject)value);
+				result = databaseAdapter.getGeometryConverter().getDatabaseObjectConstructor((GeometryObject) value);
 			} else {
 				result = String.valueOf(value);
 			}

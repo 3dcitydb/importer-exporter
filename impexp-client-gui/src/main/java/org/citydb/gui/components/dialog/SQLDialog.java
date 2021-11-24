@@ -27,7 +27,9 @@
  */
 package org.citydb.gui.components.dialog;
 
+import org.citydb.config.gui.exporter.ExportGuiConfig;
 import org.citydb.config.i18n.Language;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.RSyntaxTextAreaHelper;
@@ -39,13 +41,15 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 public class SQLDialog extends JDialog {
 	private final Logger log = Logger.getInstance();
 	private final String sql;
-	private String savePath;
 
 	public SQLDialog(String sql, JFrame frame) {
 		super(frame, Language.I18N.getString("common.dialog.sql.title"), true);
@@ -72,7 +76,7 @@ public class SQLDialog extends JDialog {
 			RTextScrollPane scrollPane = new RTextScrollPane(sqlText);
 			scrollPane.setAutoscrolls(true);
 
-			main.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			main.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 			RSyntaxTextAreaHelper.installDefaultTheme(sqlText);
 			PopupMenuDecorator.getInstance().decorate(sqlText);
@@ -95,6 +99,7 @@ public class SQLDialog extends JDialog {
 	}
 
 	private void saveFile() {
+		ExportGuiConfig config = ObjectRegistry.getInstance().getConfig().getGuiConfig().getExportGuiConfig();
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(Language.I18N.getString("common.dialog.sql.saveAs.label"));
 
@@ -104,6 +109,7 @@ public class SQLDialog extends JDialog {
 		chooser.setFileFilter(filter);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
+		String savePath = config.getSQLFile();
 		if (savePath != null) {
 			chooser.setCurrentDirectory(new File(savePath));
 		}
@@ -118,15 +124,12 @@ public class SQLDialog extends JDialog {
 			file = new File(file + ".sql");
 		}
 
-		savePath = chooser.getCurrentDirectory().getAbsolutePath();
-
-		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))){
+		config.setSQLFile(chooser.getCurrentDirectory().getAbsolutePath());
+		try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)){
 			writer.write(sql);
+			log.info("SQL successfully saved to file: '" + file.getAbsolutePath() + "'.");
 		} catch (IOException e) {
 			log.error("Failed to write SQL file.", e);
-			return;
 		}
-
-		log.info("SQL successfully saved to file: '" + file.getAbsolutePath() + "'.");
 	}
 }
