@@ -34,6 +34,7 @@ import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
@@ -55,6 +56,7 @@ import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.util.QueryWrapper;
+import org.citydb.core.database.DatabaseController;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
@@ -104,6 +106,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -430,11 +433,20 @@ public class XMLQueryView extends FilterView<QueryConfig> {
     }
 
     private void createSQLQuery() {
-        if (!ObjectRegistry.getInstance().getDatabaseController().connect()) {
+        DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
+        DatabaseConnection conn = ObjectRegistry.getInstance().getConfig().getDatabaseConfig().getActiveConnection();
+        if (!databaseController.isConnected() && viewController.showOptionDialog(
+                Language.I18N.getString("common.connect.dialog.title"),
+                MessageFormat.format(Language.I18N.getString("common.connect.dialog.message"),
+                        conn.getDescription(), conn.toConnectString()),
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION && !databaseController.connect()) {
+            databaseController.connect();
+        }
+
+        if (!databaseController.isConnected()) {
             return;
         }
 
-        viewController.clearConsole();
         log.info("Generating SQL query expression.");
 
         AbstractDatabaseAdapter databaseAdapter = connectionPool.getActiveDatabaseAdapter();
