@@ -463,7 +463,9 @@ public class XMLQueryView extends FilterView<QueryConfig> {
             Query query = queryBuilder.buildQuery(queryConfig, ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
             Select select = sqlBuilder.buildQuery(query);
             AbstractSQLAdapter sqlAdapter = databaseAdapter.getSQLAdapter();
-            sql = SqlFormatter.format(select.toString(), sqlAdapter.getPlaceHolderValues(select));
+            sql = SqlFormatter
+                    .extend(cfg -> cfg.plusOperators("&&"))
+                    .format(select.toString(), sqlAdapter.getPlaceHolderValues(select));
         } catch (QueryBuildException | SQLException e) {
             log.error("Failed to generate SQL query expression.", e);
         }
