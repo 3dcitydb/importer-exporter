@@ -178,6 +178,11 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		return geometry;		
 	}
 
+	@Override
+	public String getDatabaseObjectConstructor(GeometryObject geomObj) {
+		return null;
+	}
+
 	private Polygon convertPolygonToJTS(GeometryObject geomObj) {
 		double[][] coordinates = geomObj.getCoordinates();
 		int dimension = geomObj.getDimension();

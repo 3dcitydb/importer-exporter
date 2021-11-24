@@ -153,6 +153,30 @@ public abstract class AbstractSQLAdapter {
 		
 		return preparedStatement;
 	}
+
+	public List<String> getPlaceHolderValues(SQLStatement statement) throws SQLException {
+		List<PlaceHolder<?>> placeHolders = statement.getInvolvedPlaceHolders();
+
+		List<String> values = new ArrayList<>();
+		for (PlaceHolder<?> placeHolder : placeHolders) {
+			Object value = placeHolder.getValue();
+
+			String result;
+			if (value instanceof String || value instanceof Date || value instanceof Timestamp) {
+				result = "'" + value + "'";
+			} else if (value instanceof Boolean) {
+				result = ((Boolean) value) ? "1" : "0";
+			} else if (value instanceof GeometryObject) {
+				result = databaseAdapter.getGeometryConverter().getDatabaseObjectConstructor((GeometryObject) value);
+			} else {
+				result = String.valueOf(value);
+			}
+
+			values.add(result);
+		}
+
+		return values;
+	}
 	
 	public void fillPlaceHolders(SQLStatement statement, PreparedStatement preparedStatement, Connection connection) throws SQLException {
 		List<PlaceHolder<?>> placeHolders = statement.getInvolvedPlaceHolders();

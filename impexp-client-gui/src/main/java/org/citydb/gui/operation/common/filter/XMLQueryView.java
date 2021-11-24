@@ -29,10 +29,12 @@
 package org.citydb.gui.operation.common.filter;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.github.vertical_blank.sqlformatter.SqlFormatter;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
@@ -54,15 +56,25 @@ import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.util.QueryWrapper;
-import org.citydb.core.database.connection.DatabaseConnectionPool;
+import org.citydb.core.database.DatabaseController;
+import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.core.database.adapter.AbstractSQLAdapter;
 import org.citydb.core.database.schema.mapping.FeatureType;
+import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
+import org.citydb.core.query.Query;
+import org.citydb.core.query.builder.QueryBuildException;
+import org.citydb.core.query.builder.config.ConfigQueryBuilder;
+import org.citydb.core.query.builder.sql.BuildProperties;
+import org.citydb.core.query.builder.sql.SQLQueryBuilder;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
+import org.citydb.gui.components.dialog.SQLDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.RSyntaxTextAreaHelper;
+import org.citydb.sqlbuilder.select.Select;
 import org.citydb.util.log.Logger;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
@@ -93,6 +105,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -101,20 +115,21 @@ public class XMLQueryView extends FilterView<QueryConfig> {
     private final Logger log = Logger.getInstance();
     private final ViewController viewController;
     private final SchemaMapping schemaMapping;
-    private final DatabaseConnectionPool connectionPool;
+    private final DatabaseController databaseController;
 
     private JPanel component;
     private RSyntaxTextArea xmlText;
     private JButton newButton;
     private JButton duplicateButton;
     private JButton validateButton;
+    private JButton generateSqlButton;
 
     private Supplier<SimpleQuery> simpleQuerySupplier;
 
     public XMLQueryView(ViewController viewController) {
         this.viewController = viewController;
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
-        connectionPool = DatabaseConnectionPool.getInstance();
+        databaseController = ObjectRegistry.getInstance().getDatabaseController();
 
         init();
     }
@@ -141,6 +156,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         newButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/query_new.svg"));
         duplicateButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/copy.svg"));
         validateButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/check.svg"));
+        generateSqlButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/code.svg"));
 
         JToolBar toolBar = new JToolBar();
         toolBar.setBorder(BorderFactory.createEmptyBorder());
@@ -148,6 +164,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         toolBar.add(duplicateButton);
         toolBar.addSeparator();
         toolBar.add(validateButton);
+        toolBar.add(generateSqlButton);
         toolBar.setFloatable(false);
         toolBar.setOrientation(JToolBar.VERTICAL);
 
@@ -156,6 +173,13 @@ public class XMLQueryView extends FilterView<QueryConfig> {
 
         newButton.addActionListener(e -> SwingUtilities.invokeLater(this::setEmptyQuery));
         validateButton.addActionListener(e -> SwingUtilities.invokeLater(this::validate));
+        generateSqlButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+            protected Void doInBackground() {
+                createSQLQuery();
+                return null;
+            }
+        }.execute());
+
         duplicateButton.setVisible(false);
 
         RSyntaxTextAreaHelper.installDefaultTheme(xmlText);
@@ -414,6 +438,49 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         return wrapper.toString();
     }
 
+    private void createSQLQuery() {
+        DatabaseConnection conn = ObjectRegistry.getInstance().getConfig().getDatabaseConfig().getActiveConnection();
+        if (!databaseController.isConnected() && viewController.showOptionDialog(
+                Language.I18N.getString("common.dialog.dbConnect.title"),
+                MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message"),
+                        conn.getDescription(), conn.toConnectString()),
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+            if (!databaseController.connect()) {
+                return;
+            }
+        }
+
+        log.info("Generating SQL query expression.");
+
+        AbstractDatabaseAdapter databaseAdapter = databaseController.getActiveDatabaseAdapter();
+        SQLQueryBuilder sqlBuilder = new SQLQueryBuilder(
+                schemaMapping,
+                databaseAdapter,
+                BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID));
+
+        String sql = null;
+        try {
+            QueryConfig queryConfig = unmarshalQuery();
+            ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
+            Query query = queryBuilder.buildQuery(queryConfig, ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
+            Select select = sqlBuilder.buildQuery(query);
+            AbstractSQLAdapter sqlAdapter = databaseAdapter.getSQLAdapter();
+            sql = SqlFormatter
+                    .extend(cfg -> cfg.plusOperators("&&"))
+                    .format(select.toString(), sqlAdapter.getPlaceHolderValues(select));
+        } catch (QueryBuildException | SQLException e) {
+            log.error("Failed to generate SQL query expression.", e);
+        }
+
+        if (sql != null) {
+            final SQLDialog sqlDialog = new SQLDialog(sql, viewController.getTopFrame());
+            SwingUtilities.invokeLater(() -> {
+                sqlDialog.setLocationRelativeTo(viewController.getTopFrame());
+                sqlDialog.setVisible(true);
+            });
+        }
+    }
+
     @Override
     public String getLocalizedTitle() {
         return null;
@@ -439,6 +506,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         newButton.setToolTipText(Language.I18N.getString("filter.label.xml.template"));
         duplicateButton.setToolTipText(Language.I18N.getString("filter.label.xml.duplicate"));
         validateButton.setToolTipText(Language.I18N.getString("filter.label.xml.validate"));
+        generateSqlButton.setToolTipText(Language.I18N.getString("filter.label.xml.generateSQL"));
     }
 
     @Override
@@ -458,8 +526,8 @@ public class XMLQueryView extends FilterView<QueryConfig> {
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {
         return srs.getSrid() == 0
-                || (connectionPool.isConnected()
-                && srs.getSrid() == connectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
+                || (databaseController.isConnected()
+                && srs.getSrid() == databaseController.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
     }
 }
 

@@ -1005,8 +1005,8 @@ public class VisExportPanel extends JPanel implements EventHandler {
                 DatabaseConnection conn = config.getDatabaseConfig().getActiveConnection();
 
                 if (!databaseController.isConnected() && viewController.showOptionDialog(
-                        Language.I18N.getString("pref.visExport.connectDialog.title"),
-                        MessageFormat.format(Language.I18N.getString("pref.visExport.connectDialog"),
+                        Language.I18N.getString("common.dialog.dbConnect.title"),
+                        MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message"),
                                 conn.getDescription(), conn.toConnectString()),
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                     databaseController.connect();
