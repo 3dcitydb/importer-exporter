@@ -70,6 +70,7 @@ import org.citydb.core.query.builder.sql.BuildProperties;
 import org.citydb.core.query.builder.sql.SQLQueryBuilder;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
+import org.citydb.gui.components.dialog.SQLDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
@@ -436,8 +437,8 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
         DatabaseConnection conn = ObjectRegistry.getInstance().getConfig().getDatabaseConfig().getActiveConnection();
         if (!databaseController.isConnected() && viewController.showOptionDialog(
-                Language.I18N.getString("common.connect.dialog.title"),
-                MessageFormat.format(Language.I18N.getString("common.connect.dialog.message"),
+                Language.I18N.getString("common.dialog.dbConnect.title"),
+                MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message"),
                         conn.getDescription(), conn.toConnectString()),
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION && !databaseController.connect()) {
             databaseController.connect();
@@ -455,15 +456,24 @@ public class XMLQueryView extends FilterView<QueryConfig> {
                 databaseAdapter,
                 BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID));
 
+        String sql = null;
         try {
             QueryConfig queryConfig = unmarshalQuery();
             ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
             Query query = queryBuilder.buildQuery(queryConfig, ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
             Select select = sqlBuilder.buildQuery(query);
             AbstractSQLAdapter sqlAdapter = databaseAdapter.getSQLAdapter();
-            log.print(SqlFormatter.format(select.toString(), sqlAdapter.getPlaceHolderValues(select)));
+            sql = SqlFormatter.format(select.toString(), sqlAdapter.getPlaceHolderValues(select));
         } catch (QueryBuildException | SQLException e) {
             log.error("Failed to generate SQL query expression.", e);
+        }
+
+        if (sql != null) {
+            final SQLDialog sqlDialog = new SQLDialog(sql, viewController.getTopFrame());
+            SwingUtilities.invokeLater(() -> {
+                sqlDialog.setLocationRelativeTo(viewController.getTopFrame());
+                sqlDialog.setVisible(true);
+            });
         }
     }
 
