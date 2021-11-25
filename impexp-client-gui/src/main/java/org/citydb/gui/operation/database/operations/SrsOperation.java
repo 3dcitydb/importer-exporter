@@ -345,6 +345,7 @@ public class SrsOperation extends DatabaseOperationView {
 					dbSrs.setSrid(metaData.getReferenceSystem().getSrid());
 					dbSrs.setGMLSrsName(metaData.getReferenceSystem().getGMLSrsName());
 					dbSrs.setDatabaseSrsName(metaData.getReferenceSystem().getDatabaseSrsName());
+					dbSrs.setType(metaData.getReferenceSystem().getType());
 					dbSrs.setWkText(metaData.getReferenceSystem().getWkText());
 				} else
 					dbSrs.setGMLSrsName(srs.getGMLSrsName());
