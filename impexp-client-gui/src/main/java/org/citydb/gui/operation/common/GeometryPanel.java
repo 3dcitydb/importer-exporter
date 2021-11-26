@@ -68,8 +68,6 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 	public boolean isModified() {
 		AffineTransformation affineTransformation = transformationSupplier.get();
 
-		if (useAffineTransformation.isSelected() != affineTransformation.isEnabled()) return true;
-		
 		Matrix matrix = toMatrix3x4(affineTransformation.getTransformationMatrix());
 		boolean isModified = false;
 		for (int i = 0; i < matrixField.length; i++) {
@@ -79,7 +77,9 @@ public class GeometryPanel extends DefaultPreferencesComponent {
 					isModified = ((Number)matrixField[i][j].getValue()).doubleValue() != matrix.get(i, j);
 			}
 		}
-		
+
+		if (useAffineTransformation.isSelected() != affineTransformation.isEnabled()) return true;
+
 		return isModified;
 	}
 
