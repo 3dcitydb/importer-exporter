@@ -34,11 +34,13 @@ import java.nio.charset.StandardCharsets;
 @XmlType(name="GeneralExportOptionsType", propOrder={})
 public class GeneralOptions {
     private Boolean failFastOnErrors = true;
+    private ComputeNumberMatched computeNumberMatched;
     private String fileEncoding;
     private OutputFormat compressedOutputFormat = OutputFormat.CITYGML;
     private ExportEnvelope envelope;
 
     public GeneralOptions() {
+        computeNumberMatched = new ComputeNumberMatched();
         envelope = new ExportEnvelope();
     }
 
@@ -48,6 +50,16 @@ public class GeneralOptions {
 
     public void setFailFastOnErrors(boolean failFastOnErrors) {
         this.failFastOnErrors = failFastOnErrors;
+    }
+
+    public ComputeNumberMatched getComputeNumberMatched() {
+        return computeNumberMatched;
+    }
+
+    public void setComputeNumberMatched(ComputeNumberMatched computeNumberMatched) {
+        if (computeNumberMatched != null) {
+            this.computeNumberMatched = computeNumberMatched;
+        }
     }
 
     public boolean isSetFileEncoding() {

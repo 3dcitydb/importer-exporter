@@ -72,7 +72,6 @@ import org.citydb.core.query.filter.selection.operator.logical.LogicalOperationF
 import org.citydb.core.query.filter.tiling.Tile;
 import org.citydb.core.query.filter.tiling.Tiling;
 import org.citydb.core.registry.ObjectRegistry;
-import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;
 import org.citydb.util.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.util.concurrent.WorkerPool;
@@ -527,7 +526,6 @@ public class Exporter implements EventHandler {
 
                         if (shouldRun) {
                             dbSplitter.setMetadataProviders(metadataProviders);
-                            dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
                             dbSplitter.startQuery();
                         }
                     } catch (SQLException | QueryBuildException | FilterException e) {
