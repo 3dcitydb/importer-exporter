@@ -36,19 +36,7 @@ import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.checkboxtree.CheckboxTree;
 import org.citydb.gui.components.checkboxtree.TreeCheckingModel;
-import org.citygml4j.model.module.citygml.BridgeModule;
-import org.citygml4j.model.module.citygml.BuildingModule;
-import org.citygml4j.model.module.citygml.CityFurnitureModule;
-import org.citygml4j.model.module.citygml.CityGMLModule;
-import org.citygml4j.model.module.citygml.CityGMLVersion;
-import org.citygml4j.model.module.citygml.CityObjectGroupModule;
-import org.citygml4j.model.module.citygml.GenericsModule;
-import org.citygml4j.model.module.citygml.LandUseModule;
-import org.citygml4j.model.module.citygml.ReliefModule;
-import org.citygml4j.model.module.citygml.TransportationModule;
-import org.citygml4j.model.module.citygml.TunnelModule;
-import org.citygml4j.model.module.citygml.VegetationModule;
-import org.citygml4j.model.module.citygml.WaterBodyModule;
+import org.citygml4j.model.module.citygml.*;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -118,7 +106,7 @@ public class FeatureTypeTree extends CheckboxTree {
 		List<FeatureType> selection = new ArrayList<>();
 		for (DefaultMutableTreeNode leaf : leafs) {
 			TreePath path = new TreePath(leaf.getPath());
-			if (getCheckingModel().isPathChecked(path) && getCheckingModel().isPathEnabled(path))
+			if (getCheckingModel().isPathChecked(path))
 				selection.add((FeatureType) leaf.getUserObject());
 		}
 
