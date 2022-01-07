@@ -38,10 +38,14 @@ import org.citydb.core.query.filter.lod.LodFilter;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.core.query.filter.projection.ProjectionFilter;
 import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.FetchToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import org.citydb.sqlbuilder.select.projection.ColumnExpression;
 import org.citygml4j.model.citygml.building.*;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
@@ -53,7 +57,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class DBRoom extends AbstractFeatureExporter<Room> {
-	private final Map<Long, AbstractBuilding> batches;
+	private final Set<Long> batches;
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final DBBuildingInstallation buildingInstallationExporter;
@@ -72,12 +76,11 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 	private List<Table> surfaceADEHookTables;
 	private List<Table> openingADEHookTables;
 	private List<Table> addressADEHookTables;
-	private List<Table> buildingFurnitureADEHookTables;
 
 	public DBRoom(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(Room.class, connection, exporter);
 
-		batches = new LinkedHashMap<>();
+		batches = new HashSet<>();
 		batchSize = exporter.getFeatureBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		buildingInstallationExporter = exporter.getExporter(DBBuildingInstallation.class);
@@ -96,7 +99,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.ROOM.getName(), schema);
-		select = new Select().addProjection(table.getColumn("id"));
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("building_id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", buildingModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", buildingModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
@@ -129,52 +132,53 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 				}
 				surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, thematicSurface);
 			}
-			if (projectionFilter.containsProperty("interiorFurniture", buildingModule)) {
-				CombinedProjectionFilter buildingFurnitureProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BUILDING_FURNITURE.getName());
-				Table buildingFurniture = new Table(TableEnum.BUILDING_FURNITURE.getName(), schema);
-				buildingFurnitureExporter.addProjection(select, buildingFurniture, buildingFurnitureProjectionFilter, "bf")
-						.addJoin(JoinFactory.left(buildingFurniture, "room_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
-				buildingFurnitureADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING_FURNITURE, buildingFurniture);
-			}
 			if (projectionFilter.containsProperty("roomInstallation", buildingModule)) {
 				Table installation = new Table(TableEnum.BUILDING_INSTALLATION.getName(), schema);
-				select.addProjection(installation.getColumn("id", "inid"))
-						.addJoin(JoinFactory.left(installation, "room_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+				select.addProjection(new ColumnExpression(new Select()
+						.addProjection(installation.getColumn("id"))
+						.addSelection(ComparisonFactory.equalTo(installation.getColumn("room_id"), table.getColumn("id")))
+						.withFetch(new FetchToken(1)), "inid"));
+			}
+			if (projectionFilter.containsProperty("interiorFurniture", buildingModule)) {
+				Table buildingFurniture = new Table(TableEnum.BUILDING_FURNITURE.getName(), schema);
+				select.addProjection(new ColumnExpression(new Select()
+						.addProjection(buildingFurniture.getColumn("id"))
+						.addSelection(ComparisonFactory.equalTo(buildingFurniture.getColumn("room_id"), table.getColumn("id")))
+						.withFetch(new FetchToken(1)), "bfid"));
 			}
 		}
 		roomADEHookTables = addJoinsToADEHookTables(TableEnum.ROOM, table);
 	}
 
-	protected void addBatch(long id, AbstractBuilding parent) throws CityGMLExportException, SQLException {
-		batches.put(id, parent);
+	private void addBatch(long id, Map<Long, Collection<Room>> rooms) throws CityGMLExportException, SQLException {
+		batches.add(id);
 		if (batches.size() == batchSize)
-			executeBatch();
+			executeBatch(rooms);
 	}
 
-	protected void executeBatch() throws CityGMLExportException, SQLException {
+	private void executeBatch(Map<Long, Collection<Room>> rooms) throws CityGMLExportException, SQLException {
 		if (batches.isEmpty())
 			return;
 
 		try {
 			PreparedStatement ps;
 			if (batches.size() == 1) {
-				ps = getOrCreateStatement("id");
-				ps.setLong(1, batches.keySet().iterator().next());
+				ps = getOrCreateStatement("building_id");
+				ps.setLong(1, batches.iterator().next());
 			} else {
-				ps = getOrCreateBulkStatement(batchSize);
-				prepareBulkStatement(ps, batches.keySet().toArray(new Long[0]), batchSize);
+				ps = getOrCreateBulkStatement("building_id", batchSize);
+				prepareBulkStatement(ps, batches.toArray(new Long[0]), batchSize);
 			}
 
 			try (ResultSet rs = ps.executeQuery()) {
-				Map<Long, Room> rooms = doExport(0, null, null, rs);
-				for (Map.Entry<Long, Room> entry : rooms.entrySet()) {
-					AbstractBuilding building = batches.get(entry.getKey());
-					if (building == null) {
+				for (Map.Entry<Long, Room> entry : doExport(0, null, null, rs).entrySet()) {
+					Long buildingId = (Long) entry.getValue().getLocalProperty("building_id");
+					if (buildingId == null) {
 						exporter.logOrThrowErrorMessage("Failed to assign room with id " + entry.getKey() + " to a building.");
 						continue;
 					}
 
-					building.addInteriorRoom(new InteriorRoomProperty(entry.getValue()));
+					rooms.computeIfAbsent(buildingId, v -> new ArrayList<>()).add(entry.getValue());
 				}
 			}
 		} finally {
@@ -182,8 +186,22 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		}
 	}
 
-	protected Collection<Room> doExport(AbstractBuilding parent, long parentId) throws CityGMLExportException, SQLException {
-		return doExport(parentId, null, null, getOrCreateStatement("building_id"));
+	protected Collection<Room> doExport(long buildingId) throws CityGMLExportException, SQLException {
+		return doExport(buildingId, null, null, getOrCreateStatement("building_id"));
+	}
+
+	protected Map<Long, Collection<Room>> doExport(Set<Long> buildingIds) throws CityGMLExportException, SQLException {
+		if (buildingIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Long, Collection<Room>> rooms = new HashMap<>();
+		for (Long buildingId : buildingIds) {
+			addBatch(buildingId, rooms);
+		}
+
+		executeBatch(rooms);
+		return rooms;
 	}
 
 	@Override
@@ -213,8 +231,8 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		ProjectionFilter openingProjectionFilter = null;
 		Map<String, OpeningProperty> openingProperties = new HashMap<>();
 
-		Set<Long> buildingFurnitures = new HashSet<>();
 		Set<Long> installations = new HashSet<>();
+		Set<Long> buildingFurnitures = new HashSet<>();
 		Set<String> addresses = new HashSet<>();
 
 		while (rs.next()) {
@@ -293,6 +311,22 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 						}
 					}
 
+					// bldg:roomInstallation
+					if (lodFilter.isEnabled(4)
+							&& projectionFilter.containsProperty("roomInstallation", buildingModule)) {
+						if (rs.getLong("inid") != 0) {
+							installations.add(roomId);
+						}
+					}
+
+					// bldg:interiorFurniture
+					if (lodFilter.isEnabled(4)
+							&& projectionFilter.containsProperty("interiorFurniture", buildingModule)) {
+						if (rs.getLong("bfid") != 0) {
+							buildingFurnitures.add(roomId);
+						}
+					}
+
 					// get tables of ADE hook properties
 					if (roomADEHookTables != null) {
 						List<String> tables = retrieveADEHookTables(roomADEHookTables, rs);
@@ -302,36 +336,11 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 						}
 					}
 
+					room.setLocalProperty("building_id", rs.getLong("building_id"));
 					room.setLocalProperty("projection", projectionFilter);
 					rooms.put(roomId, room);
 				} else
 					projectionFilter = (ProjectionFilter) room.getLocalProperty("projection");
-			}
-
-			// bldg:roomInstallation
-			if (lodFilter.isEnabled(4)
-					&& projectionFilter.containsProperty("roomInstallation", buildingModule)) {
-				long installationId = rs.getLong("inid");
-				if (!rs.wasNull() && installations.add(installationId))
-					buildingInstallationExporter.addBatch(installationId, room);
-			}
-
-			// bldg:interiorFurniture
-			if (lodFilter.isEnabled(4)
-					&& projectionFilter.containsProperty("interiorFurniture", buildingModule)) {
-				long buildingFurnitureId = rs.getLong("bfid");
-				if (!rs.wasNull() && buildingFurnitures.add(buildingFurnitureId)) {
-					int objectClassId = rs.getInt("bfobjectclass_id");
-					FeatureType featureType = exporter.getFeatureType(objectClassId);
-
-					BuildingFurniture buildingFurniture = buildingFurnitureExporter.doExport(buildingFurnitureId, featureType, "bf", buildingFurnitureADEHookTables, rs);
-					if (buildingFurniture == null) {
-						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, buildingFurnitureId) + " as building furniture object.");
-						continue;
-					}
-
-					room.getInteriorFurniture().add(new InteriorFurnitureProperty(buildingFurniture));
-				}
 			}
 
 			if (!lodFilter.isEnabled(4)
@@ -436,7 +445,27 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 			}
 		}
 
-		buildingInstallationExporter.executeBatch();
+		// export installations
+		for (Map.Entry<Long, Collection<AbstractCityObject>> entry : buildingInstallationExporter.doExportForRooms(installations).entrySet()) {
+			room = rooms.get(entry.getKey());
+			if (room != null) {
+				for (AbstractCityObject installation : entry.getValue()) {
+					if (installation instanceof IntBuildingInstallation) {
+						room.addRoomInstallation(new IntBuildingInstallationProperty((IntBuildingInstallation) installation));
+					}
+				}
+			}
+		}
+
+		// export furniture
+		for (Map.Entry<Long, Collection<BuildingFurniture>> entry : buildingFurnitureExporter.doExport(buildingFurnitures).entrySet()) {
+			room = rooms.get(entry.getKey());
+			if (room != null) {
+				for (BuildingFurniture buildingFurniture : entry.getValue()) {
+					room.addInteriorFurniture(new InteriorFurnitureProperty(buildingFurniture));
+				}
+			}
+		}
 
 		// export postponed geometries
 		for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())

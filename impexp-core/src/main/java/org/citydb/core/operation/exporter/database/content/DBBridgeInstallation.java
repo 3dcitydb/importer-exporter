@@ -57,7 +57,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityObject> {
-	private final Map<Long, AbstractCityObject> batches;
+	private final Set<Long> batches;
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectReader;
 	private final DBBridgeThematicSurface thematicSurfaceExporter;
@@ -79,7 +79,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 	public DBBridgeInstallation(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractCityObject.class, connection, exporter);
 
-		batches = new LinkedHashMap<>();
+		batches = new HashSet<>();
 		batchSize = exporter.getFeatureBatchSize();
 		cityObjectReader = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
@@ -97,7 +97,8 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.BRIDGE_INSTALLATION.getName(), schema);
-		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"),
+				table.getColumn("bridge_id"), table.getColumn("bridge_room_id"));
 		if (projectionFilter.containsProperty("class", bridgeModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", bridgeModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", bridgeModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
@@ -143,43 +144,35 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 		installationADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_INSTALLATION, table);
 	}
 
-	protected void addBatch(long id, AbstractCityObject parent) throws CityGMLExportException, SQLException {
-		batches.put(id, parent);
+	private void addBatch(long id, String columnName, Map<Long, Collection<AbstractCityObject>> installations) throws CityGMLExportException, SQLException {
+		batches.add(id);
 		if (batches.size() == batchSize)
-			executeBatch();
+			executeBatch(columnName, installations);
 	}
 
-	protected void executeBatch() throws CityGMLExportException, SQLException {
+	private void executeBatch(String columnName, Map<Long, Collection<AbstractCityObject>> installations) throws CityGMLExportException, SQLException {
 		if (batches.isEmpty())
 			return;
 
 		try {
 			PreparedStatement ps;
 			if (batches.size() == 1) {
-				ps = getOrCreateStatement("id");
-				ps.setLong(1, batches.keySet().iterator().next());
+				ps = getOrCreateStatement(columnName);
+				ps.setLong(1, batches.iterator().next());
 			} else {
-				ps = getOrCreateBulkStatement(batchSize);
-				prepareBulkStatement(ps, batches.keySet().toArray(new Long[0]), batchSize);
+				ps = getOrCreateBulkStatement(columnName, batchSize);
+				prepareBulkStatement(ps, batches.toArray(new Long[0]), batchSize);
 			}
 
 			try (ResultSet rs = ps.executeQuery()) {
-				Map<Long, AbstractCityObject> installations = doExport(0, null, null, rs);
-				for (Map.Entry<Long, AbstractCityObject> entry : installations.entrySet()) {
-					AbstractCityObject parent = batches.get(entry.getKey());
-					if (parent == null) {
+				for (Map.Entry<Long, AbstractCityObject> entry : doExport(0, null, null, rs).entrySet()) {
+					Long parentId = (Long) entry.getValue().getLocalProperty(columnName);
+					if (parentId == null) {
 						exporter.logOrThrowErrorMessage("Failed to assign bridge installation with id " + entry.getKey() + " to a city object.");
 						continue;
 					}
 
-					if (entry.getValue() instanceof BridgeInstallation && parent instanceof AbstractBridge) {
-						((AbstractBridge) parent).addOuterBridgeInstallation(new BridgeInstallationProperty((BridgeInstallation) entry.getValue()));
-					} else if (entry.getValue() instanceof IntBridgeInstallation) {
-						if (parent instanceof AbstractBridge)
-							((AbstractBridge) parent).addInteriorBridgeInstallation(new IntBridgeInstallationProperty((IntBridgeInstallation) entry.getValue()));
-						else if (parent instanceof BridgeRoom)
-							((BridgeRoom) parent).addBridgeRoomInstallation(new IntBridgeInstallationProperty((IntBridgeInstallation) entry.getValue()));
-					}
+					installations.computeIfAbsent(parentId, v -> new ArrayList<>()).add(entry.getValue());
 				}
 			}
 		} finally {
@@ -195,30 +188,36 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 		return doExport((AbstractCityObject)installation, id, featureType);
 	}
 	
-	protected Collection<AbstractCityObject> doExport(AbstractBridge parent, long parentId, ProjectionFilter parentProjectionFilter) throws CityGMLExportException, SQLException {
-		boolean exterior = parentProjectionFilter.containsProperty("outerBridgeInstallation", bridgeModule);
-		boolean interior = parentProjectionFilter.containsProperty("interiorBridgeInstallation", bridgeModule);
-		if (!exterior && !interior)
-			return Collections.emptyList();
-		
-		PreparedStatement ps;
-		if (!exterior)
-			ps = getOrCreateStatement("bridge_id", IntBridgeInstallation.class);
-		else if (!interior)
-			ps = getOrCreateStatement("bridge_id", BridgeInstallation.class);
-		else
-			ps = getOrCreateStatement("bridge_id");
-		
-		return doExport(parentId, null, null, ps);
+	protected Collection<AbstractCityObject> doExportForBridge(long bridgeId) throws CityGMLExportException, SQLException {
+		return doExport(bridgeId, null, null, getOrCreateStatement("bridge_id"));
+	}
+
+	protected Map<Long, Collection<AbstractCityObject>> doExportForBridges(Set<Long> bridgeIds) throws CityGMLExportException, SQLException {
+		return doExport("bridge_id", bridgeIds);
 	}
 	
-	protected Collection<AbstractCityObject> doExport(BridgeRoom parent, long parentId, ProjectionFilter parentProjectionFilter) throws CityGMLExportException, SQLException {
-		if (!parentProjectionFilter.containsProperty("bridgeRoomInstallation", bridgeModule))
-			return Collections.emptyList();
-		
-		return doExport(parentId, null, null, getOrCreateStatement("bridge_room_id", IntBridgeInstallation.class));
+	protected Collection<AbstractCityObject> doExportForBridgeRoom(long bridgeRoomId) throws CityGMLExportException, SQLException {
+		return doExport(bridgeRoomId, null, null, getOrCreateStatement("bridge_room_id"));
 	}
-	
+
+	protected Map<Long, Collection<AbstractCityObject>> doExportForBridgeRooms(Set<Long> bridgeRoomIds) throws CityGMLExportException, SQLException {
+		return doExport("bridge_room_id", bridgeRoomIds);
+	}
+
+	private Map<Long, Collection<AbstractCityObject>> doExport(String columnName, Set<Long> parentIds) throws CityGMLExportException, SQLException {
+		if (parentIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Long, Collection<AbstractCityObject>> installations = new HashMap<>();
+		for (Long parentId : parentIds) {
+			addBatch(parentId, columnName, installations);
+		}
+
+		executeBatch(columnName, installations);
+		return installations;
+	}
+
 	@Override
 	protected Collection<AbstractCityObject> doExport(long id, AbstractCityObject root, FeatureType rootType, PreparedStatement ps) throws CityGMLExportException, SQLException {
 		ps.setLong(1, id);
@@ -416,6 +415,8 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 						}
 					}
 
+					installation.setLocalProperty("bridge_id", rs.getLong("bridge_id"));
+					installation.setLocalProperty("bridge_room_id", rs.getLong("bridge_room_id"));
 					installation.setLocalProperty("projection", projectionFilter);
 					installations.put(installationId, installation);
 				} else
