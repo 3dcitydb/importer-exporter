@@ -38,10 +38,10 @@ import javax.xml.bind.annotation.XmlType;
         "error"
 })
 public class ConsoleStyle {
-    private LogLevelStyle debug = new LogLevelStyle("#4a88c7");
+    private LogLevelStyle debug = new LogLevelStyle("#ff4a88c7");
     private LogLevelStyle info = new LogLevelStyle();
-    private LogLevelStyle warn = new LogLevelStyle("#cc7832");
-    private LogLevelStyle error = new LogLevelStyle("#c83f3c");
+    private LogLevelStyle warn = new LogLevelStyle("#ffcc7832");
+    private LogLevelStyle error = new LogLevelStyle("#ffc83f3c");
 
     public LogLevelStyle getLogLevelStyle(LogLevel level) {
         switch (level) {
