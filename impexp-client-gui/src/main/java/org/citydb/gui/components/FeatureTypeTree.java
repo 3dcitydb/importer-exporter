@@ -106,7 +106,7 @@ public class FeatureTypeTree extends CheckboxTree {
 		List<FeatureType> selection = new ArrayList<>();
 		for (DefaultMutableTreeNode leaf : leafs) {
 			TreePath path = new TreePath(leaf.getPath());
-			if (getCheckingModel().isPathChecked(path) && getCheckingModel().isPathEnabled(path))
+			if (getCheckingModel().isPathChecked(path))
 				selection.add((FeatureType) leaf.getUserObject());
 		}
 

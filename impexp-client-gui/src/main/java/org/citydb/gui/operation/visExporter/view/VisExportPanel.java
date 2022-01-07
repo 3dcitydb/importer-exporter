@@ -515,7 +515,7 @@ public class VisExportPanel extends JPanel implements EventHandler {
         attributeFilter.loadSettings(query.getAttributeFilter());
         sqlFilter.loadSettings(query.getSQLFilter());
         bboxFilter.loadSettings(query.getBboxFilter().getExtent());
-        featureTypeFilter.loadSettings(featureTypeFilter.toSettings());
+        featureTypeFilter.loadSettings(query.getFeatureTypeFilter());
 
         // display options
         VisExportConfig visExportConfig = config.getVisExportConfig();
