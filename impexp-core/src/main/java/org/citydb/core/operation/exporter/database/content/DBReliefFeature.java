@@ -61,7 +61,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 	private final boolean useXLink;
 
 	private final List<Table> reliefADEHookTables;
-	private List<Table> componentADEHookTables;
+	private final List<Table> componentADEHookTables;
 
 	public DBReliefFeature(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(ReliefFeature.class, connection, exporter);
@@ -69,7 +69,6 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		componentExporter = exporter.getExporter(DBReliefComponent.class);
 
-		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_FEATURE.getName());
 		CombinedProjectionFilter componentProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_COMPONENT.getName());
 		reliefModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.RELIEF).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
