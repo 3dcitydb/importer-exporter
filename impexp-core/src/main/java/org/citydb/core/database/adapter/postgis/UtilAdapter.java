@@ -27,6 +27,8 @@
  */
 package org.citydb.core.database.adapter.postgis;
 
+import net.postgis.jdbc.PGgeometry;
+import net.postgis.jdbc.geometry.Geometry;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
@@ -39,8 +41,6 @@ import org.citydb.core.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.core.database.connection.DatabaseMetaData;
 import org.citydb.core.database.connection.DatabaseMetaData.Versioning;
 import org.citydb.core.database.version.DatabaseVersion;
-import org.postgis.Geometry;
-import org.postgis.PGgeometry;
 
 import java.sql.*;
 
