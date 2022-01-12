@@ -123,18 +123,18 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 				surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, thematicSurface);
 			}
 			if (projectionFilter.containsProperty("hollowSpaceInstallation", tunnelModule)) {
-				Table tunnelFurniture = new Table(TableEnum.TUNNEL_FURNITURE.getName(), schema);
-				select.addProjection(new ColumnExpression(new Select()
-						.addProjection(tunnelFurniture.getColumn("id"))
-						.addSelection(ComparisonFactory.equalTo(tunnelFurniture.getColumn("tunnel_hollow_space_id"), table.getColumn("id")))
-						.withFetch(new FetchToken(1)), "tfid"));
-			}
-			if (projectionFilter.containsProperty("interiorFurniture", tunnelModule)) {
 				Table installation = new Table(TableEnum.TUNNEL_INSTALLATION.getName(), schema);
 				select.addProjection(new ColumnExpression(new Select()
 						.addProjection(installation.getColumn("id"))
 						.addSelection(ComparisonFactory.equalTo(installation.getColumn("tunnel_hollow_space_id"), table.getColumn("id")))
 						.withFetch(new FetchToken(1)), "inid"));
+			}
+			if (projectionFilter.containsProperty("interiorFurniture", tunnelModule)) {
+				Table tunnelFurniture = new Table(TableEnum.TUNNEL_FURNITURE.getName(), schema);
+				select.addProjection(new ColumnExpression(new Select()
+						.addProjection(tunnelFurniture.getColumn("id"))
+						.addSelection(ComparisonFactory.equalTo(tunnelFurniture.getColumn("tunnel_hollow_space_id"), table.getColumn("id")))
+						.withFetch(new FetchToken(1)), "tfid"));
 			}
 		}
 		hollowSpaceADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_HOLLOW_SPACE, table);
