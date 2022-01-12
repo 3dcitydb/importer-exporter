@@ -40,9 +40,13 @@ import org.citydb.core.query.filter.lod.LodIterator;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.core.query.filter.projection.ProjectionFilter;
 import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.FetchToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import org.citydb.sqlbuilder.select.projection.ColumnExpression;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.tunnel.*;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
@@ -149,14 +153,18 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 				&& (projectionFilter.containsProperty("outerTunnelInstallation", tunnelModule)
 				|| projectionFilter.containsProperty("interiorTunnelInstallation", tunnelModule))) {
 			Table installation = new Table(TableEnum.TUNNEL_INSTALLATION.getName(), schema);
-			select.addProjection(installation.getColumn("id", "inid"))
-					.addJoin(JoinFactory.left(installation, "tunnel_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			select.addProjection(new ColumnExpression(new Select()
+					.addProjection(installation.getColumn("id"))
+					.addSelection(ComparisonFactory.equalTo(installation.getColumn("tunnel_id"), table.getColumn("id")))
+					.withFetch(new FetchToken(1)), "inid"));
 		}
 		if (lodFilter.isEnabled(4)
 				&& projectionFilter.containsProperty("interiorHollowSpace", tunnelModule)) {
 			Table hollowSpace = new Table(TableEnum.TUNNEL_HOLLOW_SPACE.getName(), schema);
-			select.addProjection(hollowSpace.getColumn("id", "hsid"))
-					.addJoin(JoinFactory.left(hollowSpace, "tunnel_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			select.addProjection(new ColumnExpression(new Select()
+					.addProjection(hollowSpace.getColumn("id"))
+					.addSelection(ComparisonFactory.equalTo(hollowSpace.getColumn("tunnel_id"), table.getColumn("id")))
+					.withFetch(new FetchToken(1)), "hsid"));
 		}
 		tunnelADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL, table);
 	}
@@ -379,6 +387,23 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 							}
 						}
 
+						// tun:outerTunnelInstallation and tun:interiorTunnelInstallation
+						if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+								&& (projectionFilter.containsProperty("outerTunnelInstallation", tunnelModule)
+								|| projectionFilter.containsProperty("interiorTunnelInstallation", tunnelModule))) {
+							if (rs.getLong("inid") != 0) {
+								installations.add(tunnelId);
+							}
+						}
+
+						// tun:interiorHollowSpace
+						if (lodFilter.isEnabled(4)
+								&& projectionFilter.containsProperty("interiorHollowSpace", tunnelModule)) {
+							if (rs.getLong("hsid") != 0) {
+								hollowSpaces.add(tunnelId);
+							}
+						}
+
 						// get tables of ADE hook properties
 						if (tunnelADEHookTables != null) {
 							List<String> tables = retrieveADEHookTables(this.tunnelADEHookTables, rs);
@@ -393,23 +418,6 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 						tunnels.put(tunnelId, tunnel);
 					} else
 						projectionFilter = (ProjectionFilter) tunnel.getLocalProperty("projection");
-				}
-
-				// tun:outerTunnelInstallation and tun:interiorTunnelInstallation
-				if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
-						&& (projectionFilter.containsProperty("outerTunnelInstallation", tunnelModule)
-						|| projectionFilter.containsProperty("interiorTunnelInstallation", tunnelModule))) {
-					long installationId = rs.getLong("inid");
-					if (!rs.wasNull() && installations.add(installationId))
-						tunnelInstallationExporter.addBatch(installationId, tunnel);
-				}
-
-				// tun:interiorHollowSpace
-				if (lodFilter.isEnabled(4)
-						&& projectionFilter.containsProperty("interiorHollowSpace", tunnelModule)) {
-					long hollowSpaceId = rs.getLong("hsid");
-					if (!rs.wasNull() && hollowSpaces.add(hollowSpaceId))
-						hollowSpaceExporter.addBatch(hollowSpaceId, tunnel);
 				}
 
 				if (!lodFilter.containsLodGreaterThanOrEuqalTo(2)
@@ -497,8 +505,32 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 				}
 			}
 
-			tunnelInstallationExporter.executeBatch();
-			hollowSpaceExporter.executeBatch();
+			// export installations
+			for (Map.Entry<Long, Collection<AbstractCityObject>> entry : tunnelInstallationExporter.doExportForTunnels(installations).entrySet()) {
+				tunnel = tunnels.get(entry.getKey());
+				if (tunnel != null) {
+					for (AbstractCityObject installation : entry.getValue()) {
+						projectionFilter = (ProjectionFilter) tunnel.getLocalProperty("projection");
+						if (installation instanceof TunnelInstallation
+								&& projectionFilter.containsProperty("outerTunnelInstallation", tunnelModule)) {
+							tunnel.addOuterTunnelInstallation(new TunnelInstallationProperty((TunnelInstallation) installation));
+						} else if (installation instanceof IntTunnelInstallation
+								&& projectionFilter.containsProperty("interiorTunnelInstallation", tunnelModule)) {
+							tunnel.addInteriorTunnelInstallation(new IntTunnelInstallationProperty((IntTunnelInstallation) installation));
+						}
+					}
+				}
+			}
+
+			// export hollow spaces
+			for (Map.Entry<Long, Collection<HollowSpace>> entry : hollowSpaceExporter.doExport(hollowSpaces).entrySet()) {
+				tunnel = tunnels.get(entry.getKey());
+				if (tunnel != null) {
+					for (HollowSpace hollowSpace : entry.getValue()) {
+						tunnel.getInteriorHollowSpace().add(new InteriorHollowSpaceProperty(hollowSpace));
+					}
+				}
+			}
 
 			// export postponed geometries
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())

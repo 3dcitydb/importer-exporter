@@ -40,10 +40,14 @@ import org.citydb.core.query.filter.lod.LodIterator;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.core.query.filter.projection.ProjectionFilter;
 import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.FetchToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import org.citydb.sqlbuilder.select.projection.ColumnExpression;
 import org.citygml4j.model.citygml.building.*;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
@@ -180,16 +184,20 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 		}
 		if (lodFilter.containsLodGreaterThanOrEuqalTo(2) &&
 				(projectionFilter.containsProperty("outerBuildingInstallation", buildingModule)
-				|| projectionFilter.containsProperty("interiorBuildingInstallation", buildingModule))) {
+						|| projectionFilter.containsProperty("interiorBuildingInstallation", buildingModule))) {
 			Table installation = new Table(TableEnum.BUILDING_INSTALLATION.getName(), schema);
-			select.addProjection(installation.getColumn("id", "inid"))
-					.addJoin(JoinFactory.left(installation, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			select.addProjection(new ColumnExpression(new Select()
+					.addProjection(installation.getColumn("id"))
+					.addSelection(ComparisonFactory.equalTo(installation.getColumn("building_id"), table.getColumn("id")))
+					.withFetch(new FetchToken(1)), "inid"));
 		}
 		if (lodFilter.isEnabled(4) &&
 				projectionFilter.containsProperty("interiorRoom", buildingModule)) {
 			Table room = new Table(TableEnum.ROOM.getName(), schema);
-			select.addProjection(room.getColumn("id", "roid"))
-					.addJoin(JoinFactory.left(room, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			select.addProjection(new ColumnExpression(new Select()
+					.addProjection(room.getColumn("id"))
+					.addSelection(ComparisonFactory.equalTo(room.getColumn("building_id"), table.getColumn("id")))
+					.withFetch(new FetchToken(1)), "roid"));
 		}
 		buildingADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING, table);
 	}
@@ -498,6 +506,23 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 							}
 						}
 
+						// bldg:outerBuildingInstallation and bldg:interiorBuildingInstallation
+						if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+								&& (projectionFilter.containsProperty("outerBuildingInstallation", buildingModule)
+								|| projectionFilter.containsProperty("interiorBuildingInstallation", buildingModule))) {
+							if (rs.getLong("inid") != 0) {
+								installations.add(buildingId);
+							}
+						}
+
+						// bldg:interiorRoom
+						if (lodFilter.isEnabled(4)
+								&& projectionFilter.containsProperty("interiorRoom", buildingModule)) {
+							if (rs.getLong("roid") != 0) {
+								rooms.add(buildingId);
+							}
+						}
+
 						// get tables of ADE hook properties
 						if (buildingADEHookTables != null) {
 							List<String> tables = retrieveADEHookTables(buildingADEHookTables, rs);
@@ -512,23 +537,6 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						buildings.put(buildingId, building);						
 					} else
 						projectionFilter = (ProjectionFilter) building.getLocalProperty("projection");
-				}
-
-				// bldg:outerBuildingInstallation and bldg:interiorBuildingInstallation
-				if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
-						&& (projectionFilter.containsProperty("outerBuildingInstallation", buildingModule)
-						|| projectionFilter.containsProperty("interiorBuildingInstallation", buildingModule))) {
-					long installationId = rs.getLong("inid");
-					if (!rs.wasNull() && installations.add(installationId))
-						buildingInstallationExporter.addBatch(installationId, building);
-				}
-
-				// bldg:interiorRoom
-				if (lodFilter.isEnabled(4)
-						&& projectionFilter.containsProperty("interiorRoom", buildingModule)) {
-					long roomId = rs.getLong("roid");
-					if (!rs.wasNull() && rooms.add(roomId))
-						roomExporter.addBatch(roomId, building);
 				}
 
 				// bldg:address
@@ -643,8 +651,32 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 				}
 			}
 
-			buildingInstallationExporter.executeBatch();
-			roomExporter.executeBatch();
+			// export installations
+			for (Map.Entry<Long, Collection<AbstractCityObject>> entry : buildingInstallationExporter.doExportForBuildings(installations).entrySet()) {
+				building = buildings.get(entry.getKey());
+				if (building != null) {
+					for (AbstractCityObject installation : entry.getValue()) {
+						projectionFilter = (ProjectionFilter) building.getLocalProperty("projection");
+						if (installation instanceof BuildingInstallation
+								&& projectionFilter.containsProperty("outerBuildingInstallation", buildingModule)) {
+							building.addOuterBuildingInstallation(new BuildingInstallationProperty((BuildingInstallation) installation));
+						} else if (installation instanceof IntBuildingInstallation
+								&& projectionFilter.containsProperty("interiorBuildingInstallation", buildingModule)) {
+							building.addInteriorBuildingInstallation(new IntBuildingInstallationProperty((IntBuildingInstallation) installation));
+						}
+					}
+				}
+			}
+
+			// export rooms
+			for (Map.Entry<Long, Collection<Room>> entry : roomExporter.doExport(rooms).entrySet()) {
+				building = buildings.get(entry.getKey());
+				if (building != null) {
+					for (Room room : entry.getValue()) {
+						building.getInteriorRoom().add(new InteriorRoomProperty(room));
+					}
+				}
+			}
 
 			// export postponed geometries
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())

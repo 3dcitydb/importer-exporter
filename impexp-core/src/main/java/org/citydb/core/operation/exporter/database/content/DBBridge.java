@@ -40,10 +40,14 @@ import org.citydb.core.query.filter.lod.LodIterator;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.core.query.filter.projection.ProjectionFilter;
 import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.FetchToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import org.citydb.sqlbuilder.select.projection.ColumnExpression;
 import org.citygml4j.model.citygml.bridge.*;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
@@ -171,20 +175,26 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 				&& (projectionFilter.containsProperty("outerBridgeInstallation", bridgeModule)
 				|| projectionFilter.containsProperty("interiorBridgeInstallation", bridgeModule))) {
 			Table installation = new Table(TableEnum.BRIDGE_INSTALLATION.getName(), schema);
-			select.addProjection(installation.getColumn("id", "inid"))
-					.addJoin(JoinFactory.left(installation, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			select.addProjection(new ColumnExpression(new Select()
+					.addProjection(installation.getColumn("id"))
+					.addSelection(ComparisonFactory.equalTo(installation.getColumn("bridge_id"), table.getColumn("id")))
+					.withFetch(new FetchToken(1)), "inid"));
 		}
 		if (lodFilter.containsLodGreaterThanOrEuqalTo(1)
 				&& projectionFilter.containsProperty("outerBridgeConstruction", bridgeModule)) {
 			Table constructionElement = new Table(TableEnum.BRIDGE_CONSTR_ELEMENT.getName(), schema);
-			select.addProjection(constructionElement.getColumn("id", "ceid"))
-					.addJoin(JoinFactory.left(constructionElement, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			select.addProjection(new ColumnExpression(new Select()
+					.addProjection(constructionElement.getColumn("id"))
+					.addSelection(ComparisonFactory.equalTo(constructionElement.getColumn("bridge_id"), table.getColumn("id")))
+					.withFetch(new FetchToken(1)), "ceid"));
 		}
 		if (lodFilter.isEnabled(4)
 				&& projectionFilter.containsProperty("interiorBridgeRoom", bridgeModule)) {
 			Table bridgeRoom = new Table(TableEnum.BRIDGE_ROOM.getName(), schema);
-			select.addProjection(bridgeRoom.getColumn("id", "roid"))
-					.addJoin(JoinFactory.left(bridgeRoom, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			select.addProjection(new ColumnExpression(new Select()
+					.addProjection(bridgeRoom.getColumn("id"))
+					.addSelection(ComparisonFactory.equalTo(bridgeRoom.getColumn("bridge_id"), table.getColumn("id")))
+					.withFetch(new FetchToken(1)), "roid"));
 		}
 		bridgeADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
 	}
@@ -219,7 +229,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			Map<String, OpeningProperty> openingProperties = new HashMap<>();
 
 			Set<Long> installations = new HashSet<>();
-			Set<Long> constructionElements = new HashSet<>();
+			Set<Long> elements = new HashSet<>();
 			Set<Long> bridgeRooms = new HashSet<>();
 			Set<Long> bridgeAddresses = new HashSet<>();
 			Set<String> openingAddresses = new HashSet<>();
@@ -417,6 +427,31 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 							}
 						}
 
+						// brid:outerBridgeInstallation and bldg:interiorBridgeInstallation
+						if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+								&& (projectionFilter.containsProperty("outerBridgeInstallation", bridgeModule)
+								|| projectionFilter.containsProperty("interiorBridgeInstallation", bridgeModule))) {
+							if (rs.getLong("inid") != 0) {
+								installations.add(bridgeId);
+							}
+						}
+
+						// brid:outerBridgeConstruction
+						if (lodFilter.containsLodGreaterThanOrEuqalTo(1) &&
+								projectionFilter.containsProperty("outerBridgeConstruction", bridgeModule)) {
+							if (rs.getLong("ceid") != 0) {
+								elements.add(bridgeId);
+							}
+						}
+
+						// brid:interiorBridgeRoom
+						if (lodFilter.isEnabled(4) &&
+								projectionFilter.containsProperty("interiorBridgeRoom", bridgeModule)) {
+							if (rs.getLong("roid") != 0) {
+								bridgeRooms.add(bridgeId);
+							}
+						}
+
 						// get tables of ADE hook properties
 						if (bridgeADEHookTables != null) {
 							List<String> tables = retrieveADEHookTables(bridgeADEHookTables, rs);
@@ -431,31 +466,6 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 						bridges.put(bridgeId, bridge);
 					} else
 						projectionFilter = (ProjectionFilter) bridge.getLocalProperty("projection");
-				}
-
-				// brid:outerBridgeInstallation and bldg:interiorBridgeInstallation
-				if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
-						&& (projectionFilter.containsProperty("outerBridgeInstallation", bridgeModule)
-						|| projectionFilter.containsProperty("interiorBridgeInstallation", bridgeModule))) {
-					long installationId = rs.getLong("inid");
-					if (!rs.wasNull() && installations.add(installationId))
-						bridgeInstallationExporter.addBatch(installationId, bridge);
-				}
-
-				// brid:outerBridgeConstruction
-				if (lodFilter.containsLodGreaterThanOrEuqalTo(1) &&
-						projectionFilter.containsProperty("outerBridgeConstruction", bridgeModule)) {
-					long constructionElementId = rs.getLong("ceid");
-					if (!rs.wasNull() && constructionElements.add(constructionElementId))
-						bridgeConstrElemExporter.addBatch(constructionElementId, bridge);
-				}
-
-				// brid:interiorBridgeRoom
-				if (lodFilter.isEnabled(4) &&
-						projectionFilter.containsProperty("interiorBridgeRoom", bridgeModule)) {
-					long bridgeRoomId = rs.getLong("roid");
-					if (!rs.wasNull() && bridgeRooms.add(bridgeRoomId))
-						bridgeRoomExporter.addBatch(bridgeRoomId, bridge);
 				}
 
 				// brid:address
@@ -570,9 +580,42 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 				}
 			}
 
-			bridgeInstallationExporter.executeBatch();
-			bridgeConstrElemExporter.executeBatch();
-			bridgeRoomExporter.executeBatch();
+			// export installations
+			for (Map.Entry<Long, Collection<AbstractCityObject>> entry : bridgeInstallationExporter.doExportForBridges(installations).entrySet()) {
+				bridge = bridges.get(entry.getKey());
+				if (bridge != null) {
+					for (AbstractCityObject installation : entry.getValue()) {
+						projectionFilter = (ProjectionFilter) bridge.getLocalProperty("projection");
+						if (installation instanceof BridgeInstallation
+								&& projectionFilter.containsProperty("outerBridgeInstallation", bridgeModule)) {
+							bridge.addOuterBridgeInstallation(new BridgeInstallationProperty((BridgeInstallation) installation));
+						} else if (installation instanceof IntBridgeInstallation
+								&& projectionFilter.containsProperty("interiorBridgeInstallation", bridgeModule)) {
+							bridge.addInteriorBridgeInstallation(new IntBridgeInstallationProperty((IntBridgeInstallation) installation));
+						}
+					}
+				}
+			}
+
+			// export construction elements
+			for (Map.Entry<Long, Collection<BridgeConstructionElement>> entry : bridgeConstrElemExporter.doExport(elements).entrySet()) {
+				bridge = bridges.get(entry.getKey());
+				if (bridge != null) {
+					for (BridgeConstructionElement element : entry.getValue()) {
+						bridge.getOuterBridgeConstructionElement().add(new BridgeConstructionElementProperty(element));
+					}
+				}
+			}
+
+			// export bridge rooms
+			for (Map.Entry<Long, Collection<BridgeRoom>> entry : bridgeRoomExporter.doExport(bridgeRooms).entrySet()) {
+				bridge = bridges.get(entry.getKey());
+				if (bridge != null) {
+					for (BridgeRoom bridgeRoom : entry.getValue()) {
+						bridge.getInteriorBridgeRoom().add(new InteriorBridgeRoomProperty(bridgeRoom));
+					}
+				}
+			}
 
 			// export postponed geometries
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())

@@ -56,7 +56,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityObject> {
-	private final Map<Long, AbstractCityObject> batches;
+	private final Set<Long> batches;
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final DBTunnelThematicSurface thematicSurfaceExporter;
@@ -76,7 +76,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 	public DBTunnelInstallation(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractCityObject.class, connection, exporter);
 
-		batches = new LinkedHashMap<>();
+		batches = new HashSet<>();
 		batchSize = exporter.getFeatureBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);
@@ -93,7 +93,8 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.TUNNEL_INSTALLATION.getName(), schema);
-		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"),
+				table.getColumn("tunnel_id"), table.getColumn("tunnel_hollow_space_id"));
 		if (projectionFilter.containsProperty("class", tunnelModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", tunnelModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", tunnelModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
@@ -133,43 +134,35 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 		installationADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_INSTALLATION, table);
 	}
 
-	protected void addBatch(long id, AbstractCityObject parent) throws CityGMLExportException, SQLException {
-		batches.put(id, parent);
+	private void addBatch(long id, String columnName, Map<Long, Collection<AbstractCityObject>> installations) throws CityGMLExportException, SQLException {
+		batches.add(id);
 		if (batches.size() == batchSize)
-			executeBatch();
+			executeBatch(columnName, installations);
 	}
 
-	protected void executeBatch() throws CityGMLExportException, SQLException {
+	private void executeBatch(String columnName, Map<Long, Collection<AbstractCityObject>> installations) throws CityGMLExportException, SQLException {
 		if (batches.isEmpty())
 			return;
 
 		try {
 			PreparedStatement ps;
 			if (batches.size() == 1) {
-				ps = getOrCreateStatement("id");
-				ps.setLong(1, batches.keySet().iterator().next());
+				ps = getOrCreateStatement(columnName);
+				ps.setLong(1, batches.iterator().next());
 			} else {
-				ps = getOrCreateBulkStatement(batchSize);
-				prepareBulkStatement(ps, batches.keySet().toArray(new Long[0]), batchSize);
+				ps = getOrCreateBulkStatement(columnName, batchSize);
+				prepareBulkStatement(ps, batches.toArray(new Long[0]), batchSize);
 			}
 
 			try (ResultSet rs = ps.executeQuery()) {
-				Map<Long, AbstractCityObject> installations = doExport(0, null, null, rs);
-				for (Map.Entry<Long, AbstractCityObject> entry : installations.entrySet()) {
-					AbstractCityObject parent = batches.get(entry.getKey());
-					if (parent == null) {
+				for (Map.Entry<Long, AbstractCityObject> entry : doExport(0, null, null, rs).entrySet()) {
+					Long parentId = (Long) entry.getValue().getLocalProperty(columnName);
+					if (parentId == null) {
 						exporter.logOrThrowErrorMessage("Failed to assign tunnel installation with id " + entry.getKey() + " to a city object.");
 						continue;
 					}
 
-					if (entry.getValue() instanceof TunnelInstallation && parent instanceof AbstractTunnel) {
-						((AbstractTunnel) parent).addOuterTunnelInstallation(new TunnelInstallationProperty((TunnelInstallation) entry.getValue()));
-					} else if (entry.getValue() instanceof IntTunnelInstallation) {
-						if (parent instanceof AbstractTunnel)
-							((AbstractTunnel) parent).addInteriorTunnelInstallation(new IntTunnelInstallationProperty((IntTunnelInstallation) entry.getValue()));
-						else if (parent instanceof HollowSpace)
-							((HollowSpace) parent).addHollowSpaceInstallation(new IntTunnelInstallationProperty((IntTunnelInstallation) entry.getValue()));
-					}
+					installations.computeIfAbsent(parentId, v -> new ArrayList<>()).add(entry.getValue());
 				}
 			}
 		} finally {
@@ -185,28 +178,34 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 		return doExport((AbstractCityObject)installation, id, featureType);
 	}
 
-	protected Collection<AbstractCityObject> doExport(AbstractTunnel parent, long parentId, ProjectionFilter parentProjectionFilter) throws CityGMLExportException, SQLException {
-		boolean exterior = parentProjectionFilter.containsProperty("outerTunnelInstallation", tunnelModule);
-		boolean interior = parentProjectionFilter.containsProperty("interiorTunnelInstallation", tunnelModule);
-		if (!exterior && !interior)
-			return Collections.emptyList();
-
-		PreparedStatement ps;
-		if (!exterior)
-			ps = getOrCreateStatement("tunnel_id", IntTunnelInstallation.class);
-		else if (!interior)
-			ps = getOrCreateStatement("tunnel_id", TunnelInstallation.class);
-		else
-			ps = getOrCreateStatement("tunnel_id");
-
-		return doExport(parentId, null, null, ps);
+	protected Collection<AbstractCityObject> doExportForTunnel(long tunnelId) throws CityGMLExportException, SQLException {
+		return doExport(tunnelId, null, null, getOrCreateStatement("tunnel_id"));
 	}
 
-	protected Collection<AbstractCityObject> doExport(HollowSpace parent, long parentId, ProjectionFilter parentProjectionFilter) throws CityGMLExportException, SQLException {
-		if (!parentProjectionFilter.containsProperty("hollowSpaceInstallation", tunnelModule))
-			return Collections.emptyList();
+	protected Map<Long, Collection<AbstractCityObject>> doExportForTunnels(Set<Long> tunnelIds) throws CityGMLExportException, SQLException {
+		return doExport("tunnel_id", tunnelIds);
+	}
 
-		return doExport(parentId, null, null, getOrCreateStatement("tunnel_hollow_space_id", IntTunnelInstallation.class));
+	protected Collection<AbstractCityObject> doExportForHollowSpace(long hollowSpaceId) throws CityGMLExportException, SQLException {
+		return doExport(hollowSpaceId, null, null, getOrCreateStatement("tunnel_hollow_space_id"));
+	}
+
+	protected Map<Long, Collection<AbstractCityObject>> doExportForHollowSpaces(Set<Long> hollowSpaceIds) throws CityGMLExportException, SQLException {
+		return doExport("tunnel_hollow_space_id", hollowSpaceIds);
+	}
+
+	private Map<Long, Collection<AbstractCityObject>> doExport(String columnName, Set<Long> parentIds) throws CityGMLExportException, SQLException {
+		if (parentIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Long, Collection<AbstractCityObject>> installations = new HashMap<>();
+		for (Long parentId : parentIds) {
+			addBatch(parentId, columnName, installations);
+		}
+
+		executeBatch(columnName, installations);
+		return installations;
 	}
 
 	@Override
@@ -406,6 +405,8 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 						}
 					}
 
+					installation.setLocalProperty("tunnel_id", rs.getLong("tunnel_id"));
+					installation.setLocalProperty("tunnel_hollow_space_id", rs.getLong("tunnel_hollow_space_id"));
 					installation.setLocalProperty("projection", projectionFilter);
 					installations.put(installationId, installation);
 				} else
