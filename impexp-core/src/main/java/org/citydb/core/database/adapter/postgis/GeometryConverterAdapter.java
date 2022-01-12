@@ -27,11 +27,14 @@
  */
 package org.citydb.core.database.adapter.postgis;
 
+import net.postgis.jdbc.PGbox2d;
+import net.postgis.jdbc.PGbox3d;
+import net.postgis.jdbc.PGgeometry;
+import net.postgis.jdbc.geometry.*;
 import org.citydb.config.geometry.ElementType;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractGeometryConverterAdapter;
-import org.postgis.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
