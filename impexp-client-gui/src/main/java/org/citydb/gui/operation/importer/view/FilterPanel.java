@@ -114,7 +114,6 @@ public class FilterPanel extends JPanel {
 		{
 			JToolBar toolBar = new JToolBar();
 			toolBar.setBorder(BorderFactory.createEmptyBorder());
-			toolBar.setFloatable(false);
 			toolBar.add(importListImport);
 			toolBar.add(importListSkip);
 			toolBar.setEnabled(false);

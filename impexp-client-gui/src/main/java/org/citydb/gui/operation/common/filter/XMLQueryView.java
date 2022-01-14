@@ -165,7 +165,6 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         toolBar.addSeparator();
         toolBar.add(validateButton);
         toolBar.add(generateSqlButton);
-        toolBar.setFloatable(false);
         toolBar.setOrientation(JToolBar.VERTICAL);
 
         component.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));

@@ -284,7 +284,6 @@ public class MapWindow extends JDialog implements EventHandler {
 		toolBar.setBorder(BorderFactory.createEmptyBorder());
 		toolBar.add(copyBBox);
 		toolBar.add(pasteBBox);
-		toolBar.setFloatable(false);
 
 		bboxButtons.add(showBBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		bboxButtons.add(clearBBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));

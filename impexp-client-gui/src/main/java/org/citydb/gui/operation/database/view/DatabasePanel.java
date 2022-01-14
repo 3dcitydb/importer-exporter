@@ -186,8 +186,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		databaseText = new JTextField();
 		databaseText = new JTextField();
 		userText = new JTextField();
-		passwordText = new JPasswordField();
 		passwordCheck = new JCheckBox();
+		passwordText = new JPasswordField();
+		passwordText.putClientProperty("FlatLaf.style", "showRevealButton: true");
 
 		schemaCombo = new FlatComboBox<>();
 		schemaCombo.setEditable(true);

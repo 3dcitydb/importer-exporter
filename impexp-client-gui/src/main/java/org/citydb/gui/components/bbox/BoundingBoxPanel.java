@@ -113,7 +113,6 @@ public class BoundingBoxPanel extends JPanel implements EventHandler, BoundingBo
         toolBar.addSeparator();
         toolBar.add(copy);
         toolBar.add(paste);
-        toolBar.setFloatable(false);
 
         actionPanel.add(toolBar, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
         actionPanel.add(srsLabel, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 30, 0, 5));

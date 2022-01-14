@@ -183,7 +183,6 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         int iconTextGap = UIManager.getInt("CheckBox.iconTextGap") + offset;
         UIManager.put("CheckBox.iconTextGap", iconTextGap);
         UIManager.put("RadioButton.iconTextGap", iconTextGap);
-        UIManager.put("TitlePane.unifiedBackground", true);
         UIManager.put("TitlePane.centerTitleIfMenuBarEmbedded", false);
 
         // splash screen

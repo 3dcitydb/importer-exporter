@@ -84,7 +84,6 @@ public class SQLFilterView extends FilterView<SelectOperator> {
         toolBar.setBorder(BorderFactory.createEmptyBorder());
         toolBar.add(addButton);
         toolBar.add(removeButton);
-        toolBar.setFloatable(false);
         toolBar.setOrientation(JToolBar.VERTICAL);
 
         component.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
