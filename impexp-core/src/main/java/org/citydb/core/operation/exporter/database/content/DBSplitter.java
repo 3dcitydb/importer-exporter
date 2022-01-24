@@ -32,6 +32,7 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.exporter.GeneralOptions;
 import org.citydb.config.project.global.CacheMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
@@ -57,6 +58,7 @@ import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.query.filter.selection.Predicate;
 import org.citydb.core.query.filter.selection.SelectionFilter;
 import org.citydb.core.query.filter.type.FeatureTypeFilter;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
@@ -136,7 +138,12 @@ public class DBSplitter {
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 		connection.setAutoCommit(false);
 		schema = databaseAdapter.getConnectionDetails().getSchema();
-		calculateExtent = config.getExportConfig().getGeneralOptions().getEnvelope().isUseEnvelopeOnCityModel();
+
+		GeneralOptions generalOptions = config.getExportConfig().getGeneralOptions();
+		calculateExtent = generalOptions.getEnvelope().isUseEnvelopeOnCityModel();
+		calculateNumberMatched = generalOptions.getComputeNumberMatched().isEnabled()
+				&& (CoreConstants.IS_GUI_MODE
+				|| !generalOptions.getComputeNumberMatched().isOnlyInGuiMode());
 
 		// create temporary table for global appearances if needed
 		if (internalConfig.isExportGlobalAppearances()) {
