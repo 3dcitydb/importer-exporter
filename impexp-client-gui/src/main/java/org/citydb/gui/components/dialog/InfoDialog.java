@@ -72,8 +72,6 @@ public class InfoDialog extends JDialog {
 			header.add(img, GuiUtil.setConstraints(1, 0, 1, 2, 0, 1, GridBagConstraints.NONE, 5, 0, 5, 5));
 		}
 
-		header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Component.borderColor")));
-
 		JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabs.add(getGeneralTab(), Language.I18N.getString("menu.help.info.tab.general"));
 		tabs.add(getPartnerTab(), Language.I18N.getString("menu.help.info.tab.partner"));
