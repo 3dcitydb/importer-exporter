@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb.config.project.exporter;
+package org.citydb.config.project.common;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;

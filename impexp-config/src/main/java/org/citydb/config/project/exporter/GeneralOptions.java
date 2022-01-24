@@ -28,6 +28,8 @@
 
 package org.citydb.config.project.exporter;
 
+import org.citydb.config.project.common.ComputeNumberMatched;
+
 import javax.xml.bind.annotation.XmlType;
 import java.nio.charset.StandardCharsets;
 
