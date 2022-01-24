@@ -53,6 +53,7 @@ import org.citydb.core.query.filter.selection.expression.ValueReference;
 import org.citydb.core.query.filter.selection.operator.comparison.ComparisonFactory;
 import org.citydb.core.query.filter.selection.operator.comparison.NullOperator;
 import org.citydb.core.query.filter.selection.operator.logical.LogicalOperationFactory;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.sqlbuilder.expression.StringLiteral;
 import org.citydb.sqlbuilder.expression.TimestampLiteral;
 import org.citydb.sqlbuilder.schema.Column;
@@ -130,6 +131,10 @@ public class DeleteManager {
 				DatabaseConnectionPool.getInstance().getConnection();
 
 		connection.setAutoCommit(false);
+
+		calculateNumberMatched = config.getDeleteConfig().getComputeNumberMatched().isEnabled()
+				&& (CoreConstants.IS_GUI_MODE
+				|| !config.getDeleteConfig().getComputeNumberMatched().isOnlyInGuiMode());
 
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
