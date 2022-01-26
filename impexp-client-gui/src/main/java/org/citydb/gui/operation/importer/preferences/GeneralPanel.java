@@ -36,7 +36,7 @@ public class GeneralPanel extends DefaultPreferencesComponent {
             JPanel content = new JPanel();
             content.setLayout(new GridBagLayout());
             {
-                content.add(failFastOnErrors, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(failFastOnErrors, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
             }
 
             generalPanel = new TitledPanel().build(content);
