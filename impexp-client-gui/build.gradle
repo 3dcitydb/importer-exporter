@@ -23,7 +23,6 @@ dependencies {
         transitive = false
     }
 
-    izpack fileTree(dir: 'resources/izpack/lib', include: '*.jar')
     doc 'org.kohsuke.metainf-services:metainf-services:1.8'
     doc 'org.swinglabs.swingx:swingx-mavensupport:1.6.5-1'
 }
