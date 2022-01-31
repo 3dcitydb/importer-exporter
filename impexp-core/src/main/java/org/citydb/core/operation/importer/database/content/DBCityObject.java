@@ -122,8 +122,7 @@ public class DBCityObject implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		bboxOptions = BoundingBoxOptions.defaults()
 				.useExistingEnvelopes(true)
-				.assignResultToFeatures(true)
-				.useReferencePointAsFallbackForImplicitGeometries(true);
+				.assignResultToFeatures(true);
 
 		String stmt = "insert into " + schema + ".cityobject (id, objectclass_id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
 				"name, name_codespace, description, envelope, creation_date, termination_date, relative_to_terrain, relative_to_water, " +
