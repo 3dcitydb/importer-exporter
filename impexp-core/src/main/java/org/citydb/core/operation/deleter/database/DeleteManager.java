@@ -218,7 +218,7 @@ public class DeleteManager {
 
 			if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE && !preview) {
 				// commit cache table so that its content can be read from other connections
-				cacheTable.getConnection().commit();
+				connection.commit();
 			}
 		}
 
