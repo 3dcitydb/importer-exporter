@@ -215,6 +215,11 @@ public class DeleteManager {
 			log.debug("Creating indexes on temporary delete list table...");
 			cacheTable.createIndexes();
 			joinDeleteList(select);
+
+			if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE && !preview) {
+				// commit cache table so that its content can be read from other connections
+				cacheTable.getConnection().commit();
+			}
 		}
 
 		// get affected city objects

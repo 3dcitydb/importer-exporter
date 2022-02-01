@@ -140,16 +140,29 @@ public class CacheTableManager {
 	}
 
 	public synchronized void dropAll() throws SQLException {
+		// rollback transactions
+		for (Cache cache : caches.values()) {
+			cache.connection.rollback();
+		}
+
+		// drop cache and branch tables in case they have not
+		// been deleted automatically by the previous rollback
 		for (CacheTable cacheTable : cacheTables.values()) {
-			cacheTable.drop();
+			try {
+				cacheTable.drop();
+				cacheTable.connection.commit();
+			} catch (SQLException e) {
+				//
+			}
 		}
 
 		for (BranchCacheTable branchCacheTable : branchCacheTables.values()) {
-			branchCacheTable.drop();
-		}
-
-		for (Cache cache : caches.values()) {
-			cache.connection.rollback();
+			try {
+				branchCacheTable.drop();
+				branchCacheTable.connection.commit();
+			} catch (SQLException e) {
+				//
+			}
 		}
 
 		cacheTables.clear();
