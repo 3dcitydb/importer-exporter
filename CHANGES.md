@@ -1,6 +1,40 @@
 Change Log
 ==========
 
+### 5.1.0 - tba
+
+##### Additions
+* Added the possibility to generate a `SELECT` statement from an XML query expression used in the Importer/Exporter. [#231](https://github.com/3dcitydb/importer-exporter/pull/231)
+* Added an option to control whether to compute the number of top-level features matching the filter criteria for
+CityGML exports. For large databases, computing this number can take a long time. When disabled, the export process
+starts immediately instead. [#235](https://github.com/3dcitydb/importer-exporter/pull/235)
+
+##### Changes
+* Changed the handling of date-time values and timezones in the Importer/Exporter. Before this change, `xsd:date` values
+in CityGML exports could be different from the values stored in the database in case different timezone settings were
+used for the database server and the import and export operations. [#226](https://github.com/3dcitydb/importer-exporter/pull/226)
+* Reworked the way how to define and use import log files in both the GUI and the CLI. [#228](https://github.com/3dcitydb/importer-exporter/pull/228)
+  * Users must now provide the full path to the import log file. Providing a directory is not supported anymore.
+  * Added the three modes `append`, `truncate` and `unique` for creating the log file.
+* Simplified database queries used by the CityGML export operation for top-level features involving many nested
+features/tables to avoid extremely large result sets causing performance issues. [#234](https://github.com/3dcitydb/importer-exporter/pull/234)
+
+##### Fixes
+
+* Fixed bug in parsing of XPath expressions of XML queries that caused a slash `/` being part of a literal value
+to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-exporter/issues/220), [#221](https://github.com/3dcitydb/importer-exporter/pull/221)
+* Fixed bug in mapping the spatial `disjoint` filter operator in XML queries to SQL. [#227](https://github.com/3dcitydb/importer-exporter/pull/227)
+* The `dimension` attribute of query geometries in XML queries is now parsed correctly. [#227](https://github.com/3dcitydb/importer-exporter/pull/227)
+* Empty strings for gml:id attributes are no longer imported but the `GMLID` column is set to `NULL` instead.
+* Fixed incorrect mapping of boolean values in XML queries to SQL. [#229](https://github.com/3dcitydb/importer-exporter/issues/229), [#230](https://github.com/3dcitydb/importer-exporter/pull/230)
+* The SRS information was not correctly updated in the GUI after changing the reference system on the `Database` tab.
+* Fixed SQL exception when terminating city objects in the database using a delete list filter. [#237](https://github.com/3dcitydb/importer-exporter/pull/237)
+
+##### Miscellaneous
+* Updated H2 database used for local caching to 2.1.210. [#236](https://github.com/3dcitydb/importer-exporter/pull/236)
+* Updated PostgreSQL driver to 42.3.1 and PostGIS driver to 2021.1.0.
+* Updated citygml4j to 2.12.0.
+
 ### 5.0.0 - 2021-10-08
 
 ##### Additions
