@@ -72,6 +72,11 @@ public class FeatureVersionOption implements CliOption {
         return featureVersionFilter;
     }
 
+    @Deprecated
+    public SimpleFeatureVersionFilter toFeatureVersionFilter(DatatypeFactory datatypeFactory) {
+        return toFeatureVersionFilter();
+    }
+
     enum Version {
         latest(SimpleFeatureVersionFilterMode.LATEST),
         at(SimpleFeatureVersionFilterMode.AT),
