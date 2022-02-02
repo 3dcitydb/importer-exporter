@@ -6,15 +6,15 @@ Change Log
 ##### Additions
 * Added the possibility to generate a `SELECT` statement from an XML query expression used in the Importer/Exporter. [#231](https://github.com/3dcitydb/importer-exporter/pull/231)
 * Added an option to control whether to compute the number of top-level features matching the filter criteria for
-CityGML exports. For large databases, computing this number can take a long time. When disabled, the export process
+CityGML exports. This can take a long time on large databases. When disabled, the export process
 starts immediately instead. [#235](https://github.com/3dcitydb/importer-exporter/pull/235)
 
 ##### Changes
 * Changed the handling of date-time values and timezones in the Importer/Exporter. Before this change, `xsd:date` values
 in CityGML exports could be different from the values stored in the database in case different timezone settings were
 used for the database server and the import and export operations. [#226](https://github.com/3dcitydb/importer-exporter/pull/226)
-* Reworked the way how to define and use import log files in both the GUI and the CLI. [#228](https://github.com/3dcitydb/importer-exporter/pull/228)
-  * Users must now provide the full path to the import log file. Providing a directory is not supported anymore.
+* Reworked the use of import log files in both the GUI and the CLI. [#228](https://github.com/3dcitydb/importer-exporter/pull/228)
+  * Users must now provide the full path to the import log file. Providing just a directory is not supported anymore.
   * Added the three modes `append`, `truncate` and `unique` for creating the log file.
 * Simplified database queries used by the CityGML export operation for top-level features involving many nested
 features/tables to avoid extremely large result sets causing performance issues. [#234](https://github.com/3dcitydb/importer-exporter/pull/234)
