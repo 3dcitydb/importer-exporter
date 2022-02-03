@@ -551,8 +551,13 @@ public class XMLQueryView extends FilterView<QueryConfig> {
     }
 
     private Query buildQuery() throws QueryBuildException {
-        return new ConfigQueryBuilder(schemaMapping, databaseController.getActiveDatabaseAdapter())
-                .buildQuery(unmarshalQuery(), ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
+        QueryConfig query = unmarshalQuery();
+        if (query.hasLocalProperty("unmarshallingFailed")) {
+            throw new QueryBuildException("The XML query is invalid.");
+        } else {
+            return new ConfigQueryBuilder(schemaMapping, databaseController.getActiveDatabaseAdapter())
+                    .buildQuery(query, ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
+        }
     }
 }
 
