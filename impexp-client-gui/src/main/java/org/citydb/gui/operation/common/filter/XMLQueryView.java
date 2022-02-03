@@ -444,9 +444,11 @@ public class XMLQueryView extends FilterView<QueryConfig> {
                 MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message"),
                         conn.getDescription(), conn.toConnectString()),
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-            if (!databaseController.connect()) {
-                return;
-            }
+            databaseController.connect();
+        }
+
+        if (!databaseController.isConnected()) {
+            return;
         }
 
         log.info("Generating SQL query expression.");
