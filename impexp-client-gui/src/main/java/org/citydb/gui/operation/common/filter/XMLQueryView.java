@@ -34,7 +34,6 @@ import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
@@ -69,6 +68,7 @@ import org.citydb.core.query.builder.sql.BuildProperties;
 import org.citydb.core.query.builder.sql.SQLQueryBuilder;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
+import org.citydb.gui.components.dialog.DatabaseConnectionDialog;
 import org.citydb.gui.components.dialog.SQLDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.plugin.view.ViewController;
@@ -106,7 +106,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -368,7 +367,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         }
 
         if (errors[0] == 0) {
-            if (connectToDatabase(Language.I18N.getString("filter.dialog.xml.validate.connect"))) {
+            if (DatabaseConnectionDialog.show(Language.I18N.getString("filter.dialog.xml.validate.connect"), viewController)) {
                 try {
                     buildQuery();
                 } catch (QueryBuildException e) {
@@ -455,7 +454,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         viewController.clearConsole();
         log.info("Generating SQL query expression.");
 
-        if (!connectToDatabase(Language.I18N.getString("filter.dialog.xml.generateSQL.connect"))) {
+        if (!DatabaseConnectionDialog.show(Language.I18N.getString("filter.dialog.xml.generateSQL.connect"), viewController)) {
             log.warn("No database connection established. Aborting SQL query generation.");
             return;
         }
@@ -533,21 +532,6 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         return srs.getSrid() == 0
                 || (databaseController.isConnected()
                 && srs.getSrid() == databaseController.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
-    }
-
-    private boolean connectToDatabase(String message) {
-        DatabaseConnection conn = ObjectRegistry.getInstance().getConfig().getDatabaseConfig().getActiveConnection();
-        if (!databaseController.isConnected()) {
-            int option = viewController.showOptionDialog(
-                    Language.I18N.getString("common.dialog.dbConnect.title"),
-                    MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message.generic"),
-                            message, conn.getDescription(), conn.toConnectString()),
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-
-            return option == JOptionPane.YES_OPTION && databaseController.connect();
-        } else {
-            return true;
-        }
     }
 
     private Query buildQuery() throws QueryBuildException {
