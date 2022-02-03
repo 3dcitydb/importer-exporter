@@ -56,7 +56,6 @@ import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.util.QueryWrapper;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.MappingConstants;
@@ -459,16 +458,10 @@ public class XMLQueryView extends FilterView<QueryConfig> {
             return;
         }
 
-        AbstractDatabaseAdapter databaseAdapter = databaseController.getActiveDatabaseAdapter();
-        SQLQueryBuilder sqlBuilder = new SQLQueryBuilder(
-                schemaMapping,
-                databaseAdapter,
-                BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID));
-
         String sql = null;
         try {
-            Select select = sqlBuilder.buildQuery(buildQuery());
-            AbstractSQLAdapter sqlAdapter = databaseAdapter.getSQLAdapter();
+            Select select = buildQuery();
+            AbstractSQLAdapter sqlAdapter = databaseController.getActiveDatabaseAdapter().getSQLAdapter();
             sql = SqlFormatter
                     .extend(cfg -> cfg.plusOperators("&&"))
                     .format(select.toString(), sqlAdapter.getPlaceHolderValues(select));
@@ -534,13 +527,22 @@ public class XMLQueryView extends FilterView<QueryConfig> {
                 && srs.getSrid() == databaseController.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
     }
 
-    private Query buildQuery() throws QueryBuildException {
-        QueryConfig query = unmarshalQuery();
-        if (query.hasLocalProperty("unmarshallingFailed")) {
+    private Select buildQuery() throws QueryBuildException {
+        QueryConfig queryConfig = unmarshalQuery();
+        if (queryConfig.hasLocalProperty("unmarshallingFailed")) {
             throw new QueryBuildException("The XML query is invalid.");
         } else {
-            return new ConfigQueryBuilder(schemaMapping, databaseController.getActiveDatabaseAdapter())
-                    .buildQuery(query, ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
+            ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(
+                    schemaMapping,
+                    databaseController.getActiveDatabaseAdapter());
+
+            SQLQueryBuilder sqlBuilder = new SQLQueryBuilder(
+                    schemaMapping,
+                    databaseController.getActiveDatabaseAdapter(),
+                    BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID));
+
+            Query query = queryBuilder.buildQuery(queryConfig, ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
+            return sqlBuilder.buildQuery(query);
         }
     }
 }
