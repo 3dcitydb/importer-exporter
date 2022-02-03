@@ -367,6 +367,20 @@ public class XMLQueryView extends FilterView<QueryConfig> {
             log.error("Validation aborted due to fatal errors.");
         }
 
+        if (errors[0] == 0) {
+            if (connectToDatabase(Language.I18N.getString("filter.dialog.xml.validate.connect"))) {
+                try {
+                    buildQuery();
+                } catch (QueryBuildException e) {
+                    errors[0]++;
+                    log.error("Invalid content: " + e.getMessage(), e.getCause());
+                }
+            } else {
+                log.warn("No database connection established. Aborting validation.");
+                return;
+            }
+        }
+
         if (errors[0] > 0) {
             log.warn(errors[0] + " error(s) reported while validating the XML query.");
         } else {
@@ -438,20 +452,13 @@ public class XMLQueryView extends FilterView<QueryConfig> {
     }
 
     private void createSQLQuery() {
-        DatabaseConnection conn = ObjectRegistry.getInstance().getConfig().getDatabaseConfig().getActiveConnection();
-        if (!databaseController.isConnected() && viewController.showOptionDialog(
-                Language.I18N.getString("common.dialog.dbConnect.title"),
-                MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message"),
-                        conn.getDescription(), conn.toConnectString()),
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-            databaseController.connect();
-        }
+        viewController.clearConsole();
+        log.info("Generating SQL query expression.");
 
-        if (!databaseController.isConnected()) {
+        if (!connectToDatabase(Language.I18N.getString("filter.dialog.xml.generateSQL.connect"))) {
+            log.warn("No database connection established. Aborting SQL query generation.");
             return;
         }
-
-        log.info("Generating SQL query expression.");
 
         AbstractDatabaseAdapter databaseAdapter = databaseController.getActiveDatabaseAdapter();
         SQLQueryBuilder sqlBuilder = new SQLQueryBuilder(
@@ -461,10 +468,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
 
         String sql = null;
         try {
-            QueryConfig queryConfig = unmarshalQuery();
-            ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-            Query query = queryBuilder.buildQuery(queryConfig, ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
-            Select select = sqlBuilder.buildQuery(query);
+            Select select = sqlBuilder.buildQuery(buildQuery());
             AbstractSQLAdapter sqlAdapter = databaseAdapter.getSQLAdapter();
             sql = SqlFormatter
                     .extend(cfg -> cfg.plusOperators("&&"))
@@ -529,6 +533,26 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         return srs.getSrid() == 0
                 || (databaseController.isConnected()
                 && srs.getSrid() == databaseController.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
+    }
+
+    private boolean connectToDatabase(String message) {
+        DatabaseConnection conn = ObjectRegistry.getInstance().getConfig().getDatabaseConfig().getActiveConnection();
+        if (!databaseController.isConnected()) {
+            int option = viewController.showOptionDialog(
+                    Language.I18N.getString("common.dialog.dbConnect.title"),
+                    MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message.generic"),
+                            message, conn.getDescription(), conn.toConnectString()),
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+            return option == JOptionPane.YES_OPTION && databaseController.connect();
+        } else {
+            return true;
+        }
+    }
+
+    private Query buildQuery() throws QueryBuildException {
+        return new ConfigQueryBuilder(schemaMapping, databaseController.getActiveDatabaseAdapter())
+                .buildQuery(unmarshalQuery(), ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
     }
 }
 
