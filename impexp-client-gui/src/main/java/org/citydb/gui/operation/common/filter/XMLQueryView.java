@@ -34,7 +34,6 @@ import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
@@ -57,7 +56,6 @@ import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.util.QueryWrapper;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.MappingConstants;
@@ -69,6 +67,7 @@ import org.citydb.core.query.builder.sql.BuildProperties;
 import org.citydb.core.query.builder.sql.SQLQueryBuilder;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
+import org.citydb.gui.components.dialog.DatabaseConnectionDialog;
 import org.citydb.gui.components.dialog.SQLDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.plugin.view.ViewController;
@@ -106,7 +105,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -367,6 +365,20 @@ public class XMLQueryView extends FilterView<QueryConfig> {
             log.error("Validation aborted due to fatal errors.");
         }
 
+        if (errors[0] == 0) {
+            if (DatabaseConnectionDialog.show(Language.I18N.getString("filter.dialog.xml.validate.connect"), viewController)) {
+                try {
+                    buildQuery();
+                } catch (QueryBuildException e) {
+                    errors[0]++;
+                    log.error("Invalid content: " + e.getMessage(), e.getCause());
+                }
+            } else {
+                log.warn("No database connection established. Aborting validation.");
+                return;
+            }
+        }
+
         if (errors[0] > 0) {
             log.warn(errors[0] + " error(s) reported while validating the XML query.");
         } else {
@@ -438,34 +450,18 @@ public class XMLQueryView extends FilterView<QueryConfig> {
     }
 
     private void createSQLQuery() {
-        DatabaseConnection conn = ObjectRegistry.getInstance().getConfig().getDatabaseConfig().getActiveConnection();
-        if (!databaseController.isConnected() && viewController.showOptionDialog(
-                Language.I18N.getString("common.dialog.dbConnect.title"),
-                MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message"),
-                        conn.getDescription(), conn.toConnectString()),
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-            databaseController.connect();
-        }
+        viewController.clearConsole();
+        log.info("Generating SQL query expression.");
 
-        if (!databaseController.isConnected()) {
+        if (!DatabaseConnectionDialog.show(Language.I18N.getString("filter.dialog.xml.generateSQL.connect"), viewController)) {
+            log.warn("No database connection established. Aborting SQL query generation.");
             return;
         }
 
-        log.info("Generating SQL query expression.");
-
-        AbstractDatabaseAdapter databaseAdapter = databaseController.getActiveDatabaseAdapter();
-        SQLQueryBuilder sqlBuilder = new SQLQueryBuilder(
-                schemaMapping,
-                databaseAdapter,
-                BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID));
-
         String sql = null;
         try {
-            QueryConfig queryConfig = unmarshalQuery();
-            ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-            Query query = queryBuilder.buildQuery(queryConfig, ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
-            Select select = sqlBuilder.buildQuery(query);
-            AbstractSQLAdapter sqlAdapter = databaseAdapter.getSQLAdapter();
+            Select select = buildQuery();
+            AbstractSQLAdapter sqlAdapter = databaseController.getActiveDatabaseAdapter().getSQLAdapter();
             sql = SqlFormatter
                     .extend(cfg -> cfg.plusOperators("&&"))
                     .format(select.toString(), sqlAdapter.getPlaceHolderValues(select));
@@ -529,6 +525,25 @@ public class XMLQueryView extends FilterView<QueryConfig> {
         return srs.getSrid() == 0
                 || (databaseController.isConnected()
                 && srs.getSrid() == databaseController.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
+    }
+
+    private Select buildQuery() throws QueryBuildException {
+        QueryConfig queryConfig = unmarshalQuery();
+        if (queryConfig.hasLocalProperty("unmarshallingFailed")) {
+            throw new QueryBuildException("The XML query is invalid.");
+        } else {
+            ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(
+                    schemaMapping,
+                    databaseController.getActiveDatabaseAdapter());
+
+            SQLQueryBuilder sqlBuilder = new SQLQueryBuilder(
+                    schemaMapping,
+                    databaseController.getActiveDatabaseAdapter(),
+                    BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID));
+
+            Query query = queryBuilder.buildQuery(queryConfig, ObjectRegistry.getInstance().getConfig().getNamespaceFilter());
+            return sqlBuilder.buildQuery(query);
+        }
     }
 }
 
