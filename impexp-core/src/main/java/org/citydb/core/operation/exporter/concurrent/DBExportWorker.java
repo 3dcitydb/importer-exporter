@@ -31,6 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Point;
 import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.config.project.exporter.FeatureEnvelopeMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.mapping.MappingConstants;
@@ -106,7 +107,9 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		}
 
 		useLodFilter = query.isSetLodFilter() && !query.getLodFilter().preservesGeometry();
-		bboxOptions = useLodFilter ? BoundingBoxOptions.defaults() : null;
+		bboxOptions = useLodFilter ? BoundingBoxOptions.defaults()
+				.assignResultToFeatures(config.getExportConfig().getGeneralOptions().getEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL)
+				: null;
 
 		exporter = new CityGMLExportManager(
 				connection,
