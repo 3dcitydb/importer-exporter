@@ -28,8 +28,9 @@ to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-
 * The `dimension` attribute of query geometries in XML queries is now parsed correctly. [#227](https://github.com/3dcitydb/importer-exporter/pull/227)
 * Empty strings for gml:id attributes are no longer imported but the `GMLID` column is set to `NULL` instead.
 * Fixed incorrect mapping of boolean values in XML queries to SQL. [#229](https://github.com/3dcitydb/importer-exporter/issues/229), [#230](https://github.com/3dcitydb/importer-exporter/pull/230)
-* The SRS information was not correctly updated in the GUI after changing the reference system on the `Database` tab.
 * Fixed SQL exception when terminating city objects in the database using a delete list filter. [#237](https://github.com/3dcitydb/importer-exporter/pull/237)
+* The SRS information was not correctly updated in the GUI after changing the reference system on the `Database` tab.
+* Avoid importing empty CityGML boundary surfaces for unreferenced semantic surfaces in CityJSON input files.
 
 ##### Miscellaneous
 * Updated H2 database used for local caching to 2.1.210. [#236](https://github.com/3dcitydb/importer-exporter/pull/236)
