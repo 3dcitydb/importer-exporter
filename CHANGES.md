@@ -19,6 +19,8 @@ used for the database server and the import and export operations. [#226](https:
 * Simplified database queries used by the CityGML export operation for top-level features involving many nested
 features/tables to avoid extremely large result sets causing performance issues. [#234](https://github.com/3dcitydb/importer-exporter/pull/234)
 * Improved validation of XML queries to report more errors besides XML schema violations. [#224](https://github.com/3dcitydb/importer-exporter/issues/224), [#239](https://github.com/3dcitydb/importer-exporter/pull/239)
+* When using an LoD filter for CityGML/CityJSON exports, the bounding box of the city objects is now calculated
+based on the exported geometries instead of using the `ENVELOPE` value stored in the database. [#104](https://github.com/3dcitydb/importer-exporter/issues/104), [#239](https://github.com/3dcitydb/importer-exporter/pull/239)
 
 ##### Fixes
 
