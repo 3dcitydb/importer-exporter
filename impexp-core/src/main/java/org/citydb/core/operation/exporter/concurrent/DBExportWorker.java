@@ -31,6 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Point;
 import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.config.project.exporter.FeatureEnvelopeMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.schema.mapping.MappingConstants;
@@ -56,6 +57,7 @@ import org.citydb.util.event.global.*;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
+import org.citygml4j.util.bbox.BoundingBoxOptions;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -72,6 +74,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final EventDispatcher eventDispatcher;
 	private final InternalConfig internalConfig;
 	private final boolean useTiling;
+	private final boolean useLodFilter;
+	private final BoundingBoxOptions bboxOptions;
 
 	private Tile activeTile;
 	private DatabaseSrs targetSrs;
@@ -101,6 +105,11 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			activeTile = query.getTiling().getActiveTile();
 			targetSrs = query.getTargetSrs();
 		}
+
+		useLodFilter = query.isSetLodFilter() && !query.getLodFilter().preservesGeometry();
+		bboxOptions = useLodFilter ? BoundingBoxOptions.defaults()
+				.assignResultToFeatures(config.getExportConfig().getGeneralOptions().getEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL)
+				: null;
 
 		exporter = new CityGMLExportManager(
 				connection,
@@ -184,6 +193,11 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 					AbstractGML object = exporter.exportObject(work.getId(), work.getObjectType());
 					if (object instanceof AbstractFeature) {
 						feature = (AbstractFeature) object;
+
+						if (useLodFilter && feature.isSetBoundedBy()) {
+							feature.setBoundedBy(feature.calcBoundedBy(bboxOptions));
+						}
+
 						if (++topLevelFeatureCounter == 20) {
 							eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
 							eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
