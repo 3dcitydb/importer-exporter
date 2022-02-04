@@ -18,6 +18,7 @@ used for the database server and the import and export operations. [#226](https:
   * Added the three modes `append`, `truncate` and `unique` for creating the log file.
 * Simplified database queries used by the CityGML export operation for top-level features involving many nested
 features/tables to avoid extremely large result sets causing performance issues. [#234](https://github.com/3dcitydb/importer-exporter/pull/234)
+* Improved validation of XML queries to report more errors besides XML schema validations. [#224](https://github.com/3dcitydb/importer-exporter/issues/224), [#239](https://github.com/3dcitydb/importer-exporter/pull/239)
 
 ##### Fixes
 
