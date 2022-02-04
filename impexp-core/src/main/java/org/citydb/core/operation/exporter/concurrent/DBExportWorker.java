@@ -74,7 +74,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final EventDispatcher eventDispatcher;
 	private final InternalConfig internalConfig;
 	private final boolean useTiling;
-	private final boolean useLodFilter;
+	private final boolean calculateExtent;
 	private final BoundingBoxOptions bboxOptions;
 
 	private Tile activeTile;
@@ -106,8 +106,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			targetSrs = query.getTargetSrs();
 		}
 
-		useLodFilter = query.isSetLodFilter() && !query.getLodFilter().preservesGeometry();
-		bboxOptions = useLodFilter ? BoundingBoxOptions.defaults()
+		calculateExtent = query.isSetLodFilter() && !query.getLodFilter().preservesGeometry();
+		bboxOptions = calculateExtent ? BoundingBoxOptions.defaults()
 				.assignResultToFeatures(config.getExportConfig().getGeneralOptions().getEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL)
 				: null;
 
@@ -194,7 +194,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 					if (object instanceof AbstractFeature) {
 						feature = (AbstractFeature) object;
 
-						if (useLodFilter && feature.isSetBoundedBy()) {
+						if (calculateExtent && feature.isSetBoundedBy()) {
 							feature.setBoundedBy(feature.calcBoundedBy(bboxOptions));
 						}
 
