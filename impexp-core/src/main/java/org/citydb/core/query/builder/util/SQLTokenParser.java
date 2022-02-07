@@ -39,8 +39,7 @@ public class SQLTokenParser {
     private final String[] invalidTokens = {
             "del_.*?\\(.*?\\)",
             "delete_.*?\\(.*?\\)",
-            "cleanup_.*?\\(.*?\\)",
-            ";"
+            "cleanup_.*?\\(.*?\\)"
     };
 
     public SQLTokenParser() {

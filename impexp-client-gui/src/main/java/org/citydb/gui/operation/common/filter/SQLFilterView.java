@@ -183,7 +183,7 @@ public class SQLFilterView extends FilterView<SelectOperator> {
         SelectOperator selectOperator = new SelectOperator();
         String value = sqlText.getText().trim();
         if (!value.isEmpty()) {
-            selectOperator.setValue(value.replaceAll(";", " "));
+            selectOperator.setValue(value);
         }
 
         sqlFilterComponentSupplier.get().setAdditionalRows(additionalRows);
