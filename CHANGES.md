@@ -31,6 +31,7 @@ to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-
 * Empty strings for gml:id attributes are no longer imported but the `GMLID` column is set to `NULL` instead.
 * Fixed incorrect mapping of boolean values in XML queries to SQL. [#229](https://github.com/3dcitydb/importer-exporter/issues/229), [#230](https://github.com/3dcitydb/importer-exporter/pull/230)
 * Fixed SQL exception when terminating city objects in the database using a delete list filter. [#237](https://github.com/3dcitydb/importer-exporter/pull/237)
+* Fixed SQL filter to accept ";" characters in the SQL string. [#240](https://github.com/3dcitydb/importer-exporter/pull/240)
 * The SRS information was not correctly updated in the GUI after changing the reference system on the `Database` tab.
 * Avoid importing empty CityGML boundary surfaces for unreferenced semantic surfaces in CityJSON input files.
 
