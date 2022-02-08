@@ -27,9 +27,9 @@
  */
 package org.citydb.gui.map.map;
 
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.gui.map.map.event.BoundingBoxSelectionEvent;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.gui.map.map.event.BoundingBoxSelectionEvent;
+import org.citydb.util.event.EventDispatcher;
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.painter.Painter;

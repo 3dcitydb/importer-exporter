@@ -28,10 +28,10 @@
 
 package org.citydb.cli.operation.visExporter;
 
+import org.citydb.cli.option.CliOption;
 import org.citydb.config.project.visExporter.AltitudeMode;
 import org.citydb.config.project.visExporter.AltitudeOffsetMode;
 import org.citydb.config.project.visExporter.Elevation;
-import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
 public class ElevationOption implements CliOption {

@@ -27,11 +27,7 @@
  */
 package org.citydb.core.database.schema.path;
 
-import org.citydb.core.database.schema.mapping.AbstractPathElement;
-import org.citydb.core.database.schema.mapping.ImplicitGeometryProperty;
-import org.citydb.core.database.schema.mapping.MappingConstants;
-import org.citydb.core.database.schema.mapping.ObjectType;
-import org.citydb.core.database.schema.mapping.PathElementType;
+import org.citydb.core.database.schema.mapping.*;
 
 public final class ImplicitGeometryPropertyNode extends AbstractNode<ImplicitGeometryProperty> {
 

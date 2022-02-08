@@ -32,11 +32,13 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ImportLogType", propOrder = {
         "logImportedFeatures",
+        "logFileMode",
         "logFile"
 })
 public class ImportLog {
     @XmlElement(required = true, defaultValue = "false")
     private Boolean logImportedFeatures = false;
+    private ImportLogFileMode logFileMode;
     private String logFile;
 
     public boolean isSetLogImportedFeatures() {
@@ -49,6 +51,14 @@ public class ImportLog {
 
     public void setLogImportedFeatures(Boolean logImportedFeatures) {
         this.logImportedFeatures = logImportedFeatures;
+    }
+
+    public ImportLogFileMode getLogFileMode() {
+        return logFileMode != null ? logFileMode : ImportLogFileMode.UNIQUE;
+    }
+
+    public void setLogFileMode(ImportLogFileMode logFileMode) {
+        this.logFileMode = logFileMode;
     }
 
     public boolean isSetLogFile() {

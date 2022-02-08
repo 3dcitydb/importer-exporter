@@ -28,14 +28,13 @@
 
 package org.citydb.cli.operation.validator;
 
-import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
-import org.citydb.util.log.Logger;
+import org.citydb.cli.option.CliOptionBuilder;
 import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.controller.Validator;
 import org.citydb.core.plugin.CliCommand;
-import org.citydb.cli.option.CliOptionBuilder;
 import org.citydb.core.util.CoreConstants;
+import org.citydb.util.log.Logger;
 import picocli.CommandLine;
 
 import java.io.IOException;
@@ -44,8 +43,7 @@ import java.util.List;
 
 @CommandLine.Command(
         name = "validate",
-        description = "Validates input files against their schemas.",
-        versionProvider = ImpExpCli.class
+        description = "Validates input files against their schemas."
 )
 public class ValidateCommand extends CliCommand {
     @CommandLine.Parameters(paramLabel = "<file>", arity = "1",

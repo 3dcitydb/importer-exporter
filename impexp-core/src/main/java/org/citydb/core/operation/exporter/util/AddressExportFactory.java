@@ -33,18 +33,7 @@ import org.citydb.config.project.exporter.OutputFormat;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
-import org.citygml4j.model.xal.AddressDetails;
-import org.citygml4j.model.xal.Country;
-import org.citygml4j.model.xal.CountryName;
-import org.citygml4j.model.xal.Locality;
-import org.citygml4j.model.xal.LocalityName;
-import org.citygml4j.model.xal.PostBox;
-import org.citygml4j.model.xal.PostBoxNumber;
-import org.citygml4j.model.xal.PostalCode;
-import org.citygml4j.model.xal.PostalCodeNumber;
-import org.citygml4j.model.xal.Thoroughfare;
-import org.citygml4j.model.xal.ThoroughfareName;
-import org.citygml4j.model.xal.ThoroughfareNumber;
+import org.citygml4j.model.xal.*;
 
 public class AddressExportFactory {
 	protected final AddressMode primary;

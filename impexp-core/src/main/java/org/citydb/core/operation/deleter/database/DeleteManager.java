@@ -53,6 +53,7 @@ import org.citydb.core.query.filter.selection.expression.ValueReference;
 import org.citydb.core.query.filter.selection.operator.comparison.ComparisonFactory;
 import org.citydb.core.query.filter.selection.operator.comparison.NullOperator;
 import org.citydb.core.query.filter.selection.operator.logical.LogicalOperationFactory;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.sqlbuilder.expression.StringLiteral;
 import org.citydb.sqlbuilder.expression.TimestampLiteral;
 import org.citydb.sqlbuilder.schema.Column;
@@ -76,6 +77,7 @@ import org.citygml4j.model.module.citygml.CoreModule;
 import java.io.IOException;
 import java.sql.*;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -130,6 +132,10 @@ public class DeleteManager {
 				DatabaseConnectionPool.getInstance().getConnection();
 
 		connection.setAutoCommit(false);
+
+		calculateNumberMatched = config.getDeleteConfig().getComputeNumberMatched().isEnabled()
+				&& (CoreConstants.IS_GUI_MODE
+				|| !config.getDeleteConfig().getComputeNumberMatched().isOnlyInGuiMode());
 
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
@@ -209,12 +215,17 @@ public class DeleteManager {
 			log.debug("Creating indexes on temporary delete list table...");
 			cacheTable.createIndexes();
 			joinDeleteList(select);
+
+			if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE && !preview) {
+				// commit cache table so that its content can be read from other connections
+				connection.commit();
+			}
 		}
 
 		// get affected city objects
 		Map<Integer, Long> counter = null;
 		long hits = 0;
-		if (calculateNumberMatched || preview || config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
+		if (calculateNumberMatched || preview) {
 			log.debug("Calculating the number of matching top-level features...");
 			counter = getNumberMatched(select);
 			hits = counter.values().stream().mapToLong(Long::longValue).sum();
@@ -230,7 +241,11 @@ public class DeleteManager {
 		if (preview) {
 			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
 		} else if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
-			doTerminate(select);
+			long updated = doTerminate(select);
+			if (counter == null) {
+				counter = Collections.singletonMap(3, updated);
+			}
+
 			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
 		} else {
 			doDelete(select, hits);
@@ -241,7 +256,10 @@ public class DeleteManager {
 		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
 			 ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
+				if (hits > 0) {
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
+				}
+
 				do {
 					long id = rs.getLong("id");
 					int objectClassId = rs.getInt("objectclass_id");
@@ -262,7 +280,7 @@ public class DeleteManager {
 		}
 	}
 
-	private void doTerminate(Select select) throws SQLException, IOException {
+	private long doTerminate(Select select) throws SQLException, IOException {
 		if (deleteLogger != null) {
 			try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
 				 ResultSet rs = stmt.executeQuery()) {
@@ -316,10 +334,12 @@ public class DeleteManager {
 
 		try {
 			interruptibleStmt = databaseAdapter.getSQLAdapter().prepareStatement(update, connectionManager.getConnection());
-			interruptibleStmt.executeUpdate();
+			return interruptibleStmt.executeLargeUpdate();
 		} catch (SQLException e) {
 			if (shouldRun) {
 				throw e;
+			} else {
+				return 0;
 			}
 		} finally {
 			if (interruptibleStmt != null) {

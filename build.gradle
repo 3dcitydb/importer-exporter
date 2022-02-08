@@ -1,12 +1,12 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
-    id 'com.jfrog.artifactory' version '4.16.1'
+    id 'com.jfrog.artifactory' version '4.24.21'
 }
 
 apply from: 'properties.gradle'
 
-version '5.0.0'
+version '5.1.0-SNAPSHOT'
 
 subprojects {
     apply plugin: 'java-library'

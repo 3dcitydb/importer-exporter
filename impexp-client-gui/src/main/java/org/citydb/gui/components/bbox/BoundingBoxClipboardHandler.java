@@ -30,15 +30,11 @@ package org.citydb.gui.components.bbox;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.util.log.Logger;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.util.log.Logger;
 
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.*;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.regex.Matcher;

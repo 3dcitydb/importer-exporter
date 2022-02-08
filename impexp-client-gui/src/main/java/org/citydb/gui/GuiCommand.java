@@ -28,9 +28,12 @@
 
 package org.citydb.gui;
 
+import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.util.LoggingFacade;
 import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
+import org.citydb.cli.option.StartupProgressListener;
 import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
@@ -40,8 +43,6 @@ import org.citydb.core.database.DatabaseController;
 import org.citydb.core.plugin.CliCommand;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginManager;
-import org.citydb.cli.option.StartupProgressListener;
-import org.citydb.gui.plugin.GuiExtension;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.SplashScreen;
@@ -51,6 +52,7 @@ import org.citydb.gui.operation.importer.CityGMLImportPlugin;
 import org.citydb.gui.operation.preferences.PreferencesPlugin;
 import org.citydb.gui.operation.preferences.plugin.PluginsOverviewPlugin;
 import org.citydb.gui.operation.visExporter.VisExportPlugin;
+import org.citydb.gui.plugin.GuiExtension;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.util.log.Logger;
@@ -62,11 +64,11 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.logging.Level;
 
 @CommandLine.Command(
         name = GuiCommand.NAME,
-        description = "Starts the graphical user interface.",
-        versionProvider = ImpExpCli.class
+        description = "Starts the graphical user interface."
 )
 public class GuiCommand extends CliCommand implements StartupProgressListener {
     public static final String NAME = "gui";
@@ -163,6 +165,10 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         guiConfig = loadGuiConfig();
         String laf = GuiUtil.getLaf(guiConfig.getAppearance().getTheme());
 
+        // disable FlatLaf logging
+        LoggingFacade facade = LoggingFacade.INSTANCE;
+        java.util.logging.Logger.getLogger(FlatLaf.class.getName()).setLevel(Level.OFF);
+
         try {
             // set look and feel
             UIManager.setLookAndFeel(laf);
@@ -184,7 +190,6 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         int iconTextGap = UIManager.getInt("CheckBox.iconTextGap") + offset;
         UIManager.put("CheckBox.iconTextGap", iconTextGap);
         UIManager.put("RadioButton.iconTextGap", iconTextGap);
-        UIManager.put("TitlePane.unifiedBackground", true);
         UIManager.put("TitlePane.centerTitleIfMenuBarEmbedded", false);
 
         // splash screen

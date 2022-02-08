@@ -28,9 +28,6 @@
 package org.citydb.gui.operation.visExporter.view;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import org.citydb.core.ade.ADEExtension;
-import org.citydb.core.ade.visExporter.ADEVisExportExtension;
-import org.citydb.core.ade.visExporter.ADEVisExportExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.gui.visExporter.VisExportGuiConfig;
@@ -40,46 +37,33 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
-import org.citydb.config.project.visExporter.AltitudeOffsetMode;
-import org.citydb.config.project.visExporter.DisplayForm;
-import org.citydb.config.project.visExporter.DisplayFormType;
-import org.citydb.config.project.visExporter.SimpleVisQuery;
-import org.citydb.config.project.visExporter.VisExportConfig;
-import org.citydb.config.project.visExporter.VisTiling;
-import org.citydb.config.project.visExporter.VisTilingMode;
+import org.citydb.config.project.visExporter.*;
+import org.citydb.core.ade.ADEExtension;
+import org.citydb.core.ade.visExporter.ADEVisExportExtension;
+import org.citydb.core.ade.visExporter.ADEVisExportExtensionManager;
 import org.citydb.core.database.DatabaseController;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.DatabaseConnectionStateEvent;
-import org.citydb.util.event.global.EventType;
-import org.citydb.util.event.global.InterruptEvent;
+import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.core.util.CoreConstants;
+import org.citydb.core.util.Util;
 import org.citydb.gui.components.BlankNumberFormatter;
 import org.citydb.gui.components.FeatureTypeTree;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.filter.AttributeFilterView;
-import org.citydb.gui.operation.common.filter.BoundingBoxFilterView;
-import org.citydb.gui.operation.common.filter.FeatureTypeFilterView;
-import org.citydb.gui.operation.common.filter.FeatureVersionFilterView;
-import org.citydb.gui.operation.common.filter.SQLFilterView;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.log.Logger;
+import org.citydb.gui.operation.common.filter.*;
 import org.citydb.gui.plugin.view.ViewController;
-import org.citydb.core.registry.ObjectRegistry;
-import org.citydb.core.util.CoreConstants;
-import org.citydb.core.util.Util;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.DatabaseConnectionStateEvent;
+import org.citydb.util.event.global.EventType;
+import org.citydb.util.event.global.InterruptEvent;
+import org.citydb.util.log.Logger;
 import org.citydb.vis.controller.VisExportException;
 import org.citydb.vis.controller.VisExporter;
-import org.citygml4j.model.module.citygml.BridgeModule;
-import org.citygml4j.model.module.citygml.CityFurnitureModule;
-import org.citygml4j.model.module.citygml.CityGMLVersion;
-import org.citygml4j.model.module.citygml.CityObjectGroupModule;
-import org.citygml4j.model.module.citygml.ReliefModule;
-import org.citygml4j.model.module.citygml.TunnelModule;
-import org.citygml4j.model.module.citygml.VegetationModule;
+import org.citygml4j.model.module.citygml.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -531,7 +515,7 @@ public class VisExportPanel extends JPanel implements EventHandler {
         attributeFilter.loadSettings(query.getAttributeFilter());
         sqlFilter.loadSettings(query.getSQLFilter());
         bboxFilter.loadSettings(query.getBboxFilter().getExtent());
-        featureTypeFilter.loadSettings(featureTypeFilter.toSettings());
+        featureTypeFilter.loadSettings(query.getFeatureTypeFilter());
 
         // display options
         VisExportConfig visExportConfig = config.getVisExportConfig();
@@ -1021,8 +1005,8 @@ public class VisExportPanel extends JPanel implements EventHandler {
                 DatabaseConnection conn = config.getDatabaseConfig().getActiveConnection();
 
                 if (!databaseController.isConnected() && viewController.showOptionDialog(
-                        Language.I18N.getString("pref.visExport.connectDialog.title"),
-                        MessageFormat.format(Language.I18N.getString("pref.visExport.connectDialog"),
+                        Language.I18N.getString("common.dialog.dbConnect.title"),
+                        MessageFormat.format(Language.I18N.getString("common.dialog.dbConnect.message"),
                                 conn.getDescription(), conn.toConnectString()),
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                     databaseController.connect();

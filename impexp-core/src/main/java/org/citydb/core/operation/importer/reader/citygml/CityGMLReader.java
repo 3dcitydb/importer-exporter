@@ -28,19 +28,19 @@
 
 package org.citydb.core.operation.importer.reader.citygml;
 
-import org.citydb.util.concurrent.PoolSizeAdaptationStrategy;
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.EventType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.operation.importer.concurrent.FeatureReaderWorkerFactory;
 import org.citydb.core.operation.importer.filter.selection.counter.CounterFilter;
 import org.citydb.core.operation.importer.reader.FeatureReadException;
 import org.citydb.core.operation.importer.reader.FeatureReader;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.util.concurrent.PoolSizeAdaptationStrategy;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.xml.io.CityGMLInputFactory;

@@ -27,22 +27,14 @@
  */
 package org.citydb.core.database.adapter.postgis;
 
+import net.postgis.jdbc.PGbox2d;
+import net.postgis.jdbc.PGbox3d;
+import net.postgis.jdbc.PGgeometry;
+import net.postgis.jdbc.geometry.*;
 import org.citydb.config.geometry.ElementType;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractGeometryConverterAdapter;
-import org.postgis.Geometry;
-import org.postgis.GeometryBuilder;
-import org.postgis.LineString;
-import org.postgis.LinearRing;
-import org.postgis.MultiLineString;
-import org.postgis.MultiPoint;
-import org.postgis.MultiPolygon;
-import org.postgis.PGbox2d;
-import org.postgis.PGbox3d;
-import org.postgis.PGgeometry;
-import org.postgis.Point;
-import org.postgis.Polygon;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -414,7 +406,10 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case MULTI_POINT:
 		case ENVELOPE:
 		case MULTI_POLYGON:
-			geometry = new PGgeometry(GeometryBuilder.geomFromString(convertToEWKT(geomObj)));
+			String text = convertToEWKT(geomObj);
+			if (text != null) {
+				geometry = new PGgeometry(GeometryBuilder.geomFromString(text));
+			}
 			break;
 		case SOLID:
 			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
@@ -430,6 +425,11 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			throw new SQLException("Failed to convert geometry to internal database representation.");
 
 		return geometry;
+	}
+
+	@Override
+	public String getDatabaseObjectConstructor(GeometryObject geomObj) throws SQLException {
+		return "'" + getDatabaseObject(geomObj, null) + "'";
 	}
 
 	private String convertToEWKT(GeometryObject geomObj) {

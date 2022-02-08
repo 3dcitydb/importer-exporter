@@ -30,7 +30,6 @@ package org.citydb.config.project.common;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @XmlType(name = "TransformationMatrixType", propOrder = {

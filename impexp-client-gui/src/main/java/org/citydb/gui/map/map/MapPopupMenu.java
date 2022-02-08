@@ -29,7 +29,7 @@ package org.citydb.gui.map.map;
 
 import org.citydb.config.gui.window.GeocodingServiceName;
 import org.citydb.config.i18n.Language;
-import org.citydb.util.event.EventDispatcher;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.map.geocoder.Geocoder;
 import org.citydb.gui.map.geocoder.GeocoderResult;
 import org.citydb.gui.map.geocoder.Location;
@@ -38,7 +38,7 @@ import org.citydb.gui.map.geocoder.service.GeocodingServiceException;
 import org.citydb.gui.map.map.DefaultWaypoint.WaypointType;
 import org.citydb.gui.map.map.event.MapBoundsSelectionEvent;
 import org.citydb.gui.map.map.event.ReverseGeocoderEvent;
-import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.util.event.EventDispatcher;
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.TileFactory;

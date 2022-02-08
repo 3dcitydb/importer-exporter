@@ -65,7 +65,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class DBCityObject implements DBImporter {
@@ -123,8 +122,7 @@ public class DBCityObject implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		bboxOptions = BoundingBoxOptions.defaults()
 				.useExistingEnvelopes(true)
-				.assignResultToFeatures(true)
-				.useReferencePointAsFallbackForImplicitGeometries(true);
+				.assignResultToFeatures(true);
 
 		String stmt = "insert into " + schema + ".cityobject (id, objectclass_id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
 				"name, name_codespace, description, envelope, creation_date, termination_date, relative_to_terrain, relative_to_water, " +
@@ -166,7 +164,7 @@ public class DBCityObject implements DBImporter {
 		psCityObject.setInt(2, objectType.getObjectClassId());
 
 		// gml:id
-		String origGmlId = object.getId();
+		String origGmlId = object.isSetId() && !object.getId().isEmpty() ? object.getId() : null;
 		if (origGmlId != null)
 			object.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 
@@ -174,15 +172,15 @@ public class DBCityObject implements DBImporter {
 			String gmlId = importer.generateNewGmlId();
 
 			// mapping entry
-			if (object.isSetId()) {
-				importer.putObjectId(object.getId(), objectId, gmlId, objectType.getObjectClassId());
+			if (origGmlId != null) {
+				importer.putObjectId(origGmlId, objectId, gmlId, objectType.getObjectClassId());
 
 				if (rememberGmlId && isCityObject) {	
 					ExternalReference externalReference = new ExternalReference();
 					externalReference.setInformationSystem(importFileName);
 
 					ExternalObject externalObject = new ExternalObject();
-					externalObject.setName(object.getId());
+					externalObject.setName(origGmlId);
 
 					externalReference.setExternalObject(externalObject);
 					((AbstractCityObject)object).addExternalReference(externalReference);
@@ -191,8 +189,8 @@ public class DBCityObject implements DBImporter {
 
 			object.setId(gmlId);
 		} else {
-			if (object.isSetId())
-				importer.putObjectId(object.getId(), objectId, objectType.getObjectClassId());
+			if (origGmlId != null)
+				importer.putObjectId(origGmlId, objectId, objectType.getObjectClassId());
 			else
 				object.setId(importer.generateNewGmlId());
 		}
@@ -252,7 +250,7 @@ public class DBCityObject implements DBImporter {
 		if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
 			creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
 			if (creationDate != null)
-				creationDate = creationDate.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+				creationDate = creationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
 		}
 
 		if (creationDate == null)
@@ -265,7 +263,7 @@ public class DBCityObject implements DBImporter {
 		if (isCityObject && (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT)) {
 			terminationDate = Util.getTerminationDate((AbstractCityObject) object, terminationDateMode == TerminationDateMode.INHERIT);
 			if (terminationDate != null)
-				terminationDate = terminationDate.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+				terminationDate = terminationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
 		}
 
 		if (terminationDate == null)

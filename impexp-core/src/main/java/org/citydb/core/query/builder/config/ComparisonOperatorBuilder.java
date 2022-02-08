@@ -35,30 +35,19 @@ import org.citydb.core.query.builder.QueryBuildException;
 import org.citydb.core.query.builder.util.ValueReferenceBuilder;
 import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.query.filter.selection.Predicate;
-import org.citydb.core.query.filter.selection.expression.AbstractLiteral;
-import org.citydb.core.query.filter.selection.expression.BooleanLiteral;
-import org.citydb.core.query.filter.selection.expression.DateLiteral;
-import org.citydb.core.query.filter.selection.expression.DoubleLiteral;
-import org.citydb.core.query.filter.selection.expression.IntegerLiteral;
-import org.citydb.core.query.filter.selection.expression.StringLiteral;
-import org.citydb.core.query.filter.selection.expression.TimestampLiteral;
-import org.citydb.core.query.filter.selection.expression.ValueReference;
-import org.citydb.core.query.filter.selection.operator.comparison.AbstractComparisonOperator;
-import org.citydb.core.query.filter.selection.operator.comparison.BetweenOperator;
-import org.citydb.core.query.filter.selection.operator.comparison.BinaryComparisonOperator;
-import org.citydb.core.query.filter.selection.operator.comparison.ComparisonFactory;
-import org.citydb.core.query.filter.selection.operator.comparison.LikeOperator;
-import org.citydb.core.query.filter.selection.operator.comparison.NullOperator;
+import org.citydb.core.query.filter.selection.expression.*;
+import org.citydb.core.query.filter.selection.operator.comparison.*;
 import org.citydb.core.registry.ObjectRegistry;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.Instant;
 
 public class ComparisonOperatorBuilder {
 	private final ValueReferenceBuilder valueReferenceBuilder;
 	private final DatatypeFactory datatypeFactory;
-	
+
 	protected ComparisonOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder) {
 		this.valueReferenceBuilder = valueReferenceBuilder;
 		datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
@@ -226,9 +215,9 @@ public class ComparisonOperatorBuilder {
 				break;
 			case BOOLEAN:
 				try {
-					if ("true".equals(literalValue.toLowerCase()))
+					if ("true".equalsIgnoreCase(literalValue))
 						literal = new BooleanLiteral(true);
-					else if ("false".equals(literalValue.toLowerCase()))
+					else if ("false".equalsIgnoreCase(literalValue))
 						literal = new BooleanLiteral(false);
 					else {
 						long value = Integer.parseInt(literalValue);
@@ -240,19 +229,19 @@ public class ComparisonOperatorBuilder {
 				break;
 			case DATE:
 				try {
-					XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(literalValue);
-					literal = new DateLiteral(cal.toGregorianCalendar());
-					((DateLiteral)literal).setXMLLiteral(literalValue);
+					XMLGregorianCalendar calendar = datatypeFactory.newXMLGregorianCalendar(literalValue);
+					literal = new DateLiteral(toInstant(calendar));
+					((DateLiteral) literal).setXMLLiteral(literalValue);
 				} catch (IllegalArgumentException e) {
 					//
 				}
 				break;
 			case TIMESTAMP:
 				try {
-					XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(literalValue);
-					literal = new TimestampLiteral(cal.toGregorianCalendar());
-					((TimestampLiteral)literal).setXMLLiteral(literalValue);
-					((TimestampLiteral)literal).setDate(cal.getXMLSchemaType() == DatatypeConstants.DATE);
+					XMLGregorianCalendar calendar = datatypeFactory.newXMLGregorianCalendar(literalValue);
+					literal = new TimestampLiteral(toInstant(calendar));
+					((TimestampLiteral) literal).setXMLLiteral(literalValue);
+					((TimestampLiteral) literal).setDate(calendar.getXMLSchemaType() == DatatypeConstants.DATE);
 				} catch (IllegalArgumentException e) {
 					//
 				}
@@ -267,4 +256,11 @@ public class ComparisonOperatorBuilder {
 		return literal;
 	}
 
+	private Instant toInstant(XMLGregorianCalendar calendar) {
+		if (calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
+			calendar.setTimezone(0);
+		}
+
+		return calendar.toGregorianCalendar().toInstant();
+	}
 }

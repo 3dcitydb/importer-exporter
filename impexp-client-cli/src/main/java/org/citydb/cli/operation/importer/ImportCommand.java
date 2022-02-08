@@ -28,7 +28,6 @@
 
 package org.citydb.cli.operation.importer;
 
-import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
 import org.citydb.cli.option.CliOptionBuilder;
 import org.citydb.cli.option.DatabaseOption;
@@ -37,6 +36,7 @@ import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.config.project.importer.ImportList;
+import org.citydb.config.project.importer.ImportLogFileMode;
 import org.citydb.core.database.DatabaseController;
 import org.citydb.core.operation.common.csv.IdListPreviewer;
 import org.citydb.core.operation.importer.CityGMLImportException;
@@ -53,8 +53,7 @@ import java.util.List;
 
 @CommandLine.Command(
         name = "import",
-        description = "Imports data in CityGML or CityJSON format.",
-        versionProvider = ImpExpCli.class
+        description = "Imports data in CityGML or CityJSON format."
 )
 public class ImportCommand extends CliCommand {
     @CommandLine.Parameters(paramLabel = "<file>", arity = "1",
@@ -170,6 +169,7 @@ public class ImportCommand extends CliCommand {
         if (importLogFile != null) {
             importConfig.getImportLog().setLogFile(importLogFile.toAbsolutePath().toString());
             importConfig.getImportLog().setLogImportedFeatures(true);
+            importConfig.getImportLog().setLogFileMode(ImportLogFileMode.TRUNCATE);
         }
 
         if (failFast != null) {

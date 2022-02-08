@@ -27,6 +27,8 @@
  */
 package org.citydb.core.database.adapter.postgis;
 
+import net.postgis.jdbc.PGgeometry;
+import net.postgis.jdbc.geometry.Geometry;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
@@ -39,17 +41,8 @@ import org.citydb.core.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.core.database.connection.DatabaseMetaData;
 import org.citydb.core.database.connection.DatabaseMetaData.Versioning;
 import org.citydb.core.database.version.DatabaseVersion;
-import org.postgis.Geometry;
-import org.postgis.PGgeometry;
 
-import java.sql.Array;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 
 public class UtilAdapter extends AbstractUtilAdapter {
     private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4326, "", "", "", DatabaseSrsType.GEOGRAPHIC2D, true);

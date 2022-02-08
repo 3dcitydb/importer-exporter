@@ -28,10 +28,10 @@
 
 package org.citydb.cli.operation.visExporter;
 
+import org.citydb.cli.option.CliOption;
 import org.citydb.config.project.visExporter.VisTiling;
 import org.citydb.config.project.visExporter.VisTilingMode;
 import org.citydb.config.project.visExporter.VisTilingOptions;
-import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
 import java.util.regex.Matcher;

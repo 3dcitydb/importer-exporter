@@ -28,6 +28,7 @@
 
 package org.citydb.config.project.deleter;
 
+import org.citydb.config.project.common.ComputeNumberMatched;
 import org.citydb.config.project.common.IdList;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.QueryConfig;
@@ -44,6 +45,7 @@ import javax.xml.bind.annotation.XmlType;
         "simpleQuery",
         "deleteList",
         "cleanupGlobalAppearances",
+        "computeNumberMatched",
         "continuation",
         "deleteLog"
 })
@@ -58,12 +60,14 @@ public class DeleteConfig {
     private SimpleQuery simpleQuery;
     private IdList deleteList;
     private boolean cleanupGlobalAppearances;
+    private ComputeNumberMatched computeNumberMatched;
     private Continuation continuation;
     private DeleteLog deleteLog;
 
     public DeleteConfig() {
         query = new QueryConfig();
         simpleQuery = new SimpleQuery();
+        computeNumberMatched = new ComputeNumberMatched();
         continuation = new Continuation();
         deleteLog = new DeleteLog();
     }
@@ -128,6 +132,16 @@ public class DeleteConfig {
 
     public void setCleanupGlobalAppearances(boolean cleanupGlobalAppearances) {
         this.cleanupGlobalAppearances = cleanupGlobalAppearances;
+    }
+
+    public ComputeNumberMatched getComputeNumberMatched() {
+        return computeNumberMatched;
+    }
+
+    public void setComputeNumberMatched(ComputeNumberMatched computeNumberMatched) {
+        if (computeNumberMatched != null) {
+            this.computeNumberMatched = computeNumberMatched;
+        }
     }
 
     public Continuation getContinuation() {

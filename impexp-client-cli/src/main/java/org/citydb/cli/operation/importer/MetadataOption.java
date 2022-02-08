@@ -28,11 +28,11 @@
 
 package org.citydb.cli.operation.importer;
 
+import org.citydb.cli.option.CliOption;
 import org.citydb.config.project.global.UpdatingPersonMode;
 import org.citydb.config.project.importer.Continuation;
 import org.citydb.config.project.importer.CreationDateMode;
 import org.citydb.config.project.importer.TerminationDateMode;
-import org.citydb.cli.option.CliOption;
 import picocli.CommandLine;
 
 public class MetadataOption implements CliOption {

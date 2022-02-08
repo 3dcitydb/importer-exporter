@@ -263,7 +263,6 @@ public class XSLTransformationPanel extends DefaultPreferencesComponent {
 
             JToolBar toolBar = new JToolBar();
             toolBar.setBorder(BorderFactory.createEmptyBorder());
-            toolBar.setFloatable(false);
             toolBar.add(addButton);
             toolBar.add(removeButton);
 

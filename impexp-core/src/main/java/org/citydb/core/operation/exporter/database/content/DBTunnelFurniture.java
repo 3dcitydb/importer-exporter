@@ -32,8 +32,8 @@ import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.util.AttributeValueSplitter;
-import org.citydb.core.operation.exporter.util.SplitValue;
 import org.citydb.core.operation.exporter.util.GeometrySetter;
+import org.citydb.core.operation.exporter.util.SplitValue;
 import org.citydb.core.query.filter.lod.LodFilter;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.core.query.filter.projection.ProjectionFilter;
@@ -41,7 +41,6 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
-import org.citygml4j.model.citygml.tunnel.HollowSpace;
 import org.citygml4j.model.citygml.tunnel.TunnelFurniture;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -52,16 +51,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> {
+	private final Set<Long> batches;
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final DBImplicitGeometry implicitGeometryExporter;
 	private final GMLConverter gmlConverter;
 
+	private final int batchSize;
 	private final String tunnelModule;
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
@@ -71,6 +70,9 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 	public DBTunnelFurniture(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(TunnelFurniture.class, connection, exporter);
 
+		batches = new HashSet<>();
+		batchSize = exporter.getFeatureBatchSize();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TUNNEL_FURNITURE.getName());
 		tunnelModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TUNNEL).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
@@ -78,7 +80,23 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.TUNNEL_FURNITURE.getName(), schema);
-		select = addProjection(new Select(), table, projectionFilter, "");
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("tunnel_hollow_space_id"));
+		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
+		if (projectionFilter.containsProperty("class", tunnelModule))
+			select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
+		if (projectionFilter.containsProperty("function", tunnelModule))
+			select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
+		if (projectionFilter.containsProperty("usage", tunnelModule))
+			select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
+		if (lodFilter.isEnabled(4)) {
+			if (projectionFilter.containsProperty("lod4Geometry", tunnelModule))
+				select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
+			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) {
+				select.addProjection(table.getColumn("lod4_implicit_rep_id"),
+						exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")),
+						table.getColumn("lod4_implicit_transformation"));
+			}
+		}
 		adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_FURNITURE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
@@ -88,30 +106,58 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
-	protected Select addProjection(Select select, Table table, CombinedProjectionFilter projectionFilter, String prefix) {
-		select.addProjection(table.getColumn("id", prefix + "id"));
-		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id", prefix + "objectclass_id"));
-		if (projectionFilter.containsProperty("class", tunnelModule))
-			select.addProjection(table.getColumn("class", prefix + "class"), table.getColumn("class_codespace", prefix + "class_codespace"));
-		if (projectionFilter.containsProperty("function", tunnelModule))
-			select.addProjection(table.getColumn("function", prefix + "function"), table.getColumn("function_codespace", prefix + "function_codespace"));
-		if (projectionFilter.containsProperty("usage", tunnelModule))
-			select.addProjection(table.getColumn("usage", prefix + "usage"), table.getColumn("usage_codespace", prefix + "usage_codespace"));
-		if (lodFilter.isEnabled(4)) {
-			if (projectionFilter.containsProperty("lod4Geometry", tunnelModule))
-				select.addProjection(table.getColumn("lod4_brep_id", prefix + "lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom"), prefix + "lod4_other_geom"));
-			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) {
-				select.addProjection(table.getColumn("lod4_implicit_rep_id", prefix + "lod4_implicit_rep_id"),
-						exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point"), prefix + "lod4_implicit_ref_point"),
-						table.getColumn("lod4_implicit_transformation", prefix + "lod4_implicit_transformation"));
-			}
-		}
-
-		return select;
+	private void addBatch(long id, Map<Long, Collection<TunnelFurniture>> tunnelFurnitures) throws CityGMLExportException, SQLException {
+		batches.add(id);
+		if (batches.size() == batchSize)
+			executeBatch(tunnelFurnitures);
 	}
 
-	protected Collection<TunnelFurniture> doExport(HollowSpace parent, long parentId) throws CityGMLExportException, SQLException {
-		return doExport(parentId, null, null, getOrCreateStatement("tunnel_hollow_space_id"));
+	private void executeBatch(Map<Long, Collection<TunnelFurniture>> tunnelFurnitures) throws CityGMLExportException, SQLException {
+		if (batches.isEmpty())
+			return;
+
+		try {
+			PreparedStatement ps;
+			if (batches.size() == 1) {
+				ps = getOrCreateStatement("tunnel_hollow_space_id");
+				ps.setLong(1, batches.iterator().next());
+			} else {
+				ps = getOrCreateBulkStatement("tunnel_hollow_space_id", batchSize);
+				prepareBulkStatement(ps, batches.toArray(new Long[0]), batchSize);
+			}
+
+			try (ResultSet rs = ps.executeQuery()) {
+				for (Map.Entry<Long, TunnelFurniture> entry : doExport(0, null, null, rs).entrySet()) {
+					Long hollowSpaceId = (Long) entry.getValue().getLocalProperty("tunnel_hollow_space_id");
+					if (hollowSpaceId == null) {
+						exporter.logOrThrowErrorMessage("Failed to assign tunnel furniture with id " + entry.getKey() + " to a hollow space.");
+						continue;
+					}
+
+					tunnelFurnitures.computeIfAbsent(hollowSpaceId, v -> new ArrayList<>()).add(entry.getValue());
+				}
+			}
+		} finally {
+			batches.clear();
+		}
+	}
+
+	protected Collection<TunnelFurniture> doExport(long hollowSpaceId) throws CityGMLExportException, SQLException {
+		return doExport(hollowSpaceId, null, null, getOrCreateStatement("tunnel_hollow_space_id"));
+	}
+
+	protected Map<Long, Collection<TunnelFurniture>> doExport(Set<Long> hollowSpaceIds) throws CityGMLExportException, SQLException {
+		if (hollowSpaceIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Long, Collection<TunnelFurniture>> tunnelFurnitures = new HashMap<>();
+		for (Long roomId : hollowSpaceIds) {
+			addBatch(roomId, tunnelFurnitures);
+		}
+
+		executeBatch(tunnelFurnitures);
+		return tunnelFurnitures;
 	}
 
 	@Override
@@ -119,126 +165,117 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 		ps.setLong(1, id);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			List<TunnelFurniture> tunnelFurnitures = new ArrayList<>();
+			return doExport(id, root, rootType, rs).values();
+		}
+	}
 
-			while (rs.next()) {
-				long tunnelFurnitureId = rs.getLong("id");
-				TunnelFurniture tunnelFurniture;
-				FeatureType featureType;
+	private Map<Long, TunnelFurniture> doExport(long id, TunnelFurniture root, FeatureType rootType, ResultSet rs) throws CityGMLExportException, SQLException {
+		Map<Long, TunnelFurniture> tunnelFurnitures = new HashMap<>();
 
-				if (tunnelFurnitureId == id && root != null) {
-					tunnelFurniture = root;
-					featureType = rootType;
+		while (rs.next()) {
+			long tunnelFurnitureId = rs.getLong("id");
+			TunnelFurniture tunnelFurniture;
+			FeatureType featureType;
+
+			if (tunnelFurnitureId == id && root != null) {
+				tunnelFurniture = root;
+				featureType = rootType;
+			} else {
+				if (hasObjectClassIdColumn) {
+					// create tunnel furniture object
+					int objectClassId = rs.getInt("objectclass_id");
+					tunnelFurniture = exporter.createObject(objectClassId, TunnelFurniture.class);
+					if (tunnelFurniture == null) {
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, tunnelFurnitureId) + " as tunnel furniture object.");
+						continue;
+					}
+
+					featureType = exporter.getFeatureType(objectClassId);
 				} else {
-					if (hasObjectClassIdColumn) {
-						// create tunnel furniture object
-						int objectClassId = rs.getInt("objectclass_id");
-						tunnelFurniture = exporter.createObject(objectClassId, TunnelFurniture.class);
-						if (tunnelFurniture == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, tunnelFurnitureId) + " as tunnel furniture object.");
-							continue;
-						}
-
-						featureType = exporter.getFeatureType(objectClassId);
-					} else {
-						tunnelFurniture = new TunnelFurniture();
-						featureType = exporter.getFeatureType(tunnelFurniture);
-					}
-				}
-
-				// get projection filter
-				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
-
-				doExport(tunnelFurniture, tunnelFurnitureId, featureType, projectionFilter, "", adeHookTables, rs);
-				tunnelFurnitures.add(tunnelFurniture);
-			}
-
-			return tunnelFurnitures;
-		}
-	}
-
-	protected TunnelFurniture doExport(long id, FeatureType featureType, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
-		TunnelFurniture tunnelFurniture = null;
-		if (featureType != null) {
-			tunnelFurniture = exporter.createObject(featureType.getObjectClassId(), TunnelFurniture.class);
-			if (tunnelFurniture != null)
-				doExport(tunnelFurniture, id, featureType, exporter.getProjectionFilter(featureType), prefix, adeHookTables, rs);
-		}
-
-		return tunnelFurniture;
-	}
-
-	private void doExport(TunnelFurniture object, long id, FeatureType featureType, ProjectionFilter projectionFilter, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
-		// export city object information
-		cityObjectExporter.addBatch(object, id, featureType, projectionFilter);
-
-		if (projectionFilter.containsProperty("class", tunnelModule)) {
-			String clazz = rs.getString(prefix + "class");
-			if (!rs.wasNull()) {
-				Code code = new Code(clazz);
-				code.setCodeSpace(rs.getString(prefix + "class_codespace"));
-				object.setClazz(code);
-			}
-		}
-
-		if (projectionFilter.containsProperty("function", tunnelModule)) {
-			for (SplitValue splitValue : valueSplitter.split(rs.getString(prefix + "function"), rs.getString(prefix + "function_codespace"))) {
-				Code function = new Code(splitValue.result(0));
-				function.setCodeSpace(splitValue.result(1));
-				object.addFunction(function);
-			}
-		}
-
-		if (projectionFilter.containsProperty("usage", tunnelModule)) {
-			for (SplitValue splitValue : valueSplitter.split(rs.getString(prefix + "usage"), rs.getString(prefix + "usage_codespace"))) {
-				Code usage = new Code(splitValue.result(0));
-				usage.setCodeSpace(splitValue.result(1));
-				object.addUsage(usage);
-			}
-		}
-
-		if (lodFilter.isEnabled(4)) {
-			if (projectionFilter.containsProperty("lod4Geometry", tunnelModule)) {
-				long geometryId = rs.getLong(prefix + "lod4_brep_id");
-				if (!rs.wasNull())
-					geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) object::setLod4Geometry);
-				else {
-					Object geometryObj = rs.getObject(prefix + "lod4_other_geom");
-					if (!rs.wasNull()) {
-						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
-							object.setLod4Geometry(property);
-						}
-					}
+					tunnelFurniture = new TunnelFurniture();
+					featureType = exporter.getFeatureType(tunnelFurniture);
 				}
 			}
 
-			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) {
-				long implicitGeometryId = rs.getLong(prefix + "lod4_implicit_rep_id");
+			// get projection filter
+			ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
+
+			// export city object information
+			cityObjectExporter.addBatch(tunnelFurniture, id, featureType, projectionFilter);
+
+			if (projectionFilter.containsProperty("class", tunnelModule)) {
+				String clazz = rs.getString("class");
 				if (!rs.wasNull()) {
-					GeometryObject referencePoint = null;
-					Object referencePointObj = rs.getObject(prefix + "lod4_implicit_ref_point");
+					Code code = new Code(clazz);
+					code.setCodeSpace(rs.getString("class_codespace"));
+					tunnelFurniture.setClazz(code);
+				}
+			}
+
+			if (projectionFilter.containsProperty("function", tunnelModule)) {
+				for (SplitValue splitValue : valueSplitter.split(rs.getString("function"), rs.getString("function_codespace"))) {
+					Code function = new Code(splitValue.result(0));
+					function.setCodeSpace(splitValue.result(1));
+					tunnelFurniture.addFunction(function);
+				}
+			}
+
+			if (projectionFilter.containsProperty("usage", tunnelModule)) {
+				for (SplitValue splitValue : valueSplitter.split(rs.getString("usage"), rs.getString("usage_codespace"))) {
+					Code usage = new Code(splitValue.result(0));
+					usage.setCodeSpace(splitValue.result(1));
+					tunnelFurniture.addUsage(usage);
+				}
+			}
+
+			if (lodFilter.isEnabled(4)) {
+				if (projectionFilter.containsProperty("lod4Geometry", tunnelModule)) {
+					long geometryId = rs.getLong("lod4_brep_id");
 					if (!rs.wasNull())
-						referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
+						geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) tunnelFurniture::setLod4Geometry);
+					else {
+						Object geometryObj = rs.getObject("lod4_other_geom");
+						if (!rs.wasNull()) {
+							GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
+							if (geometry != null) {
+								GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+								tunnelFurniture.setLod4Geometry(property);
+							}
+						}
+					}
+				}
 
-					String transformationMatrix = rs.getString(prefix + "lod4_implicit_transformation");
+				if (projectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) {
+					long implicitGeometryId = rs.getLong("lod4_implicit_rep_id");
+					if (!rs.wasNull()) {
+						GeometryObject referencePoint = null;
+						Object referencePointObj = rs.getObject("lod4_implicit_ref_point");
+						if (!rs.wasNull())
+							referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
 
-					ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
-					if (implicit != null) {
-						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
-						implicitProperty.setObject(implicit);
-						object.setLod4ImplicitRepresentation(implicitProperty);
+						String transformationMatrix = rs.getString("lod4_implicit_transformation");
+
+						ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
+						if (implicit != null) {
+							ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
+							implicitProperty.setObject(implicit);
+							tunnelFurniture.setLod4ImplicitRepresentation(implicitProperty);
+						}
 					}
 				}
 			}
+
+			// delegate export of generic ADE properties
+			if (adeHookTables != null) {
+				List<String> tableNames = retrieveADEHookTables(adeHookTables, rs);
+				if (tableNames != null)
+					exporter.delegateToADEExporter(tableNames, tunnelFurniture, id, featureType, projectionFilter);
+			}
+
+			tunnelFurniture.setLocalProperty("tunnel_hollow_space_id", rs.getLong("tunnel_hollow_space_id"));
+			tunnelFurnitures.put(tunnelFurnitureId, tunnelFurniture);
 		}
 
-		// delegate export of generic ADE properties
-		if (adeHookTables != null) {
-			List<String> tableNames = retrieveADEHookTables(adeHookTables, rs);
-			if (tableNames != null)
-				exporter.delegateToADEExporter(tableNames, object, id, featureType, projectionFilter);
-		}
+		return tunnelFurnitures;
 	}
 }

@@ -253,7 +253,6 @@ public class Deleter implements EventHandler {
 						config,
 						eventDispatcher,
 						preview);
-				deleteManager.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
 				deleteManager.deleteObjects();
 			} catch (SQLException | IOException | QueryBuildException e) {
 				throw new DeleteException("Failed to execute the " + mode.value() + " operation.", e);

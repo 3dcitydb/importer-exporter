@@ -28,8 +28,8 @@
 
 package org.citydb.gui;
 
-import org.citydb.core.ade.ADEExtension;
 import org.citydb.cli.ImpExpCli;
+import org.citydb.core.ade.ADEExtension;
 import org.citydb.core.plugin.CliCommand;
 import org.citydb.core.plugin.Plugin;
 

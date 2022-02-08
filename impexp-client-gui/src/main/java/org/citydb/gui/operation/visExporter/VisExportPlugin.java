@@ -28,9 +28,9 @@
 package org.citydb.gui.operation.visExporter;
 
 import org.citydb.config.Config;
+import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.gui.operation.visExporter.preferences.VisExportPreferences;
 import org.citydb.gui.operation.visExporter.view.VisExportView;
-import org.citydb.core.plugin.internal.InternalPlugin;
 import org.citydb.gui.plugin.preferences.Preferences;
 import org.citydb.gui.plugin.preferences.PreferencesExtension;
 import org.citydb.gui.plugin.view.View;

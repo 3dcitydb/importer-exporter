@@ -28,20 +28,20 @@
 
 package org.citydb.core.operation.exporter.writer.cityjson;
 
-import org.citydb.util.concurrent.SingleWorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.EventType;
 import org.citydb.core.operation.exporter.util.Metadata;
 import org.citydb.core.operation.exporter.writer.FeatureWriteException;
 import org.citydb.core.operation.exporter.writer.FeatureWriter;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.writer.CityJSONWriterWorkerFactory;
 import org.citydb.core.writer.SequentialWriter;
+import org.citydb.util.concurrent.SingleWorkerPool;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
 import org.citygml4j.builder.cityjson.json.io.writer.CityJSONChunkWriter;
 import org.citygml4j.builder.cityjson.json.io.writer.CityJSONWriteException;
 import org.citygml4j.builder.cityjson.marshal.CityJSONMarshaller;

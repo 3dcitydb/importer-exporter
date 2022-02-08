@@ -37,12 +37,8 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import javax.xml.namespace.NamespaceContext;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceContext {
 	private final HashMap<String, String> prefixToUri;

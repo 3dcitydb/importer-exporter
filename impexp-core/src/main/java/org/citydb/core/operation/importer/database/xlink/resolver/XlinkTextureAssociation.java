@@ -27,19 +27,15 @@
  */
 package org.citydb.core.operation.importer.database.xlink.resolver;
 
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.CacheTable;
 import org.citydb.core.operation.common.cache.IdCacheEntry;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureAssociation;
 import org.citydb.core.operation.common.xlink.DBXlinkTextureAssociationTarget;
 import org.citydb.core.util.Util;
+import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 

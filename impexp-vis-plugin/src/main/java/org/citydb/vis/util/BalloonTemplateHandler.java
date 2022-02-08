@@ -27,17 +27,17 @@
  */
 package org.citydb.vis.util;
 
+import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.ade.ADEExtension;
 import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.ade.visExporter.ADEBalloonException;
 import org.citydb.core.ade.visExporter.ADEBalloonExtensionManager;
 import org.citydb.core.ade.visExporter.ADEBalloonHandler;
 import org.citydb.core.ade.visExporter.ADEBalloonManager;
-import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.util.log.Logger;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
+import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.bridge.Bridge;
 import org.citygml4j.model.citygml.building.Building;
@@ -64,15 +64,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 
 @SuppressWarnings("serial")
 public class BalloonTemplateHandler {

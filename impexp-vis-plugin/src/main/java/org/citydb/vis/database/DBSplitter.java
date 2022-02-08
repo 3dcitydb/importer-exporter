@@ -27,7 +27,6 @@
  */
 package org.citydb.vis.database;
 
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
@@ -42,20 +41,21 @@ import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.log.Logger;
 import org.citydb.core.query.Query;
 import org.citydb.core.query.builder.QueryBuildException;
 import org.citydb.core.query.builder.sql.BuildProperties;
 import org.citydb.core.query.builder.sql.SQLQueryBuilder;
 import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.query.filter.tiling.Tile;
+import org.citydb.core.util.Util;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
-import org.citydb.core.util.Util;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.log.Logger;
 import org.citydb.vis.util.CityObject4JSON;
 import org.citygml4j.model.citygml.CityGMLClass;
 

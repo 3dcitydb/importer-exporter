@@ -54,19 +54,18 @@ public class LanguagePanel extends DefaultPreferencesComponent {
 	@Override
 	public boolean isModified() {
 		LanguageType language = config.getGlobalConfig().getLanguage();
-		
 		if (importLanguageRadioDe.isSelected() && !(language == LanguageType.DE)) return true;
 		if (importLanguageRadioEn.isSelected() && !(language == LanguageType.EN)) return true;
 		return false;
 	}
 	
-	private void initGui() {		
+	private void initGui() {
 		importLanguageRadioDe = new JRadioButton();
 		importLanguageRadioEn = new JRadioButton();
 		ButtonGroup importLanguageRadio = new ButtonGroup();
 		importLanguageRadio.add(importLanguageRadioDe);
 		importLanguageRadio.add(importLanguageRadioEn);
-		
+
 		setLayout(new GridBagLayout());
 		{
 			JPanel content = new JPanel();
@@ -92,7 +91,7 @@ public class LanguagePanel extends DefaultPreferencesComponent {
 	@Override
 	public void loadSettings() {		
 		LanguageType language = config.getGlobalConfig().getLanguage();
-		
+
 		if (language == LanguageType.DE) {
 			importLanguageRadioDe.setSelected(true);
 		} else if (language == LanguageType.EN) {
@@ -103,13 +102,13 @@ public class LanguagePanel extends DefaultPreferencesComponent {
 	@Override
 	public void setSettings() {
 		GlobalConfig globalConfig = config.getGlobalConfig();
-		
+
 		if (importLanguageRadioDe.isSelected()) {
 			globalConfig.setLanguage(LanguageType.DE);
 		} else if (importLanguageRadioEn.isSelected()) {
 			globalConfig.setLanguage(LanguageType.EN);
 		}
-		
+
 		mainView.doTranslation();
 	}
 	

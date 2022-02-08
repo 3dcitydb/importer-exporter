@@ -27,22 +27,22 @@
  */
 package org.citydb.core.operation.importer.concurrent;
 
-import org.citydb.util.concurrent.Worker;
-import org.citydb.util.concurrent.WorkerFactory;
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.connection.ConnectionManager;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.cache.IdCacheManager;
+import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.common.xlink.DBXlink;
 import org.citydb.core.operation.importer.filter.CityGMLFilter;
-import org.citydb.core.operation.common.util.AffineTransformer;
 import org.citydb.core.operation.importer.util.ImportLogger;
 import org.citydb.core.operation.importer.util.InternalConfig;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerFactory;
+import org.citydb.util.concurrent.WorkerPool;
+import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
 

@@ -103,7 +103,6 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 
 		JToolBar toolBar = new JToolBar();
 		toolBar.setBorder(BorderFactory.createEmptyBorder());
-		toolBar.setFloatable(false);
 		toolBar.add(simpleFilterButton);
 		toolBar.add(xmlQueryButton);
 

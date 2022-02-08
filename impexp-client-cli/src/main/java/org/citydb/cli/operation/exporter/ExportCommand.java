@@ -28,7 +28,6 @@
 
 package org.citydb.cli.operation.exporter;
 
-import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.option.DatabaseOption;
 import org.citydb.cli.option.ThreadPoolOption;
 import org.citydb.config.Config;
@@ -47,8 +46,7 @@ import java.nio.file.Path;
 
 @CommandLine.Command(
         name = "export",
-        description = "Exports data in CityGML or CityJSON format.",
-        versionProvider = ImpExpCli.class
+        description = "Exports data in CityGML or CityJSON format."
 )
 public class ExportCommand extends CliCommand {
     enum CompressedFormat {citygml, cityjson}

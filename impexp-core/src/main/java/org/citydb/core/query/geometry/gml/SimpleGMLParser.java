@@ -38,43 +38,10 @@ import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.common.base.ModelObject;
 import org.citygml4j.model.gml.GML;
 import org.citygml4j.model.gml.geometry.SRSReferenceGroup;
-import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
-import org.citygml4j.model.gml.geometry.aggregates.MultiLineString;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPolygon;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.aggregates.*;
 import org.citygml4j.model.gml.geometry.complexes.CompositeCurve;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
-import org.citygml4j.model.gml.geometry.primitives.AbstractCurve;
-import org.citygml4j.model.gml.geometry.primitives.AbstractCurveSegment;
-import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
-import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurfacePatch;
-import org.citygml4j.model.gml.geometry.primitives.Curve;
-import org.citygml4j.model.gml.geometry.primitives.CurveProperty;
-import org.citygml4j.model.gml.geometry.primitives.DirectPositionList;
-import org.citygml4j.model.gml.geometry.primitives.Envelope;
-import org.citygml4j.model.gml.geometry.primitives.LineString;
-import org.citygml4j.model.gml.geometry.primitives.LineStringProperty;
-import org.citygml4j.model.gml.geometry.primitives.LineStringSegment;
-import org.citygml4j.model.gml.geometry.primitives.LinearRing;
-import org.citygml4j.model.gml.geometry.primitives.OrientableCurve;
-import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
-import org.citygml4j.model.gml.geometry.primitives.Point;
-import org.citygml4j.model.gml.geometry.primitives.PointArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.PointProperty;
-import org.citygml4j.model.gml.geometry.primitives.Polygon;
-import org.citygml4j.model.gml.geometry.primitives.PolygonPatch;
-import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
-import org.citygml4j.model.gml.geometry.primitives.PosOrPointPropertyOrPointRep;
-import org.citygml4j.model.gml.geometry.primitives.PosOrPointPropertyOrPointRepOrCoord;
-import org.citygml4j.model.gml.geometry.primitives.Rectangle;
-import org.citygml4j.model.gml.geometry.primitives.Ring;
-import org.citygml4j.model.gml.geometry.primitives.Sign;
-import org.citygml4j.model.gml.geometry.primitives.Surface;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.Triangle;
+import org.citygml4j.model.gml.geometry.primitives.*;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.w3c.dom.Node;
 
@@ -629,7 +596,7 @@ public class SimpleGMLParser {
 
 	private void validateRing(List<Double> coords) throws GeometryParseException {
 		if (coords == null || coords.isEmpty())
-			throw new GeometryParseException("Ring contains less than 4 coordinates.");
+			throw new GeometryParseException("Ring has too few points.");
 
 		// check closedness
 		Double x = coords.get(0);
@@ -649,7 +616,7 @@ public class SimpleGMLParser {
 
 		// check for minimum number of coordinates
 		if (coords.size() / 3 < 4)
-			throw new GeometryParseException("Ring contains less than 4 coordinates.");
+			throw new GeometryParseException("Ring has too few points.");
 	}
 
 	private double[] convertPrimitive(List<Double> pointList, int dimension) {

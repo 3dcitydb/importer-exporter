@@ -28,8 +28,8 @@
 
 package org.citydb.core.operation.importer.reader;
 
-import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.core.file.InputFile;
+import org.citydb.util.concurrent.WorkerPool;
 import org.citygml4j.model.citygml.CityGML;
 
 public interface FeatureReader extends AutoCloseable {

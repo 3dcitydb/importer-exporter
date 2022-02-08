@@ -27,14 +27,7 @@
  */
 package org.citydb.core.operation.exporter.database.content;
 
-import org.citydb.core.database.schema.mapping.AbstractJoin;
-import org.citydb.core.database.schema.mapping.AbstractObjectType;
-import org.citydb.core.database.schema.mapping.AbstractTypeProperty;
-import org.citydb.core.database.schema.mapping.FeatureProperty;
-import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.database.schema.mapping.Join;
-import org.citydb.core.database.schema.mapping.JoinTable;
-import org.citydb.core.database.schema.mapping.MappingConstants;
+import org.citydb.core.database.schema.mapping.*;
 import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.LiteralList;
@@ -51,12 +44,7 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends AbstractTypeExporter {
 	protected final Connection connection;
@@ -94,12 +82,17 @@ public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends
 	}
 
 	protected PreparedStatement getOrCreateBulkStatement(int batchSize) throws SQLException {
-		PreparedStatement ps = statements.get("id_bulk");
+		return getOrCreateBulkStatement("id", batchSize);
+	}
+
+	protected PreparedStatement getOrCreateBulkStatement(String columnName, int batchSize) throws SQLException {
+		String key = columnName + "_bulk";
+		PreparedStatement ps = statements.get(key);
 		if (ps == null) {
 			String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
-			Select select = new Select(this.select).addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders)));
+			Select select = new Select(this.select).addSelection(ComparisonFactory.in(table.getColumn(columnName), new LiteralSelectExpression(placeHolders)));
 			ps = connection.prepareStatement(select.toString());
-			statements.put("id_bulk", ps);
+			statements.put(key, ps);
 		}
 
 		return ps;
@@ -117,22 +110,7 @@ public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends
 			ps = connection.prepareStatement(select.toString());
 			statements.put(columnName, ps);
 		}
-		
-		return ps;
-	}
-	
-	protected PreparedStatement getOrCreateStatement(String columnName, Class<? extends AbstractFeature> filterClass) throws SQLException {
-		String key = columnName + filterClass.getName();
-		PreparedStatement ps = statements.get(key);
-		if (ps == null) {
-			Select select = new Select(this.select)
-					.addSelection(ComparisonFactory.equalTo(table.getColumn(columnName), new PlaceHolder<>()))
-					.addSelection(getFeatureTypeFilter(exporter.getFeatureType(filterClass)));	
-			
-			ps = connection.prepareStatement(select.toString());
-			statements.put(key, ps);
-		}
-		
+
 		return ps;
 	}
 	

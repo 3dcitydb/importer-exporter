@@ -38,13 +38,7 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
-import org.citygml4j.model.citygml.tunnel.AbstractBoundarySurface;
-import org.citygml4j.model.citygml.tunnel.AbstractOpening;
-import org.citygml4j.model.citygml.tunnel.AbstractTunnel;
-import org.citygml4j.model.citygml.tunnel.HollowSpace;
-import org.citygml4j.model.citygml.tunnel.IntTunnelInstallation;
-import org.citygml4j.model.citygml.tunnel.OpeningProperty;
-import org.citygml4j.model.citygml.tunnel.TunnelInstallation;
+import org.citygml4j.model.citygml.tunnel.*;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;

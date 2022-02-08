@@ -53,13 +53,7 @@ import org.citygml4j.util.walker.FeatureWalker;
 import org.citygml4j.util.walker.GMLWalker;
 import org.citygml4j.util.walker.GeometryWalker;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class LodGeometryChecker extends FeatureWalker {
 	private final SchemaMapping schemaMapping;

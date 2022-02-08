@@ -31,11 +31,7 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.operation.exporter.CityGMLExportException;
-import org.citydb.core.operation.exporter.util.AttributeValueSplitter;
-import org.citydb.core.operation.exporter.util.SplitValue;
-import org.citydb.core.operation.exporter.util.DefaultGeometrySetterHandler;
-import org.citydb.core.operation.exporter.util.GeometrySetter;
-import org.citydb.core.operation.exporter.util.GeometrySetterHandler;
+import org.citydb.core.operation.exporter.util.*;
 import org.citydb.core.query.filter.lod.LodFilter;
 import org.citydb.core.query.filter.lod.LodIterator;
 import org.citydb.core.query.filter.projection.CombinedProjectionFilter;
@@ -44,14 +40,7 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
-import org.citygml4j.model.citygml.bridge.AbstractBoundarySurface;
-import org.citygml4j.model.citygml.bridge.AbstractBridge;
-import org.citygml4j.model.citygml.bridge.AbstractOpening;
-import org.citygml4j.model.citygml.bridge.BoundarySurfaceProperty;
-import org.citygml4j.model.citygml.bridge.BridgeConstructionElement;
-import org.citygml4j.model.citygml.bridge.BridgeConstructionElementProperty;
-import org.citygml4j.model.citygml.bridge.Door;
-import org.citygml4j.model.citygml.bridge.OpeningProperty;
+import org.citygml4j.model.citygml.bridge.*;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
@@ -65,14 +54,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstructionElement> {
-	private final Map<Long, AbstractBridge> batches;
+	private final Set<Long> batches;
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final DBBridgeThematicSurface thematicSurfaceExporter;
@@ -95,7 +80,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 	public DBBridgeConstrElement(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(BridgeConstructionElement.class, connection, exporter);
 
-		batches = new LinkedHashMap<>();
+		batches = new HashSet<>();
 		batchSize = exporter.getFeatureBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
@@ -114,7 +99,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.BRIDGE_CONSTR_ELEMENT.getName(), schema);
-		select = new Select().addProjection(table.getColumn("id"));
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("bridge_id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", bridgeModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", bridgeModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
@@ -169,36 +154,35 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 		constructionElementADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_CONSTR_ELEMENT, table);
 	}
 
-	protected void addBatch(long id, AbstractBridge parent) throws CityGMLExportException, SQLException {
-		batches.put(id, parent);
+	private void addBatch(long id, Map<Long, Collection<BridgeConstructionElement>> elements) throws CityGMLExportException, SQLException {
+		batches.add(id);
 		if (batches.size() == batchSize)
-			executeBatch();
+			executeBatch(elements);
 	}
 
-	protected void executeBatch() throws CityGMLExportException, SQLException {
+	private void executeBatch(Map<Long, Collection<BridgeConstructionElement>> elements) throws CityGMLExportException, SQLException {
 		if (batches.isEmpty())
 			return;
 
 		try {
 			PreparedStatement ps;
 			if (batches.size() == 1) {
-				ps = getOrCreateStatement("id");
-				ps.setLong(1, batches.keySet().iterator().next());
+				ps = getOrCreateStatement("bridge_id");
+				ps.setLong(1, batches.iterator().next());
 			} else {
-				ps = getOrCreateBulkStatement(batchSize);
-				prepareBulkStatement(ps, batches.keySet().toArray(new Long[0]), batchSize);
+				ps = getOrCreateBulkStatement("bridge_id", batchSize);
+				prepareBulkStatement(ps, batches.toArray(new Long[0]), batchSize);
 			}
 
 			try (ResultSet rs = ps.executeQuery()) {
-				Map<Long, BridgeConstructionElement> constructionElements = doExport(0, null, null, rs);
-				for (Map.Entry<Long, BridgeConstructionElement> entry : constructionElements.entrySet()) {
-					AbstractBridge bridge = batches.get(entry.getKey());
-					if (bridge == null) {
+				for (Map.Entry<Long, BridgeConstructionElement> entry : doExport(0, null, null, rs).entrySet()) {
+					Long bridgeId = (Long) entry.getValue().getLocalProperty("bridge_id");
+					if (bridgeId == null) {
 						exporter.logOrThrowErrorMessage("Failed to assign bridge construction element with id " + entry.getKey() + " to a bridge.");
 						continue;
 					}
 
-					bridge.addOuterBridgeConstructionElement(new BridgeConstructionElementProperty(entry.getValue()));
+					elements.computeIfAbsent(bridgeId, v -> new ArrayList<>()).add(entry.getValue());
 				}
 			}
 		} finally {
@@ -206,8 +190,22 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 		}
 	}
 
-	protected Collection<BridgeConstructionElement> doExport(AbstractBridge parent, long parentId) throws CityGMLExportException, SQLException {
-		return doExport(parentId, null, null, getOrCreateStatement("bridge_id"));
+	protected Collection<BridgeConstructionElement> doExport(long bridgeId) throws CityGMLExportException, SQLException {
+		return doExport(bridgeId, null, null, getOrCreateStatement("bridge_id"));
+	}
+
+	protected Map<Long, Collection<BridgeConstructionElement>> doExport(Set<Long> bridgeIds) throws CityGMLExportException, SQLException {
+		if (bridgeIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Long, Collection<BridgeConstructionElement>> elements = new HashMap<>();
+		for (Long bridgeId : bridgeIds) {
+			addBatch(bridgeId, elements);
+		}
+
+		executeBatch(elements);
+		return elements;
 	}
 
 	@Override
@@ -424,6 +422,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 						}
 					}
 
+					constructionElement.setLocalProperty("bridge_id", rs.getLong("bridge_id"));
 					constructionElement.setLocalProperty("projection", projectionFilter);
 					constructionElements.put(constructionElementId, constructionElement);
 				} else

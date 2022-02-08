@@ -27,11 +27,11 @@
  */
 package org.citydb.core.ade.visExporter;
 
-import org.citydb.core.ade.ADEExtension;
-import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.project.visExporter.ADEPreference;
 import org.citydb.config.project.visExporter.ADEPreferences;
+import org.citydb.core.ade.ADEExtension;
+import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.core.registry.ObjectRegistry;
 

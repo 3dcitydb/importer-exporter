@@ -38,12 +38,7 @@ import org.citydb.core.query.builder.util.ValueReferenceBuilder;
 import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.query.filter.selection.Predicate;
 import org.citydb.core.query.filter.selection.expression.ValueReference;
-import org.citydb.core.query.filter.selection.operator.spatial.AbstractSpatialOperator;
-import org.citydb.core.query.filter.selection.operator.spatial.BinarySpatialOperator;
-import org.citydb.core.query.filter.selection.operator.spatial.Distance;
-import org.citydb.core.query.filter.selection.operator.spatial.DistanceOperator;
-import org.citydb.core.query.filter.selection.operator.spatial.DistanceUnit;
-import org.citydb.core.query.filter.selection.operator.spatial.SpatialOperationFactory;
+import org.citydb.core.query.filter.selection.operator.spatial.*;
 import org.citydb.core.query.geometry.GeometryParseException;
 import org.citydb.core.query.geometry.config.SpatialOperandParser;
 

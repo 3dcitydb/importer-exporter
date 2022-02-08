@@ -35,17 +35,17 @@ import org.citydb.config.project.database.DatabaseType;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.connection.DatabaseMetaData;
-import org.citydb.util.event.global.DatabaseConnectionStateEvent;
-import org.citydb.util.event.global.PropertyChangeEvent;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.components.srs.SrsComboBoxFactory;
 import org.citydb.gui.operation.database.util.SrsNameComboBox;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.log.Logger;
 import org.citydb.gui.plugin.view.ViewController;
-import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.global.DatabaseConnectionStateEvent;
+import org.citydb.util.event.global.PropertyChangeEvent;
+import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -345,6 +345,7 @@ public class SrsOperation extends DatabaseOperationView {
 					dbSrs.setSrid(metaData.getReferenceSystem().getSrid());
 					dbSrs.setGMLSrsName(metaData.getReferenceSystem().getGMLSrsName());
 					dbSrs.setDatabaseSrsName(metaData.getReferenceSystem().getDatabaseSrsName());
+					dbSrs.setType(metaData.getReferenceSystem().getType());
 					dbSrs.setWkText(metaData.getReferenceSystem().getWkText());
 				} else
 					dbSrs.setGMLSrsName(srs.getGMLSrsName());

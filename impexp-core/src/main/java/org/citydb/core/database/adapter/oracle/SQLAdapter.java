@@ -28,11 +28,7 @@
 package org.citydb.core.database.adapter.oracle;
 
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.core.database.adapter.AbstractSQLAdapter;
-import org.citydb.core.database.adapter.BlobExportAdapter;
-import org.citydb.core.database.adapter.BlobImportAdapter;
-import org.citydb.core.database.adapter.BlobType;
+import org.citydb.core.database.adapter.*;
 import org.citydb.core.query.filter.selection.operator.spatial.SpatialOperatorName;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.PlaceHolder;

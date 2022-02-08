@@ -28,21 +28,7 @@
 package org.citydb.core.query.builder.sql;
 
 import org.citydb.core.ade.ADEExtensionManager;
-import org.citydb.core.database.schema.mapping.AbstractExtension;
-import org.citydb.core.database.schema.mapping.AbstractJoin;
-import org.citydb.core.database.schema.mapping.AbstractProperty;
-import org.citydb.core.database.schema.mapping.AppSchema;
-import org.citydb.core.database.schema.mapping.FeatureProperty;
-import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.core.database.schema.mapping.GeometryProperty;
-import org.citydb.core.database.schema.mapping.ImplicitGeometryProperty;
-import org.citydb.core.database.schema.mapping.InjectedProperty;
-import org.citydb.core.database.schema.mapping.JoinTable;
-import org.citydb.core.database.schema.mapping.MappingConstants;
-import org.citydb.core.database.schema.mapping.PathElementType;
-import org.citydb.core.database.schema.mapping.SchemaMapping;
-import org.citydb.core.database.schema.mapping.SimpleAttribute;
-import org.citydb.core.database.schema.mapping.SimpleType;
+import org.citydb.core.database.schema.mapping.*;
 import org.citydb.core.query.builder.QueryBuildException;
 import org.citydb.core.query.filter.lod.LodFilter;
 import org.citydb.core.query.filter.lod.LodFilterMode;
@@ -65,11 +51,7 @@ import org.citydb.sqlbuilder.select.operator.set.SetOperationName;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CoreModule;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

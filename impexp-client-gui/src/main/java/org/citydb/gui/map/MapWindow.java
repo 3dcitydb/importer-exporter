@@ -36,7 +36,6 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
 import org.citydb.gui.components.bbox.BoundingBoxListener;
@@ -59,6 +58,7 @@ import org.citydb.gui.map.map.event.ReverseGeocoderEvent;
 import org.citydb.gui.map.map.event.ReverseGeocoderEvent.ReverseGeocoderStatus;
 import org.citydb.gui.map.validation.BoundingBoxValidator;
 import org.citydb.gui.map.validation.BoundingBoxValidator.ValidationResult;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
@@ -71,13 +71,7 @@ import org.jdesktop.swingx.mapviewer.TileFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.Desktop.Action;
-import java.awt.event.ItemEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -290,7 +284,6 @@ public class MapWindow extends JDialog implements EventHandler {
 		toolBar.setBorder(BorderFactory.createEmptyBorder());
 		toolBar.add(copyBBox);
 		toolBar.add(pasteBBox);
-		toolBar.setFloatable(false);
 
 		bboxButtons.add(showBBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		bboxButtons.add(clearBBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
@@ -832,9 +825,9 @@ public class MapWindow extends JDialog implements EventHandler {
 		// create default values for main window
 		if (x == null || y == null || width == null || height == null) {
 			JFrame mainFrame = viewController.getTopFrame();
-			x = mainFrame.getLocation().x + 10;
-			y = mainFrame.getLocation().y + 10;
-			width = 1024;
+			x = mainFrame.getLocation().x + 20;
+			y = mainFrame.getLocation().y + 20;
+			width = 1152;
 			height = 768;
 
 			Toolkit t = Toolkit.getDefaultToolkit();

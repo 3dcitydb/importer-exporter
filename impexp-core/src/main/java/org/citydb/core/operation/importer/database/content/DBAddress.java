@@ -103,21 +103,21 @@ public class DBAddress implements DBImporter {
 		long addressId = importer.getNextSequenceValue(SequenceEnum.ADDRESS_ID_SEQ.getName());
 
 		// gml:id
-		if (address.isSetId())
-			address.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, address.getId());
+		String origGmlId = address.isSetId() && !address.getId().isEmpty() ? address.getId() : null;
+		if (origGmlId != null)
+			address.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 
 		if (replaceGmlId) {
 			String gmlId = importer.generateNewGmlId();
 
 			// mapping entry
-			if (address.isSetId())
-				importer.putObjectId(address.getId(), addressId, gmlId, featureType.getObjectClassId());
+			if (origGmlId != null)
+				importer.putObjectId(origGmlId, addressId, gmlId, featureType.getObjectClassId());
 
 			address.setId(gmlId);
-
 		} else {
-			if (address.isSetId())
-				importer.putObjectId(address.getId(), addressId, featureType.getObjectClassId());
+			if (origGmlId != null)
+				importer.putObjectId(origGmlId, addressId, featureType.getObjectClassId());
 			else
 				address.setId(importer.generateNewGmlId());
 		}

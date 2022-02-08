@@ -117,8 +117,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 
 		bboxOptions = BoundingBoxOptions.defaults()				
 				.useExistingEnvelopes(true)
-				.assignResultToFeatures(true)
-				.useReferencePointAsFallbackForImplicitGeometries(true);
+				.assignResultToFeatures(true);
 
 		plugins = PluginManager.getInstance().getEnabledExternalPlugins(FeatureImportExtension.class);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);

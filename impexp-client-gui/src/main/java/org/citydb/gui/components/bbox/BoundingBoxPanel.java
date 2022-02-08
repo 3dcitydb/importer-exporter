@@ -31,18 +31,18 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.i18n.Language;
-import org.citydb.util.event.Event;
-import org.citydb.util.event.EventHandler;
-import org.citydb.util.event.global.EventType;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.BlankNumberFormatter;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.components.srs.SrsComboBox;
 import org.citydb.gui.components.srs.SrsComboBoxFactory;
 import org.citydb.gui.map.MapWindow;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.log.Logger;
 import org.citydb.gui.plugin.view.ViewController;
-import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.event.Event;
+import org.citydb.util.event.EventHandler;
+import org.citydb.util.event.global.EventType;
+import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -113,7 +113,6 @@ public class BoundingBoxPanel extends JPanel implements EventHandler, BoundingBo
         toolBar.addSeparator();
         toolBar.add(copy);
         toolBar.add(paste);
-        toolBar.setFloatable(false);
 
         actionPanel.add(toolBar, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
         actionPanel.add(srsLabel, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 30, 0, 5));

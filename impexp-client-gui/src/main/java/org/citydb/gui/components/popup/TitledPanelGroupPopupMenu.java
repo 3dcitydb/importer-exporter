@@ -28,11 +28,11 @@
 package org.citydb.gui.components.popup;
 
 import org.citydb.config.i18n.Language;
+import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.gui.components.TitledPanel;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
 import org.citydb.util.event.global.EventType;
-import org.citydb.gui.components.TitledPanel;
-import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;
 import java.util.Arrays;

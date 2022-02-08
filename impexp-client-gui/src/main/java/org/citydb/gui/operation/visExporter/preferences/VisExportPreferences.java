@@ -27,12 +27,12 @@
  */
 package org.citydb.gui.operation.visExporter.preferences;
 
+import org.citydb.config.Config;
+import org.citydb.config.i18n.Language;
 import org.citydb.core.ade.ADEExtension;
 import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.ade.visExporter.ADEVisExportExtension;
 import org.citydb.core.ade.visExporter.ADEVisExportExtensionManager;
-import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
 import org.citydb.core.database.schema.mapping.AppSchema;
 import org.citydb.core.database.schema.mapping.FeatureType;
 import org.citydb.gui.operation.common.DefaultPreferences;

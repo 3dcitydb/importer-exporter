@@ -31,9 +31,9 @@ import org.citydb.core.database.adapter.BlobExportAdapter;
 import org.citydb.core.database.adapter.BlobType;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.OutputFile;
-import org.citydb.util.log.Logger;
 import org.citydb.core.operation.common.xlink.DBXlinkLibraryObject;
 import org.citydb.core.util.CoreConstants;
+import org.citydb.util.log.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;

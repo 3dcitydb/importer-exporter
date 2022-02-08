@@ -30,12 +30,7 @@ package org.citydb.core.database.adapter.h2;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractGeometryConverterAdapter;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -181,6 +176,11 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			throw new SQLException("Failed to convert geometry to internal database representation.");
 
 		return geometry;		
+	}
+
+	@Override
+	public String getDatabaseObjectConstructor(GeometryObject geomObj) {
+		return null;
 	}
 
 	private Polygon convertPolygonToJTS(GeometryObject geomObj) {

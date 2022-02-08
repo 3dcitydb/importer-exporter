@@ -41,6 +41,9 @@ import java.sql.Struct;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
@@ -297,46 +300,37 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException {
-		JGeometry geometry = null;
-
-		switch (geomObj.getGeometryType()) {
-		case POLYGON:
-			geometry = convertPolygonToJGeometry(geomObj);
-			break;
-		case LINE_STRING:
-			geometry = convertCurveToJGeometry(geomObj);
-			break;
-		case POINT:
-			geometry = convertPointToJGeometry(geomObj);
-			break;
-		case MULTI_LINE_STRING:
-			geometry = convertMultiCurveToJGeometry(geomObj);
-			break;
-		case MULTI_POINT:
-			geometry = convertMultiPointToJGeometry(geomObj);
-			break;
-		case ENVELOPE:
-			geometry = convertEnvelopeToJGeometry(geomObj);
-			break;
-		case MULTI_POLYGON:
-			geometry = convertMultiPolygonToJGeometry(geomObj);
-			break;
-		case SOLID:
-			geometry = convertSolidToJGeometry(geomObj);
-			break;
-		case COMPOSITE_SOLID:
-			geometry = convertCompositeSolidToJGeometry(geomObj);
-			break;
-		}
-
-		if (geometry == null)
-			throw new SQLException("Failed to convert geometry to internal database representation.");
-
 		try {
+			JGeometry geometry = convertToJGeometry(geomObj);
 			return JGeometry.storeJS(connection.unwrap(OracleConnection.class), geometry);
 		} catch (Exception e) {
 			throw new SQLException(e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public String getDatabaseObjectConstructor(GeometryObject geomObj) throws SQLException {
+		JGeometry geometry = convertToJGeometry(geomObj);
+
+		String constructor = "SDO_GEOMETRY(" +
+				geometry.getDimensions() + "00" + geometry.getType() + ", " +
+				geometry.getSRID() + ", ";
+		if (geometry.getType() == 1) {
+			double[] pointXYZ = geometry.getLabelPointXYZ();
+			constructor += "SDO_POINT_TYPE(" + pointXYZ[0] + ", " + pointXYZ[1] + ", " +
+					(Double.isNaN(pointXYZ[2]) ? "NULL" : pointXYZ[2]) + "), NULL, NULL)";
+		} else {
+			constructor += "NULL, SDO_ELEM_INFO_ARRAY(" + IntStream.of(geometry.getElemInfo())
+					.mapToObj(Integer::toString)
+					.collect(Collectors.joining(", ")) +
+					"), " +
+					"SDO_ORDINATE_ARRAY(" + DoubleStream.of(geometry.getOrdinatesArray())
+					.mapToObj(Double::toString)
+					.collect(Collectors.joining(", ")) +
+					"))";
+		}
+
+		return constructor;
 	}
 
 	private JGeometry convertPointToJGeometry(GeometryObject geomObj) {
@@ -517,4 +511,43 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		return JGeometry.createLinearPolygon(coordinates, geomObj.getDimension(), geomObj.getSrid());
 	}
 
+	private JGeometry convertToJGeometry(GeometryObject geomObj) throws SQLException {
+		JGeometry geometry = null;
+
+		switch (geomObj.getGeometryType()) {
+			case POLYGON:
+				geometry = convertPolygonToJGeometry(geomObj);
+				break;
+			case LINE_STRING:
+				geometry = convertCurveToJGeometry(geomObj);
+				break;
+			case POINT:
+				geometry = convertPointToJGeometry(geomObj);
+				break;
+			case MULTI_LINE_STRING:
+				geometry = convertMultiCurveToJGeometry(geomObj);
+				break;
+			case MULTI_POINT:
+				geometry = convertMultiPointToJGeometry(geomObj);
+				break;
+			case ENVELOPE:
+				geometry = convertEnvelopeToJGeometry(geomObj);
+				break;
+			case MULTI_POLYGON:
+				geometry = convertMultiPolygonToJGeometry(geomObj);
+				break;
+			case SOLID:
+				geometry = convertSolidToJGeometry(geomObj);
+				break;
+			case COMPOSITE_SOLID:
+				geometry = convertCompositeSolidToJGeometry(geomObj);
+				break;
+		}
+
+		if (geometry == null) {
+			throw new SQLException("Failed to convert geometry to internal database representation.");
+		}
+
+		return geometry;
+	}
 }

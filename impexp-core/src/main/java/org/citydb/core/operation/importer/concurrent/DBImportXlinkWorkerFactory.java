@@ -27,12 +27,12 @@
  */
 package org.citydb.core.operation.importer.concurrent;
 
-import org.citydb.util.concurrent.Worker;
-import org.citydb.util.concurrent.WorkerFactory;
 import org.citydb.config.Config;
-import org.citydb.util.event.EventDispatcher;
 import org.citydb.core.operation.common.cache.CacheTableManager;
 import org.citydb.core.operation.common.xlink.DBXlink;
+import org.citydb.util.concurrent.Worker;
+import org.citydb.util.concurrent.WorkerFactory;
+import org.citydb.util.event.EventDispatcher;
 
 public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 	private final CacheTableManager cacheTableManager;

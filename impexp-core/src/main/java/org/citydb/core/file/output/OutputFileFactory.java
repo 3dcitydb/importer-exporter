@@ -30,10 +30,10 @@ package org.citydb.core.file.output;
 
 import org.citydb.config.Config;
 import org.citydb.config.project.exporter.OutputFormat;
-import org.citydb.util.event.EventDispatcher;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.OutputFile;
 import org.citydb.core.util.Util;
+import org.citydb.util.event.EventDispatcher;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -31,9 +31,9 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.gui.components.dialog.StatusDialog;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
-import org.citydb.gui.plugin.view.ViewController;
 
 import javax.swing.*;
 import java.awt.*;

@@ -38,15 +38,7 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
-import org.citygml4j.model.citygml.bridge.AbstractBoundarySurface;
-import org.citygml4j.model.citygml.bridge.AbstractBridge;
-import org.citygml4j.model.citygml.bridge.AbstractOpening;
-import org.citygml4j.model.citygml.bridge.BridgeConstructionElement;
-import org.citygml4j.model.citygml.bridge.BridgeInstallation;
-import org.citygml4j.model.citygml.bridge.BridgeRoom;
-import org.citygml4j.model.citygml.bridge.Door;
-import org.citygml4j.model.citygml.bridge.IntBridgeInstallation;
-import org.citygml4j.model.citygml.bridge.OpeningProperty;
+import org.citygml4j.model.citygml.bridge.*;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 

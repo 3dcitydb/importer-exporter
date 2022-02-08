@@ -35,15 +35,15 @@ import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.core.database.DatabaseController;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.components.srs.SrsComboBox;
 import org.citydb.gui.components.srs.SrsComboBoxFactory;
 import org.citydb.gui.map.MapWindow;
+import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
-import org.citydb.gui.plugin.view.ViewController;
-import org.citydb.core.registry.ObjectRegistry;
 
 import javax.swing.*;
 import java.awt.*;
