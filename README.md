@@ -47,9 +47,9 @@ previous release of the 3D City Database Importer/Exporter under Apache License 
 
 Latest release
 --------------
-The latest stable release of the 3D City Database Importer/Exporter is 5.0.0.
+The latest stable release of the 3D City Database Importer/Exporter is 5.1.0.
 
-Download a Java-based executable installer for the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.0.0/3DCityDB-Importer-Exporter-5.0.0-Setup.jar).
+Download a Java-based executable installer for the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.1.0/3DCityDB-Importer-Exporter-5.1.0-Setup.jar).
 Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
 
 System requirements
