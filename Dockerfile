@@ -23,7 +23,7 @@ RUN chmod u+x ./gradlew && ./gradlew installDockerDist
 FROM openjdk:${RUNTIME_IMAGE_TAG} AS runtime
 
 # Version info
-ARG IMPEXP_VERSION='5.0.0'
+ARG IMPEXP_VERSION
 ENV IMPEXP_VERSION=${IMPEXP_VERSION}
 
 # Copy from builder
