@@ -78,23 +78,20 @@ Contributing
 
 Installing and running
 ----------------------
-The easiest way to get the Importer/Exporter running on your computer is to download an installer from the
-[releases section](https://github.com/3dcitydb/3dcitydb-suite/releases). The installers are named
-`3DCityDB-Importer-Exporter-<version>-Setup.jar` and are packaged as executable JAR file. So double-clicking the
-JAR file should run the installer. The installer will guide you through the steps of the installation process.
+The easiest way to get the Importer/Exporter running on your computer is to download a binary distribution 
+from the [releases section](https://github.com/3dcitydb/importer-exporter/releases). The binary distributions are 
+named `3DCityDB-Importer-Exporter-<version>.zip` and are packaged as ZIP file. 
 
-After installation, start scripts are available in the installation directory to launch the application.
-During setup, you can additionally choose to create shortcuts on your desktop and in the start menu of your
-preferred OS.
-
+After unzipping the ZIP file, start scripts are available in the directory to launch the application.
+ 
 Simply execute the start script suitable for your platform:
 
 * `3DCityDB-Importer-Exporter.bat` (Microsoft Windows family)
 * `3DCityDB-Importer-Exporter` (UNIX/Linux family, macOS)
 
-On most platforms, double-clicking the start script or its shortcut launches the application.
+On most platforms, double-clicking the start script launches the application.
 Please refer to the [user manual](https://3dcitydb-docs.readthedocs.io/en/version-2022.0/) for more information
-on how to install and run the tool.
+on how to run the tool.
 
 Building
 --------
@@ -116,7 +113,6 @@ If you want to build an installation wizard for the Importer/Exporter, please fo
 
 Using with Docker
 -----------------
-
 The Importer/Exporter command-line tool is also available as Docker image. You can either build the image
 yourself using one of the provided Docker files or use a pre-built image from Docker Hub at
 https://hub.docker.com/r/3dcitydb/impexp.
