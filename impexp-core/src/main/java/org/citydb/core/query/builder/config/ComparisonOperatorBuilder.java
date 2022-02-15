@@ -241,7 +241,6 @@ public class ComparisonOperatorBuilder {
 					XMLGregorianCalendar calendar = datatypeFactory.newXMLGregorianCalendar(literalValue);
 					literal = new TimestampLiteral(toInstant(calendar));
 					((TimestampLiteral) literal).setXMLLiteral(literalValue);
-					((TimestampLiteral) literal).setDate(calendar.getXMLSchemaType() == DatatypeConstants.DATE);
 				} catch (IllegalArgumentException e) {
 					//
 				}

@@ -30,7 +30,6 @@ package org.citydb.core.query.filter.selection.expression;
 import org.citydb.core.database.schema.mapping.SimpleType;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Calendar;
@@ -39,7 +38,7 @@ import java.util.GregorianCalendar;
 public class TimestampLiteral extends AbstractLiteral<Instant> {
 	private String xmlLiteral;
 	private boolean isDate;
-	
+
 	public TimestampLiteral(Instant value) {
 		super(value);
 	}
@@ -60,10 +59,12 @@ public class TimestampLiteral extends AbstractLiteral<Instant> {
 		this.xmlLiteral = xmlLiteral;
 	}
 
+	@Deprecated
 	public boolean isDate() {
 		return isDate;
 	}
 
+	@Deprecated
 	public void setDate(boolean isDate) {
 		this.isDate = isDate;
 	}
@@ -80,9 +81,7 @@ public class TimestampLiteral extends AbstractLiteral<Instant> {
 
 	@Override
 	public PlaceHolder<?> convertToSQLPlaceHolder() {
-		return !isDate ?
-				new PlaceHolder<>(Timestamp.from(value)) :
-				new PlaceHolder<>(new Date(value.toEpochMilli()));
+		return new PlaceHolder<>(Timestamp.from(value));
 	}
 
 	@Override
