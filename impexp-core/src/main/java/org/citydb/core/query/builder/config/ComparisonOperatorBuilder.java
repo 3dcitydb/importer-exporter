@@ -39,6 +39,7 @@ import org.citydb.core.query.filter.selection.expression.*;
 import org.citydb.core.query.filter.selection.operator.comparison.*;
 import org.citydb.core.registry.ObjectRegistry;
 
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -229,8 +230,7 @@ public class ComparisonOperatorBuilder {
 				break;
 			case DATE:
 				try {
-					XMLGregorianCalendar calendar = datatypeFactory.newXMLGregorianCalendar(literalValue);
-					literal = new DateLiteral(toInstant(calendar));
+					literal = new DateLiteral(DatatypeConverter.parseDateTime(literalValue));
 					((DateLiteral) literal).setXMLLiteral(literalValue);
 				} catch (IllegalArgumentException e) {
 					//
@@ -241,7 +241,6 @@ public class ComparisonOperatorBuilder {
 					XMLGregorianCalendar calendar = datatypeFactory.newXMLGregorianCalendar(literalValue);
 					literal = new TimestampLiteral(toInstant(calendar));
 					((TimestampLiteral) literal).setXMLLiteral(literalValue);
-					((TimestampLiteral) literal).setDate(calendar.getXMLSchemaType() == DatatypeConstants.DATE);
 				} catch (IllegalArgumentException e) {
 					//
 				}

@@ -22,6 +22,10 @@ RUN chmod u+x ./gradlew && ./gradlew installDockerDist
 # Base image
 FROM openjdk:${RUNTIME_IMAGE_TAG} AS runtime
 
+# Version info
+ARG IMPEXP_VERSION
+ENV IMPEXP_VERSION=${IMPEXP_VERSION}
+
 # Copy from builder
 COPY --from=builder /build/impexp-client-cli/build/install/3DCityDB-Importer-Exporter-Docker /opt/impexp
 

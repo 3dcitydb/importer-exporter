@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 5.1.0 - tba
+### 5.1.0 - 2022-02-10
 
 ##### Additions
 * Added the possibility to generate a `SELECT` statement from an XML query expression used in the Importer/Exporter. [#231](https://github.com/3dcitydb/importer-exporter/pull/231)
