@@ -28,9 +28,7 @@
 
 package org.citydb.gui;
 
-import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.util.LoggingFacade;
 import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
 import org.citydb.cli.option.StartupProgressListener;
@@ -64,7 +62,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.logging.Level;
 
 @CommandLine.Command(
         name = GuiCommand.NAME,
@@ -164,10 +161,6 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         // load GUI configuration
         guiConfig = loadGuiConfig();
         String laf = GuiUtil.getLaf(guiConfig.getAppearance().getTheme());
-
-        // disable FlatLaf logging
-        LoggingFacade facade = LoggingFacade.INSTANCE;
-        java.util.logging.Logger.getLogger(FlatLaf.class.getName()).setLevel(Level.OFF);
 
         try {
             // set look and feel
