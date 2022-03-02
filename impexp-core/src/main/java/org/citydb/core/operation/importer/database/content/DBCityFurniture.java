@@ -54,7 +54,7 @@ public class DBCityFurniture implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psCityFurniture;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
 	private GeometryConverter geometryConverter;
@@ -89,7 +89,7 @@ public class DBCityFurniture implements DBImporter {
 		psCityFurniture = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		implicitGeometryImporter = importer.getImporter(DBImplicitGeometry.class);
 		geometryConverter = importer.getGeometryConverter();
 		valueJoiner = importer.getAttributeValueJoiner();

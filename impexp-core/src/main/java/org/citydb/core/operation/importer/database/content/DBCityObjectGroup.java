@@ -52,7 +52,7 @@ public class DBCityObjectGroup implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psCityObjectGroup;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private GeometryConverter geometryConverter;
 	private AttributeValueJoiner valueJoiner;
@@ -75,7 +75,7 @@ public class DBCityObjectGroup implements DBImporter {
 		psCityObjectGroup = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		geometryConverter = importer.getGeometryConverter();
 		valueJoiner = importer.getAttributeValueJoiner();
 	}

@@ -54,7 +54,7 @@ public class DBWaterBody implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psWaterBody;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBWaterBoundarySurface boundarySurfaceImporter;
 	private GeometryConverter geometryConverter;
@@ -83,7 +83,7 @@ public class DBWaterBody implements DBImporter {
 		psWaterBody = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		boundarySurfaceImporter = importer.getImporter(DBWaterBoundarySurface.class);
 		geometryConverter = importer.getGeometryConverter();
 		valueJoiner = importer.getAttributeValueJoiner();

@@ -31,6 +31,8 @@ import org.citydb.config.Config;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
+import org.citydb.core.operation.common.property.AppearanceProperty;
+import org.citydb.core.operation.common.property.FeatureProperty;
 import org.citydb.core.operation.common.xlink.DBXlinkBasic;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.AttributeValueJoiner;
@@ -61,6 +63,8 @@ public class DBAppearance implements DBImporter {
 	private int batchCounter;
 	private boolean replaceGmlId;
 
+	private DBProperty propertyImporter;
+
 	public DBAppearance(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
 		this.importer = importer;
 
@@ -79,6 +83,8 @@ public class DBAppearance implements DBImporter {
 		surfaceDataImporter = importer.getImporter(DBSurfaceData.class);
 		texturedSurfaceConverter = new TexturedSurfaceConverter(this, config, importer);
 		valueJoiner = importer.getAttributeValueJoiner();
+
+		propertyImporter = importer.getImporter(DBProperty.class);
 	}
 
 	public long doImport(Appearance appearance, long parentId, boolean isLocalAppearance) throws CityGMLImportException, SQLException {
@@ -140,7 +146,7 @@ public class DBAppearance implements DBImporter {
 		// cityobject or citymodel id
 		if (isLocalAppearance) {
 			psAppearance.setNull(7, Types.NULL);
-			psAppearance.setLong(8, parentId);
+			psAppearance.setNull(8, Types.NULL);
 		} else {
 			psAppearance.setNull(7, Types.NULL);
 			psAppearance.setNull(8, Types.NULL);
@@ -170,6 +176,16 @@ public class DBAppearance implements DBImporter {
 					}
 				}
 			}
+		}
+
+		if (isLocalAppearance) {
+			// insert address feature property
+			AppearanceProperty appearanceProperty = new AppearanceProperty();
+			appearanceProperty.setName("appearance");
+			appearanceProperty.setNamespace("core");
+			appearanceProperty.setDataType("core:Appearance");
+			appearanceProperty.setValue(appearanceId);
+			propertyImporter.doImport(appearanceProperty, parentId);
 		}
 		
 		// ADE-specific extensions

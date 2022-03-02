@@ -67,6 +67,9 @@ public class TableHelper {
 		addDependency("textureparam", "surface_geometry");
 		addDependency("implicit_geometry", "surface_geometry");
 
+		// v5
+		addDependency("property", "feature");
+
 		// weight tables according to their dependencies
 		HashMap<String, Integer> weights = new HashMap<>();
 		for (String table : dependencyMap.keySet())
@@ -262,7 +265,7 @@ public class TableHelper {
 		case CITY_FURNITURE:
 			return DBCityFurniture.class;
 		case CITYOBJECT:
-			return DBCityObject.class;
+			return DBFeature.class;
 		case CITYOBJECT_GENERICATTRIB:
 			return DBCityObjectGenericAttrib.class;
 		case CITYOBJECTGROUP:
@@ -335,6 +338,8 @@ public class TableHelper {
 			return DBWaterBody.class;
 		case WATERBOUNDARY_SURFACE:
 			return DBWaterBoundarySurface.class;
+		case PROPERTY:
+			return DBProperty.class;
 		case UNDEFINED:
 			return null;
 		}

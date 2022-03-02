@@ -47,7 +47,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psWaterBoundarySurface;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBWaterBodToWaterBndSrf bodyToSurfaceImporter;
 	private int batchCounter;
@@ -63,7 +63,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 		psWaterBoundarySurface = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		bodyToSurfaceImporter = importer.getImporter(DBWaterBodToWaterBndSrf.class);
 	}
 

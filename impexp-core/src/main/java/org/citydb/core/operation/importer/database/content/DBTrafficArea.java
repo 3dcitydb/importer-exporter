@@ -47,7 +47,7 @@ public class DBTrafficArea implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psTrafficArea;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private AttributeValueJoiner valueJoiner;
 	private int batchCounter;
@@ -64,7 +64,7 @@ public class DBTrafficArea implements DBImporter {
 		psTrafficArea = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		valueJoiner = importer.getAttributeValueJoiner();
 	}
 

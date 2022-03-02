@@ -45,7 +45,7 @@ public class DBReliefFeature implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psReliefFeature;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBReliefComponent reliefComponentImporter;
 
 	private boolean hasObjectClassIdColumn;
@@ -63,7 +63,7 @@ public class DBReliefFeature implements DBImporter {
 				(hasObjectClassIdColumn ? ", ?)" : ")");
 		psReliefFeature = batchConn.prepareStatement(stmt);
 
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		reliefComponentImporter = importer.getImporter(DBReliefComponent.class);
 	}
 

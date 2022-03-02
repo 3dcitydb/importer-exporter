@@ -46,7 +46,7 @@ public class DBLandUse implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psLandUse;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private AttributeValueJoiner valueJoiner;
 
@@ -67,7 +67,7 @@ public class DBLandUse implements DBImporter {
 		psLandUse = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		valueJoiner = importer.getAttributeValueJoiner();
 	}
 

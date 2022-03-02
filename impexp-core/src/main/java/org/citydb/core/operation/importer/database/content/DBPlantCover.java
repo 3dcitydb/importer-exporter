@@ -47,7 +47,7 @@ public class DBPlantCover implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psPlantCover;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private AttributeValueJoiner valueJoiner;
 
@@ -69,7 +69,7 @@ public class DBPlantCover implements DBImporter {
 		psPlantCover = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		valueJoiner = importer.getAttributeValueJoiner();
 	}
 

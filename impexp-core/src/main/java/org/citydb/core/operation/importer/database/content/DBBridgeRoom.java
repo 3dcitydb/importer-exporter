@@ -48,7 +48,7 @@ public class DBBridgeRoom implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psRoom;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBBridgeThematicSurface thematicSurfaceImporter;
 	private DBBridgeFurniture bridgeFurnitureImporter;
@@ -71,7 +71,7 @@ public class DBBridgeRoom implements DBImporter {
 		psRoom = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		thematicSurfaceImporter = importer.getImporter(DBBridgeThematicSurface.class);
 		bridgeFurnitureImporter = importer.getImporter(DBBridgeFurniture.class);
 		bridgeInstallationImporter = importer.getImporter(DBBridgeInstallation.class);

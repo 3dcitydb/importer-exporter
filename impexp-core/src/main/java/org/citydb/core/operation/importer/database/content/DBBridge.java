@@ -54,7 +54,7 @@ public class DBBridge implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psBridge;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBBridgeThematicSurface thematicSurfaceImporter;
 	private DBBridgeConstrElement bridgeConstructionImporter;
@@ -88,7 +88,7 @@ public class DBBridge implements DBImporter {
 		psBridge = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		thematicSurfaceImporter = importer.getImporter(DBBridgeThematicSurface.class);
 		bridgeConstructionImporter = importer.getImporter(DBBridgeConstrElement.class);
 		bridgeInstallationImporter = importer.getImporter(DBBridgeInstallation.class);
@@ -454,7 +454,7 @@ public class DBBridge implements DBImporter {
 				Address address = property.getAddress();
 
 				if (address != null) {
-					addressImporter.importBridgeAddress(address, bridgeId);
+				//	addressImporter.importBridgeAddress(address, bridgeId);
 					property.unsetAddress();
 				} else {
 					String href = property.getHref();

@@ -53,7 +53,7 @@ public class DBBridgeFurniture implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psBridgeFurniture;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private GeometryConverter geometryConverter;
 	private DBImplicitGeometry implicitGeometryImporter;
@@ -80,7 +80,7 @@ public class DBBridgeFurniture implements DBImporter {
 		psBridgeFurniture = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		implicitGeometryImporter = importer.getImporter(DBImplicitGeometry.class);
 		geometryConverter = importer.getGeometryConverter();
 		valueJoiner = importer.getAttributeValueJoiner();

@@ -48,7 +48,7 @@ public class DBTunnelHollowSpace implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psHollowSpace;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBTunnelThematicSurface thematicSurfaceImporter;
 	private DBTunnelFurniture tunnelFurnitureImporter;
@@ -72,7 +72,7 @@ public class DBTunnelHollowSpace implements DBImporter {
 		psHollowSpace = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		thematicSurfaceImporter = importer.getImporter(DBTunnelThematicSurface.class);
 		tunnelFurnitureImporter = importer.getImporter(DBTunnelFurniture.class);
 		tunnelInstallationImporter = importer.getImporter(DBTunnelInstallation.class);

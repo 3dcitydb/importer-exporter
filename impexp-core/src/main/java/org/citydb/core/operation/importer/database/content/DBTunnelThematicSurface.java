@@ -46,7 +46,7 @@ public class DBTunnelThematicSurface implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psThematicSurface;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBTunnelOpening openingImporter;
 	private int batchCounter;
@@ -62,7 +62,7 @@ public class DBTunnelThematicSurface implements DBImporter {
 		psThematicSurface = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		openingImporter = importer.getImporter(DBTunnelOpening.class);
 	}
 

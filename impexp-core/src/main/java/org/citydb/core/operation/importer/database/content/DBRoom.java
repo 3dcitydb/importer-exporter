@@ -48,7 +48,7 @@ public class DBRoom implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psRoom;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBThematicSurface thematicSurfaceImporter;
 	private DBBuildingFurniture buildingFurnitureImporter;
@@ -72,7 +72,7 @@ public class DBRoom implements DBImporter {
 		psRoom = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		thematicSurfaceImporter = importer.getImporter(DBThematicSurface.class);
 		buildingFurnitureImporter = importer.getImporter(DBBuildingFurniture.class);
 		buildingInstallationImporter = importer.getImporter(DBBuildingInstallation.class);

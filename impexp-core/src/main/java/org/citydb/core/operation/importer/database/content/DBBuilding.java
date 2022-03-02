@@ -31,6 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.FeatureType;
+import org.citydb.core.operation.common.property.*;
 import org.citydb.core.operation.common.xlink.DBXlinkBasic;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
@@ -45,21 +46,19 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 
 public class DBBuilding implements DBImporter {
 	private final Connection batchConn;
 	private final CityGMLImportManager importer;
 
-	private PreparedStatement psBuilding;
-	private DBCityObject cityObjectImporter;
+
+	private DBFeature featureImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBThematicSurface thematicSurfaceImporter;
-	private DBBuildingInstallation buildingInstallationImporter;
-	private DBRoom roomImporter;
 	private DBAddress addressImporter;
+	private DBProperty propertyImporter;
+
 	private GeometryConverter geometryConverter;
 	private AttributeValueJoiner valueJoiner;	
 	private int batchCounter;
@@ -77,23 +76,14 @@ public class DBBuilding implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		String stmt = "insert into " + schema + ".building (id, building_parent_id, building_root_id, class, class_codespace, function, function_codespace, usage, usage_codespace, year_of_construction, year_of_demolition, " +
-				"roof_type, roof_type_codespace, measured_height, measured_height_unit, storeys_above_ground, storeys_below_ground, storey_heights_above_ground, storey_heights_ag_unit, storey_heights_below_ground, storey_heights_bg_unit, " +
-				"lod1_terrain_intersection, lod2_terrain_intersection, lod3_terrain_intersection, lod4_terrain_intersection, lod2_multi_curve, lod3_multi_curve, lod4_multi_curve, " +
-				"lod0_footprint_id, lod0_roofprint_id, lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
-				"lod1_solid_id, lod2_solid_id, lod3_solid_id, lod4_solid_id" +
-				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
-				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
-				(hasObjectClassIdColumn ? ", ?)" : ")");
-		psBuilding = batchConn.prepareStatement(stmt);
-
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		featureImporter = importer.getImporter(DBFeature.class);
 		thematicSurfaceImporter = importer.getImporter(DBThematicSurface.class);
-		buildingInstallationImporter = importer.getImporter(DBBuildingInstallation.class);
-		roomImporter = importer.getImporter(DBRoom.class);
 		addressImporter = importer.getImporter(DBAddress.class);
+		propertyImporter = importer.getImporter(DBProperty.class);
+
 		geometryConverter = importer.getGeometryConverter();
+
 		valueJoiner = importer.getAttributeValueJoiner();
 	}
 
@@ -107,120 +97,41 @@ public class DBBuilding implements DBImporter {
 			throw new SQLException("Failed to retrieve feature type.");
 
 		// import city object information
-		long buildingId = cityObjectImporter.doImport(building, featureType);
+		long buildingId = featureImporter.doImport(building, featureType);
 		if (rootId == 0)
 			rootId = buildingId;
 
-		// import building information
-		// primary id
-		psBuilding.setLong(1, buildingId);
-
-		// parent building id
-		if (parentId != 0)
-			psBuilding.setLong(2, parentId);
-		else
-			psBuilding.setNull(2, Types.NULL);
-
-		// root building id
-		psBuilding.setLong(3, rootId);
-
-		// bldg:class
-		if (building.isSetClazz() && building.getClazz().isSetValue()) {
-			psBuilding.setString(4, building.getClazz().getValue());
-			psBuilding.setString(5, building.getClazz().getCodeSpace());
-		} else {
-			psBuilding.setNull(4, Types.VARCHAR);
-			psBuilding.setNull(5, Types.VARCHAR);
-		}
-
-		// bldg:function
+		// function
 		if (building.isSetFunction()) {
-			valueJoiner.join(building.getFunction(), Code::getValue, Code::getCodeSpace);
-			psBuilding.setString(6, valueJoiner.result(0));
-			psBuilding.setString(7, valueJoiner.result(1));
-		} else {
-			psBuilding.setNull(6, Types.VARCHAR);
-			psBuilding.setNull(7, Types.VARCHAR);
-		}
-
-		// bldg:usage
-		if (building.isSetUsage()) {
-			valueJoiner.join(building.getUsage(), Code::getValue, Code::getCodeSpace);
-			psBuilding.setString(8, valueJoiner.result(0));
-			psBuilding.setString(9, valueJoiner.result(1));
-		} else {
-			psBuilding.setNull(8, Types.VARCHAR);
-			psBuilding.setNull(9, Types.VARCHAR);
-		}
-
-		// bldg:yearOfConstruction
-		if (building.isSetYearOfConstruction()) {
-			psBuilding.setObject(10, building.getYearOfConstruction());
-		} else {
-			psBuilding.setNull(10, Types.DATE);
-		}
-
-		// bldg:yearOfDemolition
-		if (building.isSetYearOfDemolition()) {
-			psBuilding.setObject(11, building.getYearOfDemolition());
-		} else {
-			psBuilding.setNull(11, Types.DATE);
+			for (Code function: building.getFunction()) {
+				CodeListProperty functionProperty = new CodeListProperty();
+				functionProperty.setDataType("gml:CodeList");
+				functionProperty.setValue(function.getValue());
+				functionProperty.setNamespace("bldg");
+				functionProperty.setName("function");
+				propertyImporter.doImport(functionProperty, buildingId);
+			}
 		}
 
 		// bldg:roofType
 		if (building.isSetRoofType() && building.getRoofType().isSetValue()) {
-			psBuilding.setString(12, building.getRoofType().getValue());
-			psBuilding.setString(13, building.getRoofType().getCodeSpace());
-		} else {
-			psBuilding.setNull(12, Types.VARCHAR);
-			psBuilding.setNull(13, Types.VARCHAR);
+			CodeListProperty roofType = new CodeListProperty();
+			roofType.setDataType("gml:CodeList");
+			roofType.setValue(building.getRoofType().getValue());
+			roofType.setNamespace("bldg");
+			roofType.setName("roofType");
+			propertyImporter.doImport(roofType, buildingId);
 		}
 
 		// bldg:measuredHeight
 		if (building.isSetMeasuredHeight() && building.getMeasuredHeight().isSetValue()) {
-			psBuilding.setDouble(14, building.getMeasuredHeight().getValue());
-			psBuilding.setString(15, building.getMeasuredHeight().getUom());
-		} else {
-			psBuilding.setNull(14, Types.DOUBLE);
-			psBuilding.setNull(15, Types.VARCHAR);
-		}
-
-		// bldg:storeysAboveGround
-		if (building.isSetStoreysAboveGround()) {
-			psBuilding.setInt(16, building.getStoreysAboveGround());
-		} else {
-			psBuilding.setNull(16, Types.NULL);
-		}
-
-		// bldg:storeysBelowGround
-		if (building.isSetStoreysBelowGround()) {
-			psBuilding.setInt(17, building.getStoreysBelowGround());
-		} else {
-			psBuilding.setNull(17, Types.NULL);
-		}
-
-		// bldg:storeyHeightsAboveGround
-		if (building.isSetStoreyHeightsAboveGround()) {
-			valueJoiner.join(" ", building.getStoreyHeightsAboveGround().getDoubleOrNull(),
-					v -> v.isSetDouble() ? v.getDouble().toString() : v.getNull().getValue());
-			
-			psBuilding.setString(18, valueJoiner.result(0));
-			psBuilding.setString(19, building.getStoreyHeightsAboveGround().getUom());
-		} else {
-			psBuilding.setNull(18, Types.VARCHAR);
-			psBuilding.setNull(19, Types.VARCHAR);
-		}
-
-		// bldg:storeyHeightsBelowGround
-		if (building.isSetStoreyHeightsBelowGround()) {
-			valueJoiner.join(" ", building.getStoreyHeightsBelowGround().getDoubleOrNull(), 
-					v -> v.isSetDouble() ? v.getDouble().toString() : v.getNull().getValue());
-
-			psBuilding.setString(20, valueJoiner.result(0));
-			psBuilding.setString(21, building.getStoreyHeightsBelowGround().getUom());
-		} else {
-			psBuilding.setNull(20, Types.VARCHAR);
-			psBuilding.setNull(21, Types.VARCHAR);
+			MeasureProperty measureProperty = new MeasureProperty();
+			measureProperty.setDataType("gml:LengthType ");
+			measureProperty.setValue(building.getMeasuredHeight().getValue());
+			measureProperty.setUom(building.getMeasuredHeight().getUom());
+			measureProperty.setNamespace("bldg");
+			measureProperty.setName("measuredHeight");
+			propertyImporter.doImport(measureProperty, buildingId);
 		}
 
 		// bldg:lodXTerrainIntersectionCurve
@@ -250,9 +161,13 @@ public class DBBuilding implements DBImporter {
 
 			if (multiLine != null) {
 				Object multiLineObj = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-				psBuilding.setObject(22 + i, multiLineObj);
-			} else
-				psBuilding.setNull(22 + i, nullGeometryType, nullGeometryTypeName);
+				GeometryProperty multiPLineProperty = new GeometryProperty();
+				multiPLineProperty.setName("lod" + (i + 2) + "TerrainIntersection");
+				multiPLineProperty.setNamespace("core");
+				multiPLineProperty.setDataType("gml:MultiCurve");
+				multiPLineProperty.setValue(multiLineObj);
+				propertyImporter.doImport(multiPLineProperty, buildingId);
+			}
 		}
 
 		// bldg:lodXMultiCurve
@@ -279,9 +194,13 @@ public class DBBuilding implements DBImporter {
 
 			if (multiLine != null) {
 				Object multiLineObj = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-				psBuilding.setObject(26 + i, multiLineObj);
-			} else
-				psBuilding.setNull(26 + i, nullGeometryType, nullGeometryTypeName);
+				GeometryProperty multiPLineProperty = new GeometryProperty();
+				multiPLineProperty.setName("lod" + (i + 2) + "MultiCurve");
+				multiPLineProperty.setNamespace("core");
+				multiPLineProperty.setDataType("gml:MultiCurve");
+				multiPLineProperty.setValue(multiLineObj);
+				propertyImporter.doImport(multiPLineProperty, buildingId);
+			}
 		}
 
 		// bldg:lod0FootPrint and bldg:lod0RoofEdge
@@ -306,18 +225,22 @@ public class DBBuilding implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								TableEnum.BUILDING.getName(),
+								TableEnum.PROPERTY.getName(),
 								buildingId, 
 								href, 
-								i == 0 ? "lod0_footprint_id" : "lod0_roofprint_id"));
+								"val_surface_geometry"));
 					}
 				}
 			}
 
-			if (multiSurfaceId != 0)
-				psBuilding.setLong(29 + i, multiSurfaceId);
-			else
-				psBuilding.setNull(29 + i, Types.NULL);
+			if (multiSurfaceId != 0) {
+				SurfaceGeometryProperty surfaceGeometryProperty = new SurfaceGeometryProperty();
+				surfaceGeometryProperty.setName(i == 0 ? "lod0_footprint_id" : "lod0_roofprint_id");
+				surfaceGeometryProperty.setNamespace("core");
+				surfaceGeometryProperty.setDataType("gml:MultiSurface");
+				surfaceGeometryProperty.setValue(multiSurfaceId);
+				propertyImporter.doImport(surfaceGeometryProperty, buildingId);
+			}
 		}
 
 		// bldg:lodXMultiSurface
@@ -342,24 +265,28 @@ public class DBBuilding implements DBImporter {
 
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
-					multiGeometryId = surfaceGeometryImporter.doImport(multiSurfaceProperty.getMultiSurface(), buildingId);
+				    multiGeometryId = surfaceGeometryImporter.doImport(multiSurfaceProperty.getMultiSurface(), 0);
 					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								TableEnum.BUILDING.getName(),
+								TableEnum.PROPERTY.getName(),
 								buildingId, 
 								href, 
-								"lod" + (i + 1) + "_multi_surface_id"));
+								"val_surface_geometry"));
 					}
 				}
 			}
 
-			if (multiGeometryId != 0)
-				psBuilding.setLong(31 + i, multiGeometryId);
-			else
-				psBuilding.setNull(31 + i, Types.NULL);
+			if (multiGeometryId != 0) {
+				SurfaceGeometryProperty surfaceGeometryProperty = new SurfaceGeometryProperty();
+				surfaceGeometryProperty.setName("lod" + (i + 1) + "MultiSurface");
+				surfaceGeometryProperty.setNamespace("core");
+				surfaceGeometryProperty.setDataType("gml:MultiSurface");
+				surfaceGeometryProperty.setValue(multiGeometryId);
+				propertyImporter.doImport(surfaceGeometryProperty, buildingId);
+			}
 		}
 
 		// bldg:lodXSolid
@@ -382,35 +309,33 @@ public class DBBuilding implements DBImporter {
 				break;
 			}
 
+			String solidTypeName = null;
 			if (solidProperty != null) {
 				if (solidProperty.isSetSolid()) {
-					solidGeometryId = surfaceGeometryImporter.doImport(solidProperty.getSolid(), buildingId);
+					solidGeometryId = surfaceGeometryImporter.doImport(solidProperty.getSolid(), 0);
+					solidTypeName = solidProperty.getSolid().getClass().getSimpleName();
 					solidProperty.unsetSolid();
 				} else {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"building",
+								TableEnum.PROPERTY.getName(),
 								buildingId, 
 								href, 
-								"lod" + (i + 1) + "_solid_id"));
+								"val_surface_geometry"));
 					}
 				}
 			}
 
-			if (solidGeometryId != 0)
-				psBuilding.setLong(35 + i, solidGeometryId);
-			else
-				psBuilding.setNull(35 + i, Types.NULL);
+			if (solidGeometryId != 0) {
+				SurfaceGeometryProperty solidGeometryProperty = new SurfaceGeometryProperty();
+				solidGeometryProperty.setName("lod" + (i + 1) + "Solid");
+				solidGeometryProperty.setNamespace("core");
+				solidGeometryProperty.setDataType("gml:" + solidTypeName);
+				solidGeometryProperty.setValue(solidGeometryId);
+				propertyImporter.doImport(solidGeometryProperty, buildingId);
+			}
 		}
-
-		// objectclass id
-		if (hasObjectClassIdColumn)
-			psBuilding.setLong(39, featureType.getObjectClassId());
-
-		psBuilding.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.BUILDING);
 
 		// bldg:boundedBy
 		if (building.isSetBoundedBySurface()) {
@@ -418,28 +343,35 @@ public class DBBuilding implements DBImporter {
 				AbstractBoundarySurface boundarySurface = property.getBoundarySurface();
 
 				if (boundarySurface != null) {
-					thematicSurfaceImporter.doImport(boundarySurface, building, buildingId);
+					long boundarySurfaceId= thematicSurfaceImporter.doImport(boundarySurface, building, buildingId);
+					FeatureProperty boundarySurfaceProperty = new FeatureProperty();
+					boundarySurfaceProperty.setName("boundedBy");
+					boundarySurfaceProperty.setNamespace("bldg");
+					boundarySurfaceProperty.setDataType("bldg:" + boundarySurface.getClass().getSimpleName());
+					boundarySurfaceProperty.setValue(boundarySurfaceId);
+					propertyImporter.doImport(boundarySurfaceProperty, buildingId);
 					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkBasic(
-								TableEnum.THEMATIC_SURFACE.getName(),
-								href,
+								TableEnum.PROPERTY.getName(),
 								buildingId,
-								"building_id"));
+								"feature_id",
+								href,
+								"val_feature"));
 					}
 				}
 			}
 		}
 
 		// bldg:outerBuildingInstallation
-		if (building.isSetOuterBuildingInstallation()) {
+/*		if (building.isSetOuterBuildingInstallation()) {
 			for (BuildingInstallationProperty property : building.getOuterBuildingInstallation()) {
 				BuildingInstallation installation = property.getBuildingInstallation();
 
 				if (installation != null) {
-					buildingInstallationImporter.doImport(installation, building, buildingId);
+				//	buildingInstallationImporter.doImport(installation, building, buildingId);
 					property.unsetBuildingInstallation();
 				} else {
 					String href = property.getHref();
@@ -460,7 +392,7 @@ public class DBBuilding implements DBImporter {
 				IntBuildingInstallation installation = property.getIntBuildingInstallation();
 
 				if (installation != null) {
-					buildingInstallationImporter.doImport(installation, building, buildingId);
+				//	buildingInstallationImporter.doImport(installation, building, buildingId);
 					property.unsetIntBuildingInstallation();
 				} else {
 					String href = property.getHref();
@@ -473,15 +405,15 @@ public class DBBuilding implements DBImporter {
 					}
 				}
 			}
-		}
+		}*/
 
 		// bldg:interiorRoom
-		if (building.isSetInteriorRoom()) {
+/*		if (building.isSetInteriorRoom()) {
 			for (InteriorRoomProperty property : building.getInteriorRoom()) {
 				Room room = property.getRoom();
 
 				if (room != null) {
-					roomImporter.doImport(room, buildingId);
+				//	roomImporter.doImport(room, buildingId);
 					property.unsetRoom();
 				} else {
 					String href = property.getHref();
@@ -494,15 +426,21 @@ public class DBBuilding implements DBImporter {
 					}
 				}
 			}
-		}
+		}*/
 
 		// bldg:consistsOfBuildingPart
 		if (building.isSetConsistsOfBuildingPart()) {
 			for (BuildingPartProperty property : building.getConsistsOfBuildingPart()) {
 				BuildingPart buildingPart = property.getBuildingPart();
-
 				if (buildingPart != null) {
-					doImport(buildingPart, buildingId, rootId);
+					long buildingPartId = doImport(buildingPart, buildingId, rootId);
+					FeatureProperty boundarySurfaceProperty = new FeatureProperty();
+					boundarySurfaceProperty.setName("consistsOfBuildingPart");
+					boundarySurfaceProperty.setNamespace("bldg");
+					boundarySurfaceProperty.setDataType("bldg:BuildingPart");
+					boundarySurfaceProperty.setValue(buildingPartId);
+					propertyImporter.doImport(boundarySurfaceProperty, buildingId);
+
 					property.unsetBuildingPart();
 				} else {
 					String href = property.getHref();
@@ -518,17 +456,25 @@ public class DBBuilding implements DBImporter {
 				Address address = property.getAddress();
 
 				if (address != null) {
-					addressImporter.importBuildingAddress(address, buildingId);
+					long addressId = addressImporter.doImport(address, buildingId);
+
+					FeatureProperty addressProperty = new FeatureProperty();
+					addressProperty.setName("address");
+					addressProperty.setNamespace("core");
+					addressProperty.setDataType("core:Address");
+					addressProperty.setValue(addressId);
+					propertyImporter.doImport(addressProperty, buildingId);
+
 					property.unsetAddress();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkBasic(
-								TableEnum.ADDRESS_TO_BUILDING.getName(),
+								TableEnum.PROPERTY.getName(),
 								buildingId,
-								"BUILDING_ID",
+								"FEATURE_ID",
 								href,
-								"ADDRESS_ID"));
+								"VAR_FEATURE"));
 					}
 				}
 			}
@@ -543,15 +489,12 @@ public class DBBuilding implements DBImporter {
 
 	@Override
 	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psBuilding.executeBatch();
-			batchCounter = 0;
-		}
+		// nothing to do
 	}
 
 	@Override
 	public void close() throws CityGMLImportException, SQLException {
-		psBuilding.close();
+		// nothing to do
 	}
 
 }

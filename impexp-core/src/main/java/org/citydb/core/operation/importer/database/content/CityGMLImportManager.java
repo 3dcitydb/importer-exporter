@@ -287,7 +287,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 			// generic fallback for any ADE object
 			else if (object != null)
-				id = getImporter(DBCityObject.class).doImport(object);
+				id = getImporter(DBFeature.class).doImport(object);
 
 			// import local appearances
 			if (id != 0 && !object.isSetParent())
@@ -788,8 +788,8 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 			// core module
 			if (type == DBSurfaceGeometry.class)
 				importer = new DBSurfaceGeometry(connection, config, this);
-			else if (type == DBCityObject.class)
-				importer = new DBCityObject(connection, config, this);
+			else if (type == DBFeature.class)
+				importer = new DBFeature(connection, config, this);
 			else if (type == DBExternalReference.class)
 				importer = new DBExternalReference(connection, config, this);
 			else if (type == DBCityObjectGenericAttrib.class)
@@ -908,6 +908,11 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 				importer = new DBAppearToSurfaceData(connection, config, this);
 			else if (type == DBTexImage.class)
 				importer = new DBTexImage(connection, config, this);
+
+			else if (type == DBFeature.class)
+				importer = new DBFeature(connection, config, this);
+			else if (type == DBProperty.class)
+				importer = new DBProperty(connection, config, this);
 
 			if (importer == null)
 				throw new CityGMLImportException("Failed to build database importer of type " + type.getName() + ".");

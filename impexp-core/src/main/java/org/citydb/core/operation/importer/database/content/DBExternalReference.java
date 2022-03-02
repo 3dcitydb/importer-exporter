@@ -30,6 +30,9 @@ package org.citydb.core.operation.importer.database.content;
 import org.citydb.config.Config;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.core.database.schema.TableEnum;
+import org.citydb.core.operation.common.property.ComplexProperty;
+import org.citydb.core.operation.common.property.StringProperty;
+import org.citydb.core.operation.common.property.UriProperty;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -41,69 +44,71 @@ import java.sql.Types;
 
 public class DBExternalReference implements DBImporter {
 	private final CityGMLImportManager importer;
+	private final DBProperty propertyImporter;
 
-	private PreparedStatement psExternalReference;
-	private int batchCounter;
-
-	public DBExternalReference(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
+	public DBExternalReference(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException, CityGMLImportException {
 		this.importer = importer;
-
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
-		String stmt = "insert into " + schema + ".external_reference (id, infosys, name, uri, cityobject_id) values " +
-				"(" + importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.EXTERNAL_REFERENCE_ID_SEQ.getName()) +
-				", ?, ?, ?, ?)";
-		psExternalReference = batchConn.prepareStatement(stmt);
+		this.propertyImporter = importer.getImporter(DBProperty.class);
 	}
 
 	protected void doImport(ExternalReference externalReference, long cityObjectId) throws CityGMLImportException, SQLException {
+		ComplexProperty externalReferenceProperty = new ComplexProperty();
+		externalReferenceProperty.setName("externalReference");
+		externalReferenceProperty.setDataType("ExternalReference");
+		externalReferenceProperty.setNamespace("core");
+
 		// core:informationSystem
-		if (externalReference.isSetInformationSystem())
-			psExternalReference.setString(1, externalReference.getInformationSystem());
-		else
-			psExternalReference.setNull(1, Types.VARCHAR);
+		if (externalReference.isSetInformationSystem()){
+			UriProperty informationSystem = new UriProperty();
+			informationSystem.setName("informationSystem");
+			informationSystem.setNamespace("core");
+			informationSystem.setDataType("xs:anyUri");
+			informationSystem.setValue(externalReference.getInformationSystem());
+			externalReferenceProperty.addChild(informationSystem);
+		}
 
 		// core:externalObject
 		if (externalReference.isSetExternalObject()) {
 			ExternalObject externalObject = externalReference.getExternalObject();
+			ComplexProperty externalObjectProperty = new ComplexProperty();
+			externalObjectProperty.setName("externalObject");
+			externalObjectProperty.setDataType("ExternalObjectReference");
+			externalObjectProperty.setNamespace("core");
+			externalReferenceProperty.addChild(externalObjectProperty);
 
 			// core:name
 			if (externalObject.isSetName()) {
-				psExternalReference.setString(2, externalObject.getName());
-			} else {
-				psExternalReference.setNull(2, Types.VARCHAR);
+				StringProperty externalObjectName = new StringProperty();
+				externalObjectName.setName("name");
+				externalObjectName.setNamespace("core");
+				externalObjectName.setDataType("xs:string");
+				externalObjectName.setValue(externalObject.getName());
+				externalObjectProperty.addChild(externalObjectName);
 			}
 
 			// core:uri
 			if (externalObject.isSetUri()) {
-				psExternalReference.setString(3, externalObject.getUri());
-			} else {
-				psExternalReference.setNull(3, Types.VARCHAR);
+				UriProperty externalObjectName = new UriProperty();
+				externalObjectName.setName("uri");
+				externalObjectName.setNamespace("core");
+				externalObjectName.setDataType("xs:string");
+				externalObjectName.setValue(externalObject.getUri());
+				externalObjectProperty.addChild(externalObjectName);
 			}
-		} else {
-			psExternalReference.setNull(2, Types.VARCHAR);
-			psExternalReference.setNull(3, Types.VARCHAR);
 		}
 
 		// cityObjectId
-		psExternalReference.setLong(4, cityObjectId);
-
-		psExternalReference.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.EXTERNAL_REFERENCE);
+		propertyImporter.doImport(externalReferenceProperty, cityObjectId);
 	}
 
 	@Override
 	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psExternalReference.executeBatch();
-			batchCounter = 0;
-		}
+		// nothing to do...
 	}
 
 	@Override
 	public void close() throws CityGMLImportException, SQLException {
-		psExternalReference.close();
+		// nothing to do...
 	}
 
 }

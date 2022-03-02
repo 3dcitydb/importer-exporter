@@ -83,7 +83,10 @@ public enum TableEnum {
 	RELIEF_FEAT_TO_REL_COMP,
 	GENERIC_CITYOBJECT,
 	CITYOBJECTGROUP,
-	GROUP_TO_CITYOBJECT;
+	GROUP_TO_CITYOBJECT,
+	FEATURE,
+	PROPERTY;
+
 
 	public static TableEnum fromOrdinal(int i) {
 		for (TableEnum table : TableEnum.values()) {

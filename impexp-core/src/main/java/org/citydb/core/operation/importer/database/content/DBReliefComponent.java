@@ -52,7 +52,7 @@ public class DBReliefComponent implements DBImporter {
 	private PreparedStatement psTinRelief;
 	private PreparedStatement psMassPointRelief;
 	private PreparedStatement psBreaklineRelief;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBReliefFeatToRelComp reliefFeatToRelComp;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private GeometryConverter geometryConverter;
@@ -94,7 +94,7 @@ public class DBReliefComponent implements DBImporter {
 		psBreaklineRelief = batchConn.prepareStatement(breaklineStmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		reliefFeatToRelComp = importer.getImporter(DBReliefFeatToRelComp.class);
 		geometryConverter = importer.getGeometryConverter();
 	}

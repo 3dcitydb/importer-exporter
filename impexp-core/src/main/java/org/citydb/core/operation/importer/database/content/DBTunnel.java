@@ -52,7 +52,7 @@ public class DBTunnel implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psTunnel;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBTunnelThematicSurface thematicSurfaceImporter;
 	private DBTunnelInstallation tunnelInstallationImporter;
@@ -84,7 +84,7 @@ public class DBTunnel implements DBImporter {
 		psTunnel = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		thematicSurfaceImporter = importer.getImporter(DBTunnelThematicSurface.class);
 		tunnelInstallationImporter = importer.getImporter(DBTunnelInstallation.class);
 		hollowSpaceImporter = importer.getImporter(DBTunnelHollowSpace.class);

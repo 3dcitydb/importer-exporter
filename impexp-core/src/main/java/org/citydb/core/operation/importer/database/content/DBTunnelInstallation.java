@@ -55,7 +55,7 @@ public class DBTunnelInstallation implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psTunnelInstallation;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBTunnelThematicSurface thematicSurfaceImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private GeometryConverter geometryConverter;
@@ -86,7 +86,7 @@ public class DBTunnelInstallation implements DBImporter {
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		implicitGeometryImporter = importer.getImporter(DBImplicitGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		thematicSurfaceImporter = importer.getImporter(DBTunnelThematicSurface.class);
 		geometryConverter = importer.getGeometryConverter();
 		valueJoiner = importer.getAttributeValueJoiner();

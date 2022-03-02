@@ -53,7 +53,7 @@ public class DBBridgeOpening implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psOpening;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private GeometryConverter geometryConverter;
 	private DBImplicitGeometry implicitGeometryImporter;
@@ -80,7 +80,7 @@ public class DBBridgeOpening implements DBImporter {
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		implicitGeometryImporter = importer.getImporter(DBImplicitGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		openingToThemSurfaceImporter = importer.getImporter(DBBridgeOpenToThemSrf.class);
 		addressImporter = importer.getImporter(DBAddress.class);
 		geometryConverter = importer.getGeometryConverter();

@@ -54,7 +54,7 @@ public class DBTransportationComplex implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psTransComplex;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBTrafficArea trafficAreaImporter;
 	private GeometryConverter geometryConverter;
@@ -78,7 +78,7 @@ public class DBTransportationComplex implements DBImporter {
 		psTransComplex = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		trafficAreaImporter = importer.getImporter(DBTrafficArea.class);
 		geometryConverter = importer.getGeometryConverter();
 		valueJoiner = importer.getAttributeValueJoiner();

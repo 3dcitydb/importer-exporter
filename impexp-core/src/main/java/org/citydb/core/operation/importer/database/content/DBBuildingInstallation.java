@@ -55,7 +55,7 @@ public class DBBuildingInstallation implements DBImporter {
 	private final CityGMLImportManager importer;
 
 	private PreparedStatement psBuildingInstallation;
-	private DBCityObject cityObjectImporter;
+	private DBFeature cityObjectImporter;
 	private DBThematicSurface thematicSurfaceImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private GeometryConverter geometryConverter;
@@ -86,7 +86,7 @@ public class DBBuildingInstallation implements DBImporter {
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		implicitGeometryImporter = importer.getImporter(DBImplicitGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
+		cityObjectImporter = importer.getImporter(DBFeature.class);
 		thematicSurfaceImporter = importer.getImporter(DBThematicSurface.class);
 		geometryConverter = importer.getGeometryConverter();
 		valueJoiner = importer.getAttributeValueJoiner();
