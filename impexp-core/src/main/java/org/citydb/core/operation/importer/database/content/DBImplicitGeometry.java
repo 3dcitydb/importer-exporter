@@ -27,57 +27,66 @@
  */
 package org.citydb.core.operation.importer.database.content;
 
-import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.core.database.schema.SequenceEnum;
 import org.citydb.core.database.schema.TableEnum;
 import org.citydb.core.database.schema.mapping.MappingConstants;
 import org.citydb.core.operation.common.xlink.DBXlinkLibraryObject;
-import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.ConcurrentLockManager;
 import org.citydb.core.operation.importer.util.ExternalFileChecker;
 import org.citydb.core.operation.importer.util.GeometryConverter;
-import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.Util;
 import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
-import java.io.IOException;
 import java.sql.*;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBImplicitGeometry implements DBImporter {
 	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBImplicitGeometry.class);
 	private final Logger log = Logger.getInstance();
-	private final Connection batchConn;
+	private final Connection connection;
 	private final CityGMLImportManager importer;
 
-	private PreparedStatement psImplicitGeometry;
-	private PreparedStatement psUpdateImplicitGeometry;
-	private PreparedStatement psSelectLibraryObject;
+	private final PreparedStatement psImplicitGeometry;
+	private final PreparedStatement psUpdateImplicitGeometry;
+	private final DBSurfaceGeometry surfaceGeometryImporter;
+	private final GeometryConverter geometryConverter;
+	private final ExternalFileChecker externalFileChecker;
 
-	private DBSurfaceGeometry surfaceGeometryImporter;
-	private GeometryConverter geometryConverter;
-	private ExternalFileChecker externalFileChecker;
+	private final int nullGeometryType;
+	private final String nullGeometryTypeName;
+	private final boolean hasGmlIdColumn;
+	private final String schema;
+
+	private PreparedStatement psRelativeGeometryLookup;
+	private PreparedStatement psLibraryObjectLookup;
 	private int batchCounter;
 
-	public DBImplicitGeometry(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
-		this.batchConn = batchConn;
+	public DBImplicitGeometry(Connection connection, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
+		this.connection = connection;
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
+		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
+		hasGmlIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 3, 0) >= 0;
+		schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String insertStmt = "insert into " + schema + ".implicit_geometry (id, reference_to_library) values (?, ?)";
-		String updateStmt = "update " + schema + ".implicit_geometry set mime_type=?, relative_brep_id=?, relative_other_geom=? where id=?";
-		String selectStmt = "select ID from " + schema + ".implicit_geometry where reference_to_library=?";
+		String stmt = "insert into " + schema + ".implicit_geometry (id, reference_to_library, mime_type, " +
+				"relative_brep_id, relative_other_geom" +
+				(hasGmlIdColumn ? ", gmlid) " : ") ") +
+				"values (?, ?, ?, ?, ?" +
+				(hasGmlIdColumn ? ", ?)" : ")");
+		psImplicitGeometry = connection.prepareStatement(stmt);
 
-		psImplicitGeometry = batchConn.prepareStatement(insertStmt);
-		psUpdateImplicitGeometry = batchConn.prepareStatement(updateStmt);
-		psSelectLibraryObject = batchConn.prepareStatement(selectStmt);
+		stmt = "update " + schema + ".implicit_geometry set relative_brep_id = ?, relative_other_geom = ? " +
+				"where id = ?";
+		psUpdateImplicitGeometry = connection.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		geometryConverter = importer.getGeometryConverter();
@@ -85,120 +94,118 @@ public class DBImplicitGeometry implements DBImporter {
 	}
 
 	protected long doImport(ImplicitGeometry implicitGeometry) throws CityGMLImportException, SQLException {
-		// writing implicit geometries differs from other importers. we want to avoid duplicate
-		// entries for library objects. thus we have to make sure on this prior to inserting entries.
-		long implicitGeometryId = 0;
-		boolean updateTable = false;
-		boolean isXLink = false;
-
-		String libraryURI = implicitGeometry.getLibraryObject();
-		if (libraryURI != null)
-			libraryURI = libraryURI.trim();
-
 		AbstractGeometry relativeGeometry = null;
 		String gmlId = null;
 
 		if (implicitGeometry.isSetRelativeGMLGeometry()) {
 			GeometryProperty<? extends AbstractGeometry> property = implicitGeometry.getRelativeGMLGeometry();
-
-			if (property.isSetHref()) {
-				gmlId = property.getHref();
-				if (Util.isRemoteXlink(gmlId)) {
-					importer.logOrThrowErrorMessage(importer.getObjectSignature(implicitGeometry) +
-							": XLink reference '" + gmlId + "' to remote relative GML geometry is not supported.");
-					return 0;
-				}				
-
-				gmlId = gmlId.replaceAll("^#", "");
-				isXLink = true;
-
-			} else if (property.isSetGeometry()) {
+			if (property.isSetGeometry()) {
 				relativeGeometry = property.getGeometry();
+				if (!relativeGeometry.isSetId()) {
+					relativeGeometry.setId(importer.generateNewGmlId());
+				}
+
 				gmlId = relativeGeometry.getId();
-				updateTable = !relativeGeometry.hasLocalProperty(CoreConstants.GEOMETRY_ORIGINAL);
+			} else if (property.isSetHref()) {
+				if (Util.isRemoteXlink(property.getHref())) {
+					importer.logOrThrowErrorMessage(importer.getObjectSignature(implicitGeometry) +
+							": XLink reference '" + property.getHref() + "' to remote relative GML geometry is not supported.");
+					return 0;
+				}
+
+				gmlId = property.getHref().replaceAll("^#", "");
 			}
 		}
 
-		// synchronize concurrent processing of the same implicit geometry
-		// different implicit geometries however may be processed concurrently
-		ReentrantLock lock = lockManager.getLock(gmlId != null ? gmlId : libraryURI);
+		String libraryObject = implicitGeometry.isSetLibraryObject() ?
+				implicitGeometry.getLibraryObject().trim() :
+				null;
+
+		if (gmlId == null && libraryObject == null) {
+			return 0;
+		} else if (gmlId != null && libraryObject != null) {
+			log.warn(importer.getObjectSignature(implicitGeometry) + ": Found both a relative geometry and a library object.");
+			log.warn("The library object will not be imported.");
+			libraryObject = null;
+		}
+
+		// we synchronize the processing of the implicit geometry
+		// to avoid duplicate entries.
+		final ReentrantLock lock = lockManager.getLock(gmlId != null ? gmlId : libraryObject);
 		lock.lock();
-
-		ResultSet rs = null;
 		try {
-			if (libraryURI != null && !libraryURI.isEmpty()) {
-				// check if we have the same library object in database
-				psSelectLibraryObject.setString(1, libraryURI);
-				rs = psSelectLibraryObject.executeQuery();
-				if (rs.next())
-					implicitGeometryId = rs.getLong(1);
-				else
-					updateTable = true;
-			} 
+			Map.Entry<Long, Boolean> lookup = gmlId != null ?
+					lookupRelativeGeometry(gmlId) :
+					lookupLibraryObject(libraryObject);
 
-			// check relative geometry reference
-			else if (gmlId != null)
-				implicitGeometryId = importer.getObjectId(gmlId);
+			long implicitGeometryId = lookup.getKey();
+			boolean isGlobal = lookup.getValue();
 
 			if (implicitGeometryId <= 0) {
 				implicitGeometryId = importer.getNextSequenceValue(SequenceEnum.IMPLICIT_GEOMETRY_ID_SEQ.getName());
 				psImplicitGeometry.setLong(1, implicitGeometryId);
-				psImplicitGeometry.setString(2, libraryURI);
-				psImplicitGeometry.addBatch();
-				++batchCounter;
-
-				if (gmlId != null)
-					importer.putObjectId(gmlId, implicitGeometryId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID);
-
-				importer.updateObjectCounter(implicitGeometry, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID, implicitGeometryId);
-			}
-
-			if (updateTable) {
-				psUpdateImplicitGeometry.setLong(4, implicitGeometryId);
-
-				if (libraryURI != null) {
-					// mimeType
-					if (implicitGeometry.isSetMimeType() && implicitGeometry.getMimeType().isSetValue())
-						psUpdateImplicitGeometry.setString(1, implicitGeometry.getMimeType().getValue());
-					else
-						psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
-
-					try {
-						// propagate the link to the library object
-						Map.Entry<String, String> fileInfo = externalFileChecker.getFileInfo(libraryURI);
-						importer.propagateXlink(new DBXlinkLibraryObject(
-								implicitGeometryId,
-								fileInfo.getKey()));
-					} catch (IOException e) {
-						importer.logOrThrowErrorMessage("Failed to read library object file at '" + libraryURI + "'.", e);
-					}
-				} else
-					psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
-
-				long geometryId = 0;
-				GeometryObject geometryObject = null;
+				psImplicitGeometry.setString(2, libraryObject);
+				psImplicitGeometry.setString(3, libraryObject != null
+						&& implicitGeometry.isSetMimeType()
+						&& implicitGeometry.getMimeType().isSetValue() ?
+						implicitGeometry.getMimeType().getValue() :
+						null);
 
 				if (relativeGeometry != null) {
-					if (importer.isSurfaceGeometry(relativeGeometry))
-						geometryId = surfaceGeometryImporter.importImplicitGeometry(relativeGeometry);
-					else if (importer.isPointOrLineGeometry(relativeGeometry))
-						geometryObject = geometryConverter.getPointOrCurveGeometry(relativeGeometry);
-					else
-						importer.logOrThrowUnsupportedGeometryMessage(implicitGeometry, relativeGeometry);
+					Map.Entry<Long, GeometryObject> result = importRelativeGeometry(relativeGeometry, implicitGeometry);
+					if (result.getKey() != 0) {
+						psImplicitGeometry.setLong(4, result.getKey());
+					} else {
+						psImplicitGeometry.setNull(4, Types.NULL);
+					}
 
-					implicitGeometry.unsetRelativeGMLGeometry();
+					if (result.getValue() != null) {
+						psImplicitGeometry.setObject(5, importer.getDatabaseAdapter()
+								.getGeometryConverter().getDatabaseObject(result.getValue(), connection));
+					} else {
+						psImplicitGeometry.setNull(5, nullGeometryType, nullGeometryTypeName);
+					}
+				} else {
+					psImplicitGeometry.setNull(4, Types.NULL);
+					psImplicitGeometry.setNull(5, nullGeometryType, nullGeometryTypeName);
 				}
 
-				if (geometryId != 0)
-					psUpdateImplicitGeometry.setLong(2, geometryId);
-				else
-					psUpdateImplicitGeometry.setNull(2, Types.NULL);
+				if (libraryObject != null) {
+					try {
+						Map.Entry<String, String> result = externalFileChecker.getFileInfo(libraryObject);
+						importer.propagateXlink(new DBXlinkLibraryObject(implicitGeometryId, result.getKey()));
+					} catch (Exception e) {
+						importer.logOrThrowErrorMessage("Failed to read library object file at '" + libraryObject + "'.", e);
+					}
+				}
 
-				if (geometryObject != null)
-					psUpdateImplicitGeometry.setObject(3, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometryObject, batchConn));
-				else
-					psUpdateImplicitGeometry.setNull(3, importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
-							importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
+				if (hasGmlIdColumn) {
+					psImplicitGeometry.setString(6, gmlId);
+				}
+
+				if (gmlId != null) {
+					importer.putObjectId(gmlId, implicitGeometryId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID);
+				}
+
+				importer.updateObjectCounter(implicitGeometry, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID, implicitGeometryId);
+				psImplicitGeometry.addBatch();
+				batchCounter++;
+			} else if (!isGlobal && relativeGeometry != null) {
+				psUpdateImplicitGeometry.setLong(3, implicitGeometryId);
+
+				Map.Entry<Long, GeometryObject> result = importRelativeGeometry(relativeGeometry, implicitGeometry);
+				if (result.getKey() != 0) {
+					psUpdateImplicitGeometry.setLong(1, result.getKey());
+				} else {
+					psUpdateImplicitGeometry.setNull(1, Types.NULL);
+				}
+
+				if (result.getValue() != null) {
+					psUpdateImplicitGeometry.setObject(2, importer.getDatabaseAdapter()
+							.getGeometryConverter().getDatabaseObject(result.getValue(), connection));
+				} else {
+					psUpdateImplicitGeometry.setNull(2, nullGeometryType, nullGeometryTypeName);
+				}
 
 				psUpdateImplicitGeometry.addBatch();
 				++batchCounter;
@@ -206,34 +213,90 @@ public class DBImplicitGeometry implements DBImporter {
 
 			if (batchCounter > 0) {
 				importer.executeBatch(TableEnum.IMPLICIT_GEOMETRY);
-				batchConn.commit();
-				batchCounter = 0;
+				connection.commit();
 			}
 
+			return implicitGeometryId;
 		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					//
-				}
-
-				rs = null;
-			}
-
-			lockManager.releaseLock(gmlId != null ? gmlId : libraryURI);
+			lockManager.releaseLock(gmlId != null ? gmlId : libraryObject);
 			lock.unlock();
 		}
+	}
 
-		if (isXLink && !importer.lookupAndPutObjectId("#xlink#" + gmlId, 1, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
-			importer.propagateXlink(new DBXlinkSurfaceGeometry(
-					MappingConstants.IMPLICIT_GEOMETRY_TABLE,
-					implicitGeometryId, 
-					gmlId, 
-					null));
+	private Map.Entry<Long, GeometryObject> importRelativeGeometry(AbstractGeometry relativeGeometry, ImplicitGeometry implicitGeometry) throws CityGMLImportException, SQLException {
+		long geometryId = 0;
+		GeometryObject geometryObject = null;
+
+		if (importer.isSurfaceGeometry(relativeGeometry)) {
+			geometryId = surfaceGeometryImporter.importImplicitGeometry(relativeGeometry);
+		} else if (importer.isPointOrLineGeometry(relativeGeometry)) {
+			geometryObject = geometryConverter.getPointOrCurveGeometry(relativeGeometry);
+		} else {
+			importer.logOrThrowUnsupportedGeometryMessage(implicitGeometry, relativeGeometry);
 		}
 
-		return implicitGeometryId;
+		return new AbstractMap.SimpleEntry<>(geometryId, geometryObject);
+	}
+
+	private Map.Entry<Long, Boolean> lookupRelativeGeometry(String gmlId) throws SQLException {
+		long implicitGeometryId = importer.getObjectId(gmlId);
+		boolean isGlobal = false;
+
+		if (implicitGeometryId < 0 && hasGmlIdColumn) {
+			implicitGeometryId = importer.getObjectId("#globalGeometry#" + gmlId);
+			if (implicitGeometryId < 0) {
+				PreparedStatement ps = getOrCreateRelativeGeometryLookup();
+				ps.setString(1, gmlId);
+				try (ResultSet rs = ps.executeQuery()) {
+					if (rs.next()) {
+						implicitGeometryId = rs.getLong(1);
+						importer.putObjectId("#globalGeometry#" + gmlId, implicitGeometryId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID);
+					}
+				}
+			}
+
+			isGlobal = true;
+		}
+
+		return new AbstractMap.SimpleEntry<>(implicitGeometryId, isGlobal);
+	}
+
+	private Map.Entry<Long, Boolean> lookupLibraryObject(String libraryObject) throws SQLException {
+		String lookupKey = "#libraryObject#" + libraryObject;
+		long implicitGeometryId = importer.getObjectId(lookupKey);
+
+		if (implicitGeometryId < 0) {
+			PreparedStatement ps = getOrCreateRelativeGeometryLookup();
+			ps.setString(1, libraryObject);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					implicitGeometryId = rs.getLong(1);
+					importer.putObjectId(lookupKey, implicitGeometryId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID);
+				}
+			}
+		}
+
+		return new AbstractMap.SimpleEntry<>(implicitGeometryId, false);
+	}
+
+	private PreparedStatement getOrCreateRelativeGeometryLookup() throws SQLException {
+		if (psRelativeGeometryLookup == null) {
+			psRelativeGeometryLookup = connection.prepareStatement(
+					"select id from " + schema + ".implicit_geometry " +
+							"where gmlid = ? fetch first 1 rows only");
+		}
+
+		return psRelativeGeometryLookup;
+	}
+
+	private PreparedStatement getOrCreateLibraryObjectLookup() throws SQLException {
+		if (psLibraryObjectLookup == null) {
+			psLibraryObjectLookup = connection.prepareStatement(
+					"select id from " + schema + ".implicit_geometry " +
+							"where reference_to_library = ? fetch first 1 rows only");
+		}
+
+		return psLibraryObjectLookup;
 	}
 
 	@Override
@@ -249,7 +312,13 @@ public class DBImplicitGeometry implements DBImporter {
 	public void close() throws CityGMLImportException, SQLException {
 		psImplicitGeometry.close();
 		psUpdateImplicitGeometry.close();
-		psSelectLibraryObject.close();
-	}
 
+		if (psRelativeGeometryLookup != null) {
+			psRelativeGeometryLookup.close();
+		}
+
+		if (psLibraryObjectLookup != null) {
+			psLibraryObjectLookup.close();
+		}
+	}
 }

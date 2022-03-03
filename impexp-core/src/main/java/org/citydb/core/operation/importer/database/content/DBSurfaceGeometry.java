@@ -77,10 +77,10 @@ public class DBSurfaceGeometry implements DBImporter {
 	private final boolean importAppearance;
 	private final int nullGeometryType;
 	private final String nullGeometryTypeName;
-	private final int isXlinkValue;
 
 	private int dbSrid;
     private boolean applyTransformation;
+    private int isXlinkValue;
     private boolean isImplicit;
     private int batchCounter;
 
@@ -159,16 +159,23 @@ public class DBSurfaceGeometry implements DBImporter {
         // thus, we do not need to apply it to the coordinate values
         boolean _applyTransformation = applyTransformation;
         int _dbSrid = dbSrid;
+        int _isXlinkValue = isXlinkValue;
 
         try {
             isImplicit = true;
             applyTransformation = false;
             dbSrid = 0;
+
+            // force global XLink flag for implicit geometries
+            isXlinkValue = XlinkType.GLOBAL.value();
+            geometry.setLocalProperty(CoreConstants.GEOMETRY_XLINK, true);
+
             return doImport(geometry, 0);
         } finally {
             isImplicit = false;
             applyTransformation = _applyTransformation;
             dbSrid = _dbSrid;
+            isXlinkValue = _isXlinkValue;
         }
     }
 
