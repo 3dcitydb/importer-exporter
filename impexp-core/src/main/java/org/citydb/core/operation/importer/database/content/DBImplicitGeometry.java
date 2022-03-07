@@ -266,7 +266,7 @@ public class DBImplicitGeometry implements DBImporter {
 		long implicitGeometryId = importer.getObjectId(lookupKey);
 
 		if (implicitGeometryId < 0) {
-			PreparedStatement ps = getOrCreateRelativeGeometryLookup();
+			PreparedStatement ps = getOrCreateLibraryObjectLookup();
 			ps.setString(1, libraryObject);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
