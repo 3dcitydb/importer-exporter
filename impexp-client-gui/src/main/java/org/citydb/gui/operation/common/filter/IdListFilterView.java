@@ -430,7 +430,7 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
             chooser.setCurrentDirectory(file);
         }
 
-        if (chooser.showSaveDialog(viewController.getTopFrame()) == JFileChooser.APPROVE_OPTION) {
+        if (chooser.showOpenDialog(viewController.getTopFrame()) == JFileChooser.APPROVE_OPTION) {
             try {
                 idListFile.setText(chooser.getSelectedFile().getAbsolutePath());
             } catch (Exception e) {
