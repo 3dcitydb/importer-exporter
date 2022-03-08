@@ -29,6 +29,7 @@ package org.citydb.gui.operation.visExporter;
 
 import org.citydb.config.Config;
 import org.citydb.core.plugin.internal.InternalPlugin;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.operation.visExporter.preferences.VisExportPreferences;
 import org.citydb.gui.operation.visExporter.view.VisExportView;
 import org.citydb.gui.plugin.preferences.Preferences;
@@ -40,16 +41,14 @@ import org.citydb.gui.plugin.view.ViewExtension;
 import java.util.Locale;
 
 public class VisExportPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
-	private final VisExportView view;
-	private final VisExportPreferences preferences;
-	
-	public VisExportPlugin(ViewController viewController, Config config) {
-		view = new VisExportView(viewController, config);
-		preferences = new VisExportPreferences(viewController, config);
-	}
+	private VisExportView view;
+	private VisExportPreferences preferences;
 
 	@Override
 	public void initGuiExtension(ViewController viewController, Locale locale) {
+		Config config = ObjectRegistry.getInstance().getConfig();
+		view = new VisExportView(viewController, config);
+		preferences = new VisExportPreferences(viewController, config);
 		loadSettings();
 	}
 

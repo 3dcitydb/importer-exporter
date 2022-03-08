@@ -127,23 +127,19 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
     }
 
     private void initializeViewComponents(ImpExpGui impExpGui, Config config) {
-        // create database plugin
-        DatabasePlugin databasePlugin = new DatabasePlugin(impExpGui, config);
-        DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
-        databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
-
         // register predefined internal plugins
-        pluginManager.registerInternalPlugin(new CityGMLImportPlugin(impExpGui, config));
-        pluginManager.registerInternalPlugin(new CityGMLExportPlugin(impExpGui, config));
-        pluginManager.registerInternalPlugin(new VisExportPlugin(impExpGui, config));
+        pluginManager.registerInternalPlugin(new CityGMLImportPlugin());
+        pluginManager.registerInternalPlugin(new CityGMLExportPlugin());
+        pluginManager.registerInternalPlugin(new VisExportPlugin());
+
+        // create and register database plugin
+        DatabasePlugin databasePlugin = new DatabasePlugin();
         pluginManager.registerInternalPlugin(databasePlugin);
 
         // only register plugins settings if external plugins are installed
         if (!pluginManager.getExternalPlugins().isEmpty()) {
-            pluginManager.registerInternalPlugin(new PluginsOverviewPlugin(config));
+            pluginManager.registerInternalPlugin(new PluginsOverviewPlugin());
         }
-
-        pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
 
         // initialize all GUI plugins
         Locale locale = new Locale(config.getGlobalConfig().getLanguage().value());
@@ -152,6 +148,15 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
                 ((GuiExtension) plugin).initGuiExtension(impExpGui, locale);
             }
         }
+
+        // register preferences plugin
+        PreferencesPlugin preferencesPlugin = new PreferencesPlugin(impExpGui);
+        preferencesPlugin.initGuiExtension(impExpGui, locale);
+        pluginManager.registerInternalPlugin(preferencesPlugin);
+
+        // set view handler for database controller
+        DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
+        databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
     }
 
     @Override

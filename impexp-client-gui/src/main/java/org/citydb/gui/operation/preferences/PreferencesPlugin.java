@@ -29,6 +29,7 @@ package org.citydb.gui.operation.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.core.plugin.internal.InternalPlugin;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.operation.preferences.preferences.GeneralPreferences;
 import org.citydb.gui.operation.preferences.view.PreferencesPanel;
@@ -42,16 +43,19 @@ import org.citydb.gui.plugin.view.ViewExtension;
 import java.util.Locale;
 
 public class PreferencesPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
-	private final PreferencesView view;
-	private final GeneralPreferences preferences;
-	
-	public PreferencesPlugin(ImpExpGui mainView, Config config) {
-		view = new PreferencesView(mainView, config);
-		preferences = ((PreferencesPanel) view.getViewComponent()).getGeneralPreferences();
+	private final ImpExpGui mainView;
+	private PreferencesView view;
+	private GeneralPreferences preferences;
+
+	public PreferencesPlugin(ImpExpGui mainView) {
+		this.mainView = mainView;
 	}
 		
 	@Override
 	public void initGuiExtension(ViewController viewController, Locale locale) {
+		Config config = ObjectRegistry.getInstance().getConfig();
+		view = new PreferencesView(mainView, config);
+		preferences = ((PreferencesPanel) view.getViewComponent()).getGeneralPreferences();
 		loadSettings();
 	}
 
