@@ -141,9 +141,6 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
             pluginManager.registerInternalPlugin(new PluginsOverviewPlugin());
         }
 
-        // create preferences plugin
-        PreferencesPlugin preferencesPlugin = new PreferencesPlugin(impExpGui);
-
         // initialize all GUI plugins
         Locale locale = new Locale(config.getGlobalConfig().getLanguage().value());
         for (Plugin plugin : pluginManager.getPlugins()) {
@@ -152,7 +149,8 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
             }
         }
 
-        // initialize and register preferences plugin
+        // register preferences plugin
+        PreferencesPlugin preferencesPlugin = new PreferencesPlugin(impExpGui);
         preferencesPlugin.initGuiExtension(impExpGui, locale);
         pluginManager.registerInternalPlugin(preferencesPlugin);
 
