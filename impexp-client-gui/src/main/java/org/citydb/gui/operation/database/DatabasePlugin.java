@@ -30,6 +30,7 @@ package org.citydb.gui.operation.database;
 import org.citydb.config.Config;
 import org.citydb.core.database.connection.ConnectionViewHandler;
 import org.citydb.core.plugin.internal.InternalPlugin;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.operation.database.preferences.DatabasePreferences;
 import org.citydb.gui.operation.database.view.DatabaseView;
 import org.citydb.gui.plugin.preferences.Preferences;
@@ -41,16 +42,14 @@ import org.citydb.gui.plugin.view.ViewExtension;
 import java.util.Locale;
 
 public class DatabasePlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
-	private final DatabaseView view;
-	private final DatabasePreferences preferences;
-	
-	public DatabasePlugin(ViewController viewController, Config config) {
-		view = new DatabaseView(viewController, config);
-		preferences = new DatabasePreferences(viewController, config);
-	}
+	private DatabaseView view;
+	private DatabasePreferences preferences;
 
 	@Override
 	public void initGuiExtension(ViewController viewController, Locale locale) {
+		Config config = ObjectRegistry.getInstance().getConfig();
+		view = new DatabaseView(viewController, config);
+		preferences = new DatabasePreferences(viewController, config);
 		loadSettings();
 	}
 

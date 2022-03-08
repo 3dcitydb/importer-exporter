@@ -29,6 +29,7 @@ package org.citydb.gui.operation.importer;
 
 import org.citydb.config.Config;
 import org.citydb.core.plugin.internal.InternalPlugin;
+import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.operation.importer.preferences.CityGMLImportPreferences;
 import org.citydb.gui.operation.importer.view.CityGMLImportView;
 import org.citydb.gui.plugin.preferences.Preferences;
@@ -40,16 +41,14 @@ import org.citydb.gui.plugin.view.ViewExtension;
 import java.util.Locale;
 
 public class CityGMLImportPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
-	private final CityGMLImportView view;
-	private final CityGMLImportPreferences preferences;
-	
-	public CityGMLImportPlugin(ViewController viewController, Config config) {
-		view = new CityGMLImportView(viewController, config);
-		preferences = new CityGMLImportPreferences(config);
-	}
+	private CityGMLImportView view;
+	private CityGMLImportPreferences preferences;
 
 	@Override
 	public void initGuiExtension(ViewController viewController, Locale locale) {
+		Config config = ObjectRegistry.getInstance().getConfig();
+		view = new CityGMLImportView(viewController, config);
+		preferences = new CityGMLImportPreferences(config);
 		loadSettings();
 	}
 
