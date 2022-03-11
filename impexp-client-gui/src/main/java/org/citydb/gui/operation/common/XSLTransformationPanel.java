@@ -35,7 +35,7 @@ import org.citydb.config.project.common.XSLTransformation;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-public class XSLTransformationPanel extends DefaultPreferencesComponent {
+public class XSLTransformationPanel extends InternalPreferencesComponent {
     private final Supplier<XSLTransformation> transformationSupplier;
 
     private TitledPanel transformationPanel;

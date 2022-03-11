@@ -27,35 +27,15 @@
  */
 package org.citydb.gui.plugin.util;
 
-import org.citydb.config.Config;
-import org.citydb.config.ProjectConfig;
-import org.citydb.config.gui.GuiConfig;
 import org.citydb.gui.plugin.preferences.PreferencesComponent;
 
 import java.util.Locale;
 
 public abstract class DefaultPreferencesComponent extends PreferencesComponent {
-	protected Config config;
-	
-	protected DefaultPreferencesComponent(Config config) {
-		this.config = config;
-	}
-
 	public abstract String getLocalizedTitle();
 	public abstract boolean isModified();
 	public abstract void switchLocale(Locale locale);
 	public abstract void loadSettings();
 	public abstract void setSettings();
-
-	public void resetSettings() {
-		ProjectConfig projectConfig = config.getProjectConfig();
-		GuiConfig guiConfig = config.getGuiConfig();
-
-		config.setProjectConfig(new ProjectConfig());
-		config.setGuiConfig(new GuiConfig());
-		loadSettings();
-
-		config.setProjectConfig(projectConfig);
-		config.setGuiConfig(guiConfig);
-	}
+	public abstract void resetSettings();
 }

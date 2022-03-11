@@ -34,7 +34,7 @@ import org.citydb.config.project.importer.ImportLogFileMode;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -43,7 +43,7 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 import java.util.Locale;
 
-public class ImportLogPanel extends DefaultPreferencesComponent {
+public class ImportLogPanel extends InternalPreferencesComponent {
 	private TitledPanel importLogPanel;
 	private JCheckBox logFeatures;
 	private JLabel logFileLabel;

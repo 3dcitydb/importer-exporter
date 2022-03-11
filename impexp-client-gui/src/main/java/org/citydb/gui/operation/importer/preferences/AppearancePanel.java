@@ -32,14 +32,14 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportAppearance;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Locale;
 
-public class AppearancePanel extends DefaultPreferencesComponent {
+public class AppearancePanel extends InternalPreferencesComponent {
 	private TitledPanel appearancePanel;
 	private JLabel impAppOldLabel;
 	private JCheckBox importAppearance;

@@ -37,7 +37,7 @@ import org.citydb.core.database.version.DatabaseVersion;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
@@ -50,7 +50,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Locale;
 
-public class ResourceIdPanel extends DefaultPreferencesComponent implements EventHandler {
+public class ResourceIdPanel extends InternalPreferencesComponent implements EventHandler {
 	private TitledPanel idAssignmentPanel;
 	private JLabel idPrefixLabel;
 	private JTextField idPrefix;

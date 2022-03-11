@@ -25,43 +25,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.gui.plugin.util;
+package org.citydb.gui.plugin.internal;
 
-import java.util.Locale;
+import org.citydb.config.Config;
+import org.citydb.config.ProjectConfig;
+import org.citydb.config.gui.GuiConfig;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 
-public class EmptyPreferencesComponent extends DefaultPreferencesComponent {
-	private static final EmptyPreferencesComponent instance = new EmptyPreferencesComponent();
-	
-	private EmptyPreferencesComponent() {
-	}
-	
-	public static EmptyPreferencesComponent getInstance() {
-		return instance;
-	}
+public abstract class InternalPreferencesComponent extends DefaultPreferencesComponent {
+	protected final Config config;
 
-	@Override
-	public final String getLocalizedTitle() {
-		return null;
+	public InternalPreferencesComponent(Config config) {
+		this.config = config;
 	}
 
-	@Override
-	public final boolean isModified() {
-		return false;
-	}
+	public void resetSettings() {
+		ProjectConfig projectConfig = config.getProjectConfig();
+		GuiConfig guiConfig = config.getGuiConfig();
 
-	@Override
-	public final void switchLocale(Locale locale) {
-	}
+		config.setProjectConfig(new ProjectConfig());
+		config.setGuiConfig(new GuiConfig());
+		loadSettings();
 
-	@Override
-	public final void loadSettings() {
-	}
-
-	@Override
-	public final void setSettings() {
-	}
-
-	@Override
-	public final void resetSettings() {
+		config.setProjectConfig(projectConfig);
+		config.setGuiConfig(guiConfig);
 	}
 }

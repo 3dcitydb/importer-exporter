@@ -76,9 +76,9 @@ public class DefaultPreferencesEntry extends PreferencesEntry {
         throw new IllegalArgumentException("Only DefaultPreferencesEntry instances are allowed as children.");
     }
 
-	public final void addChildEntry(DefaultPreferencesEntry child) {
-		super.addChildEntry(child);
-	}
+    public final void addChildEntry(DefaultPreferencesEntry child) {
+        super.addChildEntry(child);
+    }
 
     public void switchLocale(Locale locale) {
         component.switchLocale(locale);

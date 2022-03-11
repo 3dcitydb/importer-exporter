@@ -33,7 +33,7 @@ import org.citydb.config.project.common.AffineTransformation;
 import org.citydb.config.project.common.TransformationMatrix;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citygml4j.geometry.Matrix;
 
@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-public class GeometryPanel extends DefaultPreferencesComponent {
+public class GeometryPanel extends InternalPreferencesComponent {
 	private final Supplier<AffineTransformation> transformationSupplier;
 
 	private TitledPanel matrixPanel;

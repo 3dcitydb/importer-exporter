@@ -39,7 +39,7 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.ColorPicker;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
 
@@ -54,7 +54,7 @@ import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.StringJoiner;
 
-public class LoggingPanel extends DefaultPreferencesComponent {
+public class LoggingPanel extends InternalPreferencesComponent {
     private final Logger log = Logger.getInstance();
 
     private TitledPanel consolePanel;

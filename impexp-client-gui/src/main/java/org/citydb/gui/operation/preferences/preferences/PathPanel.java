@@ -33,7 +33,7 @@ import org.citydb.config.project.common.Path;
 import org.citydb.config.project.common.PathMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -42,7 +42,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Locale;
 
-public class PathPanel extends DefaultPreferencesComponent {
+public class PathPanel extends InternalPreferencesComponent {
 	private TitledPanel importPanel;
 	private JRadioButton importPathRadioLast;
 	private JRadioButton importPathRadioDef;

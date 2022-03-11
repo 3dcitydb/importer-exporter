@@ -34,7 +34,7 @@ import org.citydb.config.project.visExporter.Balloon;
 import org.citydb.config.project.visExporter.BalloonContentMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -44,7 +44,7 @@ import java.io.File;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-public class BalloonContentPanel extends DefaultPreferencesComponent {
+public class BalloonContentPanel extends InternalPreferencesComponent {
 	private final Supplier<String> titleSupplier;
 	private final boolean showPointBalloon;
 	private final boolean showCurveBalloon;

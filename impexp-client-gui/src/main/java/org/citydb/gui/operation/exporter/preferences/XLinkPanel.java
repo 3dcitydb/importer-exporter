@@ -34,7 +34,7 @@ import org.citydb.config.project.exporter.XLinkFeatureConfig;
 import org.citydb.config.project.exporter.XLinkMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
@@ -43,7 +43,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Locale;
 
-public class XLinkPanel extends DefaultPreferencesComponent {
+public class XLinkPanel extends InternalPreferencesComponent {
 	private TitledPanel featurePanel;
 	private TitledPanel geometryPanel;
 

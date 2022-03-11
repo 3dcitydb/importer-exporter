@@ -36,7 +36,7 @@ import org.citydb.config.project.query.filter.version.CityGMLVersionType;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.global.PropertyChangeEvent;
 
@@ -44,7 +44,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Locale;
 
-public class GeneralPanel extends DefaultPreferencesComponent {
+public class GeneralPanel extends InternalPreferencesComponent {
 	private TitledPanel generalPanel;
 	private JRadioButton cityGMLv2;
 	private JRadioButton cityGMLv1;

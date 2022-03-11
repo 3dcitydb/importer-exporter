@@ -42,7 +42,7 @@ import org.citydb.gui.components.srs.SrsComboBox;
 import org.citydb.gui.components.srs.SrsComboBoxFactory;
 import org.citydb.gui.operation.database.operations.SrsOperation;
 import org.citydb.gui.operation.database.util.SrsNameComboBox;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
@@ -71,7 +71,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Locale;
 
-public class SrsPanel extends DefaultPreferencesComponent implements EventHandler, DropTargetListener {
+public class SrsPanel extends InternalPreferencesComponent implements EventHandler, DropTargetListener {
 	private final Logger log = Logger.getInstance();
 	private final DatabaseConnectionPool dbPool;
 	private final ViewController viewController;

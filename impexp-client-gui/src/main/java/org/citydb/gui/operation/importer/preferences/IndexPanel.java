@@ -32,14 +32,14 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.Index;
 import org.citydb.config.project.importer.IndexMode;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Locale;
 
-public class IndexPanel extends DefaultPreferencesComponent {
+public class IndexPanel extends InternalPreferencesComponent {
 	private JRadioButton impSIRadioDeacAc;
 	private JRadioButton impSIRadioDeac;
 	private JRadioButton impSIRadioNoDeac;

@@ -30,14 +30,14 @@ package org.citydb.gui.operation.exporter.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Locale;
 
-public class CityGMLGeneralPanel extends DefaultPreferencesComponent {
+public class CityGMLGeneralPanel extends InternalPreferencesComponent {
 	private TitledPanel formatOptionsPanel;
 	private JCheckBox prettyPrint;
 

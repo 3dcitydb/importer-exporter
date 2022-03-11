@@ -4,14 +4,14 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.GeneralOptions;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Locale;
 
-public class GeneralPanel extends DefaultPreferencesComponent {
+public class GeneralPanel extends InternalPreferencesComponent {
     private TitledPanel generalPanel;
     private JCheckBox failFastOnErrors;
 

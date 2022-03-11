@@ -35,7 +35,7 @@ import org.citydb.config.project.importer.CreationDateMode;
 import org.citydb.config.project.importer.TerminationDateMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -43,8 +43,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Locale;
 
-@SuppressWarnings("serial")
-public class ContinuationPanel extends DefaultPreferencesComponent {
+public class ContinuationPanel extends InternalPreferencesComponent {
 	private TitledPanel metadataPanel;
 	private TitledPanel personPanel;
 	private TitledPanel creationDatePanel;

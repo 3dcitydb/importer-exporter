@@ -31,13 +31,13 @@ package org.citydb.gui.operation.visExporter.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.visExporter.Lod0FootprintMode;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Locale;
 
-public class BuildingStylingPanel extends DefaultPreferencesComponent {
+public class BuildingStylingPanel extends InternalPreferencesComponent {
     private final SurfaceStylingPanel parent;
     private JLabel lod0FootprintLabel;
     private JComboBox<Lod0FootprintMode> lod0FootprintComboBox;

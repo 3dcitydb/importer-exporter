@@ -33,14 +33,14 @@ import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Locale;
 
-public class LanguagePanel extends DefaultPreferencesComponent {
+public class LanguagePanel extends InternalPreferencesComponent {
 	private final ImpExpGui mainView;
 	private JRadioButton importLanguageRadioDe;
 	private JRadioButton importLanguageRadioEn;
