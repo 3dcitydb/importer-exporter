@@ -34,13 +34,14 @@ import org.citydb.config.project.visExporter.Balloon;
 import org.citydb.config.project.visExporter.BalloonContentMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 public class BalloonContentPanel extends DefaultPreferencesComponent {
@@ -81,7 +82,7 @@ public class BalloonContentPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return titleSupplier.get();
 	}
 
@@ -155,7 +156,7 @@ public class BalloonContentPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		objectBalloon.titledPanel.setTitle(Language.I18N.getString("pref.visExport.balloon.border.createBalloon"));
 		doTranslation(objectBalloon);
 

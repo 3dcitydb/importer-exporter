@@ -33,13 +33,14 @@ import org.citydb.config.project.common.Path;
 import org.citydb.config.project.common.PathMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Locale;
 
 public class PathPanel extends DefaultPreferencesComponent {
 	private TitledPanel importPanel;
@@ -155,7 +156,7 @@ public class PathPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		importPanel.setTitle(Language.I18N.getString("pref.general.path.border.importPath"));
 		importPathRadioLast.setText(Language.I18N.getString("pref.general.path.label.importLastUsedPath"));
 		importPathRadioDef.setText(Language.I18N.getString("pref.general.path.label.importDefaultPath"));
@@ -214,7 +215,7 @@ public class PathPanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.general.path");
 	}
 

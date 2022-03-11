@@ -30,11 +30,12 @@ package org.citydb.gui.operation.importer.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class CityJSONOptionsPanel extends DefaultPreferencesComponent {
 	private TitledPanel mapUnknownExtensionsPanel;
@@ -74,12 +75,12 @@ public class CityJSONOptionsPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		mapUnknownExtensionsPanel.setTitle(Language.I18N.getString("pref.import.cityjson.label.mapUnknownExtensions"));
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.import.cityJSONOptions");
 	}
 }

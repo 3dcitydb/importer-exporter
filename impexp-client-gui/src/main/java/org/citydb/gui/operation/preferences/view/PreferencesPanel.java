@@ -37,7 +37,6 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.ScrollablePanel;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.NullComponent;
 import org.citydb.gui.operation.database.DatabasePlugin;
 import org.citydb.gui.operation.exporter.CityGMLExportPlugin;
 import org.citydb.gui.operation.importer.CityGMLImportPlugin;
@@ -49,6 +48,7 @@ import org.citydb.gui.plugin.preferences.Preferences;
 import org.citydb.gui.plugin.preferences.PreferencesEntry;
 import org.citydb.gui.plugin.preferences.PreferencesEvent;
 import org.citydb.gui.plugin.preferences.PreferencesExtension;
+import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
@@ -345,7 +345,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 		}
 
 		settingsContentPanel.removeAll();
-		if (node.entry.getViewComponent() == null || node.entry.getViewComponent() == NullComponent.getInstance()) {
+		if (node.entry.getViewComponent() == null || node.entry.getViewComponent() == EmptyPreferencesComponent.getInstance()) {
 			settingsContentPanel.add(hintPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
 			activeEntry = null;
 		} else {

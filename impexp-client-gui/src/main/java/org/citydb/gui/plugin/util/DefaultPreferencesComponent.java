@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -25,12 +25,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.gui.operation.common;
+package org.citydb.gui.plugin.util;
 
 import org.citydb.config.Config;
 import org.citydb.config.ProjectConfig;
 import org.citydb.config.gui.GuiConfig;
 import org.citydb.gui.plugin.preferences.PreferencesComponent;
+
+import java.util.Locale;
 
 public abstract class DefaultPreferencesComponent extends PreferencesComponent {
 	protected Config config;
@@ -39,12 +41,12 @@ public abstract class DefaultPreferencesComponent extends PreferencesComponent {
 		this.config = config;
 	}
 
-	public abstract boolean isModified();	
-	public abstract void setSettings();	
-	public abstract void loadSettings();	
-	public abstract void doTranslation();
-	public abstract String getTitle();
-	
+	public abstract String getLocalizedTitle();
+	public abstract boolean isModified();
+	public abstract void switchLocale(Locale locale);
+	public abstract void loadSettings();
+	public abstract void setSettings();
+
 	public void resetSettings() {
 		ProjectConfig projectConfig = config.getProjectConfig();
 		GuiConfig guiConfig = config.getGuiConfig();
@@ -56,5 +58,4 @@ public abstract class DefaultPreferencesComponent extends PreferencesComponent {
 		config.setProjectConfig(projectConfig);
 		config.setGuiConfig(guiConfig);
 	}
-
 }

@@ -40,9 +40,9 @@ import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.components.srs.SrsComboBox;
 import org.citydb.gui.components.srs.SrsComboBoxFactory;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
 import org.citydb.gui.operation.database.operations.SrsOperation;
 import org.citydb.gui.operation.database.util.SrsNameComboBox;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
@@ -69,6 +69,7 @@ import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Locale;
 
 public class SrsPanel extends DefaultPreferencesComponent implements EventHandler, DropTargetListener {
 	private final Logger log = Logger.getInstance();
@@ -335,7 +336,7 @@ public class SrsPanel extends DefaultPreferencesComponent implements EventHandle
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		contentsPanel.setTitle(Language.I18N.getString("pref.db.srs.border.currentlySupported"));
 		impExpPanel.setTitle(Language.I18N.getString("pref.db.srs.border.impexp"));
 
@@ -400,7 +401,7 @@ public class SrsPanel extends DefaultPreferencesComponent implements EventHandle
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.db.srs");
 	}
 

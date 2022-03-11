@@ -35,7 +35,7 @@ import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.InternalProxySelector;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.CheckBoxListDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
@@ -54,6 +54,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ProxyPanel extends DefaultPreferencesComponent implements EventHandler {
 	private final Logger log = Logger.getInstance();
@@ -280,7 +281,7 @@ public class ProxyPanel extends DefaultPreferencesComponent implements EventHand
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		ProxyConfig proxy = proxyList.getSelectedValue();
 		proxySettingsPanel.setTitle(proxy.toString());
 		proxyProtocolPanel.setTitle(Language.I18N.getString("pref.proxy.label.configure"));
@@ -349,7 +350,7 @@ public class ProxyPanel extends DefaultPreferencesComponent implements EventHand
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.general.proxies");
 	}
 

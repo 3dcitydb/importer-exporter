@@ -35,12 +35,13 @@ import org.citydb.config.project.importer.CreationDateMode;
 import org.citydb.config.project.importer.TerminationDateMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.Locale;
 
 @SuppressWarnings("serial")
 public class ContinuationPanel extends DefaultPreferencesComponent {
@@ -181,7 +182,7 @@ public class ContinuationPanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		metadataPanel.setTitle(Language.I18N.getString("pref.import.continuation.border.lineage"));
 		personPanel.setTitle(Language.I18N.getString("pref.import.continuation.border.updatingPerson"));
 		creationDatePanel.setTitle(Language.I18N.getString("pref.import.continuation.border.creationDate"));
@@ -269,7 +270,7 @@ public class ContinuationPanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.import.continuation");
 	}
 

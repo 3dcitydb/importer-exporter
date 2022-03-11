@@ -37,7 +37,7 @@ import org.citydb.core.database.version.DatabaseVersion;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
@@ -48,6 +48,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.Locale;
 
 public class ResourceIdPanel extends DefaultPreferencesComponent implements EventHandler {
 	private TitledPanel idAssignmentPanel;
@@ -177,7 +178,7 @@ public class ResourceIdPanel extends DefaultPreferencesComponent implements Even
 	}
 	
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		idAssignmentPanel.setTitle(Language.I18N.getString("pref.import.id.border.id"));
 		idPrefixLabel.setText(Language.I18N.getString("pref.import.id.label.id.prefix"));
 		impIdCheckExtRef.setText(Language.I18N.getString("pref.import.id.label.id.extReference"));
@@ -262,7 +263,7 @@ public class ResourceIdPanel extends DefaultPreferencesComponent implements Even
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.import.id");
 	}
 

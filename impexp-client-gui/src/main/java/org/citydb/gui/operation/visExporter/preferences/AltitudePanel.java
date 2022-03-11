@@ -34,7 +34,7 @@ import org.citydb.config.project.visExporter.AltitudeOffsetMode;
 import org.citydb.config.project.visExporter.Elevation;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -164,7 +164,7 @@ public class AltitudePanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		modePanel.setTitle(Language.I18N.getString("pref.visExport.altitude.mode.border"));
 		offsetPanel.setTitle(Language.I18N.getString("pref.visExport.altitude.offset.border"));
 
@@ -231,7 +231,7 @@ public class AltitudePanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.visExport.elevation");
 	}
 

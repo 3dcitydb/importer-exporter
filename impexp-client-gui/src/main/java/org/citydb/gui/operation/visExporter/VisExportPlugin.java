@@ -58,9 +58,9 @@ public class VisExportPlugin extends InternalPlugin implements ViewExtension, Pr
 	}
 
 	@Override
-	public void switchLocale(Locale newLocale) {
+	public void switchLocale(Locale locale) {
 		view.doTranslation();
-		preferences.doTranslation();
+		preferences.switchLocale(locale);
 	}
 
 	@Override

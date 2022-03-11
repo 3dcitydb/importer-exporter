@@ -31,11 +31,12 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.ExportCityObjectGroup;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class CityObjectGroupPanel extends DefaultPreferencesComponent {
 	private TitledPanel exportGroupPanel;
@@ -89,13 +90,13 @@ public class CityObjectGroupPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		exportGroupPanel.setTitle(Language.I18N.getString("pref.export.group.label.exportMember"));
 		exportMemberAsXLinkDescr.setText(Language.I18N.getString("pref.export.group.label.exportMember.description"));
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.export.group");
 	}
 

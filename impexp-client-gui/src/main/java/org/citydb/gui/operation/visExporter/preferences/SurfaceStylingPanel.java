@@ -35,7 +35,7 @@ import org.citydb.config.project.visExporter.Styles;
 import org.citydb.gui.components.ColorPicker;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -137,7 +137,7 @@ public class SurfaceStylingPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString(i18nTitle);
 	}
 
@@ -371,7 +371,7 @@ public class SurfaceStylingPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		footprintPanel.setTitle(Language.I18N.getString("pref.visExport.border.footprint"));
 		geometryPanel.setTitle(Language.I18N.getString("pref.visExport.border.geometry"));
 		colladaPanel.setTitle(Language.I18N.getString("pref.visExport.border.collada"));

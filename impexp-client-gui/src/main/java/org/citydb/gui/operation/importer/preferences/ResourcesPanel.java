@@ -34,7 +34,7 @@ import org.citydb.config.project.resources.IdCacheConfig;
 import org.citydb.config.project.resources.ThreadPool;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -42,6 +42,7 @@ import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.Locale;
 
 public class ResourcesPanel extends DefaultPreferencesComponent {
 	private TitledPanel multithreadingPanel;
@@ -299,7 +300,7 @@ public class ResourcesPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		multithreadingPanel.setTitle(Language.I18N.getString("common.pref.resources.border.multiCPU"));
 		batchPanel.setTitle(Language.I18N.getString("pref.import.resources.border.commit"));
 		idCachePanel.setTitle(Language.I18N.getString("common.pref.resources.border.idCache"));
@@ -416,7 +417,7 @@ public class ResourcesPanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.import.resources");
 	}
 }

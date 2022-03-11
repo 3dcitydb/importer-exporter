@@ -34,11 +34,12 @@ import org.citydb.config.project.exporter.TileNameSuffixMode;
 import org.citydb.config.project.exporter.TileSuffixMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class TilingOptionsPanel extends DefaultPreferencesComponent {
 	private TitledPanel filePanel;
@@ -147,7 +148,7 @@ public class TilingOptionsPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		filePanel.setTitle(Language.I18N.getString("pref.export.boundingBox.border.path"));
 		optionsPanel.setTitle(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttr"));
 
@@ -188,7 +189,7 @@ public class TilingOptionsPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.export.tiling");
 	}
 

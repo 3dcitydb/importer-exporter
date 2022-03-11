@@ -33,11 +33,12 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.APIKeys;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class APIKeysPanel extends DefaultPreferencesComponent {
     private TitledPanel google;
@@ -88,7 +89,7 @@ public class APIKeysPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         google.setTitle(Language.I18N.getString("pref.general.apiKeys.google.border"));
         googleGeocodingLabel.setText(Language.I18N.getString("pref.general.apiKeys.google.geocoding.label"));
         googleElevationLabel.setText(Language.I18N.getString("pref.general.apiKeys.google.elevation.label"));
@@ -115,7 +116,7 @@ public class APIKeysPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public String getTitle() {
+    public String getLocalizedTitle() {
         return Language.I18N.getString("pref.tree.general.apiKeys");
     }
 

@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -25,17 +25,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.gui.operation.common;
+package org.citydb.gui.plugin.util;
 
-public class NullComponent extends DefaultPreferencesComponent {
-	private static final NullComponent instance = new NullComponent();
+import java.util.Locale;
+
+public class EmptyPreferencesComponent extends DefaultPreferencesComponent {
+	private static final EmptyPreferencesComponent instance = new EmptyPreferencesComponent();
 	
-	private NullComponent() {
+	private EmptyPreferencesComponent() {
 		super(null);
 	}
 	
-	public static NullComponent getInstance() {
+	public static EmptyPreferencesComponent getInstance() {
 		return instance;
+	}
+
+	@Override
+	public String getLocalizedTitle() {
+		return null;
 	}
 
 	@Override
@@ -44,28 +51,18 @@ public class NullComponent extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void setSettings() {
-		// nothing to do here
+	public void switchLocale(Locale locale) {
 	}
 
 	@Override
 	public void loadSettings() {
-		// nothing to do here
 	}
 
 	@Override
-	public void doTranslation() {
-		// nothing to do here
-	}
-
-	@Override
-	public String getTitle() {
-		return null;
+	public void setSettings() {
 	}
 
 	@Override
 	public void resetSettings() {
-		// nothing to do here
 	}
-	
 }

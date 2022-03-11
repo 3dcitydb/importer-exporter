@@ -4,11 +4,12 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.GeneralOptions;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class GeneralPanel extends DefaultPreferencesComponent {
     private TitledPanel generalPanel;
@@ -58,13 +59,13 @@ public class GeneralPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         generalPanel.setTitle(Language.I18N.getString("pref.import.general.border.general"));
         failFastOnErrors.setText(Language.I18N.getString("pref.import.general.failFastOnError"));
     }
 
     @Override
-    public String getTitle() {
+    public String getLocalizedTitle() {
         return Language.I18N.getString("pref.tree.import.general");
     }
 }

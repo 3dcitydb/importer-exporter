@@ -28,13 +28,13 @@
 package org.citydb.gui.operation.preferences.preferences;
 
 import org.citydb.config.i18n.Language;
-import org.citydb.gui.operation.common.DefaultPreferencesEntry;
-import org.citydb.gui.operation.common.NullComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
+import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 
 public class RootPreferencesEntry extends DefaultPreferencesEntry {
 
 	public RootPreferencesEntry() {
-		super(NullComponent.getInstance());
+		super(EmptyPreferencesComponent.getInstance());
 	}
 	
 	@Override

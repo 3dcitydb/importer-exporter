@@ -33,11 +33,12 @@ import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class LanguagePanel extends DefaultPreferencesComponent {
 	private final ImpExpGui mainView;
@@ -82,7 +83,7 @@ public class LanguagePanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		language.setTitle(Language.I18N.getString("pref.general.language.border.selection"));
 		importLanguageRadioDe.setText(Language.I18N.getString("pref.general.language.label.de"));
 		importLanguageRadioEn.setText(Language.I18N.getString("pref.general.language.label.en"));
@@ -113,7 +114,7 @@ public class LanguagePanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.general.language");
 	}
 }

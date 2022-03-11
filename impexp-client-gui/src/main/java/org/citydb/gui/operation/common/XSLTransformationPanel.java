@@ -35,6 +35,7 @@ import org.citydb.config.project.common.XSLTransformation;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -50,6 +51,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 public class XSLTransformationPanel extends DefaultPreferencesComponent {
@@ -169,7 +171,7 @@ public class XSLTransformationPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         transformationPanel.setTitle(Language.I18N.getString("common.pref.xslt.label.applyStylesheets"));
 
         StylesheetComponent current = first;
@@ -179,7 +181,7 @@ public class XSLTransformationPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public String getTitle() {
+    public String getLocalizedTitle() {
         return Language.I18N.getString("common.pref.tree.xslt");
     }
 

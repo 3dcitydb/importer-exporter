@@ -34,13 +34,14 @@ import org.citydb.config.project.importer.ImportLogFileMode;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.File;
+import java.util.Locale;
 
 public class ImportLogPanel extends DefaultPreferencesComponent {
 	private TitledPanel importLogPanel;
@@ -126,7 +127,7 @@ public class ImportLogPanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		importLogPanel.setTitle(Language.I18N.getString("pref.import.log.label.useLog"));
 		logFileLabel.setText(Language.I18N.getString("pref.import.log.label.logFile"));
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
@@ -179,7 +180,7 @@ public class ImportLogPanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.import.log");
 	}
 

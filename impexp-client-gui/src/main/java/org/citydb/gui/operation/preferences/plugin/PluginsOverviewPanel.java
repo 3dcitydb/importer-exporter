@@ -4,7 +4,7 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.core.plugin.Plugin;
 import org.citydb.core.plugin.PluginManager;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.CheckBoxListDecorator;
 import org.citydb.gui.util.GuiUtil;
 
@@ -13,6 +13,7 @@ import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class PluginsOverviewPanel extends DefaultPreferencesComponent {
@@ -92,7 +93,7 @@ public class PluginsOverviewPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         infoPanel.doTranslation();
     }
 
@@ -128,7 +129,7 @@ public class PluginsOverviewPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public String getTitle() {
+    public String getLocalizedTitle() {
         return Language.I18N.getString("pref.tree.plugins");
     }
 }

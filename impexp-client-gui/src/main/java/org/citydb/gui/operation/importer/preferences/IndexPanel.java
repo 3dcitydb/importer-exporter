@@ -32,11 +32,12 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.Index;
 import org.citydb.config.project.importer.IndexMode;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class IndexPanel extends DefaultPreferencesComponent {
 	private JRadioButton impSIRadioDeacAc;
@@ -114,7 +115,7 @@ public class IndexPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		spatialIndexesPanel.setTitle(Language.I18N.getString("pref.import.index.spatial.border.handling"));
 		normalIndexesPanel.setTitle(Language.I18N.getString("pref.import.index.normal.border.handling"));
 
@@ -166,7 +167,7 @@ public class IndexPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.import.index");
 	}
 
