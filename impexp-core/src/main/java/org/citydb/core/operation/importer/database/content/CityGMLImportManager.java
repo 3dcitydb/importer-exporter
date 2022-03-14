@@ -797,7 +797,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 			else if (type == DBAddress.class)
 				importer = new DBAddress(connection, config, this);
 			else if (type == DBImplicitGeometry.class)
-				importer = new DBImplicitGeometry(connection, config, this);
+				importer = new DBImplicitGeometry(connection, this);
 
 			// building module
 			else if (type == DBBuilding.class)

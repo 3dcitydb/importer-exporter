@@ -59,6 +59,7 @@ public class CoreConstants {
     public static final String EXPORT_STUB = "exportStub";
     public static final String EXPORT_AS_ADDITIONAL_OBJECT = "additionalObject";
     public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
+    public static final String UNIQUE_LIBRARY_OBJECT_FILENAME_PREFIX = "library_object_";
 
     public static boolean IS_GUI_MODE = false;
 
