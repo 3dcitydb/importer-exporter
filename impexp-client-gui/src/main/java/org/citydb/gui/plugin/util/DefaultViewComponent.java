@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -25,34 +25,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.gui.operation.database.view;
 
-import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
-import org.citydb.gui.plugin.util.DefaultView;
-import org.citydb.gui.plugin.view.ViewController;
+package org.citydb.gui.plugin.util;
 
 import javax.swing.*;
+import java.util.Locale;
 
-public class DatabaseView extends DefaultView {
-
-	public DatabaseView(ViewController viewController, Config config) {
-		super(new DatabasePanel(viewController, config));
-		addViewListener((DatabasePanel) getViewComponent());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("main.tabbedPane.database");
-	}
-
-	@Override
-	public String getToolTip() {
-		return null;
-	}
-
-	@Override
-	public Icon getIcon() {
-		return null;
-	}
+public abstract class DefaultViewComponent extends JPanel {
+    public abstract void switchLocale(Locale locale);
+    public abstract void loadSettings();
+    public abstract void setSettings();
 }

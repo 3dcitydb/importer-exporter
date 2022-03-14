@@ -29,27 +29,20 @@ package org.citydb.gui.operation.visExporter.view;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.gui.plugin.view.View;
+import org.citydb.gui.plugin.util.DefaultView;
 import org.citydb.gui.plugin.view.ViewController;
 
 import javax.swing.*;
-import java.awt.*;
 
-public class VisExportView extends View {
-	private final VisExportPanel component;
-	
+public class VisExportView extends DefaultView {
+
 	public VisExportView(ViewController viewController, Config config) {
-		component = new VisExportPanel(viewController, config);
+		super(new VisExportPanel(viewController, config));
 	}
 	
 	@Override
 	public String getLocalizedTitle() {
 		return Language.I18N.getString("main.tabbedPane.visExport");
-	}
-
-	@Override
-	public Component getViewComponent() {
-		return component;
 	}
 
 	@Override
@@ -61,17 +54,4 @@ public class VisExportView extends View {
 	public Icon getIcon() {
 		return null;
 	}
-	
-	public void loadSettings() {
-		component.loadSettings();
-	}
-	
-	public void setSettings() {
-		component.setSettings();
-	}
-	
-	public void doTranslation() {
-		component.doTranslation();
-	}
-
 }

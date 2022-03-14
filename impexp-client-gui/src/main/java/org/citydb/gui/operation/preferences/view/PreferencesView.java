@@ -36,7 +36,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class PreferencesView extends View {
-	private PreferencesPanel component;
+	private final PreferencesPanel component;
 	
 	public PreferencesView(ImpExpGui mainView, Config config) {
 		component = new PreferencesPanel(mainView, config);
@@ -69,5 +69,4 @@ public class PreferencesView extends View {
 	public boolean requestChange() {
 		return component.requestChange();
 	}
-
 }

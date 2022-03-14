@@ -29,27 +29,20 @@ package org.citydb.gui.operation.importer.view;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.gui.plugin.view.View;
+import org.citydb.gui.plugin.util.DefaultView;
 import org.citydb.gui.plugin.view.ViewController;
 
 import javax.swing.*;
-import java.awt.*;
 
-public class CityGMLImportView extends View {
-	private final ImportPanel component;
-	
+public class CityGMLImportView extends DefaultView {
+
 	public CityGMLImportView(ViewController viewController, Config config) {
-		component = new ImportPanel(viewController, config);
+		super(new ImportPanel(viewController, config));
 	}
 	
 	@Override
 	public String getLocalizedTitle() {
 		return Language.I18N.getString("main.tabbedPane.import");
-	}
-
-	@Override
-	public Component getViewComponent() {
-		return component;
 	}
 
 	@Override
@@ -61,17 +54,4 @@ public class CityGMLImportView extends View {
 	public Icon getIcon() {
 		return null;
 	}
-	
-	public void loadSettings() {
-		component.loadSettings();
-	}
-	
-	public void setSettings() {
-		component.setSettings();
-	}
-	
-	public void doTranslation() {
-		component.doTranslation();
-	}
-
 }

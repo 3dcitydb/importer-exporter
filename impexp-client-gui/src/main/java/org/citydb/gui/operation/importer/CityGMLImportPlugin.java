@@ -59,7 +59,7 @@ public class CityGMLImportPlugin extends InternalPlugin implements ViewExtension
 
 	@Override
 	public void switchLocale(Locale locale) {
-		view.doTranslation();
+		view.switchLocale(locale);
 		preferences.switchLocale(locale);
 	}
 

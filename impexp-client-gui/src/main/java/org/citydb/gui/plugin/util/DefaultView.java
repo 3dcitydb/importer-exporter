@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -25,34 +25,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.gui.operation.database.view;
 
-import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
-import org.citydb.gui.plugin.util.DefaultView;
-import org.citydb.gui.plugin.view.ViewController;
+package org.citydb.gui.plugin.util;
 
-import javax.swing.*;
+import org.citydb.gui.plugin.view.View;
 
-public class DatabaseView extends DefaultView {
+import java.util.Locale;
 
-	public DatabaseView(ViewController viewController, Config config) {
-		super(new DatabasePanel(viewController, config));
-		addViewListener((DatabasePanel) getViewComponent());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("main.tabbedPane.database");
-	}
+public abstract class DefaultView extends View {
+    protected final DefaultViewComponent component;
 
-	@Override
-	public String getToolTip() {
-		return null;
-	}
+    public DefaultView(DefaultViewComponent component) {
+        this.component = component;
+    }
 
-	@Override
-	public Icon getIcon() {
-		return null;
-	}
+    @Override
+    public final DefaultViewComponent getViewComponent() {
+        return component;
+    }
+
+    public void switchLocale(Locale locale) {
+        component.switchLocale(locale);
+    }
+
+    public void loadSettings() {
+        component.loadSettings();
+    }
+
+    public void setSettings() {
+        component.setSettings();
+    }
 }
