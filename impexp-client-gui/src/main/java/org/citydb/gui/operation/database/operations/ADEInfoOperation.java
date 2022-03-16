@@ -57,6 +57,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -182,7 +183,7 @@ public class ADEInfoOperation extends DatabaseOperationView {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         adeTable.getColumnModel().getColumn(0).setHeaderValue(Language.I18N.getString("db.dialog.ade.label.name"));
         adeTable.getColumnModel().getColumn(1).setHeaderValue(Language.I18N.getString("db.dialog.ade.label.version"));
         adeTable.getColumnModel().getColumn(2).setHeaderValue(Language.I18N.getString("main.tabbedPane.database"));

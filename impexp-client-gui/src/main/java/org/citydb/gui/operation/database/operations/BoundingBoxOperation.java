@@ -84,6 +84,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BoundingBoxOperation extends DatabaseOperationView {
@@ -221,7 +222,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		featureLabel.setText(Language.I18N.getString("db.label.operation.bbox.feature"));
 		createAllButton.setText(Language.I18N.getString("db.button.setbbox.all"));
 		createMissingButton.setText(Language.I18N.getString("db.button.setbbox.missing"));

@@ -161,7 +161,7 @@ public class ExportPanel extends DefaultViewComponent implements DropTargetListe
 		exportButton.setText(Language.I18N.getString("export.button.export"));
 		simpleFilterButton.setText(Language.I18N.getString("filter.button.mode.simple"));
 		xmlQueryButton.setText(Language.I18N.getString("filter.button.mode.xml"));
-		filterPanel.doTranslation();
+		filterPanel.switchLocale(locale);
 	}
 
 	@Override

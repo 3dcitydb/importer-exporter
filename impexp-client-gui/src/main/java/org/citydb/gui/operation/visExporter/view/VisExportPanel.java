@@ -485,10 +485,10 @@ public class VisExportPanel extends DefaultViewComponent implements EventHandler
         fetchThemesButton.setText(Language.I18N.getString("common.button.query"));
         exportButton.setText(Language.I18N.getString("export.button.export"));
 
-        featureVersionFilter.doTranslation();
-        attributeFilter.doTranslation();
-        sqlFilter.doTranslation();
-        featureTypeFilter.doTranslation();
+        featureVersionFilter.switchLocale(locale);
+        attributeFilter.switchLocale(locale);
+        sqlFilter.switchLocale(locale);
+        featureTypeFilter.switchLocale(locale);
     }
 
     @Override

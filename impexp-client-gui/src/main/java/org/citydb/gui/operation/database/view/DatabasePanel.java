@@ -386,7 +386,7 @@ public class DatabasePanel extends DefaultViewComponent implements ConnectionVie
 		workspaceCombo.setPlaceholderText(Language.I18N.getString("common.label.workspace.prompt"));
 		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 		workspaceButton.setText(Language.I18N.getString("common.button.query"));
-		operationsPanel.doTranslation();
+		operationsPanel.switchLocale(locale);
 
         connectButton.setText(Language.I18N.getString(!databaseController.isConnected() ?
 				"db.button.connect" :

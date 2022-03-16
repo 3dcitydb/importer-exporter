@@ -35,6 +35,7 @@ import org.citydb.gui.components.bbox.BoundingBoxPanel;
 import org.citydb.gui.plugin.view.ViewController;
 
 import javax.swing.*;
+import java.util.Locale;
 
 public class BoundingBoxFilterView extends FilterView<BoundingBox> {
     private final ViewController viewController;
@@ -70,7 +71,7 @@ public class BoundingBoxFilterView extends FilterView<BoundingBox> {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         // nothing to do
     }
 

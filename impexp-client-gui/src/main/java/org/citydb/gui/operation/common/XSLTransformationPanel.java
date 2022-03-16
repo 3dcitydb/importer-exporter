@@ -176,7 +176,7 @@ public class XSLTransformationPanel extends InternalPreferencesComponent {
 
         StylesheetComponent current = first;
         do {
-            current.doTranslation();
+            current.switchLocale();
         } while ((current = current.next) != null);
     }
 
@@ -328,7 +328,7 @@ public class XSLTransformationPanel extends InternalPreferencesComponent {
             removeButton.setEnabled(enable);
         }
 
-        private void doTranslation() {
+        private void switchLocale() {
             label.setText(Language.I18N.getString("common.pref.xslt.label.stylesheets"));
             browseButton.setText(Language.I18N.getString("common.button.browse"));
         }

@@ -32,10 +32,12 @@ import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
 import org.citydb.util.event.global.EventType;
+import org.citydb.util.event.global.SwitchLocaleEvent;
 
 import javax.swing.*;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import java.util.Locale;
 
 public class TreePopupMenu extends AbstractPopupMenu implements EventHandler {
 	private JMenuItem expand;
@@ -102,7 +104,8 @@ public class TreePopupMenu extends AbstractPopupMenu implements EventHandler {
 		collapseAll.setEnabled(!isLeaf && !isCollapsed && hasNestedChildren && showAll(path, path, false));
 	}
 
-	public void doTranslation() {
+	@Override
+	public void switchLocale(Locale locale) {
 		expand.setText(Language.I18N.getString("common.popup.expand"));
 		expandAll.setText(Language.I18N.getString("common.popup.expandAll"));
 		collapse.setText(Language.I18N.getString("common.popup.collapse"));
@@ -163,6 +166,6 @@ public class TreePopupMenu extends AbstractPopupMenu implements EventHandler {
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		doTranslation();
+		switchLocale(((SwitchLocaleEvent) event).getLocale());
 	}
 }

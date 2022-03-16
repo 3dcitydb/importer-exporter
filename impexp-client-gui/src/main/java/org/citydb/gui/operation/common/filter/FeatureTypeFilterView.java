@@ -47,6 +47,7 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -141,7 +142,7 @@ public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> impleme
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         // nothing to do
     }
 

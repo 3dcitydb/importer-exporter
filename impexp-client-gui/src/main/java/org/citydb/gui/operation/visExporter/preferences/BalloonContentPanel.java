@@ -158,20 +158,20 @@ public class BalloonContentPanel extends InternalPreferencesComponent {
 	@Override
 	public void switchLocale(Locale locale) {
 		objectBalloon.titledPanel.setTitle(Language.I18N.getString("pref.visExport.balloon.border.createBalloon"));
-		doTranslation(objectBalloon);
+		switchLocale(objectBalloon);
 
 		if (showPointBalloon) {
 			pointBalloon.titledPanel.setTitle(Language.I18N.getString("pref.visExport.balloon.border.createPointBalloon"));
-			doTranslation(pointBalloon);
+			switchLocale(pointBalloon);
 		}
 
 		if (showCurveBalloon) {
 			curveBalloon.titledPanel.setTitle(Language.I18N.getString("pref.visExport.balloon.border.createCurveBalloon"));
-			doTranslation(curveBalloon);
+			switchLocale(curveBalloon);
 		}
 	}
 
-	private void doTranslation(BalloonContext context) {
+	private void switchLocale(BalloonContext context) {
 		context.useAttribute.setText(Language.I18N.getString("pref.visExport.balloon.label.genAttrib"));
 		context.useFile.setText(Language.I18N.getString("pref.visExport.balloon.label.file"));
 		context.useFallback.setText(Language.I18N.getString("pref.visExport.balloon.label.genAttribAndFile"));

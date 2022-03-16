@@ -163,7 +163,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		validator = new BoundingBoxValidator(this, viewController, config);
 
 		init();
-		doTranslation();
+		switchLocale();
 	}
 
 	public static synchronized MapWindow getInstance(ViewController viewController) {
@@ -856,7 +856,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		setSize(new Dimension(width, height));
 	}
 
-	private void doTranslation() {
+	private void switchLocale() {
 		setTitle(Language.I18N.getString("map.window.title"));
 		applyButton.setText(Language.I18N.getString("common.button.apply"));
 		cancelButton.setText(Language.I18N.getString("common.button.cancel"));
@@ -874,15 +874,15 @@ public class MapWindow extends JDialog implements EventHandler {
 		helpText.setText(Language.I18N.getString("map.help.hint"));
 		googleMapsButton.setText(Language.I18N.getString("map.google.label"));
 
-		map.doTranslation();
+		map.switchLocale();
 		for (BBoxPopupMenu bboxPopup : bboxPopups)
-			bboxPopup.doTranslation();
+			bboxPopup.switchLocale();
 	}
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		if (event.getEventType() == EventType.SWITCH_LOCALE) {
-			doTranslation();
+			switchLocale();
 		}
 
 		else if (event.getEventType() == MapEvents.BOUNDING_BOX_SELECTION) {
@@ -974,7 +974,7 @@ public class MapWindow extends JDialog implements EventHandler {
 			paste.addActionListener(e -> pasteBoundingBoxFromClipboard());
 		}
 
-		private void doTranslation() {
+		private void switchLocale() {
 			copy.setText(Language.I18N.getString("common.popup.boundingBox.copy"));
 			paste.setText(Language.I18N.getString("common.popup.boundingBox.paste"));
 		}

@@ -48,6 +48,7 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.text.DecimalFormat;
+import java.util.Locale;
 
 public class FilterPanel extends JPanel {
 	private final Config config;
@@ -314,7 +315,7 @@ public class FilterPanel extends JPanel {
 		layout.show(mainPanel, showSimple ? "simple" : "advanced");
 	}
 
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		featureVersionPanel.setTitle(featureVersionFilter.getLocalizedTitle());
 		attributeFilterPanel.setTitle(attributeFilter.getLocalizedTitle());
 		sqlFilterPanel.setTitle(sqlFilter.getLocalizedTitle());
@@ -329,13 +330,13 @@ public class FilterPanel extends JPanel {
 		bboxTiling.setText(Language.I18N.getString("filter.label.boundingBox.rows"));
 		tilingColumnsLabel.setText(Language.I18N.getString("filter.label.boundingBox.columns"));
 
-		featureVersionFilter.doTranslation();
-		attributeFilter.doTranslation();
-		sqlFilter.doTranslation();
-		lodFilter.doTranslation();
-		counterFilter.doTranslation();
-		featureTypeFilter.doTranslation();
-		xmlQuery.doTranslation();
+		featureVersionFilter.switchLocale(locale);
+		attributeFilter.switchLocale(locale);
+		sqlFilter.switchLocale(locale);
+		lodFilter.switchLocale(locale);
+		counterFilter.switchLocale(locale);
+		featureTypeFilter.switchLocale(locale);
+		xmlQuery.switchLocale(locale);
 	}
 
 	public void loadSettings() {

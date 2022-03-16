@@ -250,7 +250,7 @@ public class Map {
 		return waypointPainter;
 	}
 
-	public void doTranslation() {
+	public void switchLocale() {
 		String hintsText = !hints.isVisible() ? Language.I18N.getString("map.hints.show") : Language.I18N.getString("map.hints.hide");
 		hintsLabel.setText("<html><a href=\"\">" + hintsText + "</a></html>");
 
@@ -262,7 +262,7 @@ public class Map {
 		hintLabels[5].setText("<html><b>" + Language.I18N.getString("map.hints.center")+ "</b><br/>" + Language.I18N.getString("map.hints.center.hint") + "</html>");
 		hintLabels[6].setText("<html><b>" + Language.I18N.getString("map.hints.popup")+ "</b><br/>" + Language.I18N.getString("map.hints.popup.hint") + "</html>");
 	
-		popupMenu.doTranslation();
+		popupMenu.switchLocale();
 	}
 
 }

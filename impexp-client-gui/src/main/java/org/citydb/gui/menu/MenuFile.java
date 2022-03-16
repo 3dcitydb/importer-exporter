@@ -174,7 +174,7 @@ public class MenuFile extends JMenu {
                 // trigger event
                 ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ConfigChangedEvent(this));
 
-                mainView.doTranslation();
+                mainView.switchLocale();
                 log.info("Settings are reset to default values.");
             }
         });
@@ -217,7 +217,7 @@ public class MenuFile extends JMenu {
             lastUsed.setEnabled(false);
     }
 
-    public void doTranslation() {
+    public void switchLocale() {
         openConfig.setText(Language.I18N.getString("menu.file.open.label"));
         saveConfig.setText(Language.I18N.getString("menu.file.save.label"));
         saveConfigAs.setText(Language.I18N.getString("menu.file.saveAs.label"));
@@ -249,7 +249,7 @@ public class MenuFile extends JMenu {
 
             ProjectConfig projectConfig = (ProjectConfig) object;
             config.setProjectConfig(projectConfig);
-            mainView.doTranslation();
+            mainView.switchLocale();
 
             // reset contents of srs combo boxes
             SrsComboBoxFactory.getInstance().resetAll(true);

@@ -62,8 +62,8 @@ public class PreferencesView extends View {
 		return null;
 	}
 	
-	public void doTranslation() {
-		component.doTranslation();
+	public void switchLocale() {
+		component.switchLocale();
 	}
 	
 	public boolean requestChange() {

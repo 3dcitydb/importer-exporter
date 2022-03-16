@@ -132,11 +132,11 @@ public class PluginInfoPanel extends ScrollablePanel {
 
         add(extensionPointsPanel, GuiUtil.setConstraints(0, row, 1, 0, GridBagConstraints.HORIZONTAL, 20, 10, 0, 10));
 
-        doTranslation();
+        switchLocale();
         revalidate();
     }
 
-    void doTranslation() {
+    void switchLocale() {
         if (metadata != null) {
             homepagePane.setText("<a href=\"" + metadata.getUrl() + "\">" + Language.I18N.getString("pref.plugins.homepage") + "</a>");
             PluginDescription description = metadata.getDescriptionForLocaleOrDefault(Language.I18N.getLocale());

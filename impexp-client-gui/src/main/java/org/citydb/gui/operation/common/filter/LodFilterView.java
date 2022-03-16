@@ -38,6 +38,7 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -108,7 +109,7 @@ public class LodFilterView extends FilterView<LodFilter> {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         lodModeLabel.setText(Language.I18N.getString("filter.label.lod.mode"));
         lodDepthLabel.setText(Language.I18N.getString("filter.label.lod.depth"));
     }

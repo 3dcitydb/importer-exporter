@@ -110,7 +110,7 @@ public class LanguagePanel extends InternalPreferencesComponent {
 			globalConfig.setLanguage(LanguageType.EN);
 		}
 
-		mainView.doTranslation();
+		mainView.switchLocale();
 	}
 	
 	@Override

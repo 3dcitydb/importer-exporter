@@ -107,6 +107,7 @@ import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 public class XMLQueryView extends FilterView<QueryConfig> {
@@ -499,7 +500,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         newButton.setToolTipText(Language.I18N.getString("filter.label.xml.template"));
         duplicateButton.setToolTipText(Language.I18N.getString("filter.label.xml.duplicate"));
         validateButton.setToolTipText(Language.I18N.getString("filter.label.xml.validate"));

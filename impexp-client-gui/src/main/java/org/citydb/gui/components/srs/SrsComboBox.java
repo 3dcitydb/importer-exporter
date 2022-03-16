@@ -116,7 +116,7 @@ public class SrsComboBox extends JComboBox<DatabaseSrs> implements EventHandler 
         setSelectedItem(selectedItem);
     }
 
-    private void doTranslation() {
+    private void switchLocale() {
         databaseSrs.setDescription(Language.I18N.getString("common.label.boundingBox.crs.sameAsInDB"));
         DatabaseSrs selectedItem = getSelectedItem();
         if (selectedItem == null) {
@@ -142,6 +142,6 @@ public class SrsComboBox extends JComboBox<DatabaseSrs> implements EventHandler 
 
     @Override
     public void handleEvent(Event event) throws Exception {
-        doTranslation();
+        switchLocale();
     }
 }

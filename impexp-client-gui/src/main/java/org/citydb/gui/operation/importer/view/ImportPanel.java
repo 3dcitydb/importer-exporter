@@ -194,7 +194,7 @@ public class ImportPanel extends DefaultViewComponent {
 		removeButton.setText(Language.I18N.getString("import.button.remove"));
 		importButton.setText(Language.I18N.getString("import.button.import"));
 		validateButton.setText(Language.I18N.getString("import.button.validate"));
-		filterPanel.doTranslation();
+		filterPanel.switchLocale(locale);
 	}
 
 	@Override

@@ -114,7 +114,6 @@ public class PopupMenuDecorator {
 	public JPopupMenu decorateAndGet(JTextComponent component) {
 		EditPopupMenu popupMenu = new EditPopupMenu();
 		popupMenu.init(component);
-		popupMenu.doTranslation();
 		decorate(component, popupMenu);
 
 		return popupMenu;
@@ -127,7 +126,6 @@ public class PopupMenuDecorator {
 	public JPopupMenu decorateAndGet(JTree tree) {
 		TreePopupMenu popupMenu = new TreePopupMenu();
 		popupMenu.init();
-		popupMenu.doTranslation();
 		decorate(tree, popupMenu);
 
 		return popupMenu;
@@ -146,7 +144,6 @@ public class PopupMenuDecorator {
 		for (int i = 0; i < group.length; i++) {
 			CheckBoxGroupPopupMenu popupMenu = new CheckBoxGroupPopupMenu();
 			popupMenu.init(group[i], group);
-			popupMenu.doTranslation();
 			decorate(group[i], popupMenu);
 
 			popupMenus[i] = popupMenu;
@@ -168,7 +165,6 @@ public class PopupMenuDecorator {
 		for (int i = 0; i < group.length; i++) {
 			TitledPanelGroupPopupMenu popupMenu = new TitledPanelGroupPopupMenu();
 			popupMenu.init(group[i], group);
-			popupMenu.doTranslation();
 			decorate(group[i].getTitleLabel(), popupMenu);
 			if (group[i].hasToggleButton()) {
 				decorate(group[i].getToggleButton(), popupMenu);
@@ -202,7 +198,6 @@ public class PopupMenuDecorator {
 				((EditPopupMenu) popupMenu).init(component);
 			}
 
-			popupMenu.doTranslation();
 			standardPopupMenus.put(component.getClass().getName(), popupMenu);
 		}
 

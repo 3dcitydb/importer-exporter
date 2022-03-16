@@ -94,7 +94,7 @@ public class PluginsOverviewPanel extends InternalPreferencesComponent {
 
     @Override
     public void switchLocale(Locale locale) {
-        infoPanel.doTranslation();
+        infoPanel.switchLocale();
     }
 
     public void pluginSelected(ListSelectionEvent e) {

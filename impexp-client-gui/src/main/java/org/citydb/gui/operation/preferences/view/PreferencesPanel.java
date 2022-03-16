@@ -322,7 +322,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 		return false;
 	}
 
-	public void doTranslation() {
+	public void switchLocale() {
 		restoreButton.setText(Language.I18N.getString("common.button.restore"));
 		standardButton.setText(Language.I18N.getString("common.button.standard"));
 		applyButton.setText(Language.I18N.getString("common.button.apply"));

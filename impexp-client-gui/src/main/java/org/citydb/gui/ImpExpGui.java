@@ -143,7 +143,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	public void invoke() {
 		// init GUI elements
 		initGui();
-		doTranslation();
+		switchLocale();
 		showWindow();
 		initConsole();
 
@@ -451,7 +451,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		});
 	}
 
-	public void doTranslation() {
+	public void switchLocale() {
 		try {
 			LanguageType lang = config.getGlobalConfig().getLanguage();
 			if (lang == currentLang)
@@ -479,8 +479,9 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				}
 			}
 
-			menuBar.doTranslation();
-			consolePopup.doTranslation();
+			menuBar.switchLocale();
+			consoleWindow.switchLocale();
+			consolePopup.switchLocale();
 
 			eventDispatcher.triggerSyncEvent(new SwitchLocaleEvent(locale, this));
 		} catch (MissingResourceException e) {
@@ -755,7 +756,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		}
 
-		private void doTranslation() {
+		private void switchLocale() {
 			clear.setText(Language.I18N.getString("main.console.popup.clear"));
 			detach.setText(config.getGuiConfig().getConsoleWindow().isDetached() ?
 					Language.I18N.getString("console.label.attach") :

@@ -193,7 +193,7 @@ public class MapPopupMenu extends JPopupMenu {
 		this.mousePosition = mousePosition;
 	}
 
-	protected void doTranslation() {
+	protected void switchLocale() {
 		zoomIn.setText(Language.I18N.getString("map.popup.zoomIn"));
 		zoomOut.setText(Language.I18N.getString("map.popup.zoomOut"));
 		centerMap.setText(Language.I18N.getString("map.popup.centerMap"));

@@ -112,7 +112,7 @@ public class MenuBar extends JMenuBar implements EventHandler {
 
 		if (extensions != null) {
 			add(extensions);
-			translateExtensions();
+			localizeExtensions();
 		}
 
 		add(view);
@@ -120,7 +120,7 @@ public class MenuBar extends JMenuBar implements EventHandler {
 		revalidate();
 	}
 
-	public void doTranslation() {
+	public void switchLocale() {
 		file.setText(Language.I18N.getString("menu.file.label"));
 		view.setText(Language.I18N.getString("menu.view.label"));
 		help.setText(Language.I18N.getString("menu.help.label"));
@@ -129,16 +129,16 @@ public class MenuBar extends JMenuBar implements EventHandler {
 		GuiUtil.setMnemonic(view, "menu.view.label", "menu.view.label.mnemonic");
 		GuiUtil.setMnemonic(help, "menu.help.label", "menu.help.label.mnemonic");
 
-		file.doTranslation();
-		view.doTranslation();
-		help.doTranslation();
+		file.switchLocale();
+		view.switchLocale();
+		help.switchLocale();
 
 		if (extensions != null) {
-			translateExtensions();
+			localizeExtensions();
 		}
 	}
 
-	private void translateExtensions() {
+	private void localizeExtensions() {
 		extensions.setText(Language.I18N.getString("menu.plugins.label"));
 		GuiUtil.setMnemonic(extensions, "menu.plugins.label", "menu.plugins.label.mnemonic");
 

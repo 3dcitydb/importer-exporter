@@ -48,7 +48,6 @@ public class ConsoleWindow extends JFrame {
 		this.topFrame = topFrame;
 
 		init();
-		doTranslation();
 		loadSettings();
 	}
 
@@ -71,7 +70,6 @@ public class ConsoleWindow extends JFrame {
 		}
 
 		add(content, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));			
-		doTranslation();
 		setVisible(true);
 	}
 
@@ -94,7 +92,7 @@ public class ConsoleWindow extends JFrame {
 			config.getGuiConfig().getConsoleWindow().setSize(new WindowSize());
 	}
 
-	public void doTranslation() {
+	public void switchLocale() {
 		setTitle(Language.I18N.getString("main.window.title") + " - " + Language.I18N.getString("main.console.label"));
 	}
 

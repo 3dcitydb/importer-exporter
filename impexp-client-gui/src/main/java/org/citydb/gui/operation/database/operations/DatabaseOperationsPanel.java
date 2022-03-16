@@ -41,6 +41,7 @@ import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class DatabaseOperationsPanel extends JPanel implements EventHandler {
     private final Logger log = Logger.getInstance();
@@ -82,10 +83,10 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 		add(operationsTab, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 	}
 
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         for (int i = 0; i < operations.length; ++i) {
             operationsTab.setTitleAt(i, operations[i].getLocalizedTitle());
-            operations[i].doTranslation();
+            operations[i].switchLocale(locale);
         }
     }
 
