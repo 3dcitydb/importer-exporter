@@ -52,6 +52,7 @@ import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.common.filter.*;
+import org.citydb.gui.plugin.util.DefaultViewComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
@@ -85,11 +86,12 @@ import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-public class VisExportPanel extends JPanel implements EventHandler {
+public class VisExportPanel extends DefaultViewComponent implements EventHandler {
     private final Logger log = Logger.getInstance();
     private final ReentrantLock mainLock = new ReentrantLock();
     private final ViewController viewController;
@@ -443,7 +445,8 @@ public class VisExportPanel extends JPanel implements EventHandler {
         featureTypeFilter.setEnabled(useFeatureFilter.isSelected());
     }
 
-    public void doTranslation() {
+    @Override
+    public void switchLocale(Locale locale) {
         browseButton.setText(Language.I18N.getString("common.button.browse"));
         featureVersionPanel.setTitle(featureVersionFilter.getLocalizedTitle());
         tilingPanel.setTitle(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
@@ -482,12 +485,13 @@ public class VisExportPanel extends JPanel implements EventHandler {
         fetchThemesButton.setText(Language.I18N.getString("common.button.query"));
         exportButton.setText(Language.I18N.getString("export.button.export"));
 
-        featureVersionFilter.doTranslation();
-        attributeFilter.doTranslation();
-        sqlFilter.doTranslation();
-        featureTypeFilter.doTranslation();
+        featureVersionFilter.switchLocale(locale);
+        attributeFilter.switchLocale(locale);
+        sqlFilter.switchLocale(locale);
+        featureTypeFilter.switchLocale(locale);
     }
 
+    @Override
     public void loadSettings() {
         // filter
         SimpleVisQuery query = config.getVisExportConfig().getQuery();
@@ -587,6 +591,7 @@ public class VisExportPanel extends JPanel implements EventHandler {
         featureFilterPanel.setCollapsed(guiConfig.isCollapseFeatureTypeFilter());
     }
 
+    @Override
     public void setSettings() {
         try {
             Paths.get(browseText.getText());

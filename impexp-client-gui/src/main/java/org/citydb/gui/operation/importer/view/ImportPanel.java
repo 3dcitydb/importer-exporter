@@ -43,6 +43,7 @@ import org.citydb.gui.components.ScrollablePanel;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ImportStatusDialog;
 import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
+import org.citydb.gui.plugin.util.DefaultViewComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
@@ -69,9 +70,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ImportPanel extends JPanel {
+public class ImportPanel extends DefaultViewComponent {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
 	private final ViewController viewController;
@@ -186,18 +188,21 @@ public class ImportPanel extends JPanel {
 		add(buttonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
     }
 
-	public void doTranslation() {
+	@Override
+	public void switchLocale(Locale locale) {
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		removeButton.setText(Language.I18N.getString("import.button.remove"));
 		importButton.setText(Language.I18N.getString("import.button.import"));
 		validateButton.setText(Language.I18N.getString("import.button.validate"));
-		filterPanel.doTranslation();
+		filterPanel.switchLocale(locale);
 	}
 
+	@Override
 	public void loadSettings() {
 		filterPanel.loadSettings();
 	}
 
+	@Override
 	public void setSettings() {
 		filterPanel.setSettings();
 	}

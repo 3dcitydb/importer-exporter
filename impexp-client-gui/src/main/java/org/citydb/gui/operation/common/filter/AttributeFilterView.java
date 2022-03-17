@@ -39,6 +39,7 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class AttributeFilterView extends FilterView<SimpleAttributeFilter> {
     private JPanel component;
@@ -112,7 +113,7 @@ public class AttributeFilterView extends FilterView<SimpleAttributeFilter> {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
 
         if (useNameFilter) {

@@ -38,6 +38,7 @@ import org.citydb.gui.util.GuiUtil;
 import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
+import java.util.Locale;
 
 public class CounterFilterView extends FilterView<CounterFilter> {
     private JPanel component;
@@ -96,7 +97,7 @@ public class CounterFilterView extends FilterView<CounterFilter> {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         countLabel.setText(Language.I18N.getString("filter.label.counter.count"));
         startIndexLabel.setText(Language.I18N.getString("filter.label.counter.startIndex"));
     }

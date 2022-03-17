@@ -65,9 +65,9 @@ public class PreferencesPlugin extends InternalPlugin implements ViewExtension, 
 	}
 
 	@Override
-	public void switchLocale(Locale newLocale) {
-		view.doTranslation();
-		preferences.doTranslation();
+	public void switchLocale(Locale locale) {
+		view.switchLocale();
+		preferences.switchLocale(locale);
 	}
 
 	@Override

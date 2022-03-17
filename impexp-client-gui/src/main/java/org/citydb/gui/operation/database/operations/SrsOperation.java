@@ -54,6 +54,7 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class SrsOperation extends DatabaseOperationView {
@@ -208,7 +209,7 @@ public class SrsOperation extends DatabaseOperationView {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		sridLabel.setText(Language.I18N.getString("pref.db.srs.label.srid"));
 		srsNameLabel.setText(Language.I18N.getString("pref.db.srs.label.srsName"));
 		checkSridButton.setText(Language.I18N.getString("pref.db.srs.button.check"));

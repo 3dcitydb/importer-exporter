@@ -32,7 +32,7 @@ public class PluginsOverviewPlugin extends InternalPlugin implements Preferences
 
     @Override
     public void switchLocale(Locale locale) {
-        preferences.doTranslation();
+        preferences.switchLocale(locale);
     }
 
     @Override

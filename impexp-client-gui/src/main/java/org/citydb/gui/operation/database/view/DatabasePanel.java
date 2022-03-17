@@ -47,6 +47,7 @@ import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.operation.database.operations.DatabaseOperationsPanel;
+import org.citydb.gui.plugin.util.DefaultViewComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.plugin.view.ViewEvent;
 import org.citydb.gui.plugin.view.ViewListener;
@@ -66,10 +67,11 @@ import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 
-public class DatabasePanel extends JPanel implements ConnectionViewHandler, EventHandler, ViewListener {
+public class DatabasePanel extends DefaultViewComponent implements ConnectionViewHandler, EventHandler, ViewListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
 	private final ViewController viewController;
@@ -360,7 +362,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		});
 	}
 
-	public void doTranslation() {
+	@Override
+	public void switchLocale(Locale locale) {
         connectionDetails.setTitle(Language.I18N.getString("db.border.connectionDetails"));
 		connLabel.setText(Language.I18N.getString("db.label.connection"));
 		descriptionLabel.setText(Language.I18N.getString("db.label.description"));
@@ -383,7 +386,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		workspaceCombo.setPlaceholderText(Language.I18N.getString("common.label.workspace.prompt"));
 		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 		workspaceButton.setText(Language.I18N.getString("common.button.query"));
-		operationsPanel.doTranslation();
+		operationsPanel.switchLocale(locale);
 
         connectButton.setText(Language.I18N.getString(!databaseController.isConnected() ?
 				"db.button.connect" :
@@ -591,6 +594,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		return option == JOptionPane.OK_OPTION;
 	}
 
+	@Override
 	public void loadSettings() {
 		if (databaseController.isConnected())
 			disconnect();
@@ -623,6 +627,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		isSettingsLoaded = true;
 	}
 
+	@Override
 	public void setSettings() {
 		setDbConnection((DatabaseConnection)connCombo.getSelectedItem());
 		operationsPanel.setSettings();

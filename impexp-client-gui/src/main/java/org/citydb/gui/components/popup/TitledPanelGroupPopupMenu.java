@@ -33,9 +33,11 @@ import org.citydb.gui.components.TitledPanel;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
 import org.citydb.util.event.global.EventType;
+import org.citydb.util.event.global.SwitchLocaleEvent;
 
 import javax.swing.*;
 import java.util.Arrays;
+import java.util.Locale;
 
 public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements EventHandler {
 	private JMenuItem expand;
@@ -149,7 +151,7 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		if (titledPanel.isCollapsible()) {
 			expand.setText(Language.I18N.getString("common.popup.expand"));
 			expandAll.setText(Language.I18N.getString("common.popup.expandAll"));
@@ -168,6 +170,6 @@ public class TitledPanelGroupPopupMenu extends AbstractPopupMenu implements Even
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		doTranslation();
+		switchLocale(((SwitchLocaleEvent) event).getLocale());
 	}
 }

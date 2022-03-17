@@ -1,7 +1,7 @@
 package org.citydb.gui.operation.preferences.plugin;
 
 import org.citydb.config.Config;
-import org.citydb.gui.operation.common.DefaultPreferences;
+import org.citydb.gui.plugin.util.DefaultPreferences;
 
 public class PluginsPreferences extends DefaultPreferences {
 

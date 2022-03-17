@@ -46,6 +46,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class IndexOperation extends DatabaseOperationView {
@@ -157,7 +158,7 @@ public class IndexOperation extends DatabaseOperationView {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		activate.setText(Language.I18N.getString("db.button.index.activate"));
 		deactivate.setText(Language.I18N.getString("db.button.index.deactivate"));
 		query.setText(Language.I18N.getString("db.button.index.query"));

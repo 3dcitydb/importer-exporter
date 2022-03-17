@@ -116,7 +116,7 @@ public class MenuView extends JMenu {
 		add(defaults);
 	}
 	
-	public void doTranslation() {
+	public void switchLocale() {
 		map.setText(Language.I18N.getString("menu.view.map.label"));
 		detachConsole.setText(Language.I18N.getString("menu.view.detach.label"));
 		lightTheme.setText(Language.I18N.getString("map.view.laf.light.label"));

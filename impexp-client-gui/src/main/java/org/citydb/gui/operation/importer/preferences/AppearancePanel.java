@@ -32,13 +32,14 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportAppearance;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
-public class AppearancePanel extends DefaultPreferencesComponent {
+public class AppearancePanel extends InternalPreferencesComponent {
 	private TitledPanel appearancePanel;
 	private JLabel impAppOldLabel;
 	private JCheckBox importAppearance;
@@ -94,7 +95,7 @@ public class AppearancePanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		appearancePanel.setTitle(Language.I18N.getString("pref.import.appearance.border.import"));
 		importTextures.setText(Language.I18N.getString("pref.import.appearance.label.importTexture"));
 		impAppOldLabel.setText(Language.I18N.getString("pref.import.appearance.label.texturedSurface.theme"));
@@ -126,7 +127,7 @@ public class AppearancePanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.import.appearance");
 	}
 

@@ -32,9 +32,11 @@ import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
 import org.citydb.util.event.global.EventType;
+import org.citydb.util.event.global.SwitchLocaleEvent;
 
 import javax.swing.*;
 import java.util.Arrays;
+import java.util.Locale;
 
 public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHandler {
 	private JMenuItem selectOthers;
@@ -97,7 +99,7 @@ public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHa
 	}
 	
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		selectOthers.setText(Language.I18N.getString("common.popup.checkbox.selectOthers"));
 		deselectOthers.setText(Language.I18N.getString("common.popup.checkbox.deselectOthers"));
 		selectAll.setText(Language.I18N.getString("common.popup.checkbox.selectAll"));
@@ -107,7 +109,7 @@ public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHa
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		doTranslation();
+		switchLocale(((SwitchLocaleEvent) event).getLocale());
 	}
 
 }

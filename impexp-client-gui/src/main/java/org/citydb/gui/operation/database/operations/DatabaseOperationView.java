@@ -31,9 +31,11 @@ import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.gui.plugin.view.View;
 import org.citydb.util.event.global.DatabaseConnectionStateEvent;
 
+import java.util.Locale;
+
 public abstract class DatabaseOperationView extends View {
 	public abstract DatabaseOperationType getType();
-	public abstract void doTranslation();
+	public abstract void switchLocale(Locale locale);
 	public abstract void setEnabled(boolean enable);
 	public abstract void loadSettings();
 	public abstract void setSettings();

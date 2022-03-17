@@ -30,13 +30,14 @@ package org.citydb.gui.operation.importer.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
-public class AddressPanel extends DefaultPreferencesComponent {
+public class AddressPanel extends InternalPreferencesComponent {
 	private TitledPanel importXALPanel;
 	private JCheckBox importXAL;
 
@@ -74,12 +75,12 @@ public class AddressPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		importXALPanel.setTitle(Language.I18N.getString("pref.import.address.label.importXAL"));
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.import.address");
 	}
 

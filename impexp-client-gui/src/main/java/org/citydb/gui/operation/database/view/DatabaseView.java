@@ -29,28 +29,21 @@ package org.citydb.gui.operation.database.view;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.gui.plugin.view.View;
+import org.citydb.gui.plugin.util.DefaultView;
 import org.citydb.gui.plugin.view.ViewController;
 
 import javax.swing.*;
-import java.awt.*;
 
-public class DatabaseView extends View {
-	private final DatabasePanel component;
-	
+public class DatabaseView extends DefaultView {
+
 	public DatabaseView(ViewController viewController, Config config) {
-		component = new DatabasePanel(viewController, config);
-		addViewListener(component);
+		super(new DatabasePanel(viewController, config));
+		addViewListener((DatabasePanel) getViewComponent());
 	}
 	
 	@Override
 	public String getLocalizedTitle() {
 		return Language.I18N.getString("main.tabbedPane.database");
-	}
-
-	@Override
-	public Component getViewComponent() {
-		return component;
 	}
 
 	@Override
@@ -62,17 +55,4 @@ public class DatabaseView extends View {
 	public Icon getIcon() {
 		return null;
 	}
-	
-	public void loadSettings() {
-		component.loadSettings();
-	}
-	
-	public void setSettings() {
-		component.setSettings();
-	}
-	
-	public void doTranslation() {
-		component.doTranslation();
-	}
-
 }

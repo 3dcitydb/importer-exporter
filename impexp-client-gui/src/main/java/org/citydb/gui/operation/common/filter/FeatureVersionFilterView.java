@@ -50,6 +50,7 @@ import java.awt.event.ItemEvent;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFilter> {
@@ -212,7 +213,7 @@ public class FeatureVersionFilterView extends FilterView<SimpleFeatureVersionFil
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         validEndDateLabel.setText(Language.I18N.getString("filter.label.featureVersion.to"));
         featureFilterMode.updateUI();
         validMode.updateUI();

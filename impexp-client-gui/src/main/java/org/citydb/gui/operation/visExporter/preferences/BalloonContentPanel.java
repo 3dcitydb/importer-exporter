@@ -34,16 +34,17 @@ import org.citydb.config.project.visExporter.Balloon;
 import org.citydb.config.project.visExporter.BalloonContentMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.Locale;
 import java.util.function.Supplier;
 
-public class BalloonContentPanel extends DefaultPreferencesComponent {
+public class BalloonContentPanel extends InternalPreferencesComponent {
 	private final Supplier<String> titleSupplier;
 	private final boolean showPointBalloon;
 	private final boolean showCurveBalloon;
@@ -81,7 +82,7 @@ public class BalloonContentPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return titleSupplier.get();
 	}
 
@@ -155,22 +156,22 @@ public class BalloonContentPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		objectBalloon.titledPanel.setTitle(Language.I18N.getString("pref.visExport.balloon.border.createBalloon"));
-		doTranslation(objectBalloon);
+		switchLocale(objectBalloon);
 
 		if (showPointBalloon) {
 			pointBalloon.titledPanel.setTitle(Language.I18N.getString("pref.visExport.balloon.border.createPointBalloon"));
-			doTranslation(pointBalloon);
+			switchLocale(pointBalloon);
 		}
 
 		if (showCurveBalloon) {
 			curveBalloon.titledPanel.setTitle(Language.I18N.getString("pref.visExport.balloon.border.createCurveBalloon"));
-			doTranslation(curveBalloon);
+			switchLocale(curveBalloon);
 		}
 	}
 
-	private void doTranslation(BalloonContext context) {
+	private void switchLocale(BalloonContext context) {
 		context.useAttribute.setText(Language.I18N.getString("pref.visExport.balloon.label.genAttrib"));
 		context.useFile.setText(Language.I18N.getString("pref.visExport.balloon.label.file"));
 		context.useFallback.setText(Language.I18N.getString("pref.visExport.balloon.label.genAttribAndFile"));

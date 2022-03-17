@@ -41,6 +41,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 public class SQLFilterView extends FilterView<SelectOperator> {
@@ -142,7 +143,7 @@ public class SQLFilterView extends FilterView<SelectOperator> {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         addButton.setToolTipText(Language.I18N.getString("filter.label.sql.increase"));
         removeButton.setToolTipText(Language.I18N.getString("filter.label.sql.decrease"));
     }

@@ -28,13 +28,13 @@
 package org.citydb.gui.operation.exporter.preferences;
 
 import org.citydb.config.i18n.Language;
-import org.citydb.gui.operation.common.DefaultPreferencesEntry;
-import org.citydb.gui.operation.common.NullComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
+import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 
 public class CityGMLExportEntry extends DefaultPreferencesEntry {
 
 	public CityGMLExportEntry() {
-		super(NullComponent.getInstance());
+		super(EmptyPreferencesComponent.getInstance());
 	}
 	
 	@Override

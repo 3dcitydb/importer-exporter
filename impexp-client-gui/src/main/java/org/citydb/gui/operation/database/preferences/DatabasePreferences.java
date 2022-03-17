@@ -28,8 +28,8 @@
 package org.citydb.gui.operation.database.preferences;
 
 import org.citydb.config.Config;
-import org.citydb.gui.operation.common.DefaultPreferences;
-import org.citydb.gui.operation.common.DefaultPreferencesEntry;
+import org.citydb.gui.plugin.util.DefaultPreferences;
+import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
 import org.citydb.gui.plugin.view.ViewController;
 
 public class DatabasePreferences extends DefaultPreferences {
@@ -37,7 +37,7 @@ public class DatabasePreferences extends DefaultPreferences {
 	public DatabasePreferences(ViewController viewController, Config config) {
 		super(new DatabaseEntry());
 		
-		root.addChildEntry(new DefaultPreferencesEntry(new SrsPanel(viewController, config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new SrsPanel(viewController, config)));
 	}
 
 }

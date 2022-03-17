@@ -47,6 +47,7 @@ import org.citydb.core.util.Util;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
+import org.citydb.gui.plugin.util.DefaultViewComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
@@ -69,9 +70,10 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ExportPanel extends JPanel implements DropTargetListener {
+public class ExportPanel extends DefaultViewComponent implements DropTargetListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
 	private final ViewController viewController;
@@ -153,14 +155,16 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		filterPanel.showFilterDialog(simpleFilterButton.isSelected());
 	}
 
-	public void doTranslation() {
+	@Override
+	public void switchLocale(Locale locale) {
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		exportButton.setText(Language.I18N.getString("export.button.export"));
 		simpleFilterButton.setText(Language.I18N.getString("filter.button.mode.simple"));
 		xmlQueryButton.setText(Language.I18N.getString("filter.button.mode.xml"));
-		filterPanel.doTranslation();
+		filterPanel.switchLocale(locale);
 	}
 
+	@Override
 	public void loadSettings() {
 		filterPanel.loadSettings();
 		boolean useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
@@ -169,6 +173,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		filterPanel.showFilterDialog(useSimpleFilter);
 	}
 
+	@Override
 	public void setSettings() {
 		config.getExportConfig().setUseSimpleQuery(simpleFilterButton.isSelected());
 

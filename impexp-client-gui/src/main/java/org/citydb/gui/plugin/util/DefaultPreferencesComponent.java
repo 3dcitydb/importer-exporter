@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -25,21 +25,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.gui.operation.database.preferences;
+package org.citydb.gui.plugin.util;
 
-import org.citydb.config.i18n.Language;
-import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
-import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
+import org.citydb.gui.plugin.preferences.PreferencesComponent;
 
-public class DatabaseEntry extends DefaultPreferencesEntry {
+import java.util.Locale;
 
-	public DatabaseEntry() {
-		super(EmptyPreferencesComponent.getInstance());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.database");
-	}
-
+public abstract class DefaultPreferencesComponent extends PreferencesComponent {
+	public abstract String getLocalizedTitle();
+	public abstract boolean isModified();
+	public abstract void switchLocale(Locale locale);
+	public abstract void loadSettings();
+	public abstract void setSettings();
+	public abstract void resetSettings();
 }

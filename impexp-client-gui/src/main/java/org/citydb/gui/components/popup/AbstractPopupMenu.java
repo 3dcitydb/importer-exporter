@@ -28,7 +28,8 @@
 package org.citydb.gui.components.popup;
 
 import javax.swing.*;
+import java.util.Locale;
 
 public abstract class AbstractPopupMenu extends JPopupMenu {
-	public abstract void doTranslation();
+	public abstract void switchLocale(Locale locale);
 }

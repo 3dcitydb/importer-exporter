@@ -32,7 +32,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.ExportAppearance;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -41,8 +41,9 @@ import java.awt.*;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.Locale;
 
-public class AppearancePanel extends DefaultPreferencesComponent {
+public class AppearancePanel extends InternalPreferencesComponent {
 	private TitledPanel exportPanel;
 	private TitledPanel pathPanel;
 
@@ -157,7 +158,7 @@ public class AppearancePanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		exportPanel.setTitle(Language.I18N.getString("pref.export.appearance.border.export"));
 		pathPanel.setTitle(Language.I18N.getString("pref.export.appearance.border.path"));
 		overwriteCheck.setText(Language.I18N.getString("pref.export.appearance.label.overwriteTextures"));
@@ -197,7 +198,7 @@ public class AppearancePanel extends DefaultPreferencesComponent {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.export.appearance");
 	}
 

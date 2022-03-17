@@ -32,6 +32,7 @@ import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.util.event.Event;
 import org.citydb.util.event.EventHandler;
 import org.citydb.util.event.global.EventType;
+import org.citydb.util.event.global.SwitchLocaleEvent;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -39,6 +40,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.Locale;
 
 public class EditPopupMenu extends AbstractPopupMenu implements EventHandler {
 	private JMenuItem cut;
@@ -92,7 +94,8 @@ public class EditPopupMenu extends AbstractPopupMenu implements EventHandler {
 		paste.setEnabled(enable);
 	}
 
-	public void doTranslation() {
+	@Override
+	public void switchLocale(Locale locale) {
 		cut.setText(Language.I18N.getString("common.popup.textfield.cut"));		
 		copy.setText(Language.I18N.getString("common.popup.textfield.copy"));		
 		paste.setText(Language.I18N.getString("common.popup.textfield.paste"));		
@@ -142,7 +145,7 @@ public class EditPopupMenu extends AbstractPopupMenu implements EventHandler {
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		doTranslation();
+		switchLocale(((SwitchLocaleEvent) event).getLocale());
 	}
 
 }

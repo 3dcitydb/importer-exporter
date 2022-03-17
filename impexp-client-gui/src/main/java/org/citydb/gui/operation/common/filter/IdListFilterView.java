@@ -17,6 +17,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantLock;
@@ -216,7 +217,7 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         idListLabel.setText(Language.I18N.getString("filter.idList.label.csvFile"));
         idListBrowseButton.setText(Language.I18N.getString("common.button.browse"));
         idListPreviewButton.setText(Language.I18N.getString("filter.idList.button.preview"));

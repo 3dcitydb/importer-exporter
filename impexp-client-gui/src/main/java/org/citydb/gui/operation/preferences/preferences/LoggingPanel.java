@@ -39,7 +39,7 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.ColorPicker;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.log.Logger;
 
@@ -51,9 +51,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 import java.util.StringJoiner;
 
-public class LoggingPanel extends DefaultPreferencesComponent {
+public class LoggingPanel extends InternalPreferencesComponent {
     private final Logger log = Logger.getInstance();
 
     private TitledPanel consolePanel;
@@ -287,7 +288,7 @@ public class LoggingPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public void doTranslation() {
+    public void switchLocale(Locale locale) {
         consolePanel.setTitle(Language.I18N.getString("pref.general.logging.border.console"));
         wrapTextConsole.setText(Language.I18N.getString("pref.general.logging.label.wrapTextConsole"));
         logLevelConsoleLabel.setText(Language.I18N.getString("pref.general.logging.label.logLevel"));
@@ -405,7 +406,7 @@ public class LoggingPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public String getTitle() {
+    public String getLocalizedTitle() {
         return Language.I18N.getString("pref.tree.general.logging");
     }
 

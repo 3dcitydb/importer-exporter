@@ -42,6 +42,7 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
 public class FilterPanel extends JPanel {
 	private final Config config;
@@ -207,7 +208,7 @@ public class FilterPanel extends JPanel {
 		featureTypeFilter.setEnabled(useFeatureFilter.isSelected());
 	}
 
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		attributeFilterPanel.setTitle(attributeFilter.getLocalizedTitle());
 		importListFilterPanel.setTitle(importListFilter.getLocalizedTitle());
 		counterFilterPanel.setTitle(counterFilter.getLocalizedTitle());
@@ -221,10 +222,10 @@ public class FilterPanel extends JPanel {
 		bboxOverlaps.setText(Language.I18N.getString("filter.label.boundingBox.overlaps"));
 		bboxWithin.setText(Language.I18N.getString("filter.label.boundingBox.within"));
 
-		attributeFilter.doTranslation();
-		importListFilter.doTranslation();
-		counterFilter.doTranslation();
-		featureTypeFilter.doTranslation();
+		attributeFilter.switchLocale(locale);
+		importListFilter.switchLocale(locale);
+		counterFilter.switchLocale(locale);
+		featureTypeFilter.switchLocale(locale);
 	}
 
 	public void loadSettings() {

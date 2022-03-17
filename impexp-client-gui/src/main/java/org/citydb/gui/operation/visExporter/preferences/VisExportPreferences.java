@@ -35,8 +35,8 @@ import org.citydb.core.ade.visExporter.ADEVisExportExtension;
 import org.citydb.core.ade.visExporter.ADEVisExportExtensionManager;
 import org.citydb.core.database.schema.mapping.AppSchema;
 import org.citydb.core.database.schema.mapping.FeatureType;
-import org.citydb.gui.operation.common.DefaultPreferences;
-import org.citydb.gui.operation.common.DefaultPreferencesEntry;
+import org.citydb.gui.plugin.util.DefaultPreferences;
+import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
 import org.citydb.gui.plugin.view.ViewController;
 
 import java.util.List;
@@ -184,9 +184,9 @@ public class VisExportPreferences extends DefaultPreferences {
 			}
 		}
 
-		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(viewController, config)));
-		root.addChildEntry(renderingNode);
-		root.addChildEntry(balloonNode);
-		root.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(viewController, config)));
+		rootEntry.addChildEntry(renderingNode);
+		rootEntry.addChildEntry(balloonNode);
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));
 	}
 }

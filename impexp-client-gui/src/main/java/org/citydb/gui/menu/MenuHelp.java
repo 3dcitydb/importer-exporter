@@ -71,7 +71,7 @@ public class MenuHelp extends JMenu {
 		add(info);
 	}
 	
-	public void doTranslation() {
+	public void switchLocale() {
 		doc.setText(Language.I18N.getString("menu.help.doc.citydb.label"));
 		readMe.setText(Language.I18N.getString("menu.help.readMe.label"));
 		info.setText(Language.I18N.getString("menu.help.info.label"));

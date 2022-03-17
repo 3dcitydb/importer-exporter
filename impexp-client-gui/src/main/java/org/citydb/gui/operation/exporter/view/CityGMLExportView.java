@@ -29,27 +29,20 @@ package org.citydb.gui.operation.exporter.view;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.gui.plugin.view.View;
+import org.citydb.gui.plugin.util.DefaultView;
 import org.citydb.gui.plugin.view.ViewController;
 
 import javax.swing.*;
-import java.awt.*;
 
-public class CityGMLExportView extends View {
-	private final ExportPanel component;
-	
+public class CityGMLExportView extends DefaultView {
+
 	public CityGMLExportView(ViewController viewController, Config config) {
-		component = new ExportPanel(viewController, config);
+		super(new ExportPanel(viewController, config));
 	}
 	
 	@Override
 	public String getLocalizedTitle() {
 		return Language.I18N.getString("main.tabbedPane.export");
-	}
-
-	@Override
-	public Component getViewComponent() {
-		return component;
 	}
 
 	@Override
@@ -61,17 +54,4 @@ public class CityGMLExportView extends View {
 	public Icon getIcon() {
 		return null;
 	}
-	
-	public void loadSettings() {
-		component.loadSettings();
-	}
-	
-	public void setSettings() {
-		component.setSettings();
-	}
-	
-	public void doTranslation() {
-		component.doTranslation();
-	}
-
 }

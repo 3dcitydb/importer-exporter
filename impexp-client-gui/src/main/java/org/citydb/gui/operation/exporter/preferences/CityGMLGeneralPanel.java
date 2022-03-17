@@ -30,13 +30,14 @@ package org.citydb.gui.operation.exporter.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
-public class CityGMLGeneralPanel extends DefaultPreferencesComponent {
+public class CityGMLGeneralPanel extends InternalPreferencesComponent {
 	private TitledPanel formatOptionsPanel;
 	private JCheckBox prettyPrint;
 
@@ -74,12 +75,12 @@ public class CityGMLGeneralPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		formatOptionsPanel.setTitle(Language.I18N.getString("pref.export.common.label.prettyPrint"));
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.export.cityGML.general");
 	}
 }

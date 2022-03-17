@@ -29,8 +29,8 @@ package org.citydb.gui.operation.preferences.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.gui.ImpExpGui;
-import org.citydb.gui.operation.common.DefaultPreferences;
-import org.citydb.gui.operation.common.DefaultPreferencesEntry;
+import org.citydb.gui.plugin.util.DefaultPreferences;
+import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
 
 public class GeneralPreferences extends DefaultPreferences {
 	private final LoggingPanel loggingPanel;
@@ -39,12 +39,12 @@ public class GeneralPreferences extends DefaultPreferences {
 		super(new GeneralPreferencesEntry());
 		
 		loggingPanel = new LoggingPanel(mainView, config);
-		root.addChildEntry(new DefaultPreferencesEntry(new CachePanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new PathPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new ProxyPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new APIKeysPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(loggingPanel));
-		root.addChildEntry(new DefaultPreferencesEntry(new LanguagePanel(mainView, config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new CachePanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new PathPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ProxyPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new APIKeysPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(loggingPanel));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new LanguagePanel(mainView, config)));
 	}
 
 	public void setLogginSettings() {

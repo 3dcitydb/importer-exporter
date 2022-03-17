@@ -59,9 +59,9 @@ public class DatabasePlugin extends InternalPlugin implements ViewExtension, Pre
 	}
 
 	@Override
-	public void switchLocale(Locale newLocale) {
-		view.doTranslation();
-		preferences.doTranslation();
+	public void switchLocale(Locale locale) {
+		view.switchLocale(locale);
+		preferences.switchLocale(locale);
 	}
 
 	@Override

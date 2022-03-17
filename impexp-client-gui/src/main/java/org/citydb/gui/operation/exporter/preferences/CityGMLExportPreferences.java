@@ -28,26 +28,26 @@
 package org.citydb.gui.operation.exporter.preferences;
 
 import org.citydb.config.Config;
-import org.citydb.gui.operation.common.DefaultPreferences;
-import org.citydb.gui.operation.common.DefaultPreferencesEntry;
 import org.citydb.gui.operation.common.GeometryPanel;
 import org.citydb.gui.operation.common.XSLTransformationPanel;
+import org.citydb.gui.plugin.util.DefaultPreferences;
+import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
 
 public class CityGMLExportPreferences extends DefaultPreferences {
 	
 	public CityGMLExportPreferences(Config config) {
 		super(new CityGMLExportEntry());
 		
-		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new TilingOptionsPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new TilingOptionsPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(
 				() -> config.getExportConfig().getAffineTransformation(),
 				config)));
 
 		DefaultPreferencesEntry cityGMLOptions = new CityGMLOptionsPanel();
-		root.addChildEntry(cityGMLOptions);
+		rootEntry.addChildEntry(cityGMLOptions);
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new CityGMLGeneralPanel(config)));
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XLinkPanel(config)));
@@ -55,8 +55,8 @@ public class CityGMLExportPreferences extends DefaultPreferences {
 				() -> config.getExportConfig().getCityGMLOptions().getXSLTransformation(),
 				config)));
 
-		root.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
 	}
 
 }

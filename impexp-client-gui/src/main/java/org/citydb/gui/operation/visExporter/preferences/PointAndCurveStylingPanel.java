@@ -35,7 +35,7 @@ import org.citydb.config.project.visExporter.PointDisplayMode;
 import org.citydb.gui.components.ColorPicker;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
@@ -45,7 +45,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-public class PointAndCurveStylingPanel extends DefaultPreferencesComponent {
+public class PointAndCurveStylingPanel extends InternalPreferencesComponent {
 	private final Supplier<PointAndCurve> pointAndCurveSupplier;
 
 	private TitledPanel pointPanel;
@@ -115,7 +115,7 @@ public class PointAndCurveStylingPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.visExport.pointAndCurve.styling");
 	}
 
@@ -378,7 +378,7 @@ public class PointAndCurveStylingPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		PointAndCurve pacSettings = pointAndCurveSupplier.get();
 
 		pointPanel.setTitle(Language.I18N.getString("pref.visExport.border.point"));

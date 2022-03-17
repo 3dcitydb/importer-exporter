@@ -39,6 +39,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -100,7 +101,7 @@ public class ReportOperation extends DatabaseOperationView {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		reportButton.setText(Language.I18N.getString("db.button.report"));
 	}
 

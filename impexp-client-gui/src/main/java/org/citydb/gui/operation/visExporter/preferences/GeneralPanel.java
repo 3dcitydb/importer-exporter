@@ -37,7 +37,7 @@ import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.textureAtlas.TextureAtlasCreator;
@@ -55,7 +55,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class GeneralPanel extends DefaultPreferencesComponent {
+public class GeneralPanel extends InternalPreferencesComponent {
 	private final ViewController viewController;
 	private final Map<String, Integer> packingAlgorithms = new HashMap<>();
 
@@ -370,7 +370,7 @@ public class GeneralPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public void doTranslation() {
+	public void switchLocale(Locale locale) {
 		generalPanel.setTitle(Language.I18N.getString("pref.visExport.border.generalOptions"));
 		kmzCheckbox.setText(Language.I18N.getString("pref.visExport.label.exportAsKmz"));
 		showBoundingBoxCheckbox.setText(Language.I18N.getString("pref.visExport.label.showBoundingBox"));
@@ -550,7 +550,7 @@ public class GeneralPanel extends DefaultPreferencesComponent {
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.visExport.general");
 	}
 }

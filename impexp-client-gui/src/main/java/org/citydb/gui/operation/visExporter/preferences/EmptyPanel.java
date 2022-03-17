@@ -27,8 +27,8 @@
  */
 package org.citydb.gui.operation.visExporter.preferences;
 
-import org.citydb.gui.operation.common.DefaultPreferencesEntry;
-import org.citydb.gui.operation.common.NullComponent;
+import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
+import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 
 import java.util.function.Supplier;
 
@@ -36,7 +36,7 @@ public class EmptyPanel extends DefaultPreferencesEntry {
 	private final Supplier<String> stringSupplier;
 
 	public EmptyPanel(Supplier<String> stringSupplier) {
-		super(NullComponent.getInstance());
+		super(EmptyPreferencesComponent.getInstance());
 		this.stringSupplier = stringSupplier;
 	}
 

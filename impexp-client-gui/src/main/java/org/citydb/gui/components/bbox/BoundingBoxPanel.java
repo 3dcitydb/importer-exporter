@@ -175,14 +175,14 @@ public class BoundingBoxPanel extends JPanel implements EventHandler, BoundingBo
         addComponent(component, false);
     }
 
-    private void doTranslation() {
+    private void switchLocale() {
         map.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.map"));
         copy.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.copy"));
         paste.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.paste"));
         srsLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));
 
         for (BBoxPopupMenuWrapper bboxPopup : bboxPopups)
-            bboxPopup.doTranslation();
+            bboxPopup.switchLocale();
     }
 
     private void copyBoundingBoxToClipboard() {
@@ -291,7 +291,7 @@ public class BoundingBoxPanel extends JPanel implements EventHandler, BoundingBo
     }
 
     public void handleEvent(Event event) throws Exception {
-        doTranslation();
+        switchLocale();
     }
 
     private void commitBoundingBox() {
@@ -324,7 +324,7 @@ public class BoundingBoxPanel extends JPanel implements EventHandler, BoundingBo
             paste.addActionListener(e -> pasteBoundingBoxFromClipboard());
         }
 
-        private void doTranslation() {
+        private void switchLocale() {
             copy.setText(Language.I18N.getString("common.popup.boundingBox.copy"));
             paste.setText(Language.I18N.getString("common.popup.boundingBox.paste"));
         }

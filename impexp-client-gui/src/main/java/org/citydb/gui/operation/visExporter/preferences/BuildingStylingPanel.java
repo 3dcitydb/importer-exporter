@@ -31,12 +31,13 @@ package org.citydb.gui.operation.visExporter.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.visExporter.Lod0FootprintMode;
-import org.citydb.gui.operation.common.DefaultPreferencesComponent;
+import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
-public class BuildingStylingPanel extends DefaultPreferencesComponent {
+public class BuildingStylingPanel extends InternalPreferencesComponent {
     private final SurfaceStylingPanel parent;
     private JLabel lod0FootprintLabel;
     private JComboBox<Lod0FootprintMode> lod0FootprintComboBox;
@@ -71,8 +72,8 @@ public class BuildingStylingPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public void doTranslation() {
-        parent.doTranslation();
+    public void switchLocale(Locale locale) {
+        parent.switchLocale(locale);
         lod0FootprintLabel.setText(Language.I18N.getString("pref.visExport.label.footprintGeometry"));
     }
 
@@ -94,7 +95,7 @@ public class BuildingStylingPanel extends DefaultPreferencesComponent {
     }
 
     @Override
-    public String getTitle() {
-        return parent.getTitle();
+    public String getLocalizedTitle() {
+        return parent.getLocalizedTitle();
     }
 }
