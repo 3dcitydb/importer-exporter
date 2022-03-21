@@ -29,6 +29,7 @@
 package org.citydb.gui;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.util.SystemInfo;
 import org.citydb.cli.ImpExpCli;
 import org.citydb.cli.ImpExpException;
 import org.citydb.cli.option.StartupProgressListener;
@@ -189,6 +190,12 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         UIManager.put("CheckBox.iconTextGap", iconTextGap);
         UIManager.put("RadioButton.iconTextGap", iconTextGap);
         UIManager.put("TitlePane.centerTitleIfMenuBarEmbedded", false);
+
+        // enable window decorations on Linux
+        if (SystemInfo.isLinux) {
+            JFrame.setDefaultLookAndFeelDecorated(true);
+            JDialog.setDefaultLookAndFeelDecorated(true);
+        }
 
         // splash screen
         if (!hideSplash) {
