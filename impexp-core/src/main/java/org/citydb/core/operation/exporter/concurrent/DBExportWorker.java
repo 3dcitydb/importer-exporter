@@ -57,6 +57,7 @@ import org.citydb.util.event.global.*;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
+import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
 
 import java.sql.Connection;
@@ -195,7 +196,9 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 						feature = (AbstractFeature) object;
 
 						if (calculateExtent && feature.isSetBoundedBy()) {
-							feature.setBoundedBy(feature.calcBoundedBy(bboxOptions));
+							BoundingShape boundedBy = feature.calcBoundedBy(bboxOptions);
+							boundedBy.getEnvelope().setSrsName(feature.getBoundedBy().getEnvelope().getSrsName());
+							feature.setBoundedBy(boundedBy);
 						}
 
 						if (++topLevelFeatureCounter == 20) {
