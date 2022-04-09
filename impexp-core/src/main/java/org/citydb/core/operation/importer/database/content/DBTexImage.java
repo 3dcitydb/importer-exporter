@@ -34,7 +34,6 @@ import org.citydb.core.operation.common.xlink.DBXlinkTextureFile;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.ConcurrentLockManager;
 import org.citydb.core.operation.importer.util.ExternalFileChecker;
-import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.appearance.AbstractTexture;
 
 import java.io.IOException;
@@ -48,7 +47,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class DBTexImage implements DBImporter {
 	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBTexImage.class);
-	private final Logger log = Logger.getInstance();
 	private final CityGMLImportManager importer;
 	private PreparedStatement psInsertStmt;	
 
@@ -80,7 +78,7 @@ public class DBTexImage implements DBImporter {
 		if (imageURI.isEmpty())
 			return 0;
 
-		long texImageId = 0;
+		long texImageId;
 		String md5URI = toHexString(md5.digest(imageURI.getBytes()));
 
 		Map.Entry<String, String> fileInfo = null;
