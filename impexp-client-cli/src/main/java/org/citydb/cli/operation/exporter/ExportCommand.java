@@ -63,6 +63,14 @@ public class ExportCommand extends CliCommand {
             description = "Output format to use for compressed exports: ${COMPLETION-CANDIDATES}.")
     private CompressedFormat compressedFormat;
 
+    @CommandLine.Option(names = "--replace-ids",
+            description = "Replace all object identifiers with UUIDs.")
+    private Boolean replaceIds;
+
+    @CommandLine.Option(names = "--id-prefix", paramLabel = "<prefix>", defaultValue = "ID_",
+            description = "Prefix to use when replacing object identifiers (default: ${DEFAULT-VALUE}).")
+    private String idPrefix;
+
     @CommandLine.Option(names = "--fail-fast", negatable = true,
             description = "Fail fast on errors (default: true).")
     private Boolean failFast;
@@ -123,6 +131,11 @@ public class ExportCommand extends CliCommand {
             exportConfig.getGeneralOptions().setCompressedOutputFormat(compressedFormat == CompressedFormat.cityjson ?
                     OutputFormat.CITYJSON :
                     OutputFormat.CITYGML);
+        }
+
+        if (replaceIds != null) {
+            exportConfig.getResourceId().setReplaceWithUUIDs(replaceIds);
+            exportConfig.getResourceId().setIdPrefix(idPrefix);
         }
 
         if (failFast != null) {
