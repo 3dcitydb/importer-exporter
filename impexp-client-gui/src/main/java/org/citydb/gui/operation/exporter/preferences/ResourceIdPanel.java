@@ -93,7 +93,7 @@ public class ResourceIdPanel extends InternalPreferencesComponent {
 	@Override
 	public void switchLocale(Locale locale) {
 		resourceIdPanel.setTitle(Language.I18N.getString("pref.export.id.label.replace"));
-		idPrefixLabel.setText(Language.I18N.getString("pref.import.id.label.prefix"));
+		idPrefixLabel.setText(Language.I18N.getString("pref.export.id.label.prefix"));
 	}
 
 	@Override
