@@ -236,6 +236,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				if (isLazyTextureExport() && config.getExportConfig().getAppearances().isSetExportAppearance())
 					getExporter(DBLocalAppearance.class).triggerLazyTextureExport(feature);
 
+				// replace object identifiers
 				if (idReplacer != null) {
 					feature.accept(idReplacer);
 				}

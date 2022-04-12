@@ -29,6 +29,7 @@
 package org.citydb.core.operation.exporter.util;
 
 import org.citydb.core.operation.exporter.CityGMLExportException;
+import org.citydb.core.util.CoreConstants;
 import org.citygml4j.model.citygml.appearance.*;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.base.AssociationByRepOrRef;
@@ -64,6 +65,7 @@ public class IdReplacer extends GMLWalker {
     @Override
     public void visit(AbstractGML object) {
         if (object.isSetId()) {
+            object.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, object.getId());
             object.setId(replaceId(object.getId()));
         }
 

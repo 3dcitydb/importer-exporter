@@ -48,6 +48,7 @@ import org.citydb.core.operation.exporter.writer.FeatureWriter;
 import org.citydb.core.query.Query;
 import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.query.filter.tiling.Tile;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.util.concurrent.Worker;
 import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.util.event.Event;
@@ -74,6 +75,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final FeatureWriter featureWriter;
 	private final EventDispatcher eventDispatcher;
 	private final InternalConfig internalConfig;
+	private final boolean replaceIds;
 	private final boolean useTiling;
 	private final boolean calculateExtent;
 	private final BoundingBoxOptions bboxOptions;
@@ -101,6 +103,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		this.eventDispatcher = eventDispatcher;
 		this.internalConfig = internalConfig;
 
+		replaceIds = config.getExportConfig().getResourceId().isReplaceWithUUIDs();
+
 		useTiling = query.isSetTiling();
 		if (useTiling) {
 			activeTile = query.getTiling().getActiveTile();
@@ -116,7 +120,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				connection,
 				query,
 				databaseAdapter,
-				schemaMapping, 
+				schemaMapping,
 				cityGMLBuilder,
 				featureWriter,
 				xlinkPool,
@@ -215,8 +219,17 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				featureWriter.write(feature, work.getSequenceId());
 
 				// register gml:id in cache
-				if (internalConfig.isRegisterGmlIdInCache() && feature.isSetId())
+				if (internalConfig.isRegisterGmlIdInCache() && feature.isSetId()) {
 					exporter.putObjectId(feature.getId(), work.getId(), work.getObjectType().getObjectClassId());
+
+					if (replaceIds) {
+						// also cache the original gml:id
+						String originalId = (String) feature.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID);
+						if (originalId != null) {
+							exporter.putObjectId(originalId, work.getId(), work.getObjectType().getObjectClassId());
+						}
+					}
+				}
 				
 				// update export counter
 				exporter.updateExportCounter(feature);
