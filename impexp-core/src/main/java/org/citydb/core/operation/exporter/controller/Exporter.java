@@ -262,6 +262,11 @@ public class Exporter implements EventHandler {
             }
         }
 
+        // log replacement of object identifiers
+        if (config.getExportConfig().getResourceId().isReplaceWithUUIDs()) {
+            log.info("Replacing object identifiers with UUIDs.");
+        }
+
         // check whether database contains global appearances and set internal flag
         try {
             internalConfig.setExportGlobalAppearances(config.getExportConfig().getAppearances().isSetExportAppearance()

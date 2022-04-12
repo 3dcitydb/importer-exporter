@@ -43,6 +43,7 @@ import javax.xml.bind.annotation.XmlType;
         "simpleQuery",
         "path",
         "generalOptions",
+        "resourceId",
         "continuation",
         "cityObjectGroup",
         "appearances",
@@ -59,6 +60,7 @@ public class ExportConfig {
     private Path path;
     @XmlElement(name = "general")
     private GeneralOptions generalOptions;
+    private ExportResourceId resourceId;
     private Continuation continuation;
     private ExportCityObjectGroup cityObjectGroup;
     private ExportAppearance appearances;
@@ -72,6 +74,7 @@ public class ExportConfig {
         simpleQuery = new SimpleQuery();
         path = new Path();
         generalOptions = new GeneralOptions();
+        resourceId = new ExportResourceId();
         continuation = new Continuation();
         cityObjectGroup = new ExportCityObjectGroup();
         appearances = new ExportAppearance();
@@ -126,6 +129,16 @@ public class ExportConfig {
     public void setGeneralOptions(GeneralOptions generalOptions) {
         if (generalOptions != null) {
             this.generalOptions = generalOptions;
+        }
+    }
+
+    public ExportResourceId getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(ExportResourceId resourceId) {
+        if (resourceId != null) {
+            this.resourceId = resourceId;
         }
     }
 

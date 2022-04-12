@@ -135,6 +135,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private LodGeometryChecker lodGeometryChecker;
 	private AppearanceRemover appearanceRemover;
 	private AffineTransformer affineTransformer;
+	private IdReplacer idReplacer;
 	private Document document;
 
 	public CityGMLExportManager(Connection connection,
@@ -178,6 +179,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 		if (config.getExportConfig().getAffineTransformation().isEnabled()) {
 			this.affineTransformer = affineTransformer;
+		}
+
+		if (config.getExportConfig().getResourceId().isReplaceWithUUIDs()) {
+			idReplacer = new IdReplacer().withPrefix(config.getExportConfig().getResourceId().getIdPrefix());
 		}
 
 		try {
@@ -230,6 +235,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				// trigger export of textures if required
 				if (isLazyTextureExport() && config.getExportConfig().getAppearances().isSetExportAppearance())
 					getExporter(DBLocalAppearance.class).triggerLazyTextureExport(feature);
+
+				// replace object identifiers
+				if (idReplacer != null) {
+					feature.accept(idReplacer);
+				}
 			}
 
 			return object;

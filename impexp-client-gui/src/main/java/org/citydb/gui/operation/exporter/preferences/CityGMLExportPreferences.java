@@ -39,6 +39,7 @@ public class CityGMLExportPreferences extends DefaultPreferences {
 		super(new CityGMLExportEntry());
 		
 		rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourceIdPanel(config)));
 		rootEntry.addChildEntry(new DefaultPreferencesEntry(new TilingOptionsPanel(config)));
 		rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupPanel(config)));
 		rootEntry.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
