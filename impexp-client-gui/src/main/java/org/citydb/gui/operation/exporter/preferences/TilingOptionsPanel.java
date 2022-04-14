@@ -149,17 +149,17 @@ public class TilingOptionsPanel extends InternalPreferencesComponent {
 
 	@Override
 	public void switchLocale(Locale locale) {
-		filePanel.setTitle(Language.I18N.getString("pref.export.boundingBox.border.path"));
-		optionsPanel.setTitle(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttr"));
+		filePanel.setTitle(Language.I18N.getString("pref.export.tiling.border.path"));
+		optionsPanel.setTitle(Language.I18N.getString("pref.export.tiling.label.tile.genericAttr"));
 
-		tilePathNameLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.pathName"));
+		tilePathNameLabel.setText(Language.I18N.getString("pref.export.tiling.label.tile.pathName"));
 
-		genAttrNameLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttrName"));
-		genAttrValueLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttrValue"));
+		genAttrNameLabel.setText(Language.I18N.getString("pref.export.tiling.label.tile.genericAttrName"));
+		genAttrValueLabel.setText(Language.I18N.getString("pref.export.tiling.label.tile.genericAttrValue"));
 
-		tilePathInfo.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.pathInfo"));
-		tilePathSuffixLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.pathSuffix"));
-		tileNameSuffixLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix"));
+		tilePathInfo.setText(Language.I18N.getString("pref.export.tiling.label.tile.pathInfo"));
+		tilePathSuffixLabel.setText(Language.I18N.getString("pref.export.tiling.label.tile.pathSuffix"));
+		tileNameSuffixLabel.setText(Language.I18N.getString("pref.export.tiling.label.tile.nameSuffix"));
 	}
 
 	@Override

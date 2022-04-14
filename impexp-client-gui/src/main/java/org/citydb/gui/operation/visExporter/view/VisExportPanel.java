@@ -449,14 +449,14 @@ public class VisExportPanel extends DefaultViewComponent implements EventHandler
     public void switchLocale(Locale locale) {
         browseButton.setText(Language.I18N.getString("common.button.browse"));
         featureVersionPanel.setTitle(featureVersionFilter.getLocalizedTitle());
-        tilingPanel.setTitle(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
+        tilingPanel.setTitle(Language.I18N.getString("visExport.label.tiling"));
         attributeFilterPanel.setTitle(attributeFilter.getLocalizedTitle());
         sqlFilterPanel.setTitle(sqlFilter.getLocalizedTitle());
         bboxFilterPanel.setTitle(bboxFilter.getLocalizedTitle());
         featureFilterPanel.setTitle(featureTypeFilter.getLocalizedTitle());
 
-        manualTilingRadioButton.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
-        columnsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.columns"));
+        manualTilingRadioButton.setText(Language.I18N.getString("visExport.label.rows"));
+        columnsLabel.setText(Language.I18N.getString("visExport.label.columns"));
         automaticTilingRadioButton.setText(Language.I18N.getString("visExport.label.automatic"));
 
         lodPanel.setTitle(Language.I18N.getString("visExport.label.fromLOD"));

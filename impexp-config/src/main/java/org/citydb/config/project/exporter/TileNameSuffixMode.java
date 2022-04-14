@@ -55,9 +55,9 @@ public enum TileNameSuffixMode {
     public String toString() {
         switch (this) {
             case NONE:
-                return Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.none");
+                return Language.I18N.getString("pref.export.tiling.label.tile.nameSuffix.none");
             case SAME_AS_PATH:
-                return Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.sameAsPath");
+                return Language.I18N.getString("pref.export.tiling.label.tile.nameSuffix.sameAsPath");
             default:
                 return "";
         }

@@ -63,7 +63,7 @@ public enum TileSuffixMode {
     public String toString() {
         switch (this) {
             case ROW_COLUMN:
-                return Language.I18N.getString("pref.export.boundingBox.label.tile.pathSuffix.rowColumn");
+                return Language.I18N.getString("pref.export.tiling.label.tile.pathSuffix.rowColumn");
             case XMIN_YMIN:
                 return "Xmin / Ymin";
             case XMIN_YMAX:
