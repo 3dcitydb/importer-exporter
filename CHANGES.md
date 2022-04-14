@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+### 5.1.1 - 2022-04-12
+
+##### Fixes
+* Fixed initialization of GUI extensions. [#244](https://github.com/3dcitydb/importer-exporter/pull/244)
+* Fixed missing srsName on envelopes when using an LoD filer.
+
 ### 5.1.0 - 2022-02-10
 
 ##### Additions
