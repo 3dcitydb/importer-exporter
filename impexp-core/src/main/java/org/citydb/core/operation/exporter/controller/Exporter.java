@@ -31,7 +31,9 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
-import org.citydb.config.project.exporter.*;
+import org.citydb.config.project.exporter.OutputFormat;
+import org.citydb.config.project.exporter.SimpleTilingOptions;
+import org.citydb.config.project.exporter.XLink;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
@@ -363,7 +365,7 @@ public class Exporter implements EventHandler {
                 if (folder == null)
                     folder = Paths.get("").toAbsolutePath().normalize();
 
-                if (useTiling) {
+                if (useTiling && tilingOptions != null) {
                     Tile tile;
                     try {
                         tile = tiling.getTileAt(row, column);
@@ -377,40 +379,24 @@ public class Exporter implements EventHandler {
                         throw new CityGMLExportException("Failed to get tile at [" + row + "," + column + "].", e);
                     }
 
-                    // create suffix for folderName and fileName
-                    TileSuffixMode suffixMode = tilingOptions.getTilePathSuffix();
-                    double minX = tile.getExtent().getLowerCorner().getX();
-                    double minY = tile.getExtent().getLowerCorner().getY();
-                    double maxX = tile.getExtent().getUpperCorner().getX();
-                    double maxY = tile.getExtent().getUpperCorner().getY();
-
-					String suffix;
-                    switch (suffixMode) {
-                        case XMIN_YMIN:
-                            suffix = String.valueOf(minX) + '_' + minY;
-                            break;
-                        case XMAX_YMIN:
-                            suffix = String.valueOf(maxX) + '_' + minY;
-                            break;
-                        case XMIN_YMAX:
-                            suffix = String.valueOf(minX) + '_' + maxY;
-                            break;
-                        case XMAX_YMAX:
-                            suffix = String.valueOf(maxX) + '_' + maxY;
-                            break;
-                        case XMIN_YMIN_XMAX_YMAX:
-                            suffix = String.valueOf(minX) + '_' + minY + '_' + maxX + '_' + maxY;
-                            break;
-                        default:
-                            suffix = String.valueOf(row) + '_' + column;
+                    // adapt output folder for tile
+                    if (tilingOptions.isUseSubDir()) {
+                        String tilePath = tilingOptions.getSubDir().formatAndResolveTokens(row, column, tile.getExtent());
+                        folder = folder.resolve(tilePath);
                     }
 
-                    folder = folder.resolve(tilingOptions.getTilePath() + '_' + suffix);
-                    if (tilingOptions.getTileNameSuffix() == TileNameSuffixMode.SAME_AS_PATH) {
-                        int index = fileName.indexOf('.');
-                        fileName = index > 0 ?
-                                fileName.substring(0, index) + '_' + suffix + fileName.substring(index) :
-                                fileName + '_' + suffix;
+                    // adapt filename for tile
+                    if (tilingOptions.isUseFilenameSuffix()) {
+                        String suffix = tilingOptions.getFilenameSuffix().formatAndResolveTokens(row, column, tile.getExtent());
+                        String extension = Util.getFileExtension(fileName);
+
+                        fileName = tilingOptions.isUseSuffixAsFilename() ?
+                                suffix :
+                                Util.stripFileExtension(fileName) + suffix;
+
+                        if (!extension.isEmpty()) {
+                            fileName += "." + extension;
+                        }
                     }
                 }
 
