@@ -30,66 +30,110 @@ package org.citydb.config.project.exporter;
 
 import org.citydb.config.project.query.filter.tiling.AbstractTilingOptions;
 
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "CityGMLTilingOptionsType", propOrder = {
-        "tilePath",
-        "tilePathSuffix",
-        "tileNameSuffix",
-        "includeTileAsGenericAttribute",
-        "genericAttributeValue"
+        "subDir",
+        "filenameSuffix",
+        "attributeName",
+        "attributeValue"
 })
 public class SimpleTilingOptions extends AbstractTilingOptions {
-    private String tilePath = "tile";
-    private TileSuffixMode tilePathSuffix = TileSuffixMode.ROW_COLUMN;
-    private TileNameSuffixMode tileNameSuffix = TileNameSuffixMode.NONE;
-    @XmlElement(defaultValue = "false")
-    private Boolean includeTileAsGenericAttribute = false;
-    private TileSuffixMode genericAttributeValue = TileSuffixMode.XMIN_YMIN_XMAX_YMAX;
+    @XmlAttribute(required = true)
+    private boolean useSubDir = true;
+    @XmlAttribute(required = true)
+    private boolean useFilenameSuffix;
+    @XmlAttribute
+    private boolean useSuffixAsFilename;
+    @XmlAttribute(required = true)
+    private boolean useGenericAttribute;
+    private TileTokenValue subDir;
+    private TileTokenValue filenameSuffix;
+    private String attributeName;
+    private TileTokenValue attributeValue;
 
-    public String getTilePath() {
-        return tilePath;
+    public SimpleTilingOptions() {
+        subDir = new TileTokenValue(getDefaultSubDir());
+        filenameSuffix = new TileTokenValue("");
+        attributeValue = new TileTokenValue("");
     }
 
-    public void setTilePath(String tilePath) {
-        this.tilePath = tilePath;
+    public boolean isUseSubDir() {
+        return useSubDir;
     }
 
-    public TileSuffixMode getTilePathSuffix() {
-        return tilePathSuffix;
+    public void setUseSubDir(boolean useSubDir) {
+        this.useSubDir = useSubDir;
     }
 
-    public void setTilePathSuffix(TileSuffixMode tilePathSuffix) {
-        this.tilePathSuffix = tilePathSuffix;
+    public boolean isUseFilenameSuffix() {
+        return useFilenameSuffix;
     }
 
-    public TileNameSuffixMode getTileNameSuffix() {
-        return tileNameSuffix;
+    public void setUseFilenameSuffix(boolean useFilenameSuffix) {
+        this.useFilenameSuffix = useFilenameSuffix;
     }
 
-    public void setTileNameSuffix(TileNameSuffixMode tileNameSuffix) {
-        this.tileNameSuffix = tileNameSuffix;
+    public boolean isUseSuffixAsFilename() {
+        return useSuffixAsFilename;
     }
 
-    public Boolean getIncludeTileAsGenericAttribute() {
-        return includeTileAsGenericAttribute;
+    public void setUseSuffixAsFilename(boolean useSuffixAsFilename) {
+        this.useSuffixAsFilename = useSuffixAsFilename;
     }
 
-    public boolean isIncludeTileAsGenericAttribute() {
-        return includeTileAsGenericAttribute != null && includeTileAsGenericAttribute;
+    public boolean isUseGenericAttribute() {
+        return useGenericAttribute;
     }
 
-    public void setIncludeTileAsGenericAttribute(Boolean includeTileAsGenericAttribute) {
-        this.includeTileAsGenericAttribute = includeTileAsGenericAttribute;
+    public void setUseGenericAttribute(boolean useGenericAttribute) {
+        this.useGenericAttribute = useGenericAttribute;
     }
 
-    public TileSuffixMode getGenericAttributeValue() {
-        return genericAttributeValue;
+    public String getDefaultSubDir() {
+        return "tile_" + TileTokenValue.COLUMN_TOKEN + "_" + TileTokenValue.ROW_TOKEN;
     }
 
-    public void setGenericAttributeValue(TileSuffixMode genericAttributeValue) {
-        this.genericAttributeValue = genericAttributeValue;
+    public TileTokenValue getSubDir() {
+        return subDir;
     }
 
+    public void setSubDir(TileTokenValue subDir) {
+        if (subDir != null) {
+            this.subDir = subDir;
+        }
+    }
+
+    public TileTokenValue getFilenameSuffix() {
+        return filenameSuffix;
+    }
+
+    public void setFilenameSuffix(TileTokenValue filenameSuffix) {
+        if (filenameSuffix != null) {
+            this.filenameSuffix = filenameSuffix;
+        }
+    }
+
+    public String getDefaultAttributeName() {
+        return "tile";
+    }
+
+    public String getAttributeName() {
+        return attributeName != null ? attributeName : getDefaultAttributeName();
+    }
+
+    public void setAttributeName(String attributeName) {
+        this.attributeName = attributeName;
+    }
+
+    public TileTokenValue getAttributeValue() {
+        return attributeValue;
+    }
+
+    public void setAttributeValue(TileTokenValue attributeValue) {
+        if (attributeValue != null) {
+            this.attributeValue = attributeValue;
+        }
+    }
 }

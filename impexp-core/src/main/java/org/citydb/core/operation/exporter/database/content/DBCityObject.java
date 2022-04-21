@@ -119,7 +119,7 @@ public class DBCityObject extends AbstractTypeExporter {
 		if (query.isSetTiling()) {
 			Tiling tiling = query.getTiling();
 			tilingOptions = tiling.getTilingOptions() instanceof SimpleTilingOptions ? (SimpleTilingOptions) tiling.getTilingOptions() : new SimpleTilingOptions();
-			setTileInfoAsGenericAttribute = tilingOptions.isIncludeTileAsGenericAttribute();
+			setTileInfoAsGenericAttribute = tilingOptions.isUseGenericAttribute();
 			activeTile = tiling.getActiveTile();
 		}
 
@@ -384,37 +384,15 @@ public class DBCityObject extends AbstractTypeExporter {
 
 			// add tile as generic attribute
 			if (context.isTopLevel && setTileInfoAsGenericAttribute) {
-				String value;
+				String value = tilingOptions.getAttributeValue().formatAndResolveTokens(
+						activeTile.getRow(),
+						activeTile.getColumn(),
+						activeTile.getExtent());
 
-				double minX = activeTile.getExtent().getLowerCorner().getX();
-				double minY = activeTile.getExtent().getLowerCorner().getY();
-				double maxX = activeTile.getExtent().getUpperCorner().getX();
-				double maxY = activeTile.getExtent().getUpperCorner().getY();
-
-				switch (tilingOptions.getGenericAttributeValue()) {
-					case XMIN_YMIN:
-						value = String.valueOf(minX) + ' ' + minY;
-						break;
-					case XMAX_YMIN:
-						value = String.valueOf(maxX) + ' ' + minY;
-						break;
-					case XMIN_YMAX:
-						value = String.valueOf(minX) + ' ' + maxY;
-						break;
-					case XMAX_YMAX:
-						value = String.valueOf(maxX) + ' ' + maxY;
-						break;
-					case XMIN_YMIN_XMAX_YMAX:
-						value = String.valueOf(minX) + ' ' + minY + ' ' + maxX + ' ' + maxY;
-						break;
-					default:
-						value = String.valueOf(activeTile.getRow()) + ' ' + activeTile.getColumn();
-				}
-
-				StringAttribute genericStringAttrib = new StringAttribute();
-				genericStringAttrib.setName("tile");
-				genericStringAttrib.setValue(value);
-				cityObject.addGenericAttribute(genericStringAttrib);
+				StringAttribute tileAttribtue = new StringAttribute();
+				tileAttribtue.setName(tilingOptions.getAttributeName());
+				tileAttribtue.setValue(value);
+				cityObject.addGenericAttribute(tileAttribtue);
 			}
 		}
 
