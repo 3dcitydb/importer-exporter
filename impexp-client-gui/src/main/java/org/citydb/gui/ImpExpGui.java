@@ -271,12 +271,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 			consolePane.addTab(null, scroll);
 			consolePane.setHasFullBorder(true);
-			consolePane.setUI(new FlatTabbedPaneUI() {
-				protected void paintTabBackground(Graphics g, int p, int i, int x, int y, int w, int h, boolean s) {
-					// do not paint tab background
-				}
-			});
-
 			console.add(consolePane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 10, 10, 10));
 		}
 
@@ -335,6 +329,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consolePane.setUI(new FlatTabbedPaneUI() {
 			protected void paintTabBackground(Graphics g, int p, int i, int x, int y, int w, int h, boolean s) {
 				// do not paint tab background
+			}
+			protected boolean isTabbedPaneOrChildFocused() {
+				// avoid inactive tab color when not focused
+				return true;
 			}
 		});
 	}
