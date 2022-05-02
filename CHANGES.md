@@ -1,11 +1,32 @@
 Change Log
 ==========
 
+### 5.2.0 - tba
+
+##### Additions
+* Added an option to replace all identifiers of features and geometries with UUIDs when exporting to CityGML/CityJSON. [#249](https://github.com/3dcitydb/importer-exporter/pull/249)
+* Extended options for defining the subdirectories and filenames for storing tiles when tiling is enabled for CityGML exports. [#250](https://github.com/3dcitydb/importer-exporter/pull/250)
+
+#### Changes
+* Consistently use `switchLocale` instead of `doTranslation`. [#247](https://github.com/3dcitydb/importer-exporter/pull/247)
+* Added default preferences component for internal use. [#247](https://github.com/3dcitydb/importer-exporter/pull/247)
+* Moved default preferences classes to GUI plugin package. [#247](https://github.com/3dcitydb/importer-exporter/pull/247)
+* Added DefaultView and DefaultViewComponent to the GUI extension plugin. [#247](https://github.com/3dcitydb/importer-exporter/pull/247)
+
+#### Fixes
+* Avoid duplicate entries for the `implicit_geometry` table, if the same implicit geometry is used in different input files during the CityGML import.
+This fix requires a **3DCityDB version 4.3.0 or higher** to work.
+
+##### Miscellaneous
+* Updated PostgreSQL driver to 42.3.4
+* Updated Oracle driver to 21.3.0.0
+* Updated GeoTools to 26.4.
+
 ### 5.1.1 - 2022-04-12
 
 ##### Fixes
 * Fixed initialization of GUI extensions. [#244](https://github.com/3dcitydb/importer-exporter/pull/244)
-* Fixed missing srsName on envelopes when using an LoD filer.
+* Fixed missing srsName on envelopes when using an LoD filer. [#248](https://github.com/3dcitydb/importer-exporter/issues/248)
 
 ### 5.1.0 - 2022-02-10
 
