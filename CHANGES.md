@@ -15,7 +15,7 @@ Change Log
 
 #### Fixes
 * Avoid duplicate entries for the `implicit_geometry` table, if the same implicit geometry is used in different input files during the CityGML import.
-This fix requires a **3DCityDB version 4.3.0 or higher** to work.
+This fix requires a **3DCityDB version 4.3.0 or higher** to work. [#243](https://github.com/3dcitydb/importer-exporter/pull/243)
 
 ##### Miscellaneous
 * Updated PostgreSQL driver to 42.3.4
