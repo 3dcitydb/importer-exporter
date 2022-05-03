@@ -49,9 +49,6 @@ Latest release
 --------------
 The latest stable release of the 3D City Database Importer/Exporter is 5.1.1.
 
-Download a binary distribution for the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.1.1/3DCityDB-Importer-Exporter-5.1.1.zip).
-Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
-
 System requirements
 -------------------
 * Java JRE or JDK >= 8
@@ -71,27 +68,32 @@ Software and Standards 3 (5), 2018: [Z. Yao, C. Nagel, F. Kunde, G. Hudra, P. Wi
 
 Contributing
 ------------
-
 * To file bugs found in the software create a GitHub issue.
 * To contribute code for fixing filed issues create a pull request with the issue id.
 * To propose a new feature create a GitHub issue and open a discussion.
 
 Installing and running
 ----------------------
-The easiest way to get the Importer/Exporter running on your computer is to download a binary distribution 
-from the [releases section](https://github.com/3dcitydb/importer-exporter/releases). The binary distributions are 
-named `3DCityDB-Importer-Exporter-<version>.zip` and are packaged as ZIP file. 
+The easiest way to get the Importer/Exporter running on your computer is to download the latest release of the
+[3D City Database Suite installer](https://github.com/3dcitydb/3dcitydb-suite/releases). In addition to the
+Importer/Exporter software, this installer also bundles the 3D City Database scripts, the 3D Web Map Client,
+Importer/Exporter plugins, test datasets, etc. A setup wizard will guide you through the separate steps of the
+installation process. Please refer to the [user manual](https://3dcitydb-docs.readthedocs.io/en/version-2022.0/)
+for more information on how to install and use the tool.
 
-After unzipping the ZIP file, start scripts are available in the directory to launch the application.
- 
+After successful installation, start scripts are available in the installation directory to run the application.
 Simply execute the start script suitable for your platform:
 
 * `3DCityDB-Importer-Exporter.bat` (Microsoft Windows family)
 * `3DCityDB-Importer-Exporter` (UNIX/Linux family, macOS)
 
 On most platforms, double-clicking the start script launches the application.
-Please refer to the [user manual](https://3dcitydb-docs.readthedocs.io/en/version-2022.0/) for more information
-on how to run the tool.
+
+You can alternatively download a binary distribution of the Importer/Exporter from the
+[releases section](https://github.com/3dcitydb/importer-exporter/releases). The binary distributions are named
+`3DCityDB-Importer-Exporter-<version>.zip` and are packaged as ZIP file. Simply unzip the file and use the same
+start scripts to run the tool. However, please note that the ZIP file only contains the plain Importer/Exporter.
+Thus, you have to download and install further components such as the 3D City Database scripts or plugins yourself.
 
 Building
 --------
@@ -106,9 +108,9 @@ requires a Java 8 JDK or higher to run.
 
 If the build was successful, you will find the Importer/Exporter package under
 `impexp-client-gui/build/install`. To launch the application with GUI, simply use the
-starter scripts in the output folder. The executables for the command-line version can be found in the `lib` subfolder.
+start scripts in the output folder. The executables for the command-line version can be found in the `lib` subfolder.
 
-If you want to build an installation wizard for the Importer/Exporter, please follow the instructions in the
+If you want to build an installer for the Importer/Exporter instead, please follow the instructions in the
 [3dcitydb-suite repository](https://github.com/3dcitydb/3dcitydb-suite).
 
 Using with Docker
