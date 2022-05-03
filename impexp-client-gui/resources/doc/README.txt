@@ -89,9 +89,9 @@ third party applications.
 The @name@ can be run on any platform 
 providing appropriate Java support. It has been tested on the 
 following platforms:
-  - Microsoft Windows XP, Vista, Windows 7, 8, 10
+  - Microsoft Windows 7, 8, 10, 11
   - Apple Mac OS X and macOS
-  - Ubuntu 9 - 20
+  - Ubuntu 9 - 22
 
 
 5. (Un)Installation
