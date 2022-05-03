@@ -110,7 +110,7 @@ If the build was successful, you will find the Importer/Exporter package under
 `impexp-client-gui/build/install`. To launch the application with GUI, simply use the
 start scripts in the output folder. The executables for the command-line version can be found in the `lib` subfolder.
 
-If you want to build an installer for the Importer/Exporter instead, please follow the instructions in the
+If you want to build an installer for the 3D City Database Suite instead, please follow the instructions in the
 [3dcitydb-suite repository](https://github.com/3dcitydb/3dcitydb-suite).
 
 Using with Docker
