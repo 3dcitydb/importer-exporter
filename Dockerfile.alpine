@@ -5,11 +5,11 @@
 
 # Fetch & build stage #########################################################
 # ARGS
-ARG BUILDER_IMAGE_TAG='17-jdk-slim'
-ARG RUNTIME_IMAGE_TAG='17-alpine'
+ARG BUILDER_IMAGE_TAG='17'
+ARG RUNTIME_IMAGE_TAG='17'
 
 # Base image
-FROM openjdk:${BUILDER_IMAGE_TAG} AS builder
+FROM bellsoft/liberica-openjdk-alpine:${BUILDER_IMAGE_TAG} AS builder
 
 # Copy source code
 WORKDIR /build
@@ -20,7 +20,7 @@ RUN chmod u+x ./gradlew && ./gradlew installDockerDist
 
 # Runtime stage ###############################################################
 # Base image
-FROM openjdk:${RUNTIME_IMAGE_TAG} AS runtime
+FROM bellsoft/liberica-openjdk-alpine:${RUNTIME_IMAGE_TAG} AS runtime
 
 # Version info
 ARG IMPEXP_VERSION
