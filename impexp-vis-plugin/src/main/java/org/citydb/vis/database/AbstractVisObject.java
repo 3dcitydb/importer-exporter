@@ -2216,7 +2216,7 @@ public abstract class AbstractVisObject {
 							// textures have priority
 							if (texImageUri != null && texImageUri.trim().length() != 0 && texCoordsObject != null && surfaceInfo != null) {
 								GeometryObject texCoordsGeometry = geometryConverterAdapter.getPolygon(texCoordsObject);
-								texImageUri = texImageUri.replaceAll(" ", "_"); //replace spaces with underscores
+								texImageUri = texImageUri.replaceAll("[#| ]", "_"); // replace special characters with underscores
 								hasTexture = true;
 
 								// handle texture image
