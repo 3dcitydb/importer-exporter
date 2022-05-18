@@ -48,13 +48,20 @@
       {
         document.write("<span title=\"");
         switch (datatype) {
-          case 1: document.write(strval);
-                  break;
-          case 2: document.write(intval);
-                  break;
-          case 3: document.write(realval);
-                  break;
-          default: document.write("unknown");
+          case 1:
+          case 4:
+          case 5:
+            document.write(strval);
+            break;
+          case 2:
+            document.write(intval);
+            break;
+          case 3:
+          case 6:
+            document.write(realval);
+            break;
+          default:
+            document.write("unknown");
         };
         document.write("\">" + attrname + "</span>");
 

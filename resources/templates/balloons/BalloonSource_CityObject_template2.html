@@ -12,13 +12,20 @@
       {
         document.write("<span title=\"");
         switch (datatype) {
-          case "1": document.write(strval);
-                  break;
-          case "2": document.write(intval);
-                  break;
-          case "3": document.write(realval);
-                  break;
-          default: document.write("unknown");
+          case 1:
+          case 4:
+          case 5:
+            document.write(strval);
+            break;
+          case 2:
+            document.write(intval);
+            break;
+          case 3:
+          case 6:
+            document.write(realval);
+            break;
+          default:
+            document.write("unknown");
         };
         document.write("\">" + attrname + "</span>");
 
@@ -39,7 +46,7 @@
     <tr><td><b>Existing generic attributes (mouseOver for values):</b> <br>
     <script type="text/javascript">
       <3DCityDB>FOREACH CITYOBJECT_GENERICATTRIB/ATTRNAME,DATATYPE,STRVAL,INTVAL,REALVAL</3DCityDB>
-        ga_value_as_tooltip("%0", "%1", "%2", "%3", "%4", "%5");
+        ga_value_as_tooltip("%0", "%1", %2, "%3", "%4", "%5");
       <3DCityDB>END FOREACH</3DCityDB>
     </script>
     </td></tr>
