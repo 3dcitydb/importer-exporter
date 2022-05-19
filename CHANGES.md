@@ -16,6 +16,8 @@ Change Log
 #### Fixes
 * Avoid duplicate entries for the `implicit_geometry` table, if the same implicit geometry is used in different input files during the CityGML import.
 This fix requires a **3DCityDB version 4.3.0 or higher** to work. [#243](https://github.com/3dcitydb/importer-exporter/pull/243)
+* Fixed bug in the output of the VIS exporter when filenames of texture files contain `#` characters. [#254](https://github.com/3dcitydb/importer-exporter/pull/254)
+* Fixed example balloon templates for KML exports to support generic measure attributes. [#210](https://github.com/3dcitydb/importer-exporter/issues/210)
 
 ##### Miscellaneous
 * Updated PostgreSQL driver to 42.3.4
