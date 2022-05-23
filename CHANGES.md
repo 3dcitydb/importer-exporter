@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 5.2.1 - 2022-05-23
+### 5.2.0 - 2022-05-23
 
 ##### Additions
 * Added an option to replace all identifiers of features and geometries with UUIDs when exporting to CityGML/CityJSON. [#249](https://github.com/3dcitydb/importer-exporter/pull/249)
