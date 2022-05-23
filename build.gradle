@@ -6,7 +6,7 @@ plugins {
 
 apply from: 'properties.gradle'
 
-version '5.2.0'
+version '5.2.1'
 
 subprojects {
     apply plugin: 'java-library'
