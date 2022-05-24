@@ -12,6 +12,7 @@ Change Log
 * Added default preferences component for internal use. [#247](https://github.com/3dcitydb/importer-exporter/pull/247)
 * Moved default preferences classes to GUI plugin package. [#247](https://github.com/3dcitydb/importer-exporter/pull/247)
 * Added DefaultView and DefaultViewComponent to the GUI extension plugin. [#247](https://github.com/3dcitydb/importer-exporter/pull/247)
+* Updated Docker images to Java 17. [#253](https://github.com/3dcitydb/importer-exporter/pull/253)
 
 #### Fixes
 * Avoid duplicate entries for the `implicit_geometry` table, if the same implicit geometry is used in different input files during the CityGML import.
