@@ -595,7 +595,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             return input != null ? new String(input) : null;
         } else {
             int timeout = 60;
-            System.out.print(prompt + " (will timeout in " + timeout + "s):");
+            System.out.print(prompt + " (will timeout in " + timeout + "s): ");
             ExecutorService service = Executors.newFixedThreadPool(1);
 
             try {
