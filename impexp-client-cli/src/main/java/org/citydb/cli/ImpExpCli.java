@@ -77,6 +77,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -587,20 +588,25 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     private String readPassword(CommandLine.ParseResult parseResult) {
         String prompt = "Enter password for " +
-                parseResult.matchedOptionValue("-u", System.getenv(CoreConstants.ENV_CITYDB_USERNAME)) + ": ";
+                parseResult.matchedOptionValue("-u", System.getenv(CoreConstants.ENV_CITYDB_USERNAME));
         Console console = System.console();
         if (console != null) {
-            char[] input = console.readPassword(prompt);
+            char[] input = console.readPassword(prompt + ": ");
             return input != null ? new String(input) : null;
         } else {
-            System.out.print(prompt);
-            try (Scanner scanner = new Scanner(System.in)) {
-                if (scanner.hasNext()) {
-                    return scanner.nextLine();
-                } else {
-                    System.out.println("Failed to connect to console");
-                    return null;
-                }
+            int timeout = 60;
+            System.out.print(prompt + " (will timeout in " + timeout + "s): ");
+            ExecutorService service = Executors.newFixedThreadPool(1);
+
+            try {
+                Future<String> input = service.submit(() -> new Scanner(System.in).nextLine());
+                return input.get(timeout, TimeUnit.SECONDS);
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException("Failed to read password from console.", e);
+            } catch (TimeoutException e) {
+                throw new RuntimeException("No password provided within " + timeout + " seconds.", e);
+            } finally {
+                service.shutdown();
             }
         }
     }
