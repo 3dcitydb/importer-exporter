@@ -186,7 +186,7 @@ public class ProjectConfig {
         return namespaceFilter;
     }
 
-    void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
+    public void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
         this.namespaceFilter = namespaceFilter;
     }
 }

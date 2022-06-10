@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -25,12 +25,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config;
+package org.citydb.util.config;
 
+import org.citydb.config.ProjectConfig;
 import org.citydb.config.gui.GuiConfig;
 import org.citydb.config.util.ConfigNamespaceFilter;
-import org.citydb.config.util.ProjectSchemaWriter;
-import org.citydb.config.util.QueryWrapper;
+import org.citydb.config.project.query.QueryWrapper;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ConfigUtil {
-	public static final String CITYDB_CONFIG_NAMESPACE_URI = "http://www.3dcitydb.org/importer-exporter/config";
 	private static ConfigUtil instance;
 
 	private final Set<Class<?>> configClasses = new HashSet<>();

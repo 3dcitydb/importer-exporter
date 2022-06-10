@@ -28,9 +28,10 @@
 
 package org.citydb.cli.option;
 
-import org.citydb.config.ConfigUtil;
+import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.project.query.QueryConfig;
-import org.citydb.config.util.QueryWrapper;
+import org.citydb.config.util.ConfigConstants;
+import org.citydb.config.project.query.QueryWrapper;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
@@ -86,7 +87,7 @@ public class XMLQueryOption implements CliOption {
 
     private String wrapQuery(String query) {
         StringBuilder wrapper = new StringBuilder("<wrapper xmlns=\"")
-                .append(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI)
+                .append(ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI)
                 .append("\" ");
 
         ModuleContext context = new ModuleContext(CityGMLVersion.v2_0_0);

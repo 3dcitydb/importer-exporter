@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -26,9 +26,25 @@
  * limitations under the License.
  */
 
-@javax.xml.bind.annotation.XmlAccessorType(javax.xml.bind.annotation.XmlAccessType.FIELD)
-@javax.xml.bind.annotation.XmlSchema(namespace = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI,
-		elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package org.citydb.config.util;
+package org.citydb.config.project.query;
 
-import org.citydb.config.ConfigUtil;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlRootElement(name = "wrapper")
+@XmlType(name = "QueryWrapperType", propOrder = {
+        "queryConfig"
+})
+public class QueryWrapper {
+    @XmlElement(name = "query")
+    private QueryConfig queryConfig;
+
+    public QueryConfig getQueryConfig() {
+        return queryConfig;
+    }
+
+    public void setQueryConfig(QueryConfig queryConfig) {
+        this.queryConfig = queryConfig;
+    }
+}

@@ -29,7 +29,7 @@ package org.citydb.gui.operation.database.preferences;
 
 import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
-import org.citydb.config.ConfigUtil;
+import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.DatabaseSrsList;

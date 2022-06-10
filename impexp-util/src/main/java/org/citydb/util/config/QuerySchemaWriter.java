@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -25,34 +25,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.util;
 
+package org.citydb.util.config;
+
+import org.citydb.config.project.query.QueryWrapper;
+import org.citydb.config.util.ConfigConstants;
+
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
-public class ProjectSchemaWriter extends SchemaOutputResolver {
-	private final Path targetDir;
+public class QuerySchemaWriter {
 
-	public ProjectSchemaWriter(File path) {
-		this.targetDir = path.toPath();
-	}
+	public static void main(String[] args) throws Exception {
+		Path configFile = Paths.get("impexp-config/src/main/resources/org/citydb/config/schema/query.xsd");
+		System.out.print("Generting XML schema in " + configFile.toAbsolutePath() + "... ");
+		
+		JAXBContext context = JAXBContext.newInstance(QueryWrapper.class);
+		context.generateSchema(new SchemaOutputResolver() {
+			@Override
+			public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
+				if (ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI.equals(namespaceUri)) {
+					Files.createDirectories(configFile.getParent());
+					StreamResult res = new StreamResult();
+					res.setSystemId(configFile.toUri().toString());
 
-	@Override
-	public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
-		Path file = namespaceUri.equals("http://www.3dcitydb.org/importer-exporter/config") ?
-				targetDir.resolve("config.xsd") :
-				targetDir.resolve("plugin_" + suggestedFileName);
-
-		StreamResult res = new StreamResult(file.toFile());
-		res.setSystemId(URLDecoder.decode(file.toUri().toURL().toString(), StandardCharsets.UTF_8.name()));
-
-		return res;
+					return res;
+				} else
+					return null;
+			}
+			
+		});
+		
+		System.out.println("finished.");
 	}
 
 }
