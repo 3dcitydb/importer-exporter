@@ -28,15 +28,21 @@
 package org.citydb.core.database.schema.util;
 
 import org.citydb.core.database.schema.mapping.*;
+import org.citydb.util.xml.SecureXMLProcessors;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 public class SchemaMappingUtil {
 	private static SchemaMappingUtil instance;
@@ -53,56 +59,53 @@ public class SchemaMappingUtil {
 		return instance;
 	}	
 
-	private SchemaMapping unmarshal(SchemaMapping schemaMapping, Object input) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		Unmarshaller um = context.createUnmarshaller();
-		um.setAdapter(new AppSchemaAdapter(schemaMapping));
-		um.setAdapter(new ComplexAttributeTypeAdapter(schemaMapping));
-		um.setAdapter(new ComplexTypeAdapter(schemaMapping));
-		um.setAdapter(new FeatureTypeAdapter(schemaMapping));
-		um.setAdapter(new ObjectTypeAdapter(schemaMapping));
-		um.setListener(new UnmarshalListener());
+	private SchemaMapping unmarshal(SchemaMapping schemaMapping, InputSource input) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		unmarshaller.setAdapter(new AppSchemaAdapter(schemaMapping));
+		unmarshaller.setAdapter(new ComplexAttributeTypeAdapter(schemaMapping));
+		unmarshaller.setAdapter(new ComplexTypeAdapter(schemaMapping));
+		unmarshaller.setAdapter(new FeatureTypeAdapter(schemaMapping));
+		unmarshaller.setAdapter(new ObjectTypeAdapter(schemaMapping));
+		unmarshaller.setListener(new UnmarshalListener());
 
 		// validate schema mapping
 		ValidationEvent[] events = new ValidationEvent[1];
-		um.setSchema(readSchema());
-		um.setEventHandler(new ValidationEventHandler() {
-			public boolean handleEvent(ValidationEvent event) {
-				events[0] = event;
-				return false;
-			}
+		unmarshaller.setSchema(readSchema());
+		unmarshaller.setEventHandler(event -> {
+			events[0] = event;
+			return false;
 		});
 
-		// unmarshal schema mapping
-		Object result = null;
+		UnmarshallerHandler handler = unmarshaller.getUnmarshallerHandler();
+
 		try {
-			if (input instanceof InputStream)
-				result = um.unmarshal((InputStream) input);
-			else if (input instanceof Reader)
-				result = um.unmarshal((Reader) input);
-
-			if (!(result instanceof SchemaMapping))
-				throw new SchemaMappingException("Failed to unmarshal input resource into a schema mapping.");
-
-			return (SchemaMapping)result;
-		} catch (JAXBException e) {
-			if (events[0] != null)
+			SAXParserFactory saxParserFactory = SecureXMLProcessors.newSAXParserFactory();
+			saxParserFactory.setNamespaceAware(true);
+			XMLReader reader = saxParserFactory.newSAXParser().getXMLReader();
+			reader.setContentHandler(handler);
+			reader.parse(input);
+		} catch (SAXException | ParserConfigurationException | IOException e) {
+			if (events[0] != null) {
 				throw new SchemaMappingValidationException(events[0].getMessage());
+			} else {
+				throw new SchemaMappingException("Failed to parse the schema mapping.", e);
+			}
+		}
 
-			throw e;
-		} catch (Throwable e) {
-			if (e.getCause() instanceof SchemaMappingException)
-				throw (SchemaMappingException)e.getCause();
+		// unmarshal schema mapping
+		Object result = handler.getResult();
+		if (!(result instanceof SchemaMapping))
+			throw new SchemaMappingException("Failed to unmarshal input resource into a schema mapping.");
 
-			throw e;
-		}		
+		return (SchemaMapping) result;
 	}
 
 	public SchemaMapping unmarshal(SchemaMapping schemaMapping, InputStream inputStream) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		return unmarshal(schemaMapping, (Object) inputStream);
+		return unmarshal(schemaMapping, new InputSource(inputStream));
 	}
 
 	public SchemaMapping unmarshal(InputStream inputStream) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		return unmarshal(null, (Object) inputStream);
+		return unmarshal(null, new InputSource(inputStream));
 	}
 
 	public SchemaMapping unmarshal(SchemaMapping schemaMapping, URL resource) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
@@ -118,7 +121,7 @@ public class SchemaMappingUtil {
 	}
 
 	public SchemaMapping unmarshal(SchemaMapping schemaMapping, File file) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		try (InputStream inputStream = new FileInputStream(file)) {
+		try (InputStream inputStream = Files.newInputStream(file.toPath())) {
 			return unmarshal(schemaMapping, inputStream);
 		} catch (IOException e) {
 			throw new JAXBException("Failed to open schema mapping resource from file '" + file.getAbsolutePath() + "'.");
@@ -130,11 +133,7 @@ public class SchemaMappingUtil {
 	}
 
 	public SchemaMapping unmarshal(SchemaMapping schemaMapping, String xml) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		try (Reader reader = new StringReader(xml)) {
-			return unmarshal(schemaMapping, reader);
-		} catch (IOException e) {
-			throw new JAXBException("Failed to open schema mapping resource from XML string.");
-		}
+		return unmarshal(schemaMapping, new InputSource(new StringReader(xml)));
 	}
 
 	public SchemaMapping unmarshal(String xml) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
@@ -151,11 +150,9 @@ public class SchemaMappingUtil {
 		// validate schema mapping
 		ValidationEvent[] events = new ValidationEvent[1];
 		m.setSchema(readSchema());
-		m.setEventHandler(new ValidationEventHandler() {
-			public boolean handleEvent(ValidationEvent event) {
-				events[0] = event;
-				return false;
-			}
+		m.setEventHandler(event -> {
+			events[0] = event;
+			return false;
 		});
 
 		try {
@@ -178,7 +175,7 @@ public class SchemaMappingUtil {
 	}
 	
 	public void marshal(SchemaMapping schemaMapping, File file) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8))) {
 			marshal(schemaMapping, writer);
 		} catch (UnsupportedEncodingException e) {
 			throw new JAXBException("Failed to marshal schema mapping.", e);
@@ -189,8 +186,9 @@ public class SchemaMappingUtil {
 
 	private Schema readSchema() throws JAXBException {
 		try {
-			return SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-					.newSchema(SchemaMappingUtil.class.getResource("/org/citydb/core/database/schema/3dcitydb-schema.xsd"));
+			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+			return schemaFactory.newSchema(SchemaMappingUtil.class.getResource("/org/citydb/core/database/schema/3dcitydb-schema.xsd"));
 		} catch (SAXException e) {
 			throw new JAXBException("Failed to parse the schema mapping XSD schema. " +
 					"Could not find '/org/citydb/core/database/schema/3dcitydb-schema.xsd' on the classpath.", e);

@@ -29,8 +29,9 @@ package org.citydb.util.config;
 
 import org.citydb.config.ProjectConfig;
 import org.citydb.config.gui.GuiConfig;
-import org.citydb.config.util.ConfigNamespaceFilter;
 import org.citydb.config.project.query.QueryWrapper;
+import org.citydb.config.util.ConfigNamespaceFilter;
+import org.citydb.util.xml.SecureXMLProcessors;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -95,11 +96,11 @@ public class ConfigUtil {
 	public Object unmarshal(InputStream inputStream) throws JAXBException, IOException {
 		Unmarshaller unmarshaller = createJAXBContext().context.createUnmarshaller();
 		UnmarshallerHandler handler = unmarshaller.getUnmarshallerHandler();
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		factory.setNamespaceAware(true);
 
 		ConfigNamespaceFilter namespaceFilter;
 		try {
+			SAXParserFactory factory = SecureXMLProcessors.newSAXParserFactory();
+			factory.setNamespaceAware(true);
 			XMLReader reader = factory.newSAXParser().getXMLReader();
 			namespaceFilter = new ConfigNamespaceFilter(reader);	
 			namespaceFilter.setContentHandler(handler);
@@ -107,7 +108,7 @@ public class ConfigUtil {
 		} catch (SAXException e) {
 			throw new JAXBException(e.getMessage());
 		} catch (ParserConfigurationException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException("Failed to create secure XML reader.", e);
 		}
 
 		Object result = handler.getResult();

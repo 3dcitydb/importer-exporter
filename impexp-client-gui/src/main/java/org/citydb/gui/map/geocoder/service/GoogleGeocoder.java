@@ -32,12 +32,12 @@ import org.citydb.config.i18n.Language;
 import org.citydb.gui.map.geocoder.GeocoderResult;
 import org.citydb.gui.map.geocoder.Location;
 import org.citydb.gui.map.geocoder.LocationType;
+import org.citydb.util.xml.SecureXMLProcessors;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
@@ -84,9 +84,11 @@ public class GoogleGeocoder implements GeocodingService {
         }
 
         try (InputStream stream = new URL(serviceCall).openStream()) {
-            Document response = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
-            XPath xpath = XPathFactory.newInstance().newXPath();
+            Document response = SecureXMLProcessors.newDocumentBuilderFactory()
+                    .newDocumentBuilder()
+                    .parse(stream);
 
+            XPath xpath = XPathFactory.newInstance().newXPath();
             GeocoderResult geocodingResult = new GeocoderResult();
 
             // check the response status
