@@ -26,10 +26,9 @@
  * limitations under the License.
  */
 
-package org.citydb.util.config;
+package org.citydb.config.util;
 
 import org.citydb.config.project.query.QueryWrapper;
-import org.citydb.config.util.ConfigConstants;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.SchemaOutputResolver;
@@ -43,9 +42,9 @@ import java.nio.file.Paths;
 public class QuerySchemaWriter {
 
 	public static void main(String[] args) throws Exception {
-		Path configFile = Paths.get("impexp-config/src/main/resources/org/citydb/config/schema/query.xsd");
-		System.out.print("Generting XML schema in " + configFile.toAbsolutePath() + "... ");
-		
+		Path configFile = Paths.get("src/main/resources/org/citydb/config/schema/query.xsd");
+		System.out.print("Generating XML schema in " + configFile.toAbsolutePath() + "... ");
+
 		JAXBContext context = JAXBContext.newInstance(QueryWrapper.class);
 		context.generateSchema(new SchemaOutputResolver() {
 			@Override
@@ -59,9 +58,8 @@ public class QuerySchemaWriter {
 				} else
 					return null;
 			}
-			
 		});
-		
+
 		System.out.println("finished.");
 	}
 
