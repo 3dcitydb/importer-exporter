@@ -689,18 +689,34 @@
     <xs:complexContent>
       <xs:extension base="tns:AbstractTilingOptionsType">
         <xs:sequence>
-          <xs:element name="tilePath" type="xs:string" minOccurs="0"/>
-          <xs:element name="tilePathSuffix" type="tns:TileSuffixModeType" minOccurs="0"/>
-          <xs:element name="tileNameSuffix" type="tns:TileNameSuffixModeType" minOccurs="0"/>
-          <xs:element name="includeTileAsGenericAttribute" type="xs:boolean" default="false" minOccurs="0"/>
-          <xs:element name="genericAttributeValue" type="tns:TileSuffixModeType" minOccurs="0"/>
+          <xs:element name="subDir" type="tns:tileTokenValue" minOccurs="0"/>
+          <xs:element name="filenameSuffix" type="tns:tileTokenValue" minOccurs="0"/>
+          <xs:element name="attributeName" type="xs:string" minOccurs="0"/>
+          <xs:element name="attributeValue" type="tns:tileTokenValue" minOccurs="0"/>
         </xs:sequence>
+        <xs:attribute name="useSubDir" type="xs:boolean" use="required"/>
+        <xs:attribute name="useFilenameSuffix" type="xs:boolean" use="required"/>
+        <xs:attribute name="useSuffixAsFilename" type="xs:boolean" use="required"/>
+        <xs:attribute name="useGenericAttribute" type="xs:boolean" use="required"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="AbstractTilingOptionsType" abstract="true">
     <xs:sequence/>
+  </xs:complexType>
+
+  <xs:complexType name="tileTokenValue">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="row" type="xs:string"/>
+        <xs:attribute name="column" type="xs:string"/>
+        <xs:attribute name="xmin" type="xs:string"/>
+        <xs:attribute name="ymin" type="xs:string"/>
+        <xs:attribute name="xmax" type="xs:string"/>
+        <xs:attribute name="ymax" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
   </xs:complexType>
 
   <xs:complexType name="VisTilingOptionsType">
@@ -752,24 +768,6 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="all"/>
       <xs:enumeration value="depth"/>
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:simpleType name="TileSuffixModeType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="row_column"/>
-      <xs:enumeration value="xMin_yMin"/>
-      <xs:enumeration value="xMax_yMin"/>
-      <xs:enumeration value="xMin_yMax"/>
-      <xs:enumeration value="xMax_yMax"/>
-      <xs:enumeration value="xMin_yMin_xMax_yMax"/>
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:simpleType name="TileNameSuffixModeType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="none"/>
-      <xs:enumeration value="sameAsPath"/>
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>
