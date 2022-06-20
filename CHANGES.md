@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+### 5.2.1 -tba
+
+#### Fixes
+*  Fixed XXE vulnerabilities when parsing XML files. [#258](https://github.com/3dcitydb/importer-exporter/pull/258)
+
 ### 5.2.0 - 2022-05-23
 
 ##### Additions
