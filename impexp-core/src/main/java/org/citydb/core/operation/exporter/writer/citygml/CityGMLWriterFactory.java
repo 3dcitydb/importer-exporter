@@ -41,6 +41,7 @@ import org.citydb.core.operation.exporter.writer.FeatureWriterFactory;
 import org.citydb.core.query.Query;
 import org.citydb.core.query.filter.type.FeatureTypeFilter;
 import org.citydb.util.log.Logger;
+import org.citydb.util.xml.SecureXMLProcessors;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.Modules;
@@ -55,7 +56,6 @@ import org.citygml4j.util.xml.SAXWriter;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
@@ -94,7 +94,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 				log.info("Applying XSL transformations on export data.");
 
 				List<String> stylesheets = cityGMLOptions.getXSLTransformation().getStylesheets();
-				SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
+				SAXTransformerFactory factory = (SAXTransformerFactory) SecureXMLProcessors.newTransformerFactory();
 				Templates[] templates = new Templates[stylesheets.size()];
 
 				for (int i = 0; i < stylesheets.size(); i++) {

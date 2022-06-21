@@ -33,7 +33,7 @@ import com.formdev.flatlaf.extras.components.FlatTabbedPane;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
-import org.citydb.config.ConfigUtil;
+import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.gui.style.Theme;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
