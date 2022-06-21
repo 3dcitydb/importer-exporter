@@ -48,6 +48,7 @@ public class CityGMLValidatorFactory implements ValidatorFactory {
         try {
             SchemaHandler schemaHandler = SchemaHandler.newInstance();
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             Schema schema = schemaFactory.newSchema(schemaHandler.getSchemaSources());
             validator = schema.newValidator();
         } catch (SAXException e) {

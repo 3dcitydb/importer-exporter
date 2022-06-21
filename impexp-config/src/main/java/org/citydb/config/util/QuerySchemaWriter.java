@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -28,7 +28,7 @@
 
 package org.citydb.config.util;
 
-import org.citydb.config.ConfigUtil;
+import org.citydb.config.project.query.QueryWrapper;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.SchemaOutputResolver;
@@ -43,13 +43,13 @@ public class QuerySchemaWriter {
 
 	public static void main(String[] args) throws Exception {
 		Path configFile = Paths.get("src/main/resources/org/citydb/config/schema/query.xsd");
-		System.out.print("Generting XML schema in " + configFile.toAbsolutePath() + "... ");
-		
+		System.out.print("Generating XML schema in " + configFile.toAbsolutePath() + "... ");
+
 		JAXBContext context = JAXBContext.newInstance(QueryWrapper.class);
 		context.generateSchema(new SchemaOutputResolver() {
 			@Override
 			public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
-				if (ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI.equals(namespaceUri)) {
+				if (ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI.equals(namespaceUri)) {
 					Files.createDirectories(configFile.getParent());
 					StreamResult res = new StreamResult();
 					res.setSystemId(configFile.toUri().toString());
@@ -58,9 +58,8 @@ public class QuerySchemaWriter {
 				} else
 					return null;
 			}
-			
 		});
-		
+
 		System.out.println("finished.");
 	}
 

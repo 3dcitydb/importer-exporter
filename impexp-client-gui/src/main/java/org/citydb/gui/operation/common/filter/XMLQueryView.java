@@ -31,7 +31,7 @@ package org.citydb.gui.operation.common.filter;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.github.vertical_blank.sqlformatter.SqlFormatter;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-import org.citydb.config.ConfigUtil;
+import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
@@ -54,7 +54,8 @@ import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
-import org.citydb.config.util.QueryWrapper;
+import org.citydb.config.util.ConfigConstants;
+import org.citydb.config.project.query.QueryWrapper;
 import org.citydb.core.database.DatabaseController;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 import org.citydb.core.database.schema.mapping.FeatureType;
@@ -197,7 +198,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
 
         CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();
         namespaceContext.setPrefixes(new ModuleContext(CityGMLVersion.v2_0_0));
-        namespaceContext.setDefaultNamespace(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI);
+        namespaceContext.setDefaultNamespace(ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI);
 
         xmlText.setText(marshalQuery(query, namespaceContext));
     }
@@ -324,7 +325,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
 
         CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();
         namespaceContext.setPrefixes(new ModuleContext(version));
-        namespaceContext.setDefaultNamespace(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI);
+        namespaceContext.setDefaultNamespace(ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI);
 
         xmlText.setText(marshalQuery(query, namespaceContext));
     }
@@ -437,7 +438,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
 
     private String wrapQuery(String query) {
         StringBuilder wrapper = new StringBuilder("<wrapper xmlns=\"")
-                .append(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI).append("\" ");
+                .append(ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI).append("\" ");
 
         ModuleContext context = new ModuleContext(CityGMLVersion.v2_0_0);
         for (Module module : context.getModules()) {

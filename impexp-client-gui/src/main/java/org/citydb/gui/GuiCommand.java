@@ -35,7 +35,7 @@ import org.citydb.cli.ImpExpException;
 import org.citydb.cli.option.StartupProgressListener;
 import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
-import org.citydb.config.ConfigUtil;
+import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.gui.GuiConfig;
 import org.citydb.config.gui.style.Theme;
 import org.citydb.core.database.DatabaseController;

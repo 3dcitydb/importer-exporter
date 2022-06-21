@@ -27,7 +27,6 @@
  */
 package org.citydb.config.util;
 
-import org.citydb.config.ConfigUtil;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
@@ -112,11 +111,11 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		if (uri == null || uri.isEmpty())
-			uri = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI;
+			uri = ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI;
 
 		// support config files from previous releases 
 		else if (uri.startsWith(OLD_CITYDB_CONFIG_NAMESPACE_URI))
-			uri = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI;
+			uri = ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI;
 
 		super.startPrefixMapping(prefix, uri);
 		bindNamespace(prefix, uri);
@@ -125,11 +124,11 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if (uri == null || uri.isEmpty())
-			uri = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI;
+			uri = ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI;
 
 		// support config files from previous releases 
 		else if (uri.startsWith(OLD_CITYDB_CONFIG_NAMESPACE_URI))
-			uri = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI;
+			uri = ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI;
 
 		super.startElement(uri, localName, qName, atts);
 	}

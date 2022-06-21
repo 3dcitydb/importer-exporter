@@ -29,6 +29,7 @@ package org.citydb.vis.util;
 
 import org.citydb.config.Config;
 import org.citydb.util.log.Logger;
+import org.citydb.util.xml.SecureXMLProcessors;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -84,11 +85,10 @@ public class ElevationServiceHandler {
 
 		if (saxParser == null) {
 			// Use the default (non-validating) parser
-			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParserFactory factory = SecureXMLProcessors.newSAXParserFactory();
 			try {
 				saxParser = factory.newSAXParser();
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				log.logStackTrace(t);
 			}
 		}
