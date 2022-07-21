@@ -238,16 +238,17 @@ public class DBSplitter {
 			hits = getNumberMatched(query, connection);
 		}
 
+		// avoid long "where" clause in the root select statement
+		Table table = new Table(select);
+		select = new Select().addProjection(table.getColumn(MappingConstants.ID))
+				.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
+				.addProjection(table.getColumn(MappingConstants.GMLID))
+				.addProjection(table.getColumn(MappingConstants.ENVELOPE));
+
 		// add spatial extent
 		if (calculateExtent) {
-			Table table = new Table(select);
-			select = new Select().addProjection(table.getColumn(MappingConstants.ID))
-					.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-					.addProjection(table.getColumn(MappingConstants.GMLID))
-					.addProjection(new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geom_extent") +
+			select.addProjection(new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geom_extent") +
 					"(" + table.getColumn(MappingConstants.ENVELOPE) + ") over", "extent"));
-			if (query.isSetTiling())
-				select.addProjection(table.getColumn(MappingConstants.ENVELOPE));
 		}
 
 		// issue query
