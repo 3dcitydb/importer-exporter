@@ -85,11 +85,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class DBSplitter {
 	private final Logger log = Logger.getInstance();
@@ -240,10 +238,12 @@ public class DBSplitter {
 
 		// avoid long "where" clause in the root select statement
 		Table table = new Table(select);
-		select = new Select().addProjection(table.getColumn(MappingConstants.ID))
-				.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-				.addProjection(table.getColumn(MappingConstants.GMLID))
-				.addProjection(table.getColumn(MappingConstants.ENVELOPE));
+		List<String> columns = select.getProjection()
+				.stream().filter(p -> p instanceof Column).map(p -> ((Column) p).getName()).collect(Collectors.toList());
+		select = new Select();
+		for (String column : columns) {
+			select.addProjection(table.getColumn(column));
+		}
 
 		// add spatial extent
 		if (calculateExtent) {
@@ -514,7 +514,7 @@ public class DBSplitter {
 
 					// send appearance to export workers
 					DBSplittingResult splitter = new DBSplittingResult(appearanceId, appearanceType);
-					dbWorkerPool.addWork(splitter);
+				//	dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
 			}
 		}
