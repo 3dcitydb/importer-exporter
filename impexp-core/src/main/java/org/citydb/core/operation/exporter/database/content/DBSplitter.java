@@ -514,7 +514,7 @@ public class DBSplitter {
 
 					// send appearance to export workers
 					DBSplittingResult splitter = new DBSplittingResult(appearanceId, appearanceType);
-				//	dbWorkerPool.addWork(splitter);
+					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
 			}
 		}
