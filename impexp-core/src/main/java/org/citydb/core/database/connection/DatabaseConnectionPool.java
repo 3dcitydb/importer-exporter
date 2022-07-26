@@ -248,6 +248,12 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		}
 	}
 
+	public synchronized void purgeOnReturn() {
+		if (isConnected()) {
+			dataSource.purgeOnReturn();
+		}
+	}
+
 	public synchronized void disconnect() {
 		boolean wasConnected = isConnected();
 

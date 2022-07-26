@@ -104,7 +104,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Exporter implements EventHandler {
     private final Logger log = Logger.getInstance();
     private final CityGMLBuilder cityGMLBuilder;
-    private final AbstractDatabaseAdapter databaseAdapter;
+    private final DatabaseConnectionPool connectionPool;
     private final SchemaMapping schemaMapping;
     private final PluginManager pluginManager;
     private final Config config;
@@ -127,11 +127,11 @@ public class Exporter implements EventHandler {
 
 	public Exporter() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
+        connectionPool = DatabaseConnectionPool.getInstance();
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
         pluginManager = PluginManager.getInstance();
         config = ObjectRegistry.getInstance().getConfig();
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-        databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 
         objectCounter = new HashMap<>();
         geometryCounter = new EnumMap<>(GMLClass.class);
@@ -179,6 +179,7 @@ public class Exporter implements EventHandler {
     }
 
     private boolean process(Path outputFile) throws CityGMLExportException {
+        AbstractDatabaseAdapter databaseAdapter = connectionPool.getActiveDatabaseAdapter();
         InternalConfig internalConfig = new InternalConfig();
 
         // set output format and format-specific options
@@ -587,6 +588,9 @@ public class Exporter implements EventHandler {
                             shouldRun = false;
                         }
                     }
+
+                    // remove used connections from pool
+                    connectionPool.purgeOnReturn();
                 }
 
                 // show exported features
