@@ -225,14 +225,20 @@ public class SQLQueryBuilder {
 	}
 
 	private void buildDistinctQuery(Query query, SQLQueryContext queryContext) {
-		if (!query.isSetSorting())
+		if (!query.isSetSorting() && !buildProperties.getAdditionalProjectionColumns().contains(MappingConstants.ENVELOPE)) {
 			queryContext.getSelect().setDistinct(true);
-
-		else {
+		} else {
 			// when sorting is enabled, then adding the sort column as projection token
 			// might lead to multiple rows per top-level feature even if distinct is used.
 			// so we have to rewrite the query using the row_number() function to guarantee
 			// that every top-level feature is only exported once.
+
+			// add order by id in case sorting has not been defined for the query
+			if (!query.isSetSorting()) {
+				queryContext.getSelect().addOrderBy(
+						new OrderByToken(queryContext.getFromTable().getColumn(MappingConstants.ID)));
+			}
+
 			Select inner = queryContext.getSelect();
 			List<ProjectionToken> projection = inner.getProjection();
 			List<OrderByToken> orderBy = inner.getOrderBy();
@@ -263,12 +269,20 @@ public class SQLQueryBuilder {
 					.addSelection(ComparisonFactory.equalTo(withTable.getColumn("rn_distinct"), new IntegerLiteral(1))));
 
 			// re-add projection columns to new select
-			for (ProjectionToken token : projection)
-				queryContext.getSelect().addProjection(token instanceof Column ? withTable.getColumn(((Column) token).getName()) : token);
+			for (ProjectionToken token : projection) {
+				queryContext.getSelect().addProjection(token instanceof Column ?
+						withTable.getColumn(((Column) token).getName()) :
+						token);
+			}
 
-			// re-add order by tokens to new select
-			for (int i = 0; i < orderBy.size(); i++)
-				queryContext.getSelect().addOrderBy(new OrderByToken(withTable.getColumn("order" + i), orderBy.get(i).getSortOrder()));
+			// re-add order by tokens to new select if sorting
+			// has been defined for the query
+			if (query.isSetSorting()) {
+				for (int i = 0; i < orderBy.size(); i++) {
+					queryContext.getSelect().addOrderBy(
+							new OrderByToken(withTable.getColumn("order" + i), orderBy.get(i).getSortOrder()));
+				}
+			}
 
 			queryContext.setFromTable(withTable);
 		}
