@@ -29,6 +29,7 @@ package org.citydb.core.database.connection;
 
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
+import org.apache.tomcat.jdbc.pool.PooledConnection;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.*;
@@ -251,6 +252,14 @@ public class DatabaseConnectionPool implements ConnectionManager {
 	public synchronized void purgeOnReturn() {
 		if (isConnected()) {
 			dataSource.purgeOnReturn();
+		}
+	}
+
+	public void closeAndRemoveConnection(Connection connection) throws SQLException {
+		try {
+			connection.unwrap(PooledConnection.class).setDiscarded(true);
+		} finally {
+			connection.close();
 		}
 	}
 

@@ -103,6 +103,7 @@ public class DBSplitter {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
+	private final DatabaseConnectionPool connectionPool;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final Connection connection;
 	private final String schema;
@@ -134,8 +135,9 @@ public class DBSplitter {
 		this.internalConfig = internalConfig;
 		this.config = config;
 
-		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		connection = DatabaseConnectionPool.getInstance().getConnection();
+		connectionPool = DatabaseConnectionPool.getInstance();
+		databaseAdapter = connectionPool.getActiveDatabaseAdapter();
+		connection = connectionPool.getConnection();
 		connection.setAutoCommit(false);
 		schema = databaseAdapter.getConnectionDetails().getSchema();
 
@@ -216,8 +218,9 @@ public class DBSplitter {
 				queryGlobalAppearance();
 
 		} finally {
-			if (connection != null)
-				connection.close();
+			if (connection != null) {
+				connectionPool.closeAndRemoveConnection(connection);
+			}
 		}
 	}
 
