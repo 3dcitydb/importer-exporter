@@ -105,7 +105,6 @@ public class DBSplitter {
 
 	private final DatabaseConnectionPool connectionPool;
 	private final AbstractDatabaseAdapter databaseAdapter;
-	private final Connection connection;
 	private final String schema;
 	private final SchemaMapping schemaMapping;
 	private final SQLQueryBuilder builder;
@@ -137,8 +136,6 @@ public class DBSplitter {
 
 		connectionPool = DatabaseConnectionPool.getInstance();
 		databaseAdapter = connectionPool.getActiveDatabaseAdapter();
-		connection = connectionPool.getConnection();
-		connection.setAutoCommit(false);
 		schema = databaseAdapter.getConnectionDetails().getSchema();
 
 		GeneralOptions generalOptions = config.getExportConfig().getGeneralOptions();
@@ -187,12 +184,16 @@ public class DBSplitter {
 	}
 
 	public void startQuery() throws SQLException, QueryBuildException, FilterException, FeatureWriteException {
+		Connection connection = null;
 		try {
+			connection = connectionPool.getConnection();
+			connection.setAutoCommit(false);
+
 			FeatureType cityObjectGroupType = schemaMapping.getFeatureType("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI());
 			Map<Long, DBSplittingResult> cityObjectGroups = new LinkedHashMap<>();
 			sequenceId = 0;
 
-			queryCityObject(cityObjectGroupType, cityObjectGroups);
+			queryCityObject(cityObjectGroupType, cityObjectGroups, connection);
 
 			if (shouldRun) {
 				try {
@@ -203,7 +204,7 @@ public class DBSplitter {
 			}
 
 			if (!cityObjectGroups.isEmpty()) {
-				queryCityObjectGroups(cityObjectGroupType, cityObjectGroups);
+				queryCityObjectGroups(cityObjectGroupType, cityObjectGroups, connection);
 
 				if (shouldRun) {
 					try {
@@ -224,7 +225,7 @@ public class DBSplitter {
 		}
 	}
 
-	private void queryCityObject(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups) throws SQLException, QueryBuildException, FeatureWriteException {
+	private void queryCityObject(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups, Connection connection) throws SQLException, QueryBuildException, FeatureWriteException {
 		if (!shouldRun)
 			return;
 
@@ -344,7 +345,7 @@ public class DBSplitter {
 		}
 	}
 
-	private void queryCityObjectGroups(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups) throws SQLException, FilterException, QueryBuildException {
+	private void queryCityObjectGroups(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups, Connection connection) throws SQLException, FilterException, QueryBuildException {
 		if (!shouldRun)
 			return;
 
