@@ -1,10 +1,12 @@
 Change Log
 ==========
 
-### 5.2.1 -tba
+### 5.2.1 - 2022-07-29
 
 #### Fixes
-*  Fixed XXE vulnerabilities when parsing XML files. [#258](https://github.com/3dcitydb/importer-exporter/pull/258)
+* Fixed XXE vulnerabilities when parsing XML files. [#258](https://github.com/3dcitydb/importer-exporter/pull/258)
+* Fixed connection timeout issue in CityGML exports. [#263](https://github.com/3dcitydb/importer-exporter/pull/263)
+* Fixed building of queries requiring `SELECT DISTINCT` statement. [#264](https://github.com/3dcitydb/importer-exporter/pull/264)
 
 ### 5.2.0 - 2022-05-23
 
