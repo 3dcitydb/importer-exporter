@@ -271,10 +271,11 @@ public class Exporter implements EventHandler {
 
         // check whether database contains global appearances and set internal flag
         try {
-            internalConfig.setExportGlobalAppearances(config.getExportConfig().getAppearances().isSetExportAppearance()
+            internalConfig.setExportGlobalAppearances(outputFormat == OutputFormat.CITYGML
+                    && config.getExportConfig().getAppearances().isSetExportAppearance()
 					&& databaseAdapter.getUtil().containsGlobalAppearances());
         } catch (SQLException e) {
-            throw new CityGMLExportException("Database error while querying the number of global appearances.", e);
+            throw new CityGMLExportException("Database error while checking for global appearances.", e);
         }
 
         // cache gml:ids of city objects in case we have to export groups
