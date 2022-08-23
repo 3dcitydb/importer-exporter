@@ -1047,14 +1047,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 			// appearance module
 			else if (type == DBGlobalAppearance.class) {
-				CacheTable cacheTable = null;
-				if (internalConfig.isExportGlobalAppearances()) {
-					cacheTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
-					if (cacheTable == null)
-						logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
+				CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
+				if (cacheTable != null) {
+					exporter = new DBGlobalAppearance(cacheTable, this, config);
+				} else {
+					logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
 				}
-
-				exporter = new DBGlobalAppearance(cacheTable, this, config);
 			} else if (type == DBLocalAppearance.class)
 				exporter = new DBLocalAppearance(connection, query, this, config);
 
