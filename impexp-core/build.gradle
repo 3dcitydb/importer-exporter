@@ -14,7 +14,7 @@ dependencies {
     api 'org.apache.tika:tika-core:2.4.1'
     api 'com.univocity:univocity-parsers:2.9.1'
     api 'org.slf4j:slf4j-nop:1.7.36'
-    implementation 'com.h2database:h2:2.1.212'
+    implementation 'com.h2database:h2:2.1.214'
     implementation 'org.apache.tomcat:tomcat-jdbc:10.0.20'
     implementation 'org.apache.commons:commons-compress:1.21'
 }
