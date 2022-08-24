@@ -34,6 +34,7 @@ import org.citydb.core.operation.exporter.CityGMLExportException;
 import org.citydb.core.operation.exporter.util.DefaultGeometrySetterHandler;
 import org.citydb.core.operation.exporter.util.GeometrySetter;
 import org.citydb.core.operation.exporter.util.GeometrySetterHandler;
+import org.citydb.core.operation.exporter.util.InternalConfig;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
@@ -69,7 +70,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 
 		batches = new ArrayList<>();
 		batchSize = exporter.getGeometryBatchSize();
-		exportAppearance = exporter.getInternalConfig().isExportGlobalAppearances();
+		exportAppearance = exporter.getInternalConfig().getGlobalAppearanceMode() != InternalConfig.GlobalAppearanceMode.SKIP;
 		useXLink = exporter.getInternalConfig().isExportGeometryReferences();
 		affineTransformation = exporter.getExportConfig().getAffineTransformation().isEnabled();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();

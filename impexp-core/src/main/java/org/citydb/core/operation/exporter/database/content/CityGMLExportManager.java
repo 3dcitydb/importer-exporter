@@ -213,7 +213,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				appearanceRemover.cleanupAppearances(object);
 
 			// cache geometry ids in case we export global appearances
-			if (internalConfig.isExportGlobalAppearances())
+			if (internalConfig.getGlobalAppearanceMode() == InternalConfig.GlobalAppearanceMode.EXPORT)
 				getExporter(DBGlobalAppearance.class).cacheGeometryIds(object);
 
 			if (object instanceof AbstractFeature) {
@@ -511,6 +511,21 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	public Appearance exportGlobalAppearance(long appearanceId) throws CityGMLExportException, SQLException {
 		return getExporter(DBGlobalAppearance.class).doExport(appearanceId);
+	}
+
+	public int convertGlobalAppearances(AbstractCityObject cityObject) throws CityGMLExportException, SQLException {
+		Collection<Appearance> unconverted = getExporter(DBGlobalToLocalAppearance.class).doExport(cityObject);
+		for (Appearance appearance : unconverted) {
+			try {
+				appearance.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
+				featureWriter.write(appearance, -1);
+				updateExportCounter(appearance);
+			} catch (FeatureWriteException e) {
+				throw new CityGMLExportException("Failed to write global appearance.", e);
+			}
+		}
+
+		return unconverted.size();
 	}
 
 	@Override
@@ -1053,8 +1068,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				} else {
 					logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
 				}
-			} else if (type == DBLocalAppearance.class)
+			} else if (type == DBLocalAppearance.class) {
 				exporter = new DBLocalAppearance(connection, query, this, config);
+			} else if (type == DBGlobalToLocalAppearance.class) {
+				exporter = new DBGlobalToLocalAppearance(connection, query, this, config);
+			}
 
 			if (exporter == null)
 				throw new CityGMLExportException("Failed to build database exporter of type " + type.getName() + ".");

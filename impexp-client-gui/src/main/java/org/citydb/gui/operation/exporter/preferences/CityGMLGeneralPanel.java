@@ -40,6 +40,8 @@ import java.util.Locale;
 public class CityGMLGeneralPanel extends InternalPreferencesComponent {
 	private TitledPanel formatOptionsPanel;
 	private JCheckBox prettyPrint;
+	private JCheckBox convertGlobalAppearances;
+	private JLabel conversionHint;
 
 	public CityGMLGeneralPanel(Config config) {
 		super(config);
@@ -49,17 +51,29 @@ public class CityGMLGeneralPanel extends InternalPreferencesComponent {
 	@Override
 	public boolean isModified() {
 		if (prettyPrint.isSelected() != config.getExportConfig().getCityGMLOptions().isPrettyPrint()) return true;
+		if (convertGlobalAppearances.isSelected() != config.getExportConfig().getCityGMLOptions().isConvertGlobalAppearances()) return true;
 		return false;
 	}
 
 	private void initGui() {
 		prettyPrint = new JCheckBox();
+		convertGlobalAppearances = new JCheckBox();
+		conversionHint = new JLabel();
+		conversionHint.setFont(conversionHint.getFont().deriveFont(Font.ITALIC));
 
 		setLayout(new GridBagLayout());
-		formatOptionsPanel = new TitledPanel()
-				.withToggleButton(prettyPrint)
-				.showSeparator(false)
-				.buildWithoutContent();
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				int lmargin = GuiUtil.getTextOffset(convertGlobalAppearances);
+				content.add(prettyPrint, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(convertGlobalAppearances, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(conversionHint, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 0));
+			}
+
+			formatOptionsPanel = new TitledPanel().build(content);
+		}
 
 		add(formatOptionsPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 	}
@@ -67,20 +81,25 @@ public class CityGMLGeneralPanel extends InternalPreferencesComponent {
 	@Override
 	public void loadSettings() {
 		prettyPrint.setSelected(config.getExportConfig().getCityGMLOptions().isPrettyPrint());
+		convertGlobalAppearances.setSelected(config.getExportConfig().getCityGMLOptions().isConvertGlobalAppearances());
 	}
 
 	@Override
 	public void setSettings() {
 		config.getExportConfig().getCityGMLOptions().setPrettyPrint(prettyPrint.isSelected());
+		config.getExportConfig().getCityGMLOptions().setConvertGlobalAppearances(convertGlobalAppearances.isSelected());
 	}
 
 	@Override
 	public void switchLocale(Locale locale) {
-		formatOptionsPanel.setTitle(Language.I18N.getString("pref.export.common.label.prettyPrint"));
+		formatOptionsPanel.setTitle(Language.I18N.getString("pref.export.citygml.border.general"));
+		prettyPrint.setText(Language.I18N.getString("pref.export.common.label.prettyPrint"));
+		convertGlobalAppearances.setText(Language.I18N.getString("pref.export.citygml.label.convertGlobalAppearances"));
+		conversionHint.setText(Language.I18N.getString("pref.export.citygml.label.conversionHint"));
 	}
 
 	@Override
 	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.export.cityGML.general");
+		return Language.I18N.getString("pref.tree.export.citygml.general");
 	}
 }

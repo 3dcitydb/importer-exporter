@@ -145,7 +145,7 @@ public class DBSplitter {
 				|| !generalOptions.getComputeNumberMatched().isOnlyInGuiMode());
 
 		// create temporary table for global appearances if needed
-		if (internalConfig.isExportGlobalAppearances()) {
+		if (internalConfig.getGlobalAppearanceMode() == InternalConfig.GlobalAppearanceMode.EXPORT) {
 			cacheTableManager.createCacheTable(CacheTableModel.GLOBAL_APPEARANCE, CacheMode.DATABASE);
 		}
 
@@ -215,9 +215,10 @@ public class DBSplitter {
 				}
 			}
 
-			if (internalConfig.isExportGlobalAppearances() && sequenceId > 0)
+			if (internalConfig.getGlobalAppearanceMode() == InternalConfig.GlobalAppearanceMode.EXPORT
+					&& sequenceId > 0) {
 				queryGlobalAppearance();
-
+			}
 		} finally {
 			if (connection != null) {
 				connectionPool.closeAndRemoveConnection(connection);
@@ -482,8 +483,8 @@ public class DBSplitter {
 		Table textureParam = new Table("textureparam", schema);
 		Table tempTable = new Table(globalAppTempTable.getTableName());
 
-		Select select = new Select()
-				.addProjection(appearance.getColumn(MappingConstants.ID)).setDistinct(true)
+		Select select = new Select().setDistinct(true)
+				.addProjection(appearance.getColumn(MappingConstants.ID))
 				.addJoin(JoinFactory.inner(appearToSurfaceData, "appearance_id", ComparisonName.EQUAL_TO, appearance.getColumn(MappingConstants.ID)))
 				.addJoin(JoinFactory.inner(surfaceData, MappingConstants.ID, ComparisonName.EQUAL_TO, appearToSurfaceData.getColumn("surface_data_id")))
 				.addJoin(JoinFactory.inner(textureParam, "surface_data_id", ComparisonName.EQUAL_TO, surfaceData.getColumn(MappingConstants.ID)))
@@ -492,7 +493,8 @@ public class DBSplitter {
 
 		// add appearance theme filter
 		if (query.isSetAppearanceFilter()) {
-			PredicateToken predicate = new AppearanceFilterBuilder(databaseAdapter).buildAppearanceFilter(query.getAppearanceFilter(), appearance.getColumn("theme"));
+			PredicateToken predicate = new AppearanceFilterBuilder(databaseAdapter)
+					.buildAppearanceFilter(query.getAppearanceFilter(), appearance.getColumn("theme"));
 			select.addSelection(predicate);
 		}
 

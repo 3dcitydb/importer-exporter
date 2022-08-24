@@ -42,6 +42,7 @@ public class CityGMLOptions {
     private Boolean writeProductHeader;
     @XmlElement(defaultValue = "true")
     private boolean prettyPrint = true;
+    private boolean convertGlobalAppearances = false;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private LinkedHashMap<String, Namespace> namespaces;
     private ExportAddress address;
@@ -68,6 +69,14 @@ public class CityGMLOptions {
 
     public void setPrettyPrint(boolean prettyPrint) {
         this.prettyPrint = prettyPrint;
+    }
+
+    public boolean isConvertGlobalAppearances() {
+        return convertGlobalAppearances;
+    }
+
+    public void setConvertGlobalAppearances(boolean convertGlobalAppearances) {
+        this.convertGlobalAppearances = convertGlobalAppearances;
     }
 
     public boolean isSetNamespaces() {
