@@ -36,17 +36,30 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.util.walker.GMLWalker;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class AppearanceRemover {
 
     public void cleanupAppearances(AbstractGML object) {
-    	Set<String> targets = getTargets(object);
-    	Set<String> removed = unsetSurfaceData(object, targets);
-    	unsetAppearance(object, removed);
+		List<Appearance> appearances = new ArrayList<>();
+		object.accept(new GMLWalker() {
+			@Override
+			public void visit(Appearance appearance) {
+				appearances.add(appearance);
+			}
+		});
+
+		Set<String> targets = getTargets(object);
+		Set<String> removed = unsetSurfaceData(appearances, targets);
+		unsetReferences(appearances, removed);
+		unsetAppearance(object);
     }
+
+	public void cleanupAppearances(Collection<Appearance> appearances, Set<String> targets) {
+		Set<String> removed = unsetSurfaceData(appearances, targets);
+		unsetReferences(appearances, removed);
+		appearances.removeIf(appearance -> !appearance.isSetSurfaceDataMember());
+	}
 
     private Set<String> getTargets(AbstractGML object) {
         Set<String> targets = new HashSet<>();
@@ -73,52 +86,52 @@ public class AppearanceRemover {
         return targets;
     }
 
-    private Set<String> unsetSurfaceData(AbstractGML object, Set<String> targets) {
+    private Set<String> unsetSurfaceData(Collection<Appearance> appearances, Set<String> targets) {
 		Set<String> removed = new HashSet<>();
 
-		object.accept(new GMLWalker() {
-			@Override
-			public void visit(Appearance appearance) {
-				Iterator<SurfaceDataProperty> iter = appearance.getSurfaceDataMember().iterator();
-				while (iter.hasNext()) {
-					AbstractSurfaceData surfaceData = iter.next().getSurfaceData();
-					if (surfaceData == null)
-						continue;
+		for (Appearance appearance : appearances) {
+			Iterator<SurfaceDataProperty> iter = appearance.getSurfaceDataMember().iterator();
+			while (iter.hasNext()) {
+				AbstractSurfaceData surfaceData = iter.next().getSurfaceData();
+				if (surfaceData == null)
+					continue;
 
-					boolean remove = false;
-					if (surfaceData instanceof ParameterizedTexture) {
-						ParameterizedTexture texture = (ParameterizedTexture) surfaceData;
-						texture.getTarget().removeIf(target -> !targets.contains(target.getUri()));
-						remove = !texture.isSetTarget();
-					} else if (surfaceData instanceof X3DMaterial) {
-						X3DMaterial material = (X3DMaterial) surfaceData;
-						material.getTarget().removeIf(target -> !targets.contains(target));
-						remove = !material.isSetTarget();
-					} else if (surfaceData instanceof GeoreferencedTexture) {
-						GeoreferencedTexture texture = (GeoreferencedTexture) surfaceData;
-						texture.getTarget().removeIf(target -> !targets.contains(target));
-						remove = !texture.isSetTarget();
-					}
+				boolean remove = false;
+				if (surfaceData instanceof ParameterizedTexture) {
+					ParameterizedTexture texture = (ParameterizedTexture) surfaceData;
+					texture.getTarget().removeIf(target -> !targets.contains(target.getUri()));
+					remove = !texture.isSetTarget();
+				} else if (surfaceData instanceof X3DMaterial) {
+					X3DMaterial material = (X3DMaterial) surfaceData;
+					material.getTarget().removeIf(target -> !targets.contains(target));
+					remove = !material.isSetTarget();
+				} else if (surfaceData instanceof GeoreferencedTexture) {
+					GeoreferencedTexture texture = (GeoreferencedTexture) surfaceData;
+					texture.getTarget().removeIf(target -> !targets.contains(target));
+					remove = !texture.isSetTarget();
+				}
 
-					if (remove) {
-						iter.remove();
-						if (surfaceData.isSetId())
-							removed.add("#" + surfaceData.getId());
-					}
+				if (remove) {
+					iter.remove();
+					if (surfaceData.isSetId())
+						removed.add("#" + surfaceData.getId());
 				}
 			}
-		});
+		}
 
 		return removed;
 	}
 
-	private void unsetAppearance(AbstractGML object, Set<String> removed) {
+	private void unsetReferences(Collection<Appearance> appearances, Set<String> removed) {
+		appearances.forEach(appearance -> appearance.getSurfaceDataMember()
+				.removeIf(member -> member.isSetHref() && removed.contains(member.getHref())));
+	}
+
+	private void unsetAppearance(AbstractGML object) {
 		object.accept(new GMLWalker() {
 			@Override
 			public void visit(Appearance appearance) {
-				appearance.getSurfaceDataMember().removeIf(member -> member.isSetHref() && removed.contains(member.getHref()));
-
-				if (appearance.getSurfaceDataMember().isEmpty()) {
+				if (!appearance.isSetSurfaceDataMember()) {
 					ModelObject property = appearance.getParent();
 					if (property instanceof AppearanceProperty) {
 						ModelObject parent = ((AppearanceProperty) property).getParent();

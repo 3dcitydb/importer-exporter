@@ -36,10 +36,16 @@ public class InternalConfig {
     private OutputFormat outputFormat;
     private String exportTextureURI;
     private boolean transformCoordinates = false;
-    private boolean exportGlobalAppearances = false;
+    private GlobalAppearanceMode globalAppearanceMode = GlobalAppearanceMode.SKIP;
     private boolean registerGmlIdInCache = false;
     private boolean exportFeatureReferences = true;
     private boolean exportGeometryReferences = true;
+
+    public enum GlobalAppearanceMode {
+        SKIP,
+        EXPORT,
+        CONVERT
+    }
 
     public OutputFile getOutputFile() {
         return outputFile;
@@ -73,12 +79,12 @@ public class InternalConfig {
         this.transformCoordinates = transformCoordinates;
     }
 
-    public boolean isExportGlobalAppearances() {
-        return exportGlobalAppearances;
+    public GlobalAppearanceMode getGlobalAppearanceMode() {
+        return globalAppearanceMode;
     }
 
-    public void setExportGlobalAppearances(boolean exportGlobalAppearances) {
-        this.exportGlobalAppearances = exportGlobalAppearances;
+    public void setGlobalAppearanceMode(GlobalAppearanceMode globalAppearanceMode) {
+        this.globalAppearanceMode = globalAppearanceMode;
     }
 
     public boolean isRegisterGmlIdInCache() {

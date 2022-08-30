@@ -56,6 +56,7 @@ import org.citydb.util.event.EventDispatcher;
 import org.citydb.util.event.EventHandler;
 import org.citydb.util.event.global.*;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.BoundingShape;
@@ -215,6 +216,15 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			}
 
 			if (feature != null) {
+				// convert global appearances into local ones
+				if (internalConfig.getGlobalAppearanceMode() == InternalConfig.GlobalAppearanceMode.CONVERT
+						&& feature instanceof AbstractCityObject) {
+					int unconverted = exporter.convertGlobalAppearances((AbstractCityObject) feature);
+					if (unconverted != 0) {
+						eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, unconverted, this));
+					}
+				}
+
 				// write feature
 				featureWriter.write(feature, work.getSequenceId());
 

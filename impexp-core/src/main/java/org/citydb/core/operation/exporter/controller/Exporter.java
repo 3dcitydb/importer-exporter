@@ -269,11 +269,15 @@ public class Exporter implements EventHandler {
             log.info("Replacing object identifiers with UUIDs.");
         }
 
-        // check whether database contains global appearances and set internal flag
+        // check if and how to handle global appearances
         try {
-            internalConfig.setExportGlobalAppearances(outputFormat == OutputFormat.CITYGML
-                    && config.getExportConfig().getAppearances().isSetExportAppearance()
-					&& databaseAdapter.getUtil().containsGlobalAppearances());
+            if (config.getExportConfig().getAppearances().isSetExportAppearance()
+                    && databaseAdapter.getUtil().containsGlobalAppearances()) {
+                internalConfig.setGlobalAppearanceMode(outputFormat == OutputFormat.CITYJSON
+                        || config.getExportConfig().getCityGMLOptions().isConvertGlobalAppearances() ?
+                        InternalConfig.GlobalAppearanceMode.CONVERT :
+                        InternalConfig.GlobalAppearanceMode.EXPORT);
+            }
         } catch (SQLException e) {
             throw new CityGMLExportException("Database error while checking for global appearances.", e);
         }
