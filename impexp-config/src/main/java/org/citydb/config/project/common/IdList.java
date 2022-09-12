@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import java.nio.charset.StandardCharsets;
 
-@XmlType(name = "IdListType", propOrder = {})
+@XmlType(name = "IdListType")
 public class IdList {
     public static final String DEFAULT_DELIMITER = ",";
     public static final char DEFAULT_QUOTE_CHARACTER = '"';

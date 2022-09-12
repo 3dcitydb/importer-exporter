@@ -5,7 +5,7 @@ import org.citydb.config.project.common.IdList;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "ImportListType", propOrder = {})
+@XmlType(name = "ImportListType")
 public class ImportList extends IdList {
     private ImportListMode mode = ImportListMode.IMPORT;
 
