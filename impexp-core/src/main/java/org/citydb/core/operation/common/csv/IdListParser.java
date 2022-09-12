@@ -65,6 +65,7 @@ public class IdListParser implements AutoCloseable {
         CsvParserSettings settings = new CsvParserSettings();
         settings.setHeaderExtractionEnabled(idList.hasHeader() || idList.getIdColumnName() != null);
         settings.setSkipEmptyLines(true);
+        settings.setLineSeparatorDetectionEnabled(true);
 
         CsvFormat format = settings.getFormat();
         format.setDelimiter(idList.getDelimiter());
