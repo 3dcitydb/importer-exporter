@@ -93,15 +93,17 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
         component.setLayout(new GridBagLayout());
 
         idListLabel = new JLabel();
-        idListLabel.setMinimumSize(new JTextField().getPreferredSize());
         idListFiles = new JList<>(new DefaultListModel<>());
         idListFiles.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        idListFiles.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        idListFiles.setVisibleRowCount(-1);
+        idListFiles.setVisibleRowCount(6);
 
         FileListTransferHandler transferHandler = new FileListTransferHandler(idListFiles)
                 .withMode(FileListTransferHandler.Mode.FILES_ONLY);
         idListFiles.setTransferHandler(transferHandler);
+
+        JScrollPane scrollPane = new JScrollPane(idListFiles);
+        scrollPane.setMinimumSize(idListFiles.getPreferredScrollableViewportSize());
+        scrollPane.setPreferredSize(idListFiles.getPreferredScrollableViewportSize());
 
         idListBrowseButton = new JButton();
         idListPreviewButton = new JButton();
@@ -182,7 +184,7 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
 
         row = 1;
         component.add(idListLabel, GuiUtil.setConstraints(0, row, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
-        component.add(idListFiles, GuiUtil.setConstraints(1, row, 2, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        component.add(scrollPane, GuiUtil.setConstraints(1, row, 2, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         component.add(buttonsPanel, GuiUtil.setConstraints(3, row++, 1, 4, 0, 0, GridBagConstraints.VERTICAL, 0, 10, 0, 0));
         component.add(idColumnLabel, GuiUtil.setConstraints(0, row, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
         component.add(idColumnNamePanel, GuiUtil.setConstraints(2, row++, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
@@ -207,18 +209,6 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
                 ((JSpinner.DefaultEditor) idColumnIndex.getEditor()).getTextField(),
                 (JTextField) delimiter.getEditor().getEditorComponent(),
                 (JTextField) encoding.getEditor().getEditorComponent());
-
-        UIManager.addPropertyChangeListener(e -> {
-            if ("lookAndFeel".equals(e.getPropertyName())) {
-                SwingUtilities.invokeLater(this::updateComponentUI);
-            }
-        });
-
-        updateComponentUI();
-    }
-
-    private void updateComponentUI() {
-        idListFiles.setBorder(UIManager.getBorder("ScrollPane.border"));
     }
 
     @Override
@@ -254,10 +244,6 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
         quoteLabel.setText(Language.I18N.getString("filter.idList.label.quote"));
         commentLabel.setText(Language.I18N.getString("filter.idList.label.comment"));
         encodingLabel.setText(Language.I18N.getString("filter.idList.label.encoding"));
-
-        idListLabel.setPreferredSize(new Dimension(
-                idListLabel.getPreferredSize().width,
-                idColumnName.getPreferredSize().height));
 
         Object item = delimiter.getSelectedItem();
         delimiter.removeAllItems();
