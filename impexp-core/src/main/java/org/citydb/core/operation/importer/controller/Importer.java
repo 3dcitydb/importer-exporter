@@ -293,29 +293,38 @@ public class Importer implements EventHandler {
         // load import list into local cache
         importListCacheTable = null;
         if (config.getImportConfig().getFilter().isUseImportListFilter()
-                && config.getImportConfig().getFilter().isSetImportList()) {
+                && config.getImportConfig().getFilter().isSetImportList()
+                && config.getImportConfig().getFilter().getImportList().hasFiles()) {
             log.info("Loading import list into local cache...");
+
+            // create local cache manager
+            try {
+                importListCacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.LOCAL);
+            } catch (SQLException e) {
+                throw new CityGMLImportException("Failed to create import list cache.", e);
+            }
+
             ImportList importList = config.getImportConfig().getFilter().getImportList();
+            int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
+            IdListImporter importer = new IdListImporter(importListCacheTable, maxBatchSize);
 
-            try (IdListParser parser = new IdListParser(importList)) {
-                // create local cache manager
-                try {
-                    importListCacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.LOCAL);
-                } catch (SQLException e) {
-                    throw new CityGMLImportException("Failed to create import list cache.", e);
+            try {
+                for (String file : importList.getFiles()) {
+                    log.debug("Loading CSV file '" + file + "' into local cache.");
+                    try (IdListParser parser = new IdListParser(file, importList)) {
+                        try {
+                            importer.doImport(parser);
+                        } catch (IdListException e) {
+                            throw new CityGMLImportException("Failed to parse CSV file '" + file + "'.", e);
+                        }
+                    } catch (IdListException e) {
+                        throw new CityGMLImportException("Failed to create import list parser.", e);
+                    }
                 }
 
-                try {
-                    int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
-                    new IdListImporter(importListCacheTable, maxBatchSize).doImport(parser);
-                    importListCacheTable.createIndexes();
-                } catch (IdListException e) {
-                    throw new CityGMLImportException("Failed to parse import list.", e);
-                } catch (SQLException e) {
-                    throw new CityGMLImportException("Failed to load import list into cache.", e);
-                }
-            } catch (IOException e) {
-                throw new CityGMLImportException("Failed to create import list parser.", e);
+                importListCacheTable.createIndexes();
+            } catch (SQLException e) {
+                throw new CityGMLImportException("Failed to load import list into cache.", e);
             }
         }
 

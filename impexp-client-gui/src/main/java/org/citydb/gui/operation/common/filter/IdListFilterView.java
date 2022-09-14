@@ -5,6 +5,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.common.IdColumnType;
 import org.citydb.config.project.common.IdList;
 import org.citydb.core.operation.common.csv.IdListPreviewer;
+import org.citydb.gui.components.FileListTransferHandler;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
@@ -16,10 +17,7 @@ import java.awt.*;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
@@ -31,7 +29,7 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
 
     private JPanel component;
     private JLabel idListLabel;
-    private JTextField idListFile;
+    private JList<File> idListFiles;
     private JButton idListBrowseButton;
     private JButton idListPreviewButton;
     private JLabel idColumnLabel;
@@ -95,8 +93,16 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
         component.setLayout(new GridBagLayout());
 
         idListLabel = new JLabel();
-        idListFile = new JTextField();
-        idListFile.setPreferredSize(new Dimension(0, idListFile.getPreferredSize().height));
+        idListLabel.setMinimumSize(new JTextField().getPreferredSize());
+        idListFiles = new JList<>(new DefaultListModel<>());
+        idListFiles.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        idListFiles.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        idListFiles.setVisibleRowCount(-1);
+
+        FileListTransferHandler transferHandler = new FileListTransferHandler(idListFiles)
+                .withMode(FileListTransferHandler.Mode.FILES_ONLY);
+        idListFiles.setTransferHandler(transferHandler);
+
         idListBrowseButton = new JButton();
         idListPreviewButton = new JButton();
 
@@ -166,13 +172,20 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
             charactersPanel.add(encoding, GuiUtil.setConstraints(6, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
         }
 
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new GridBagLayout());
+        {
+            buttonsPanel.add(idListBrowseButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+            buttonsPanel.add(idListPreviewButton, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+            buttonsPanel.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        }
+
         row = 1;
-        component.add(idListLabel, GuiUtil.setConstraints(0, row, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
-        component.add(idListFile, GuiUtil.setConstraints(1, row, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-        component.add(idListBrowseButton, GuiUtil.setConstraints(3, row++, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 0));
+        component.add(idListLabel, GuiUtil.setConstraints(0, row, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
+        component.add(idListFiles, GuiUtil.setConstraints(1, row, 2, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        component.add(buttonsPanel, GuiUtil.setConstraints(3, row++, 1, 4, 0, 0, GridBagConstraints.VERTICAL, 0, 10, 0, 0));
         component.add(idColumnLabel, GuiUtil.setConstraints(0, row, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
-        component.add(idColumnNamePanel, GuiUtil.setConstraints(2, row, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
-        component.add(idListPreviewButton, GuiUtil.setConstraints(3, row++, 0, 0, GridBagConstraints.HORIZONTAL, 5, 10, 0, 0));
+        component.add(idColumnNamePanel, GuiUtil.setConstraints(2, row++, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
         component.add(idColumnIndexPanel, GuiUtil.setConstraints(2, row++, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
         component.add(delimiterLabel, GuiUtil.setConstraints(0, row, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
         component.add(charactersPanel, GuiUtil.setConstraints(1, row++, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
@@ -190,10 +203,22 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
             }
         }.execute());
 
-        PopupMenuDecorator.getInstance().decorate(idListFile, idColumnName, quote, comment,
+        PopupMenuDecorator.getInstance().decorate(idListFiles, idColumnName, quote, comment,
                 ((JSpinner.DefaultEditor) idColumnIndex.getEditor()).getTextField(),
                 (JTextField) delimiter.getEditor().getEditorComponent(),
                 (JTextField) encoding.getEditor().getEditorComponent());
+
+        UIManager.addPropertyChangeListener(e -> {
+            if ("lookAndFeel".equals(e.getPropertyName())) {
+                SwingUtilities.invokeLater(this::updateComponentUI);
+            }
+        });
+
+        updateComponentUI();
+    }
+
+    private void updateComponentUI() {
+        idListFiles.setBorder(UIManager.getBorder("ScrollPane.border"));
     }
 
     @Override
@@ -230,6 +255,10 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
         commentLabel.setText(Language.I18N.getString("filter.idList.label.comment"));
         encodingLabel.setText(Language.I18N.getString("filter.idList.label.encoding"));
 
+        idListLabel.setPreferredSize(new Dimension(
+                idListLabel.getPreferredSize().width,
+                idColumnName.getPreferredSize().height));
+
         Object item = delimiter.getSelectedItem();
         delimiter.removeAllItems();
         Arrays.stream(Delimiter.values()).forEach(delimiter::addItem);
@@ -248,7 +277,7 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
         this.enabled = enabled;
 
         idListLabel.setEnabled(enabled);
-        idListFile.setEnabled(enabled);
+        idListFiles.setEnabled(enabled);
         idListBrowseButton.setEnabled(enabled);
         idListPreviewButton.setEnabled(enabled);
         idColumnLabel.setEnabled(enabled);
@@ -279,7 +308,12 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
 
     @Override
     public void loadSettings(IdList idList) {
-        idListFile.setText(idList.getFile());
+        DefaultListModel<File> model = (DefaultListModel<File>) idListFiles.getModel();
+        idList.getFiles().stream()
+                .map(File::new)
+                .filter(File::exists)
+                .filter(File::isFile)
+                .forEach(model::addElement);
         idColumnName.setText(idList.getIdColumnName());
         idColumnIndex.setValue(idList.getIdColumnIndex());
         skipHeader.setSelected(idList.hasHeader());
@@ -304,7 +338,13 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
     @Override
     public T toSettings() {
         T idList = idListSupplier.get();
-        idList.setFile(idListFile.getText());
+
+        DefaultListModel<File> model = (DefaultListModel<File>) idListFiles.getModel();
+        Enumeration<File> files = model.elements();
+        while (files.hasMoreElements()) {
+            idList.getFiles().add(files.nextElement().getAbsolutePath());
+        }
+
         idList.setIdColumnName(idColumnNameButton.isSelected() ? idColumnName.getText() : null);
         idList.setIdColumnIndex(((Number) idColumnIndex.getValue()).intValue());
         idList.setHasHeader(skipHeader.isSelected());
@@ -342,7 +382,7 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
                 errorDialogTitleSupplier.get() :
                 Language.I18N.getString("common.dialog.error.incorrectFilter");
 
-        if (idListFile.getText().trim().isEmpty()) {
+        if (((DefaultListModel<File>) idListFiles.getModel()).isEmpty()) {
             viewController.errorMessage(title, Language.I18N.getString("filter.idList.dialog.error.file"));
             return false;
         }
@@ -401,9 +441,18 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
             }
 
             try {
-                IdListPreviewer.of(toSettings())
-                        .withNumberOfRecords(20)
-                        .printToConsole();
+                int[] indices = idListFiles.getSelectedIndices();
+                if (indices.length == 0) {
+                    indices = new int[]{0};
+                } else {
+                    log.info("Generating identifier list preview for " + indices.length + " CSV files.");
+                }
+
+                IdList idList = toSettings();
+                for (int index : indices) {
+                    IdListPreviewer.of(idList.getFiles().get(index), idList).printToConsole();
+                }
+
                 log.info("Identifier list preview successfully finished.");
             } catch (Exception e) {
                 log.error("Failed to create a preview of the identifier list.", e);
@@ -416,14 +465,16 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
     private void browseIdList(String title) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(title);
+        chooser.setMultiSelectionEnabled(true);
 
         FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV Files (*.csv, *.txt, *.log)", "csv", "txt", "log");
         chooser.addChoosableFileFilter(filter);
         chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
         chooser.setFileFilter(filter);
 
-        if (!idListFile.getText().trim().isEmpty()) {
-            File file = new File(idListFile.getText().trim());
+        DefaultListModel<File> model = (DefaultListModel<File>) idListFiles.getModel();
+        if (!model.isEmpty()) {
+            File file = model.firstElement();
             if (!file.isDirectory()) {
                 file = file.getParentFile();
             }
@@ -433,7 +484,10 @@ public class IdListFilterView<T extends IdList> extends FilterView<T> {
 
         if (chooser.showOpenDialog(viewController.getTopFrame()) == JFileChooser.APPROVE_OPTION) {
             try {
-                idListFile.setText(chooser.getSelectedFile().getAbsolutePath());
+                model.clear();
+                for (File file : chooser.getSelectedFiles()) {
+                    model.addElement(file);
+                }
             } catch (Exception e) {
                 //
             }

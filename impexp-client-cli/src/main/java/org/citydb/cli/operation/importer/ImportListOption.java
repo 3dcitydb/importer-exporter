@@ -35,18 +35,21 @@ import org.citydb.config.project.importer.ImportListMode;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class ImportListOption implements CliOption {
-    @CommandLine.Option(names = {"-f", "--import-list"}, required = true,
-            description = "Name of the CSV file containing the import list.")
-    private Path file;
+    @CommandLine.Option(names = {"-f", "--import-list"}, paramLabel = "<file>", required = true, split = ",",
+            description = "One or more CSV files containing the import list.")
+    private Path[] files;
 
     @CommandLine.Option(names = {"-m", "--import-list-mode"}, paramLabel = "<mode>", defaultValue = "import",
             description = "Import list mode: import, skip (default: ${DEFAULT-VALUE}).")
     private String modeOption;
 
     @CommandLine.Option(names = {"-w", "--import-list-preview"},
-            description = "Print a preview of the import list and exit.")
+            description = "Print a preview of the import list and exit. If more than one CSV file is specified, " +
+                    "the preview is only generated for the first one.")
     private boolean preview;
 
     @CommandLine.ArgGroup(exclusive = false)
@@ -64,7 +67,7 @@ public class ImportListOption implements CliOption {
         }
 
         ImportList importList = resourceIdListOption.toIdList(ImportList::new);
-        importList.setFile(file.toAbsolutePath().toString());
+        importList.setFiles(Arrays.stream(files).map(Path::toString).collect(Collectors.toList()));
         importList.setMode(mode);
         return importList;
     }
