@@ -160,8 +160,8 @@ public class FileListTransferHandler extends TransferHandler implements DropTarg
     @SuppressWarnings("unchecked")
     @Override
     public void drop(DropTargetDropEvent event) {
-        for (DataFlavor dataFlover : event.getCurrentDataFlavors()) {
-            if (dataFlover.isFlavorJavaFileListType()) {
+        for (DataFlavor dataFlavor : event.getCurrentDataFlavors()) {
+            if (dataFlavor.isFlavorJavaFileListType()) {
                 try {
                     event.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
                     List<File> files = getFiles((List<File>) event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor));
