@@ -31,6 +31,8 @@ package org.citydb.config.project.common;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlType(name = "IdListType")
 public class IdList {
@@ -39,8 +41,8 @@ public class IdList {
     public static final char DEFAULT_COMMENT_CHARACTER = '#';
     public static final String DEFAULT_ENCODING = StandardCharsets.UTF_8.name();
 
-    @XmlElement(required = true)
-    private String file;
+    @XmlElement(name = "file", required = true)
+    private List<String> files;
     private String idColumnName;
     @XmlElement(defaultValue = "1")
     private Integer idColumnIndex;
@@ -62,12 +64,20 @@ public class IdList {
         return this;
     }
 
-    public String getFile() {
-        return file;
+    public List<String> getFiles() {
+        if (files == null) {
+            files = new ArrayList<>();
+        }
+
+        return files;
     }
 
-    public void setFile(String file) {
-        this.file = file;
+    public void setFiles(List<String> files) {
+        this.files = files;
+    }
+
+    public boolean hasFiles() {
+        return files != null && !files.isEmpty();
     }
 
     public String getIdColumnName() {

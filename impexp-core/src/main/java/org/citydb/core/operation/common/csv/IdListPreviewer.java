@@ -44,15 +44,17 @@ import java.util.stream.IntStream;
 
 public class IdListPreviewer {
     private final Logger log = Logger.getInstance();
+    private final String file;
     private final IdList idList;
     private long numberOfRecords = 20;
 
-    private IdListPreviewer(IdList idList) {
+    private IdListPreviewer(String file, IdList idList) {
+        this.file = file;
         this.idList = idList;
     }
 
-    public static IdListPreviewer of(IdList idList) {
-        return new IdListPreviewer(idList);
+    public static IdListPreviewer of(String file, IdList idList) {
+        return new IdListPreviewer(file, idList);
     }
 
     public IdListPreviewer withNumberOfRecords(long numberOfRecords) {
@@ -65,7 +67,7 @@ public class IdListPreviewer {
     }
 
     public void printToConsole() throws Exception {
-        log.info("Creating preview for the CSV file '" + idList.getFile() + "'.");
+        log.info("Generating preview for the CSV file '" + file + "'.");
         log.info("Printing the first " + numberOfRecords + " records based on the provided CSV settings.");
 
         List<List<String>> records = new ArrayList<>();
@@ -77,8 +79,7 @@ public class IdListPreviewer {
         settings.setEmptyValue("");
 
         CsvParser parser = new CsvParser(settings);
-        parser.beginParsing(Files.newBufferedReader(Paths.get(idList.getFile()),
-                Charset.forName(idList.getEncoding())));
+        parser.beginParsing(Files.newBufferedReader(Paths.get(file), Charset.forName(idList.getEncoding())));
 
         String[] row;
         while ((row = parser.parseNext()) != null) {

@@ -34,14 +34,17 @@ import org.citydb.config.project.common.IdList;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class DeleteListOption implements CliOption {
-    @CommandLine.Option(names = {"-f", "--delete-list"}, required = true,
-            description = "Name of the CSV file containing the delete list.")
-    private Path file;
+    @CommandLine.Option(names = {"-f", "--delete-list"}, paramLabel = "<file>", required = true, split = ",",
+            description = "One or more CSV files containing the delete list.")
+    private Path[] files;
 
     @CommandLine.Option(names = {"-w", "--delete-list-preview"},
-            description = "Print a preview of the delete list and exit.")
+            description = "Print a preview of the delete list and exit. If more than one CSV file is specified, " +
+                    "the preview is only generated for the first one.")
     private boolean preview;
 
     @CommandLine.ArgGroup(exclusive = false)
@@ -57,7 +60,7 @@ public class DeleteListOption implements CliOption {
         }
 
         IdList deleteList = deleteListOption.toIdList(IdList::new);
-        deleteList.setFile(file.toAbsolutePath().toString());
+        deleteList.setFiles(Arrays.stream(files).map(Path::toString).collect(Collectors.toList()));
         return deleteList;
     }
 

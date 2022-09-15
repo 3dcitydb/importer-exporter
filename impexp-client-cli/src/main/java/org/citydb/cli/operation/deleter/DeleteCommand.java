@@ -93,9 +93,7 @@ public class DeleteCommand extends CliCommand {
 
             if (deleteListOption.isPreview()) {
                 try {
-                    IdListPreviewer.of(deleteList)
-                            .withNumberOfRecords(20)
-                            .printToConsole();
+                    IdListPreviewer.of(deleteList.getFiles().get(0), deleteList).printToConsole();
                     log.info("Delete list preview successfully finished.");
                     return 0;
                 } catch (Exception e) {

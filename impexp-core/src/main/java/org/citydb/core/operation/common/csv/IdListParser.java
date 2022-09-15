@@ -47,18 +47,20 @@ public class IdListParser implements AutoCloseable {
     private final CsvParser parser;
     private final ResultIterator<Record, ParsingContext> iterator;
 
-    public IdListParser(IdList idList) throws IOException {
+    public IdListParser(String file, IdList idList) throws IdListException {
         this.idList = idList;
 
         try {
-            BufferedReader reader = Files.newBufferedReader(Paths.get(idList.getFile()),
-                    Charset.forName(idList.getEncoding()));
-
+            BufferedReader reader = Files.newBufferedReader(Paths.get(file), Charset.forName(idList.getEncoding()));
             parser = new CsvParser(defaultParserSettings(idList));
             iterator = parser.iterateRecords(reader).iterator();
-        } catch (Exception e) {
-            throw new IOException("Failed to open ID list file.", e);
+        } catch (IOException e) {
+            throw new IdListException("Failed to open ID list " + file + ".", e);
         }
+    }
+
+    public static IdListParser of(String file, IdList idList) throws IdListException {
+        return new IdListParser(file, idList);
     }
 
     public static CsvParserSettings defaultParserSettings(IdList idList) {
@@ -124,7 +126,11 @@ public class IdListParser implements AutoCloseable {
     }
 
     @Override
-    public void close() throws IOException {
-        parser.stopParsing();
+    public void close() throws IdListException {
+        try {
+            parser.stopParsing();
+        } catch (Throwable e) {
+            throw new IdListException("Failed to close ID list.", e);
+        }
     }
 }

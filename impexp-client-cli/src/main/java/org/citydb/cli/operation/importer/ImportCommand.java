@@ -100,9 +100,7 @@ public class ImportCommand extends CliCommand {
 
             if (importListOption.isPreview()) {
                 try {
-                    IdListPreviewer.of(importList)
-                            .withNumberOfRecords(20)
-                            .printToConsole();
+                    IdListPreviewer.of(importList.getFiles().get(0), importList).printToConsole();
                     log.info("Import list preview successfully finished.");
                     return 0;
                 } catch (Exception e) {

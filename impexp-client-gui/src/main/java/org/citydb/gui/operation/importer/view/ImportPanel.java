@@ -39,10 +39,12 @@ import org.citydb.core.operation.importer.controller.Importer;
 import org.citydb.core.operation.validator.ValidationException;
 import org.citydb.core.operation.validator.controller.Validator;
 import org.citydb.core.registry.ObjectRegistry;
+import org.citydb.gui.components.FileListTransferHandler;
 import org.citydb.gui.components.ScrollablePanel;
 import org.citydb.gui.components.dialog.ConfirmationCheckDialog;
 import org.citydb.gui.components.dialog.ImportStatusDialog;
 import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.plugin.util.DefaultViewComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
@@ -54,17 +56,9 @@ import org.citydb.util.log.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -81,7 +75,6 @@ public class ImportPanel extends DefaultViewComponent {
 	private final Config config;
 
 	private JList<File> fileList;
-	private DefaultListModel<File> fileListModel;
 	private JButton browseButton;
 	private JButton removeButton;
 	private JButton importButton;
@@ -97,36 +90,21 @@ public class ImportPanel extends DefaultViewComponent {
 	}
 
 	private void initGui() {
-		fileList = new JList<>();
+		fileList = new JList<>(new DefaultListModel<>());
 		browseButton = new JButton();
 		removeButton = new JButton();
 		filterPanel = new FilterPanel(viewController, config);
 		importButton = new JButton();
 		validateButton = new JButton();
 
-		DropCutCopyPasteHandler handler = new DropCutCopyPasteHandler();
-
-		fileListModel = new DefaultListModel<>();
-		fileList.setModel(fileListModel);
+		FileListTransferHandler transferHandler = new FileListTransferHandler(fileList)
+				.withFilesAddedHandler(model -> config.getImportConfig().getPath().setLastUsedPath(model.get(0).getAbsolutePath()))
+				.withFilesRemovedHandler(model -> removeButton.setEnabled(false));
 		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		fileList.setTransferHandler(handler);
+		fileList.setTransferHandler(transferHandler);
 		fileList.setVisibleRowCount(6);
 
-		DropTarget dropTarget = new DropTarget(fileList, handler);
-		fileList.setDropTarget(dropTarget);
-		setDropTarget(dropTarget);
-
-		ActionMap actionMap = fileList.getActionMap();
-		actionMap.put(TransferHandler.getCutAction().getValue(Action.NAME), TransferHandler.getCutAction());
-		actionMap.put(TransferHandler.getCopyAction().getValue(Action.NAME), TransferHandler.getCopyAction());
-		actionMap.put(TransferHandler.getPasteAction().getValue(Action.NAME), TransferHandler.getPasteAction());
-
-		InputMap inputMap = fileList.getInputMap();
-		inputMap.put(KeyStroke.getKeyStroke('X', InputEvent.CTRL_DOWN_MASK), TransferHandler.getCutAction().getValue(Action.NAME));
-		inputMap.put(KeyStroke.getKeyStroke('C', InputEvent.CTRL_DOWN_MASK), TransferHandler.getCopyAction().getValue(Action.NAME));
-		inputMap.put(KeyStroke.getKeyStroke('V', InputEvent.CTRL_DOWN_MASK), TransferHandler.getPasteAction().getValue(Action.NAME));
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
+		setDropTarget(fileList.getDropTarget());
 
 		browseButton.addActionListener(e -> loadFile(Language.I18N.getString("main.tabbedPane.import")));
 
@@ -186,6 +164,8 @@ public class ImportPanel extends DefaultViewComponent {
         add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
         add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(buttonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
+
+		PopupMenuDecorator.getInstance().decorate(fileList);
     }
 
 	@Override
@@ -414,12 +394,13 @@ public class ImportPanel extends DefaultViewComponent {
 	}
 
 	private List<Path> getInputFiles() {
+		DefaultListModel<File> model = (DefaultListModel<File>) fileList.getModel();
 		List<Path> importFiles = new ArrayList<>();
-		for (int i = 0; i < fileListModel.size(); ++i) {
+		for (int i = 0; i < model.size(); ++i) {
 			try {
-				importFiles.add(fileListModel.get(i).toPath());
+				importFiles.add(model.get(i).toPath());
 			} catch (InvalidPathException e) {
-				log.error("'" + fileListModel.get(i) + "' is not a valid file or folder.");
+				log.error("'" + model.get(i) + "' is not a valid file or folder.");
 				importFiles = Collections.emptyList();
 				break;
 			}
@@ -444,156 +425,22 @@ public class ImportPanel extends DefaultViewComponent {
 		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
 		chooser.setFileFilter(filter);
 
-		if (fileListModel.isEmpty()) {
+		DefaultListModel<File> model = (DefaultListModel<File>) fileList.getModel();
+		if (model.isEmpty()) {
 			chooser.setCurrentDirectory(config.getImportConfig().getPath().isSetLastUsedMode() ?
 					new File(config.getImportConfig().getPath().getLastUsedPath()) :
 					new File(config.getImportConfig().getPath().getStandardPath()));
 		} else
-			chooser.setCurrentDirectory(fileListModel.get(0));
+			chooser.setCurrentDirectory(model.get(0));
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION)
 			return;
 
-		fileListModel.clear();
+		model.clear();
 		for (File file : chooser.getSelectedFiles())
-			fileListModel.addElement(file);
+			model.addElement(file);
 
 		config.getImportConfig().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
-	}
-
-	// JList handler for drop, cut, copy, and paste support
-	private final class DropCutCopyPasteHandler extends TransferHandler implements DropTargetListener {
-
-		@Override
-		public boolean importData(TransferSupport info) {
-			if (!info.isDataFlavorSupported(DataFlavor.stringFlavor))
-				return false;
-
-			if (info.isDrop())
-				return false;
-
-			List<File> files = new ArrayList<>();
-			try {
-				String value = (String)info.getTransferable().getTransferData(DataFlavor.stringFlavor);
-
-				for (String token : value.split(System.getProperty("line.separator"))) {
-					File file = new File(token);
-					if (file.exists())
-						files.add(file.getAbsoluteFile());
-					else
-						log.warn("Failed to paste from clipboard: '" + file.getAbsolutePath() + "' does not exist.");
-				}
-
-				if (!files.isEmpty()) {
-					addFiles(files);
-					return true;
-				}
-			} catch (UnsupportedFlavorException | IOException ufe) {
-				//
-			}
-
-			return false;
-		}
-
-		@Override
-		protected Transferable createTransferable(JComponent c) {
-			int[] indices = fileList.getSelectedIndices();
-			String newLine = System.getProperty("line.separator");
-
-			StringBuilder builder = new StringBuilder();
-			for (int i = 0; i < indices.length; i++) {
-				builder.append(fileList.getModel().getElementAt(indices[i]));
-				if (i < indices.length - 1)
-					builder.append(newLine);
-			}
-
-			return new StringSelection(builder.toString());
-		}
-
-		@Override
-		public int getSourceActions(JComponent c) {
-			return COPY_OR_MOVE;
-		}
-
-		@Override
-		protected void exportDone(JComponent c, Transferable data, int action) {
-			if (action != MOVE)
-				return;
-
-			if (!fileList.isSelectionEmpty()) {
-				int[] indices = fileList.getSelectedIndices();
-				int first = indices[0];
-
-				for (int i = indices.length - 1; i >= 0; i--)
-					fileListModel.remove(indices[i]);
-
-				if (first > fileListModel.size() - 1)
-					first = fileListModel.size() - 1;
-
-				if (fileListModel.isEmpty())
-					removeButton.setEnabled(false);
-				else
-					fileList.setSelectedIndex(first);
-			}
-		}
-
-		@Override
-		public void dragEnter(DropTargetDragEvent dtde) {
-			dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public void drop(DropTargetDropEvent dtde) {
-			for (DataFlavor dataFlover : dtde.getCurrentDataFlavors()) {
-				if (dataFlover.isFlavorJavaFileListType()) {
-					try {
-						dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-
-						List<File> files = new ArrayList<>();
-						for (File file : (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor))
-							if (file.exists())
-								files.add(file.getAbsoluteFile());
-							else
-								log.warn("Failed to drop from clipboard: '" + file.getAbsolutePath() + "' is not a file.");
-
-						if (!files.isEmpty()) {
-							if (dtde.getDropAction() != DnDConstants.ACTION_COPY)
-								fileListModel.clear();
-
-							addFiles(files);
-						}
-
-						dtde.getDropTargetContext().dropComplete(true);
-					} catch (UnsupportedFlavorException | IOException e) {
-						//
-					}
-				}
-			}
-		}
-
-		private void addFiles(List<File> files) {
-			int index = fileList.getSelectedIndex() + 1;
-			for (File file : files)
-				fileListModel.add(index++, file);
-
-			config.getImportConfig().getPath().setLastUsedPath(fileListModel.getElementAt(0).getAbsolutePath());
-		}
-
-		@Override
-		public void dropActionChanged(DropTargetDragEvent dtde) {
-			// nothing to do here
-		}
-
-		@Override
-		public void dragExit(DropTargetEvent dte) {
-			// nothing to do here
-		}
-
-		@Override
-		public void dragOver(DropTargetDragEvent dtde) {
-			// nothing to do here
-		}
 	}
 }

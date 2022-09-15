@@ -183,32 +183,36 @@ public class Deleter implements EventHandler {
 		CacheTable cacheTable = null;
 
 		try {
-			if (config.getDeleteConfig().isUseDeleteList() && config.getDeleteConfig().isSetDeleteList()) {
+			if (config.getDeleteConfig().isUseDeleteList()
+					&& config.getDeleteConfig().isSetDeleteList()
+					&& config.getDeleteConfig().getDeleteList().hasFiles()) {
+				log.info("Loading delete list into temporary database table...");
+
+				// create instance of the cache table manager
+				try {
+					cacheTableManager = new CacheTableManager(config.getGlobalConfig().getCache());
+					cacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.DATABASE);
+				} catch (SQLException | IOException e) {
+					throw new DeleteException("Failed to initialize temporary delete list cache.", e);
+				}
+
 				IdList deleteList = config.getDeleteConfig().getDeleteList();
-				log.info("Using delete list '" + deleteList.getFile() + "'.");
+				int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
+				IdListImporter importer = new IdListImporter(cacheTable, maxBatchSize);
 
-				try (IdListParser parser = new IdListParser(deleteList)) {
-					// create instance of the cache table manager
-					try {
-						cacheTableManager = new CacheTableManager(config.getGlobalConfig().getCache());
-						cacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.DATABASE);
-					} catch (SQLException e) {
-						throw new DeleteException("Failed to initialize temporary delete list cache.", e);
-					}
-
-					// load delete list into database
-					log.info("Loading delete list into temporary database table...");
-
-					try {
-						int maxBatchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
-						new IdListImporter(cacheTable, maxBatchSize).doImport(parser);
+				for (String file : deleteList.getFiles()) {
+					log.debug("Loading CSV file '" + file + "' into database.");
+					try (IdListParser parser = IdListParser.of(file, deleteList)) {
+						try {
+							importer.doImport(parser);
+						} catch (IdListException e) {
+							throw new DeleteException("Failed to parse delete list.", e);
+						} catch (SQLException e) {
+							throw new DeleteException("Failed to load delete list into temporary database table.", e);
+						}
 					} catch (IdListException e) {
-						throw new DeleteException("Failed to parse delete list.", e);
-					} catch (SQLException e) {
-						throw new DeleteException("Failed to load delete list into temporary database table.", e);
+						throw new DeleteException("Failed to create delete list parser.", e);
 					}
-				} catch (IOException e) {
-					throw new DeleteException("Failed to create delete list parser.", e);
 				}
 			}
 
