@@ -230,7 +230,6 @@ public class Importer implements EventHandler {
         }
 
         // create import logger
-        importLogger = null;
         if (config.getImportConfig().getImportLog().isSetLogImportedFeatures()) {
             try {
                 importLogger = new ImportLogger(
