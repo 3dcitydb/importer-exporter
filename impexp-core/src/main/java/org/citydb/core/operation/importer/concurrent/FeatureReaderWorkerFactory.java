@@ -36,20 +36,20 @@ import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.xml.io.reader.XMLChunk;
 
 public class FeatureReaderWorkerFactory implements WorkerFactory<XMLChunk> {
-	private final WorkerPool<CityGML> dbWorkerPool;
+	private final WorkerPool<CityGML> workerPool;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public FeatureReaderWorkerFactory(WorkerPool<CityGML> dbWorkerPool,
+	public FeatureReaderWorkerFactory(WorkerPool<CityGML> workerPool,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this.dbWorkerPool = dbWorkerPool;
+		this.workerPool = workerPool;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
 
 	@Override
 	public Worker<XMLChunk> createWorker() {
-		return new FeatureReaderWorker(dbWorkerPool, config, eventDispatcher);
+		return new FeatureReaderWorker(workerPool, config, eventDispatcher);
 	}
 }

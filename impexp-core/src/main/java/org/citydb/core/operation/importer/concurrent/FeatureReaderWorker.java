@@ -44,14 +44,14 @@ public class FeatureReaderWorker extends Worker<XMLChunk> {
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
 
-	private final WorkerPool<CityGML> dbWorkerPool;
+	private final WorkerPool<CityGML> workerPool;
 	private final EventDispatcher eventDispatcher;
 	private final boolean useValidation;
 
-	public FeatureReaderWorker(WorkerPool<CityGML> dbWorkerPool,
+	public FeatureReaderWorker(WorkerPool<CityGML> workerPool,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this.dbWorkerPool = dbWorkerPool;
+		this.workerPool = workerPool;
 		this.eventDispatcher = eventDispatcher;
 
 		useValidation = config.getImportConfig().getCityGMLOptions().getXMLValidation().isSetUseXMLValidation();
@@ -87,7 +87,7 @@ public class FeatureReaderWorker extends Worker<XMLChunk> {
 			try {
 				CityGML cityGML = work.unmarshal();
 				if (!useValidation || work.hasPassedXMLValidation()) {
-					dbWorkerPool.addWork(cityGML);
+					workerPool.addWork(cityGML);
 				}
 			} catch (UnmarshalException e) {
 				if (!useValidation || work.hasPassedXMLValidation()) {
