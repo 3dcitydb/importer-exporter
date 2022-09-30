@@ -79,5 +79,10 @@ public class CityGMLFilter {
 	public void setCounterFilter(CounterFilter counterFilter) {
 		this.counterFilter = counterFilter;
 	}
-	
+
+	public void reset() {
+		if (counterFilter != null) {
+			counterFilter.reset();
+		}
+	}
 }

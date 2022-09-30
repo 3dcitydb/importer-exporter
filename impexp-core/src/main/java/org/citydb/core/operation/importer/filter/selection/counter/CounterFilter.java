@@ -47,4 +47,8 @@ public class CounterFilter extends org.citydb.core.query.filter.counter.CounterF
     public boolean isStartIndexSatisfied() {
         return !isSetStartIndex() || currentStartIndex >= getStartIndex();
     }
+
+    public void reset() {
+        currentCount = currentStartIndex = 0;
+    }
 }
