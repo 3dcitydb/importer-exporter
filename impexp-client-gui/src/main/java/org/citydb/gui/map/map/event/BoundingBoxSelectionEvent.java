@@ -33,13 +33,16 @@ import org.jdesktop.swingx.mapviewer.GeoPosition;
 public class BoundingBoxSelectionEvent extends Event {
 	private final GeoPosition[] boundingBox;
 	
-	public BoundingBoxSelectionEvent(GeoPosition[] boundingBox, Object source) {
-		super(MapEvents.BOUNDING_BOX_SELECTION, GLOBAL_CHANNEL, source);
+	public BoundingBoxSelectionEvent(GeoPosition[] boundingBox, String label) {
+		super(MapEvents.BOUNDING_BOX_SELECTION, GLOBAL_CHANNEL, label);
 		this.boundingBox = boundingBox;
+	}
+
+	public BoundingBoxSelectionEvent(GeoPosition[] boundingBox) {
+		this(boundingBox, null);
 	}
 
 	public GeoPosition[] getBoundingBox() {
 		return boundingBox;
 	}
-	
 }

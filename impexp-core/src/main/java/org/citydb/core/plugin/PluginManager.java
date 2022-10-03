@@ -124,7 +124,7 @@ public class PluginManager {
         }
 
         if (!plugins.isEmpty()) {
-            ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new PluginStateEvent(plugins, this));
+            ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new PluginStateEvent(plugins));
         }
     }
 

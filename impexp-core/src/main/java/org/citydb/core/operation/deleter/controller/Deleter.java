@@ -217,13 +217,13 @@ public class Deleter implements EventHandler {
 			}
 
 			if (preview) {
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.preview"), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.preview")));
 				log.info("Running " + mode.value() + " in preview mode. Affected city objects will not be " +
 						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
 			} else {
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString(mode == DeleteMode.TERMINATE ?
 						"delete.dialog.title.terminate" :
-						"delete.dialog.title.delete"), this));
+						"delete.dialog.title.delete")));
 				log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") + " city objects from database.");
 			}
 
@@ -273,8 +273,8 @@ public class Deleter implements EventHandler {
 					&& !preview) {
 				try {
 					if (databaseAdapter.getUtil().containsGlobalAppearances()) {
-						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.cleanupGlobalAppearances"), this));
-						eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("delete.dialog.title.cleanupGlobalAppearances")));
+						eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
 						log.info("Cleaning up unreferenced global appearances.");
 
 						globalAppearanceCleaner = new GlobalAppearanceCleaner(bundledConnection, databaseAdapter);

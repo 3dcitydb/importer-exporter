@@ -34,11 +34,15 @@ public class PropertyChangeEvent extends Event {
 	private final Object oldValue;
 	private final Object newValue;
 	
-	public PropertyChangeEvent(String propertyName, Object oldValue, Object newValue, Object source) {
-		super(EventType.PROPERTY_CHANGE_EVENT, GLOBAL_CHANNEL, source);
+	public PropertyChangeEvent(String propertyName, Object oldValue, Object newValue, String label) {
+		super(EventType.PROPERTY_CHANGE_EVENT, GLOBAL_CHANNEL, label);
 		this.propertyName = propertyName;
 		this.oldValue = oldValue;
 		this.newValue = newValue;
+	}
+
+	public PropertyChangeEvent(String propertyName, Object oldValue, Object newValue) {
+		this(propertyName, oldValue, newValue, null);
 	}
 
 	public String getPropertyName() {
@@ -52,5 +56,4 @@ public class PropertyChangeEvent extends Event {
 	public Object getNewValue() {
 		return newValue;
 	}
-	
 }

@@ -172,7 +172,7 @@ public class MenuFile extends JMenu {
                 }
 
                 // trigger event
-                ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ConfigChangedEvent(this));
+                ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ConfigChangedEvent());
 
                 mainView.switchLocale();
                 log.info("Settings are reset to default values.");
@@ -276,7 +276,7 @@ public class MenuFile extends JMenu {
             pluginManager.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
 
             // trigger event
-            ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ConfigChangedEvent(this));
+            ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ConfigChangedEvent());
             success = true;
         } catch (JAXBException | IOException e) {
             log.error("Failed to load settings file '" + file + "'.", e);

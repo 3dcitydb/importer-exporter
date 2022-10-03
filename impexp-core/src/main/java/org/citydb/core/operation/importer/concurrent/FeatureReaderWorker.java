@@ -91,12 +91,12 @@ public class FeatureReaderWorker extends Worker<XMLChunk> {
 				}
 			} catch (UnmarshalException e) {
 				if (!useValidation || work.hasPassedXMLValidation()) {
-					eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to unmarshal XML chunk.", LogLevel.ERROR, e, eventChannel, this));
+					eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to unmarshal XML chunk.", LogLevel.ERROR, e, eventChannel));
 				}
 			} catch (MissingADESchemaException e) {
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to read an ADE XML Schema.", LogLevel.ERROR, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to read an ADE XML Schema.", LogLevel.ERROR, e, eventChannel));
 			} catch (Throwable e) {
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during parsing of input file.", LogLevel.ERROR, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during parsing of input file.", LogLevel.ERROR, e, eventChannel));
 			}
 		} finally {
 			runLock.unlock();

@@ -156,11 +156,11 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				}
 			}
 
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter + globalAppearanceCounter, this));
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(exporter.getAndResetObjectCounter(), this));
-			eventDispatcher.triggerEvent(new GeometryCounterEvent(exporter.getAndResetGeometryCounter(), this));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter + globalAppearanceCounter));
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(exporter.getAndResetObjectCounter()));
+			eventDispatcher.triggerEvent(new GeometryCounterEvent(exporter.getAndResetGeometryCounter()));
 		} finally {
 			try {
 				exporter.close();
@@ -190,8 +190,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			if (work.getObjectType().getObjectClassId() == MappingConstants.APPEARANCE_OBJECTCLASS_ID) {
 				feature = exporter.exportGlobalAppearance(work.getId());
 				if (feature != null && ++globalAppearanceCounter == 20) {
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, globalAppearanceCounter, this));
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, globalAppearanceCounter));
 					globalAppearanceCounter = 0;
 				}
 			} else {
@@ -207,8 +207,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 						}
 
 						if (++topLevelFeatureCounter == 20) {
-							eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
-							eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
+							eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter));
+							eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter));
 							topLevelFeatureCounter = 0;
 						}
 					}
@@ -221,7 +221,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 						&& feature instanceof AbstractCityObject) {
 					int unconverted = exporter.convertGlobalAppearances((AbstractCityObject) feature);
 					if (unconverted != 0) {
-						eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, unconverted, this));
+						eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, unconverted));
 					}
 				}
 
@@ -248,7 +248,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 
 		} catch (Throwable e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during export of " +
-					exporter.getObjectSignature(work.getObjectType(), work.getId()) + ".", LogLevel.ERROR, e, eventChannel, this));
+					exporter.getObjectSignature(work.getObjectType(), work.getId()) + ".", LogLevel.ERROR, e, eventChannel));
 		} finally {
 			runLock.unlock();
 		}

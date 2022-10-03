@@ -181,7 +181,7 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 				Rectangle2D tmp = start.createUnion(end);
 				if (isVisibleOnScreen(tmp)) {
 					selectedArea = tmp;
-					eventDispatcher.triggerEvent(new BoundingBoxSelectionEvent(getBoundingBox(), this));
+					eventDispatcher.triggerEvent(new BoundingBoxSelectionEvent(getBoundingBox()));
 				}
 			}
 

@@ -82,7 +82,7 @@ public class CityJSONWriterWorker extends Worker<AbstractCityObjectType> {
 			
 			writer.writeCityObject(work);
 		} catch (CityJSONWriteException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write CityJSON content.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write CityJSON content.", LogLevel.ERROR, e, eventChannel));
 			shouldWork = false;
 		} finally {
 			runLock.unlock();

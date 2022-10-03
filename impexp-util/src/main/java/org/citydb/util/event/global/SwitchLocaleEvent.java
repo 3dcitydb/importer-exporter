@@ -34,13 +34,16 @@ import java.util.Locale;
 public final class SwitchLocaleEvent extends Event {
 	private final Locale locale;
 	
-	public SwitchLocaleEvent(Locale locale, Object source) {
-		super(EventType.SWITCH_LOCALE, GLOBAL_CHANNEL, source);
+	public SwitchLocaleEvent(Locale locale, String label) {
+		super(EventType.SWITCH_LOCALE, GLOBAL_CHANNEL, label);
 		this.locale = locale;
+	}
+
+	public SwitchLocaleEvent(Locale locale) {
+		this(locale, null);
 	}
 	
 	public Locale getLocale() {
 		return locale;
 	}
-
 }

@@ -43,27 +43,39 @@ public class ReverseGeocoderEvent extends Event {
 		ERROR
 	}	
 	
-	public ReverseGeocoderEvent(ReverseGeocoderStatus status, Object source) {
-		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, source);
+	public ReverseGeocoderEvent(ReverseGeocoderStatus status, String label) {
+		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, label);
 		this.status = status == ReverseGeocoderStatus.SEARCHING || status == ReverseGeocoderStatus.NO_RESULT ?
 				status : ReverseGeocoderStatus.NO_RESULT;
 
 		location = null;
 		exception = null;
 	}
+
+	public ReverseGeocoderEvent(ReverseGeocoderStatus status) {
+		this(status, null);
+	}
 	
-	public ReverseGeocoderEvent(Location location, Object source) {
-		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, source);
+	public ReverseGeocoderEvent(Location location, String label) {
+		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, label);
 		this.status = ReverseGeocoderStatus.RESULT;
 		this.location = location;
 		exception = null;
 	}
+
+	public ReverseGeocoderEvent(Location location) {
+		this(location, null);
+	}
 	
-	public ReverseGeocoderEvent(GeocodingServiceException exception, Object source) {
-		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, source);
+	public ReverseGeocoderEvent(GeocodingServiceException exception, String label) {
+		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, label);
 		this.status = ReverseGeocoderStatus.ERROR;
 		location = null;
 		this.exception = exception;
+	}
+
+	public ReverseGeocoderEvent(GeocodingServiceException exception) {
+		this(exception, null);
 	}
 
 	public ReverseGeocoderStatus getStatus() {
@@ -77,5 +89,4 @@ public class ReverseGeocoderEvent extends Event {
 	public GeocodingServiceException getException() {
 		return exception;
 	}
-	
 }

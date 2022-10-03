@@ -481,7 +481,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			consoleWindow.switchLocale();
 			consolePopup.switchLocale();
 
-			eventDispatcher.triggerSyncEvent(new SwitchLocaleEvent(locale, this));
+			eventDispatcher.triggerSyncEvent(new SwitchLocaleEvent(locale));
 		} catch (MissingResourceException e) {
 			log.error("Missing resource: " + e.getKey());
 		}

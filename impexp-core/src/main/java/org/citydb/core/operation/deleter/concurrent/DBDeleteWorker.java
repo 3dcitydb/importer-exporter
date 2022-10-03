@@ -184,15 +184,15 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			}
 
 			Map<Integer, Long> objectCounter = Collections.singletonMap(work.getObjectType().getObjectClassId(), 1L);
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel, this));
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter));
 
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 		} catch (SQLException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to " + mode.value() + " " + work.getObjectType() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to " + mode.value() + " " + work.getObjectType() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel));
 		} catch (IOException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the delete log.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the delete log.", LogLevel.ERROR, e, eventChannel));
 		} catch (Throwable e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during " + mode.value() + ".", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during " + mode.value() + ".", LogLevel.ERROR, e, eventChannel));
 		} finally {
 			lock.unlock();
 		}

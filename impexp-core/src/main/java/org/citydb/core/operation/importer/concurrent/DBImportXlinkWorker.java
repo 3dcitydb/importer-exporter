@@ -94,7 +94,7 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 			if (shouldWork)
 				dbXlinkManager.executeBatch();
 		} catch (Throwable e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
 		} finally {
 			try {
 				dbXlinkManager.close();
@@ -219,7 +219,7 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 			}
 
 		} catch (Throwable e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
 		} finally {
 			runLock.unlock();
 		}

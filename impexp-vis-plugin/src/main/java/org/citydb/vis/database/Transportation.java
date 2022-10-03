@@ -264,7 +264,7 @@ public class Transportation extends AbstractVisObject {
 			Object buildingGeometryObj = rs.getObject(1); 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
 				GeometryObject pointOrCurveGeometry = geometryConverterAdapter.getGeometry(buildingGeometryObj);
-				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
+				eventDispatcher.triggerEvent(new GeometryCounterEvent(null));
 
 				if (pointOrCurveGeometry.getGeometryType() == GeometryType.POINT) { // point
 					double[] ordinatesArray = pointOrCurveGeometry.getCoordinates(0);

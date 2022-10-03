@@ -34,28 +34,22 @@ import java.util.Map;
 
 public final class GenericEvent extends Event {
 	private final String id;
-	private HashMap<String, Object> properties;
+	private final Map<String, Object> properties;
 
-	public GenericEvent(String id, Map<String, Object> properties, Object channel, Object source) {
-		super(EventType.GENERIC_EVENT, channel, source);
+	public GenericEvent(String id, Map<String, Object> properties, Object channel, String label) {
+		super(EventType.GENERIC_EVENT, channel, label);
 		this.id = id;
-
-		if (properties != null)
-			this.properties = new HashMap<String, Object>(properties);
-		else
-			this.properties = new HashMap<String, Object>();
+		this.properties = properties != null ?
+				new HashMap<>(properties) :
+				new HashMap<>();
 	}
 
-	public GenericEvent(String id, Map<String, Object> properties, Object source) {
-		this(id, properties, GLOBAL_CHANNEL, source);
+	public GenericEvent(String id, Map<String, Object> properties, String label) {
+		this(id, properties, GLOBAL_CHANNEL, label);
 	}
-	
-	public GenericEvent(String id, Object channel, Object source) {
-		this(id, null, channel, source);
-	}
-	
-	public GenericEvent(String id, Object source) {
-		this(id, null, GLOBAL_CHANNEL, source);
+
+	public GenericEvent(String id, String label) {
+		this(id, null, GLOBAL_CHANNEL, label);
 	}
 
 	public String getId() {

@@ -361,10 +361,10 @@ public class Importer implements EventHandler {
                         file.getFile() :
 						Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
-                eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString(), this));
-                eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.cityObj.msg"), this));
-                eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
-                eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
+                eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString()));
+                eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.cityObj.msg")));
+                eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
+                eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles));
 
                 // update import log
                 if (importLogger != null) {
@@ -542,8 +542,8 @@ public class Importer implements EventHandler {
                     throw new CityGMLImportException("Failed to shutdown worker pools.", e);
                 }
 
-                eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.finish.msg"), this));
-                eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+                eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.finish.msg")));
+                eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
             } catch (IOException e) {
                 throw new CityGMLImportException("Failed to process import file.", e);
             } finally {

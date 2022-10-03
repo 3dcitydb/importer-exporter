@@ -101,12 +101,12 @@ public class MapPopupMenu extends JPopupMenu {
 			bounds[0] = fac.pixelToGeo(new Point2D.Double(view.getMinX(), view.getMaxY()), zoom);
 			bounds[1] = fac.pixelToGeo(new Point2D.Double(view.getMaxX(), view.getMinY()), zoom);
 
-			eventDispatcher.triggerEvent(new MapBoundsSelectionEvent(bounds, MapPopupMenu.this));
+			eventDispatcher.triggerEvent(new MapBoundsSelectionEvent(bounds));
 		});
 
 		geocode.addActionListener(e -> {
 			eventDispatcher.triggerEvent(new ReverseGeocoderEvent(
-					ReverseGeocoderEvent.ReverseGeocoderStatus.SEARCHING, MapPopupMenu.this));
+					ReverseGeocoderEvent.ReverseGeocoderStatus.SEARCHING));
 			final GeoPosition position = map.convertPointToGeoPosition(mousePosition);
 
 			new SwingWorker<GeocoderResult, Void>() {
@@ -154,13 +154,13 @@ public class MapPopupMenu extends JPopupMenu {
 									new DefaultWaypoint(location.getPosition(), type));
 							map.repaint();
 
-							eventDispatcher.triggerEvent(new ReverseGeocoderEvent(location, MapPopupMenu.this));
+							eventDispatcher.triggerEvent(new ReverseGeocoderEvent(location));
 						} else {
 							mapViewer.getWaypointPainter().clearWaypoints();
 							map.repaint();
 
 							eventDispatcher.triggerEvent(new ReverseGeocoderEvent(
-									ReverseGeocoderEvent.ReverseGeocoderStatus.NO_RESULT, MapPopupMenu.this));
+									ReverseGeocoderEvent.ReverseGeocoderStatus.NO_RESULT));
 						}
 					} catch (InterruptedException | ExecutionException e) {
 						mapViewer.getWaypointPainter().clearWaypoints();
@@ -174,7 +174,7 @@ public class MapPopupMenu extends JPopupMenu {
 							exception.addMessage("Caused by: " + e.getMessage());
 						}
 
-						eventDispatcher.triggerEvent(new ReverseGeocoderEvent(exception, MapPopupMenu.this));
+						eventDispatcher.triggerEvent(new ReverseGeocoderEvent(exception));
 					}
 				}
 			}.execute();

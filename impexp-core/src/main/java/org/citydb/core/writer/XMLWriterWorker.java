@@ -82,7 +82,7 @@ public class XMLWriterWorker extends Worker<SAXEventBuffer> {
 			
 			work.send(saxWriter, true);
 		} catch (SAXException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write XML content.", LogLevel.ERROR, e, eventChannel));
 			shouldWork = false;
 		} finally {
 			runLock.unlock();

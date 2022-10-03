@@ -33,13 +33,16 @@ import org.citydb.util.event.Event;
 public final class ProxyServerUnavailableEvent extends Event {
 	private final ProxyConfig proxy;
 	
-	public ProxyServerUnavailableEvent(ProxyConfig proxy, Object source) {
-		super(EventType.PROXY_SERVER_UNAVAILABLE, GLOBAL_CHANNEL, source);
+	public ProxyServerUnavailableEvent(ProxyConfig proxy, String label) {
+		super(EventType.PROXY_SERVER_UNAVAILABLE, GLOBAL_CHANNEL, label);
 		this.proxy = proxy;
+	}
+
+	public ProxyServerUnavailableEvent(ProxyConfig proxy) {
+		this(proxy, null);
 	}
 
 	public ProxyConfig getProxy() {
 		return proxy;
 	}
-	
 }

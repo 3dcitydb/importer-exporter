@@ -106,7 +106,7 @@ public class DBXlinkSplitter implements EventHandler {
 			// this requires that we have resolved surface geometry xlinks first
 			solidGeometryXlinks();
 		} catch (Throwable e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during XLink resolving.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during XLink resolving.", LogLevel.ERROR, e, eventChannel));
 		} finally {
 			eventDispatcher.removeEventHandler(this);
 		}
@@ -121,13 +121,13 @@ public class DBXlinkSplitter implements EventHandler {
 			return;
 
 		log.info("Resolving feature XLinks...");
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)cacheTable.size(), this));
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.basicXLink.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)cacheTable.size()));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.basicXLink.msg")));
 
 		try (Statement stmt = cacheTable.getConnection().createStatement();
 			 ResultSet rs = stmt.executeQuery("select * from " + cacheTable.getTableName())) {
 			while (rs.next() && shouldRun) {
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 				long id = rs.getLong("ID");
 				String table = rs.getString("TABLE_NAME");
@@ -161,10 +161,10 @@ public class DBXlinkSplitter implements EventHandler {
 			boolean checkRecursive, 
 			long remaining, 
 			int pass) throws SQLException {
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (remaining == -1) ? (int)cacheTable.size() : (int)remaining, this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (remaining == -1) ? (int)cacheTable.size() : (int)remaining));
 		String text = Language.I18N.getString("import.dialog.groupXLink.msg");
 		Object[] args = new Object[]{ pass };
-		eventDispatcher.triggerEvent(new StatusDialogMessage(MessageFormat.format(text, args), this));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(MessageFormat.format(text, args)));
 
 		CacheTable mirrorTable = cacheTable.mirrorAndIndex();
 		cacheTable.truncate();
@@ -172,7 +172,7 @@ public class DBXlinkSplitter implements EventHandler {
 		try (Statement stmt = mirrorTable.getConnection().createStatement();
 			 ResultSet rs = stmt.executeQuery("select * from " + mirrorTable.getTableName())) {
 			while (rs.next() && shouldRun) {
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 				long groupId = rs.getLong("GROUP_ID");
 				String gmlId = rs.getString("GMLID");
@@ -230,8 +230,8 @@ public class DBXlinkSplitter implements EventHandler {
 		if (texParamTableTable != null) max += (int) texParamTableTable.size();
 
 		log.info("Resolving appearance XLinks...");
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, max, this));
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.appXlink.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, max));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.appXlink.msg")));
 
 		// first step: resolve texture coordinates
 		if (texCoordTable != null && existsLinearRingTable) {
@@ -244,7 +244,7 @@ public class DBXlinkSplitter implements EventHandler {
 						 "lr.PARENT_ID, lr.REVERSE from " + texCoordTable.getTableName() + " tc " +
 						 " join " + linearRingTable.getTableName() + " lr on tc.GMLID=lr.GMLID where lr.RING_NO = 0")) {
 				while (rs.next() && shouldRun) {
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 					long id = rs.getLong("ID");
 					String gmlId = rs.getString("GMLID");
@@ -272,7 +272,7 @@ public class DBXlinkSplitter implements EventHandler {
 			try (Statement stmt = texParamTableTable.getConnection().createStatement();
 				 ResultSet rs = stmt.executeQuery("select * from " + texParamTableTable.getTableName())) {
 				while (rs.next() && shouldRun) {
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 					long id = rs.getLong("ID");
 					String gmlId = rs.getString("GMLID");
@@ -304,13 +304,13 @@ public class DBXlinkSplitter implements EventHandler {
 			CacheTable temporaryTable = cacheTableManager.getCacheTable(CacheTableModel.TEXTURE_FILE);
 
 			log.info("Importing texture images...");
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) temporaryTable.size(), this));
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.texImg.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) temporaryTable.size()));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.texImg.msg")));
 
 			try (Statement stmt = temporaryTable.getConnection().createStatement();
 				 ResultSet rs = stmt.executeQuery("select * from " + temporaryTable.getTableName())) {
 				while (rs.next() && shouldRun) {
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 					long id = rs.getLong("ID");
 					String imageURI = rs.getString("FILE_URI");
@@ -333,13 +333,13 @@ public class DBXlinkSplitter implements EventHandler {
 			CacheTable temporaryTable = cacheTableManager.getCacheTable(CacheTableModel.SURFACE_DATA_TO_TEX_IMAGE);
 
 			log.info("Linking texture images to surface data...");
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) temporaryTable.size(), this));
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.linkTexImg.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) temporaryTable.size()));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.linkTexImg.msg")));
 
 			try (Statement stmt = temporaryTable.getConnection().createStatement();
 				 ResultSet rs = stmt.executeQuery("select * from " + temporaryTable.getTableName())) {
 				while (rs.next() && shouldRun) {
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 					long fromId = rs.getLong("FROM_ID");
 					long toId = rs.getLong("TO_ID");
@@ -366,13 +366,13 @@ public class DBXlinkSplitter implements EventHandler {
 			CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModel.TEXTUREASSOCIATION);
 			cacheTableManager.getCacheTable(CacheTableModel.TEXTUREASSOCIATION_TARGET).createIndexes();
 
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) cacheTable.size(), this));
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.appXlink.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) cacheTable.size()));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.appXlink.msg")));
 
 			try (Statement stmt = cacheTable.getConnection().createStatement();
 				 ResultSet rs = stmt.executeQuery("select * from " + cacheTable.getTableName())) {
 				while (rs.next() && shouldRun) {
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 					long id = rs.getLong("ID");
 					String gmlId = rs.getString("GMLID");
@@ -396,13 +396,13 @@ public class DBXlinkSplitter implements EventHandler {
 			return;
 
 		log.info("Importing library objects...");
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)cacheTable.size(), this));
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.libObj.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)cacheTable.size()));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.libObj.msg")));
 
 		try (Statement stmt = cacheTable.getConnection().createStatement();
 			 ResultSet rs = stmt.executeQuery("select * from " + cacheTable.getTableName())) {
 			while (rs.next() && shouldRun) {
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 				long id = rs.getLong("ID");
 				String imageURI = rs.getString("FILE_URI");
@@ -426,13 +426,13 @@ public class DBXlinkSplitter implements EventHandler {
 			return;
 
 		log.info("Resolving TexturedSurface XLinks...");
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)cacheTable.size(), this));
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.depMat.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)cacheTable.size()));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.depMat.msg")));
 
 		try (Statement stmt = cacheTable.getConnection().createStatement();
 			 ResultSet rs = stmt.executeQuery("select * from " + cacheTable.getTableName())) {
 			while (rs.next() && shouldRun) {
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 				long appearanceId = rs.getLong("ID");
 				String gmlId = rs.getString("GMLID");
@@ -465,10 +465,10 @@ public class DBXlinkSplitter implements EventHandler {
 			boolean checkRecursive, 
 			long remaining, 
 			int pass) throws SQLException {
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (remaining == -1) ? (int)cacheTable.size() : (int)remaining, this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (remaining == -1) ? (int)cacheTable.size() : (int)remaining));
 		String text = Language.I18N.getString("import.dialog.geomXLink.msg");
 		Object[] args = new Object[]{ pass };
-		eventDispatcher.triggerEvent(new StatusDialogMessage(MessageFormat.format(text, args), this));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(MessageFormat.format(text, args)));
 
 		CacheTable mirrorTable = cacheTable.mirrorAndIndex();
 		cacheTable.truncate();
@@ -476,7 +476,7 @@ public class DBXlinkSplitter implements EventHandler {
 		try (Statement stmt = mirrorTable.getConnection().createStatement();
 			 ResultSet rs = stmt.executeQuery("select * from " + mirrorTable.getTableName())) {
 			while (rs.next() && shouldRun) {
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 				long id = rs.getLong("ID");
 				long parentId = rs.getLong("PARENT_ID");
@@ -532,13 +532,13 @@ public class DBXlinkSplitter implements EventHandler {
 		if (cacheTable == null)
 			return;
 
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)cacheTable.size(), this));
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.solidXLink.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)cacheTable.size()));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.solidXLink.msg")));
 
 		try (Statement stmt = cacheTable.getConnection().createStatement();
 			 ResultSet rs = stmt.executeQuery("select * from " + cacheTable.getTableName())) {
 			while (rs.next() && shouldRun) {
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 
 				long id = rs.getLong("ID");
 

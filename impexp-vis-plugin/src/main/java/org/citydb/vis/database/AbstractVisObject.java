@@ -1327,7 +1327,7 @@ public abstract class AbstractVisObject {
 			Object buildingGeometryObj = rs.getObject(1);
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
-				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
+				eventDispatcher.triggerEvent(new GeometryCounterEvent(null));
 
 				GeometryObject unconvertedGeom = geometryConverterAdapter.getGeometry(buildingGeometryObj);
 				if (unconvertedGeom == null || (unconvertedGeom.getGeometryType() != GeometryType.POLYGON && unconvertedGeom.getGeometryType() != GeometryType.MULTI_POLYGON))
@@ -1395,7 +1395,7 @@ public abstract class AbstractVisObject {
 			Object buildingGeometryObj = rs.getObject(1);
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
-				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
+				eventDispatcher.triggerEvent(new GeometryCounterEvent(null));
 
 				GeometryObject unconvertedGeom = geometryConverterAdapter.getGeometry(buildingGeometryObj);
 				if (unconvertedGeom == null || (unconvertedGeom.getGeometryType() != GeometryType.POLYGON && unconvertedGeom.getGeometryType() != GeometryType.MULTI_POLYGON))
@@ -1524,7 +1524,7 @@ public abstract class AbstractVisObject {
 					GeometryObject surface = convertToWGS84(unconvertedSurface);
 					unconvertedSurface = null;
 
-					eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
+					eventDispatcher.triggerEvent(new GeometryCounterEvent(null));
 
 					polygon = kmlFactory.createPolygonType();
 					switch (config.getVisExportConfig().getElevation().getAltitudeMode()) {
@@ -1714,7 +1714,7 @@ public abstract class AbstractVisObject {
 					pointOrCurveGeometry = transformer.applyTransformation(pointOrCurveGeometry);
 			}
 
-			eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
+			eventDispatcher.triggerEvent(new GeometryCounterEvent(null));
 			MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();
 
 			if (pointOrCurveGeometry.getGeometryType() == GeometryType.MULTI_POINT ||
@@ -2171,7 +2171,7 @@ public abstract class AbstractVisObject {
 
 							surfaceInfo = new SurfaceInfo(ringCount, vertexCount, vertexInfos);
 							addSurfaceInfo(surfaceId, surfaceInfo);
-							eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
+							eventDispatcher.triggerEvent(new GeometryCounterEvent(null));
 						}
 
 						previousSurfaceId = surfaceId;
@@ -2240,7 +2240,7 @@ public abstract class AbstractVisObject {
 										}
 
 										if (++texImageCounter == 20) {
-											eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+											eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter));
 											texImageCounter = 0;
 										}
 									} else
@@ -2288,7 +2288,7 @@ public abstract class AbstractVisObject {
 			}
 		}
 
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter));
 	}
 
 	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {

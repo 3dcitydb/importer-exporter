@@ -127,9 +127,9 @@ public class Validator implements EventHandler {
 						file.getFile() :
 						Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
-				eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString(), this));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.validate.msg"), this));
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
+				eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString()));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.validate.msg")));
+				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles));
 
 				ValidatorFactory validatorFactory;
 				try {
@@ -151,7 +151,7 @@ public class Validator implements EventHandler {
 					}
 				}
 
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.finish.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.finish.msg")));
 			} catch (IOException e) {
 				throw new ValidationException("Failed to validate input file.", e);
 			}

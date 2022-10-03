@@ -155,7 +155,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 					updateImportContext();
 				}
 			} catch (IOException e) {
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the import log.", LogLevel.ERROR, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the import log.", LogLevel.ERROR, e, eventChannel));
 			} catch (Throwable e) {
 				if (!isManagedTransaction) {
 					try {
@@ -165,7 +165,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 					}
 				}
 
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
 			}
 		} finally {
 			try {
@@ -251,7 +251,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 						": Unsupported top-level object type. Skipping import.");
 			}
 		} catch (IOException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel));
 		} catch (Throwable e) {
 			try {
 				connection.rollback();
@@ -259,17 +259,17 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				//
 			}
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
 		} finally {
 			runLock.unlock();
 		}
 	}
 
 	private void updateImportContext() throws IOException {
-		eventDispatcher.triggerEvent(new ObjectCounterEvent(importer.getAndResetObjectCounter(), this));
-		eventDispatcher.triggerEvent(new GeometryCounterEvent(importer.getAndResetGeometryCounter(), this));
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+		eventDispatcher.triggerEvent(new ObjectCounterEvent(importer.getAndResetObjectCounter()));
+		eventDispatcher.triggerEvent(new GeometryCounterEvent(importer.getAndResetGeometryCounter()));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter));
 		globalAppearanceCounter = 0;
 		topLevelFeatureCounter = 0;
 

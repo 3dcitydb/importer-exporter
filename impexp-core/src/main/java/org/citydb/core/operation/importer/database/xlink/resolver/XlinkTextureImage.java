@@ -49,7 +49,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 	public XlinkTextureImage(Connection connection, DBXlinkResolverManager manager) throws SQLException {
 		this.manager = manager;
 		
-		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
+		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1);
 		textureImportAdapter = manager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
 				connection, BlobType.TEXTURE_IMAGE);
 	}

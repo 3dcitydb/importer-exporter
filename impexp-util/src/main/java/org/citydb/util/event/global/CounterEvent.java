@@ -30,17 +30,17 @@ package org.citydb.util.event.global;
 import org.citydb.util.event.Event;
 
 public class CounterEvent extends Event {
-	private long counter = 0;
-	private CounterType type;
+	private final CounterType type;
+	private final long counter;
 	
-	public CounterEvent(CounterType type, long counter, Object channel, Object source) {
-		super(EventType.COUNTER, channel, source);
+	public CounterEvent(CounterType type, long counter, String label) {
+		super(EventType.COUNTER, GLOBAL_CHANNEL, label);
 		this.type = type;
 		this.counter = counter;
 	}
-	
-	public CounterEvent(CounterType type, long counter, Object source) {
-		this(type, counter, GLOBAL_CHANNEL, source);
+
+	public CounterEvent(CounterType type, long counter) {
+		this(type, counter, null);
 	}
 
 	public long getCounter() {
@@ -50,5 +50,4 @@ public class CounterEvent extends Event {
 	public CounterType getType() {
 		return type;
 	}
-	
 }

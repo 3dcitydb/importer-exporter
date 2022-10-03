@@ -167,7 +167,7 @@ public class VisExportWorker extends Worker<DBSplittingResult> {
 				}
 			}
 			
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(visExporterManager.getObjectCounter(), this));
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(visExporterManager.getObjectCounter()));
 		}
 		finally {
 			if (textureExportAdapter != null) {

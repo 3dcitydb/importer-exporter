@@ -180,7 +180,7 @@ public class DBSplitter {
 
 	public void shutdown() {
 		shouldRun = false;
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
 	}
 
 	public void startQuery() throws SQLException, QueryBuildException, FilterException, FeatureWriteException {
@@ -275,7 +275,7 @@ public class DBSplitter {
 					if (query.isSetTiling())
 						log.info("The total number of exported features might be less due to tiling settings.");
 
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits));
 				}
 
 				if (calculateExtent) {
@@ -351,8 +351,8 @@ public class DBSplitter {
 			return;
 
 		log.info("Processing CityObjectGroup features.");
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.group.msg"), this));
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.group.msg")));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
 
 		// first step: export group members
 		long hits = 0;
@@ -410,7 +410,7 @@ public class DBSplitter {
 				if (rs.next()) {
 					if (calculateNumberMatched) {
 						log.info("Found " + hits + " additional group member(s).");
-						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits + cityObjectGroups.size(), this));
+						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits + cityObjectGroups.size()));
 					}
 
 					do {
@@ -457,7 +457,7 @@ public class DBSplitter {
 		// we assume that all group members have been exported and their gml:ids
 		// are registered in the gml:id cache
 		if (calculateNumberMatched && hits == 0)
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, cityObjectGroups.size(), this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, cityObjectGroups.size()));
 
 		for (Iterator<Entry<Long, DBSplittingResult>> iter = cityObjectGroups.entrySet().iterator(); shouldRun && iter.hasNext(); ) {
 			Entry<Long, DBSplittingResult> entry = iter.next();
@@ -471,8 +471,8 @@ public class DBSplitter {
 			return;
 
 		log.info("Processing global appearance features.");
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.globalApp.msg"), this));
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.globalApp.msg")));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
 
 		CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
 		globalAppTempTable.createIndexes();
@@ -510,7 +510,7 @@ public class DBSplitter {
 			if (rs.next()) {
 				if (calculateNumberMatched) {
 					log.info("Found " + hits + " global appearance(s).");
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits));
 				}
 
 				FeatureType appearanceType = schemaMapping.getFeatureType("Appearance", AppearanceModule.v2_0_0.getNamespaceURI());

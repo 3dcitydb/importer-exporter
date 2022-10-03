@@ -415,9 +415,9 @@ public class VisExporter implements EventHandler {
 						currentWorkingDirectoryPath = columnTilesDirectory.getPath();
 						tracker.setCurrentWorkingDirectoryPath(currentWorkingDirectoryPath);
 
-						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("visExport.dialog.writingToFile"), this));
-						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
-						eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles, this));
+						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("visExport.dialog.writingToFile")));
+						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName()));
+						eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles));
 
 						// open file for writing
 						try {
@@ -598,7 +598,7 @@ public class VisExporter implements EventHandler {
 							file.delete();
 						}
 
-						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
+						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg")));
 					} finally {
 						// clean up
 						if (writerPool != null && !writerPool.isTerminated())

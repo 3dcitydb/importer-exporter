@@ -466,7 +466,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 				long hits = getNumberMatched(select, connection);
 				if (hits > 0) {
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits));
 
 					try (PreparedStatement stmt = dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().prepareStatement(select, connection);
 						 ResultSet rs = stmt.executeQuery()) {
@@ -476,7 +476,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 									.createBoundingBox(schema, objectId, mode == BoundingBoxMode.PARTIAL, connection);
 
 							bbox.update(extent);
-							eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+							eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 						}
 					} catch (SQLException e) {
 						connection.rollback();

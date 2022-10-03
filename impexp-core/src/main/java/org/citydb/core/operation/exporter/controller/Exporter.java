@@ -410,9 +410,9 @@ public class Exporter implements EventHandler {
                 OutputFile file = null;
 
                 try {
-                    eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.cityObj.msg"), this));
-                    eventDispatcher.triggerEvent(new StatusDialogTitle(fileName, this));
-                    eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles, this));
+                    eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.cityObj.msg")));
+                    eventDispatcher.triggerEvent(new StatusDialogTitle(fileName));
+                    eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles));
 
                     try {
                         file = fileFactory.createOutputFile(folder.resolve(fileName), outputFormat);
@@ -537,8 +537,8 @@ public class Exporter implements EventHandler {
                         throw new CityGMLExportException("Failed to shutdown worker pools.", e);
                     }
 
-                    eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
-                    eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
+                    eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
+                    eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg")));
                 } finally {
                     // close writer before closing output file
                     if (writer != null) {

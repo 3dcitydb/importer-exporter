@@ -356,7 +356,7 @@ public class SrsOperation extends DatabaseOperationView {
 
 				// trigger SRS property event
 				ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(
-						new PropertyChangeEvent(DB_SRS_CHANGED_PROPERTY, false, true, this));
+						new PropertyChangeEvent(DB_SRS_CHANGED_PROPERTY, false, true));
 
 				// print result
 				log.info("SRID: " + dbSrs.getSrid() + " (" + dbSrs.getType() + ')');

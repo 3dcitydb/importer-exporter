@@ -127,7 +127,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 					//
 				}
 
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during XLink resolving.", LogLevel.ERROR, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during XLink resolving.", LogLevel.ERROR, e, eventChannel));
 			}
 		} finally {
 			try {
@@ -275,7 +275,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 				//
 			}
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during XLink resolving.", LogLevel.WARN, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during XLink resolving.", LogLevel.WARN, e, eventChannel));
 		} finally {
 			runLock.unlock();
 		}

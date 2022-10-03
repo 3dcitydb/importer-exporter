@@ -383,8 +383,7 @@ public class ExportPanel extends DefaultViewComponent implements DropTargetListe
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									"User abort of database export.", 
 									LogLevel.WARN,
-									Event.GLOBAL_CHANNEL,
-									this));
+									Event.GLOBAL_CHANNEL));
 						}
 					});
 				}

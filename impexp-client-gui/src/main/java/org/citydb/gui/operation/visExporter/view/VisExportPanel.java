@@ -878,8 +878,7 @@ public class VisExportPanel extends DefaultViewComponent implements EventHandler
                             eventDispatcher.triggerEvent(new InterruptEvent(
                                     "User abort of database export.",
                                     LogLevel.WARN,
-                                    Event.GLOBAL_CHANNEL,
-                                    this));
+                                    Event.GLOBAL_CHANNEL));
                         }
                     });
                 }

@@ -297,8 +297,7 @@ public class ImportPanel extends DefaultViewComponent {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									"User abort of database import.",
 									LogLevel.WARN,
-									Event.GLOBAL_CHANNEL,
-									this));
+									Event.GLOBAL_CHANNEL));
 						}
 					});
 				}
@@ -365,8 +364,7 @@ public class ImportPanel extends DefaultViewComponent {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									"User abort of data validation.",
 									LogLevel.WARN,
-									Event.GLOBAL_CHANNEL,
-									this));
+									Event.GLOBAL_CHANNEL));
 						}
 					});
 				}

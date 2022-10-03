@@ -148,7 +148,7 @@ public class VisExporterManager implements ADEVisExportHelper {
 			objectCounter.put(work.getObjectClassId(), counter + 1);		
 
 		tracker.put(work.getId(), work.getJson());
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1));
 	}
 
 	public HashMap<Integer, Long> getObjectCounter() {

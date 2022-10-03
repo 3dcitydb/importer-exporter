@@ -28,26 +28,21 @@
 package org.citydb.util.event;
 
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 
 public abstract class Event {
-	public static Object GLOBAL_CHANNEL = new Object();
+	public static final Object GLOBAL_CHANNEL = new Object();
 	
 	private final Enum<?> eventType;
-	private final WeakReference<Object> source;
-	private final WeakReference<Object> channel;
+	private WeakReference<Object> channel;
+	private String label;
 	private boolean cancelled;
 
-	public Event(Enum<?> eventType, Object channel, Object source) {
-		if (eventType == null)
-			throw new IllegalArgumentException("The type of an event may not be null.");
-			
-		if (source == null)
-			throw new IllegalArgumentException("The source of an event may not be null.");
-		
-		this.eventType = eventType;
-		this.source = new WeakReference<Object>(source);
-		this.channel = new WeakReference<Object>(channel);
+	public Event(Enum<?> eventType, Object channel, String label) {
+		this.eventType = Objects.requireNonNull(eventType, "The type of an event may not be null.");
+		this.label = label;
 		cancelled = false;
+		setChannel(channel);
 	}
 
 	public boolean isCancelled() {
@@ -62,12 +57,23 @@ public abstract class Event {
 		return eventType;
 	}
 
-	public Object getSource() {
-		return source.get();
-	}
-
 	public Object getChannel() {
 		return channel.get();
 	}
-	
+
+	public void setChannel(Object channel) {
+		this.channel = new WeakReference<>(channel != null ? channel : GLOBAL_CHANNEL);
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public boolean hasLabel() {
+		return label != null;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
 }

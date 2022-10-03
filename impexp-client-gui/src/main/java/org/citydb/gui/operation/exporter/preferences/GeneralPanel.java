@@ -223,6 +223,6 @@ public class GeneralPanel extends InternalPreferencesComponent {
 
 	private void firePropertyChange(CityGMLVersionType version) {
 		ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(
-				new PropertyChangeEvent("citygml.version", null, Util.toCityGMLVersion(version), this));
+				new PropertyChangeEvent("citygml.version", null, Util.toCityGMLVersion(version)));
 	}
 }

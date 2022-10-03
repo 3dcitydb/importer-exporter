@@ -213,7 +213,7 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		}
 
 		// fire property change event
-		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEvent(false, true, this));
+		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEvent(false, true));
 	}
 
 	public AbstractDatabaseAdapter getActiveDatabaseAdapter() {
@@ -274,7 +274,7 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		}
 
 		// fire property change event
-		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEvent(wasConnected, false, this));
+		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEvent(wasConnected, false));
 	}
 
 	public DatabaseVersionChecker getDatabaseVersionChecker() {

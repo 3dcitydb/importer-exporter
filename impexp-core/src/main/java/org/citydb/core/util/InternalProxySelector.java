@@ -99,7 +99,7 @@ public class InternalProxySelector extends ProxySelector {
 						log.error("Failed " + maxConnectAttempts + " times to connect to " + proxy.getType().toString() + " proxy server.");
 						proxy.setEnabled(false);
 						Authenticator.setDefault(null);
-						eventDispatcher.triggerEvent(new ProxyServerUnavailableEvent(proxy, this));
+						eventDispatcher.triggerEvent(new ProxyServerUnavailableEvent(proxy));
 					}
 				} finally {
 					lock.unlock();

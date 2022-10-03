@@ -153,7 +153,7 @@ public class DeleteManager {
 
 	public void shutdown() {
 		shouldRun = false;
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
 
 		if (interruptibleStmt != null) {
 			try {
@@ -239,14 +239,14 @@ public class DeleteManager {
 		}
 
 		if (preview) {
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter));
 		} else if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
 			long updated = doTerminate(select);
 			if (counter == null) {
 				counter = Collections.singletonMap(3, updated);
 			}
 
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, this));
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter));
 		} else {
 			doDelete(select, hits);
 		}
@@ -257,7 +257,7 @@ public class DeleteManager {
 			 ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
 				if (hits > 0) {
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits));
 				}
 
 				do {
