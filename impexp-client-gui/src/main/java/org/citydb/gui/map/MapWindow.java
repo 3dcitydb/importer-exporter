@@ -863,7 +863,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		bboxTitel.setText(Language.I18N.getString("map.boundingBox.label"));
 		showBBox.setText(Language.I18N.getString("map.boundingBox.show.button"));
 		showBBox.setToolTipText(Language.I18N.getString("map.boundingBox.show.tooltip"));
-		clearBBox.setText(Language.I18N.getString("map.boundingBox.clear.button"));
+		clearBBox.setText(Language.I18N.getString("common.button.clear"));
 		clearBBox.setToolTipText(Language.I18N.getString("map.boundingBox.clear.tooltip"));
 		copyBBox.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.copy"));
 		pasteBBox.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.paste"));
