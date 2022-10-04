@@ -35,19 +35,15 @@ public class InterruptEvent extends Event {
 	private final LogLevel logLevelType;
 	private final Throwable cause;
 	
-	public InterruptEvent(String logMessage, LogLevel logLevelType, Throwable cause, Object channel, String label) {
-		super(EventType.INTERRUPT, channel, label);
+	public InterruptEvent(String logMessage, LogLevel logLevelType, Throwable cause, Object channel) {
+		super(EventType.INTERRUPT, channel);
 		this.logMessage = logMessage;
 		this.logLevelType = logLevelType;
 		this.cause = cause;
 	}
 
-	public InterruptEvent(String logMessage, LogLevel logLevelType, Throwable cause, Object channel) {
-		this(logMessage, logLevelType, cause, channel, null);
-	}
-
 	public InterruptEvent(String logMessage, LogLevel logLevelType, Object channel) {
-		this(logMessage, logLevelType, null, channel, null);
+		this(logMessage, logLevelType, null, channel);
 	}
 
 	public String getLogMessage() {

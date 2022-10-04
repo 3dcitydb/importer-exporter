@@ -8,13 +8,9 @@ import java.util.List;
 public class PluginStateEvent extends Event {
     private final List<Plugin> plugins;
 
-    public PluginStateEvent(List<Plugin> plugins, String label) {
-        super(EventType.PLUGIN_STATE, GLOBAL_CHANNEL, label);
-        this.plugins = plugins;
-    }
-
     public PluginStateEvent(List<Plugin> plugins) {
-        this(plugins, null);
+        super(EventType.PLUGIN_STATE, GLOBAL_CHANNEL);
+        this.plugins = plugins;
     }
 
     public List<Plugin> getPlugins() {

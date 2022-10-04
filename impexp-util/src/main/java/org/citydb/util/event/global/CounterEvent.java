@@ -33,14 +33,10 @@ public class CounterEvent extends Event {
 	private final CounterType type;
 	private final long counter;
 	
-	public CounterEvent(CounterType type, long counter, String label) {
-		super(EventType.COUNTER, GLOBAL_CHANNEL, label);
+	public CounterEvent(CounterType type, long counter) {
+		super(EventType.COUNTER, GLOBAL_CHANNEL);
 		this.type = type;
 		this.counter = counter;
-	}
-
-	public CounterEvent(CounterType type, long counter) {
-		this(type, counter, null);
 	}
 
 	public long getCounter() {

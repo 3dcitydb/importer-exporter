@@ -31,11 +31,7 @@ import org.citydb.util.event.Event;
 
 public final class ConfigChangedEvent extends Event {
 
-	public ConfigChangedEvent(String label) {
-		super(EventType.PROJECT_CHANGED, GLOBAL_CHANNEL, label);
-	}
-
 	public ConfigChangedEvent() {
-		this(null);
+		super(EventType.PROJECT_CHANGED, GLOBAL_CHANNEL);
 	}
 }

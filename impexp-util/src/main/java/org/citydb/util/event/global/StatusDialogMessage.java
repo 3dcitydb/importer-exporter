@@ -32,13 +32,9 @@ import org.citydb.util.event.Event;
 public class StatusDialogMessage extends Event {
 	private final String message;
 	
-	public StatusDialogMessage(String message, String label) {
-		super(EventType.STATUS_DIALOG_MESSAGE, GLOBAL_CHANNEL, label);
-		this.message = message;
-	}
-
 	public StatusDialogMessage(String message) {
-		this(message, null);
+		super(EventType.STATUS_DIALOG_MESSAGE, GLOBAL_CHANNEL);
+		this.message = message;
 	}
 
 	public String getMessage() {

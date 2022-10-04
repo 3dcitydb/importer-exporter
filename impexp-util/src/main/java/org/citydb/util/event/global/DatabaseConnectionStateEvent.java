@@ -33,14 +33,10 @@ public final class DatabaseConnectionStateEvent extends Event {
 	private final boolean wasConnected;
 	private final boolean isConnected;
 	
-	public DatabaseConnectionStateEvent(boolean wasConnected, boolean isConnected, String label) {
-		super(EventType.DATABASE_CONNECTION_STATE, GLOBAL_CHANNEL, label);
+	public DatabaseConnectionStateEvent(boolean wasConnected, boolean isConnected) {
+		super(EventType.DATABASE_CONNECTION_STATE, GLOBAL_CHANNEL);
 		this.wasConnected = wasConnected;
 		this.isConnected = isConnected;
-	}
-
-	public DatabaseConnectionStateEvent(boolean wasConnected, boolean isConnected) {
-		this(wasConnected, isConnected, null);
 	}
 
 	public boolean isConnected() {

@@ -35,12 +35,10 @@ public abstract class Event {
 	
 	private final Enum<?> eventType;
 	private WeakReference<Object> channel;
-	private String label;
 	private boolean cancelled;
 
-	public Event(Enum<?> eventType, Object channel, String label) {
+	public Event(Enum<?> eventType, Object channel) {
 		this.eventType = Objects.requireNonNull(eventType, "The type of an event may not be null.");
-		this.label = label;
 		cancelled = false;
 		setChannel(channel);
 	}
@@ -63,17 +61,5 @@ public abstract class Event {
 
 	public void setChannel(Object channel) {
 		this.channel = new WeakReference<>(channel != null ? channel : GLOBAL_CHANNEL);
-	}
-
-	public String getLabel() {
-		return label;
-	}
-
-	public boolean hasLabel() {
-		return label != null;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
 	}
 }

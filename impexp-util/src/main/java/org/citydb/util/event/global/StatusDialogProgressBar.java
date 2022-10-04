@@ -34,24 +34,16 @@ public class StatusDialogProgressBar extends Event {
 	private int value;
 	private boolean setIntermediate;
 	
-	public StatusDialogProgressBar(ProgressBarEventType type, int value, String label) {
-		super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL, label);
+	public StatusDialogProgressBar(ProgressBarEventType type, int value) {
+		super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL);
 		this.type = type;
 		this.value = value;
 	}
-
-	public StatusDialogProgressBar(ProgressBarEventType type, int value) {
-		this(type, value, null);
-	}
 	
-	public StatusDialogProgressBar(boolean setIntermediate, String label) {
-		super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL, label);
+	public StatusDialogProgressBar(boolean setIntermediate) {
+		super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL);
 		type = ProgressBarEventType.INIT;		
 		this.setIntermediate = setIntermediate;
-	}
-
-	public StatusDialogProgressBar(boolean setIntermediate) {
-		this(setIntermediate, null);
 	}
 
 	public ProgressBarEventType getType() {

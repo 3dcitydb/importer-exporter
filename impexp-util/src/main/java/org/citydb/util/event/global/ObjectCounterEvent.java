@@ -34,13 +34,9 @@ import java.util.Map;
 public class ObjectCounterEvent extends Event {
 	private final Map<Integer, Long> objectCounter;
 
-	public ObjectCounterEvent(Map<Integer, Long> objectCounter, String label) {
-		super(EventType.OBJECT_COUNTER, GLOBAL_CHANNEL, label);
-		this.objectCounter = objectCounter;
-	}
-
 	public ObjectCounterEvent(Map<Integer, Long> objectCounter) {
-		this(objectCounter, null);
+		super(EventType.OBJECT_COUNTER, GLOBAL_CHANNEL);
+		this.objectCounter = objectCounter;
 	}
 
 	public Map<Integer, Long> getCounter() {
