@@ -109,9 +109,10 @@ public class Importer implements EventHandler {
     private final Config config;
     private final EventDispatcher eventDispatcher;
 
+    private final Object eventChannel = new Object();
     private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
-    private final HashMap<Integer, Long> objectCounter;
-    private final EnumMap<GMLClass, Long> geometryCounter;
+    private final HashMap<Integer, Long> objectCounter = new HashMap<>();
+    private final EnumMap<GMLClass, Long> geometryCounter = new EnumMap<>(GMLClass.class);
 
     private volatile boolean shouldRun = true;
     private CityGMLImportException exception;
@@ -127,9 +128,6 @@ public class Importer implements EventHandler {
         config = ObjectRegistry.getInstance().getConfig();
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
         databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-
-        objectCounter = new HashMap<>();
-        geometryCounter = new EnumMap<>(GMLClass.class);
     }
 
     public boolean doImport(List<Path> inputFiles) throws CityGMLImportException {
@@ -341,7 +339,7 @@ public class Importer implements EventHandler {
 
         IdCacheManager idCacheManager = null;
         WorkerPool<CityGML> dbWorkerPool = null;
-        WorkerPool<DBXlink> tmpXlinkPool = null;
+        WorkerPool<DBXlink> xlinkPool = null;
         WorkerPool<DBXlink> xlinkResolverPool = null;
         DBXlinkSplitter splitter;
 
@@ -430,7 +428,7 @@ public class Importer implements EventHandler {
 
                 // creating worker pools needed for data import
                 // this pool is for registering xlinks
-                tmpXlinkPool = new WorkerPool<>(
+                xlinkPool = new WorkerPool<>(
                         "xlink_importer_pool",
                         minThreads,
                         maxThreads,
@@ -447,7 +445,7 @@ public class Importer implements EventHandler {
                         PoolSizeAdaptationStrategy.AGGRESSIVE,
                         new DBImportWorkerFactory(schemaMapping,
                                 cityGMLBuilder,
-                                tmpXlinkPool,
+                                xlinkPool,
                                 idCacheManager,
                                 filter,
                                 affineTransformer,
@@ -458,8 +456,12 @@ public class Importer implements EventHandler {
                         queueSize,
                         false);
 
+                // set channel for events triggered by workers
+                xlinkPool.setEventSource(eventChannel);
+                dbWorkerPool.setEventSource(eventChannel);
+
                 // prestart threads
-                tmpXlinkPool.prestartCoreWorkers();
+                xlinkPool.prestartCoreWorkers();
                 dbWorkerPool.prestartCoreWorkers();
 
                 // fail if we could not start a single import worker
@@ -491,7 +493,7 @@ public class Importer implements EventHandler {
                 // the xlink pool is not shutdown because we need it afterwards
                 try {
                     dbWorkerPool.shutdownAndWait();
-                    tmpXlinkPool.join();
+                    xlinkPool.join();
                 } catch (InterruptedException e) {
                     throw new CityGMLImportException("Failed to shutdown worker pools.", e);
                 }
@@ -505,13 +507,16 @@ public class Importer implements EventHandler {
                             maxThreads,
                             PoolSizeAdaptationStrategy.AGGRESSIVE,
                             new DBImportXlinkResolverWorkerFactory(file,
-                                    tmpXlinkPool,
+                                    xlinkPool,
                                     idCacheManager,
                                     cacheTableManager,
                                     config,
                                     eventDispatcher),
                             queueSize,
                             false);
+
+                    // set channel for events triggered by workers
+                    xlinkResolverPool.setEventSource(eventChannel);
 
                     // prestart its workers
                     xlinkResolverPool.prestartCoreWorkers();
@@ -520,7 +525,7 @@ public class Importer implements EventHandler {
                     if (shouldRun) {
                         splitter = new DBXlinkSplitter(cacheTableManager,
                                 xlinkResolverPool,
-                                tmpXlinkPool,
+                                xlinkPool,
                                 Event.GLOBAL_CHANNEL,
                                 eventDispatcher);
 
@@ -537,7 +542,7 @@ public class Importer implements EventHandler {
 
                 // shutdown tmp xlink pool
                 try {
-                    tmpXlinkPool.shutdownAndWait();
+                    xlinkPool.shutdownAndWait();
                 } catch (InterruptedException e) {
                     throw new CityGMLImportException("Failed to shutdown worker pools.", e);
                 }
@@ -552,11 +557,11 @@ public class Importer implements EventHandler {
 				}
 
                 if (xlinkResolverPool != null && !xlinkResolverPool.isTerminated()) {
-                	xlinkResolverPool.shutdownNow();
+                    xlinkResolverPool.shutdownNow();
 				}
 
-                if (tmpXlinkPool != null && !tmpXlinkPool.isTerminated()) {
-                	tmpXlinkPool.shutdownNow();
+                if (xlinkPool != null && !xlinkPool.isTerminated()) {
+                	xlinkPool.shutdownNow();
 				}
 
                 try {
@@ -656,13 +661,13 @@ public class Importer implements EventHandler {
 
     @Override
     public void handleEvent(Event e) throws Exception {
-        if (e.getEventType() == EventType.OBJECT_COUNTER) {
+        if (e.getEventType() == EventType.OBJECT_COUNTER && e.getChannel() == eventChannel) {
             Map<Integer, Long> counter = ((ObjectCounterEvent) e).getCounter();
             for (Entry<Integer, Long> entry : counter.entrySet()) {
                 Long tmp = objectCounter.get(entry.getKey());
                 objectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
             }
-        } else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
+        } else if (e.getEventType() == EventType.GEOMETRY_COUNTER && e.getChannel() == eventChannel) {
             Map<GMLClass, Long> counter = ((GeometryCounterEvent) e).getCounter();
             for (Entry<GMLClass, Long> entry : counter.entrySet()) {
                 Long tmp = geometryCounter.get(entry.getKey());

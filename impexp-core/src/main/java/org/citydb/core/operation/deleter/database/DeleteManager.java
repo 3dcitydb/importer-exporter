@@ -93,6 +93,7 @@ public class DeleteManager {
 	private final DeleteLogger deleteLogger;
 	private final InternalConfig internalConfig;
 	private final EventDispatcher eventDispatcher;
+	private final Object eventChannel;
 
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final Connection connection;
@@ -114,6 +115,7 @@ public class DeleteManager {
 			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher,
+			Object eventChannel,
 			boolean preview) throws SQLException {
 		this.connectionManager = connectionManager;
 		this.schemaMapping = schemaMapping;
@@ -124,6 +126,7 @@ public class DeleteManager {
 		this.internalConfig = internalConfig;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
+		this.eventChannel = eventChannel;
 		this.preview = preview;
 
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
@@ -239,14 +242,14 @@ public class DeleteManager {
 		}
 
 		if (preview) {
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter));
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, eventChannel));
 		} else if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
 			long updated = doTerminate(select);
 			if (counter == null) {
 				counter = Collections.singletonMap(3, updated);
 			}
 
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter));
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, eventChannel));
 		} else {
 			doDelete(select, hits);
 		}

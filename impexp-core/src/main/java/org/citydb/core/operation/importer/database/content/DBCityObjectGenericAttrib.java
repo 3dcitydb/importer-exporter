@@ -35,7 +35,10 @@ import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.generics.*;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 

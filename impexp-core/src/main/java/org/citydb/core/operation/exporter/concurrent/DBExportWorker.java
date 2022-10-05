@@ -159,8 +159,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter));
 			eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter));
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter + globalAppearanceCounter));
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(exporter.getAndResetObjectCounter()));
-			eventDispatcher.triggerEvent(new GeometryCounterEvent(exporter.getAndResetGeometryCounter()));
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(exporter.getAndResetObjectCounter(), eventChannel));
+			eventDispatcher.triggerEvent(new GeometryCounterEvent(exporter.getAndResetGeometryCounter(), eventChannel));
 		} finally {
 			try {
 				exporter.close();

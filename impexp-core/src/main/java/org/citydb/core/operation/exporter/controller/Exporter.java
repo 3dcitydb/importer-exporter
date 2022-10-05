@@ -109,12 +109,13 @@ public class Exporter implements EventHandler {
     private final PluginManager pluginManager;
     private final Config config;
     private final EventDispatcher eventDispatcher;
-    private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
 
-    private final Map<Integer, Long> objectCounter;
-    private final Map<GMLClass, Long> geometryCounter;
-    private final Map<Integer, Long> totalObjectCounter;
-    private final Map<GMLClass, Long> totalGeometryCounter;
+    private final Object eventChannel = new Object();
+    private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+    private final Map<Integer, Long> objectCounter = new HashMap<>();
+    private final Map<GMLClass, Long> geometryCounter = new EnumMap<>(GMLClass.class);
+    private final Map<Integer, Long> totalObjectCounter = new HashMap<>();
+    private final Map<GMLClass, Long> totalGeometryCounter = new EnumMap<>(GMLClass.class);
 
     private DBSplitter dbSplitter;
     private WorkerPool<DBSplittingResult> dbWorkerPool;
@@ -132,11 +133,6 @@ public class Exporter implements EventHandler {
         config = ObjectRegistry.getInstance().getConfig();
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
         databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-
-        objectCounter = new HashMap<>();
-        geometryCounter = new EnumMap<>(GMLClass.class);
-        totalObjectCounter = new HashMap<>();
-        totalGeometryCounter = new EnumMap<>(GMLClass.class);
     }
 
     public boolean doExport(Path outputFile) throws CityGMLExportException {
@@ -496,6 +492,10 @@ public class Exporter implements EventHandler {
                             300,
                             false);
 
+                    // set channel for events triggered by workers
+                    xlinkExporterPool.setEventSource(eventChannel);
+                    dbWorkerPool.setEventSource(eventChannel);
+
                     // prestart pool workers
                     xlinkExporterPool.prestartCoreWorkers();
                     dbWorkerPool.prestartCoreWorkers();
@@ -654,7 +654,7 @@ public class Exporter implements EventHandler {
 
     @Override
     public void handleEvent(Event e) throws Exception {
-        if (e.getEventType() == EventType.OBJECT_COUNTER) {
+        if (e.getEventType() == EventType.OBJECT_COUNTER && e.getChannel() == eventChannel) {
             Map<Integer, Long> counter = ((ObjectCounterEvent) e).getCounter();
             for (Entry<Integer, Long> entry : counter.entrySet()) {
                 Long tmp = objectCounter.get(entry.getKey());
@@ -664,7 +664,7 @@ public class Exporter implements EventHandler {
                     totalObjectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
                 }
             }
-        } else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
+        } else if (e.getEventType() == EventType.GEOMETRY_COUNTER && e.getChannel() == eventChannel) {
             Map<GMLClass, Long> counter = ((GeometryCounterEvent) e).getCounter();
             for (Entry<GMLClass, Long> entry : counter.entrySet()) {
                 Long tmp = geometryCounter.get(entry.getKey());

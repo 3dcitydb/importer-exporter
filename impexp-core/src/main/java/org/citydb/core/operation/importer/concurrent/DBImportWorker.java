@@ -266,8 +266,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	}
 
 	private void updateImportContext() throws IOException {
-		eventDispatcher.triggerEvent(new ObjectCounterEvent(importer.getAndResetObjectCounter()));
-		eventDispatcher.triggerEvent(new GeometryCounterEvent(importer.getAndResetGeometryCounter()));
+		eventDispatcher.triggerEvent(new ObjectCounterEvent(importer.getAndResetObjectCounter(), eventChannel));
+		eventDispatcher.triggerEvent(new GeometryCounterEvent(importer.getAndResetGeometryCounter(), eventChannel));
 		eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter));
 		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter));
 		globalAppearanceCounter = 0;

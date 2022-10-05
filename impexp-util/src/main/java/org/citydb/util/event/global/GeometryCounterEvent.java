@@ -33,14 +33,18 @@ import org.citygml4j.model.gml.GMLClass;
 import java.util.Map;
 
 public class GeometryCounterEvent extends Event {
-	private final Map<GMLClass, Long> geometryCounterMap;
+	private final Map<GMLClass, Long> counter;
 
-	public GeometryCounterEvent(Map<GMLClass, Long> geometryCounterMap) {
-		super(EventType.GEOMETRY_COUNTER, GLOBAL_CHANNEL);
-		this.geometryCounterMap = geometryCounterMap;
+	public GeometryCounterEvent(Map<GMLClass, Long> counter, Object channel) {
+		super(EventType.GEOMETRY_COUNTER, channel);
+		this.counter = counter;
+	}
+
+	public GeometryCounterEvent(Map<GMLClass, Long> counter) {
+		this(counter, Event.GLOBAL_CHANNEL);
 	}
 
 	public Map<GMLClass, Long> getCounter() {
-		return geometryCounterMap;
+		return counter;
 	}
 }

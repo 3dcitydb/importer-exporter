@@ -80,8 +80,10 @@ public class Deleter implements EventHandler {
 	private final EventDispatcher eventDispatcher;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final Config config;
+
+	private final Object eventChannel = new Object();
 	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
-	private final Map<Integer, Long> objectCounter;
+	private final Map<Integer, Long> objectCounter = new HashMap<>();
 
 	private DeleteManager deleteManager;
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
@@ -96,7 +98,6 @@ public class Deleter implements EventHandler {
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		objectCounter = new HashMap<>();
 	}
 
 	public boolean doDelete(boolean preview) throws DeleteException {
@@ -240,6 +241,9 @@ public class Deleter implements EventHandler {
 					300,
 					false);
 
+			// set channel for events triggered by workers
+			dbWorkerPool.setEventSource(eventChannel);
+
 			dbWorkerPool.prestartCoreWorkers();
 			if (dbWorkerPool.getPoolSize() == 0) {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
@@ -256,6 +260,7 @@ public class Deleter implements EventHandler {
 						internalConfig,
 						config,
 						eventDispatcher,
+						eventChannel,
 						preview);
 				deleteManager.deleteObjects();
 			} catch (SQLException | IOException | QueryBuildException e) {
@@ -344,7 +349,7 @@ public class Deleter implements EventHandler {
 
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.OBJECT_COUNTER) {
+		if (e.getEventType() == EventType.OBJECT_COUNTER && e.getChannel() == eventChannel) {
 			Map<Integer, Long> counter = ((ObjectCounterEvent) e).getCounter();
 			for (Entry<Integer, Long> entry : counter.entrySet()) {
 				Long tmp = objectCounter.get(entry.getKey());

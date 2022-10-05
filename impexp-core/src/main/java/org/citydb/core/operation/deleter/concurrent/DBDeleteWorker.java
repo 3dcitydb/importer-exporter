@@ -184,7 +184,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			}
 
 			Map<Integer, Long> objectCounter = Collections.singletonMap(work.getObjectType().getObjectClassId(), 1L);
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter));
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel));
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
 		} catch (SQLException e) {
