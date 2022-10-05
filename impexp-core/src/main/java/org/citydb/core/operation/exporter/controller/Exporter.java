@@ -679,7 +679,10 @@ public class Exporter implements EventHandler {
                 shouldRun = false;
                 InterruptEvent event = (InterruptEvent) e;
 
-                log.log(event.getLogLevelType(), event.getLogMessage());
+                if (event.canConsumeLogMessage()) {
+                    log.log(event.getLogLevelType(), event.getLogMessage());
+                }
+
                 if (event.getCause() != null) {
                     setException("Aborting export due to errors.", event.getCause());
                 }

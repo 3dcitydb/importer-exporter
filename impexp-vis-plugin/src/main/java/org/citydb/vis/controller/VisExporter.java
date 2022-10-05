@@ -1443,7 +1443,10 @@ public class VisExporter implements EventHandler {
 				shouldRun = false;
 				InterruptEvent event = (InterruptEvent) e;
 
-				log.log(event.getLogLevelType(), event.getLogMessage());
+				if (event.canConsumeLogMessage()) {
+					log.log(event.getLogLevelType(), event.getLogMessage());
+				}
+
 				if (event.getCause() != null) {
 					exception = new VisExportException("Aborting export due to errors.", event.getCause());
 				}

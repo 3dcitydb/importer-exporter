@@ -30,7 +30,10 @@ package org.citydb.util.event.global;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.util.event.Event;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class InterruptEvent extends Event {
+	private final AtomicBoolean consumed = new AtomicBoolean(false);
 	private final String logMessage;
 	private final LogLevel logLevelType;
 	private final Throwable cause;
@@ -44,6 +47,10 @@ public class InterruptEvent extends Event {
 
 	public InterruptEvent(String logMessage, LogLevel logLevelType, Object channel) {
 		this(logMessage, logLevelType, null, channel);
+	}
+
+	public boolean canConsumeLogMessage() {
+		return consumed.compareAndSet(false, true);
 	}
 
 	public String getLogMessage() {
