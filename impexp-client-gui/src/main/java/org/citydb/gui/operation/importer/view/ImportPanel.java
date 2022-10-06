@@ -48,7 +48,6 @@ import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.plugin.util.DefaultViewComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.event.Event;
 import org.citydb.util.event.EventDispatcher;
 import org.citydb.util.event.global.InterruptEvent;
 import org.citydb.util.log.Logger;
@@ -57,7 +56,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -277,9 +275,11 @@ public class ImportPanel extends DefaultViewComponent {
 			viewController.setStatusText(Language.I18N.getString("main.status.import.label"));
 			log.info("Initializing database import...");
 
+			Importer importer = new Importer();
+
 			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			final ImportStatusDialog importDialog = new ImportStatusDialog(viewController.getTopFrame(),
+			EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+			ImportStatusDialog importDialog = new ImportStatusDialog(viewController.getTopFrame(),
 					Language.I18N.getString("import.dialog.window"),
 					Language.I18N.getString("import.dialog.msg"));
 
@@ -288,20 +288,11 @@ public class ImportPanel extends DefaultViewComponent {
 				importDialog.setVisible(true);
 			});
 
-			Importer importer = new Importer();
-
-			importDialog.getCancelButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							eventDispatcher.triggerEvent(new InterruptEvent(
-									"User abort of database import.",
-									LogLevel.WARN,
-									Event.GLOBAL_CHANNEL));
-						}
-					});
-				}
-			});
+			importDialog.getCancelButton().addActionListener(e ->
+					SwingUtilities.invokeLater(() -> eventDispatcher.triggerEvent(new InterruptEvent(
+							"User abort of database import.",
+							LogLevel.WARN,
+							importer.getEventChannel()))));
 
 			boolean success = false;
 			try {
@@ -342,9 +333,11 @@ public class ImportPanel extends DefaultViewComponent {
 			viewController.setStatusText(Language.I18N.getString("main.status.validate.label"));
 			log.info("Initializing data validation...");
 
+			Validator validator = new Validator();
+
 			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			final XMLValidationStatusDialog validatorDialog = new XMLValidationStatusDialog(viewController.getTopFrame(),
+			EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+			XMLValidationStatusDialog validatorDialog = new XMLValidationStatusDialog(viewController.getTopFrame(),
 					Language.I18N.getString("validate.dialog.window"),
 					Language.I18N.getString("validate.dialog.title"),
 					Language.I18N.getString("validate.dialog.details") ,
@@ -355,20 +348,11 @@ public class ImportPanel extends DefaultViewComponent {
 				validatorDialog.setVisible(true);
 			});
 
-			Validator validator = new Validator();
-
-			validatorDialog.getButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							eventDispatcher.triggerEvent(new InterruptEvent(
-									"User abort of data validation.",
-									LogLevel.WARN,
-									Event.GLOBAL_CHANNEL));
-						}
-					});
-				}
-			});
+			validatorDialog.getButton().addActionListener(e ->
+					SwingUtilities.invokeLater(() -> eventDispatcher.triggerEvent(new InterruptEvent(
+							"User abort of data validation.",
+							LogLevel.WARN,
+							validator.getEventChannel()))));
 
 			boolean success = false;
 			try {

@@ -56,6 +56,7 @@ public class Validator implements EventHandler {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+	private final Object eventChannel = new Object();
 
 	private volatile boolean shouldRun = true;
 	private DirectoryScanner directoryScanner;
@@ -65,6 +66,10 @@ public class Validator implements EventHandler {
 	public Validator() {
 		config = ObjectRegistry.getInstance().getConfig();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+	}
+
+	public Object getEventChannel() {
+		return eventChannel;
 	}
 
 	public boolean doValidate(List<Path> inputFiles) throws ValidationException {

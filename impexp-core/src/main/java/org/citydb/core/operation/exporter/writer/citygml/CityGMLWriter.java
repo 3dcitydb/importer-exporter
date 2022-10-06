@@ -86,7 +86,7 @@ public class CityGMLWriter implements FeatureWriter, EventHandler {
 
 	private SequentialWriter<SAXEventBuffer> sequentialWriter;
 
-	CityGMLWriter(SAXWriter saxWriter, CityGMLVersion version, TransformerChainFactory transformerChainFactory, boolean useSequentialWriting) {
+	CityGMLWriter(SAXWriter saxWriter, CityGMLVersion version, TransformerChainFactory transformerChainFactory, boolean useSequentialWriting, Object eventChannel) {
 		this.saxWriter = saxWriter;
 		this.version = version;
 		this.transformerChainFactory = transformerChainFactory;
@@ -104,6 +104,7 @@ public class CityGMLWriter implements FeatureWriter, EventHandler {
 				100,
 				false);
 
+		writerPool.setEventSource(eventChannel);
 		writerPool.prestartCoreWorkers();
 
 		if (useSequentialWriting)

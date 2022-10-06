@@ -66,7 +66,7 @@ public class CityJSONWriter implements FeatureWriter, EventHandler {
     private SequentialWriter<AbstractCityObjectType> sequentialWriter;
     private boolean hasContent;
 
-    CityJSONWriter(CityJSONChunkWriter writer, Config config, DatabaseSrs targetSrs, boolean useSequentialWriting) {
+    CityJSONWriter(CityJSONChunkWriter writer, Config config, DatabaseSrs targetSrs, boolean useSequentialWriting, Object eventChannel) {
         this.writer = writer;
         this.targetSrs = targetSrs;
         this.useSequentialWriting = useSequentialWriting;
@@ -82,6 +82,7 @@ public class CityJSONWriter implements FeatureWriter, EventHandler {
                 config.getExportConfig().getResources().getThreadPool().getMaxThreads() * 2,
                 false);
 
+        writerPool.setEventSource(eventChannel);
         writerPool.prestartCoreWorkers();
 
         if (useSequentialWriting) {

@@ -39,9 +39,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FeatureReaderFactoryBuilder {
-    private Map<MediaType, FeatureReaderFactory> factories = new HashMap<>();
+    private final Map<MediaType, FeatureReaderFactory> factories = new HashMap<>();
 
-    public FeatureReaderFactory buildFactory(InputFile file, CityGMLFilter filter, Config config) throws FeatureReadException {
+    public FeatureReaderFactory buildFactory(InputFile file, CityGMLFilter filter, Object eventChannel, Config config) throws FeatureReadException {
         FeatureReaderFactory factory = factories.get(file.getMediaType());
         if (factory == null) {
             if (file.getMediaType().equals(InputFile.APPLICATION_XML))
@@ -52,7 +52,7 @@ public class FeatureReaderFactoryBuilder {
             if (factory == null)
                 throw new FeatureReadException("No reader available for media type '" + file.getMediaType() + "'.");
 
-            factory.initializeContext(filter, config);
+            factory.initializeContext(filter, eventChannel, config);
             factories.put(file.getMediaType(), factory);
         }
 

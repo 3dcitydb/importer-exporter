@@ -68,6 +68,7 @@ import java.util.Map;
 
 public class CityGMLWriterFactory implements FeatureWriterFactory {
 	private final Logger log = Logger.getInstance();
+	private final Object eventChannel;
 	private final Config config;
 	private final CityGMLVersion version;
 	private final FeatureTypeFilter featureTypeFilter;
@@ -77,7 +78,8 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 	private TransformerChainFactory transformerChainFactory;
 	private boolean setAllCityGMLPrefixes;
 
-	public CityGMLWriterFactory(Query query, SchemaMapping schemaMapping, Config config) throws FeatureWriteException {
+	public CityGMLWriterFactory(Query query, SchemaMapping schemaMapping, Object eventChannel, Config config) throws FeatureWriteException {
+		this.eventChannel = eventChannel;
 		this.config = config;
 
 		version = query.getTargetVersion();
@@ -206,7 +208,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		}
 
 		// create CityGML writer
-		return new CityGMLWriter(saxWriter, version, transformerChainFactory, useSequentialWriting);
+		return new CityGMLWriter(saxWriter, version, transformerChainFactory, useSequentialWriting, eventChannel);
 	}
 
 	private Map<String, Namespace> getNamespaces(ModuleContext moduleContext) {

@@ -50,10 +50,6 @@ public class OutputFileFactory {
         this.eventChannel = eventChannel;
     }
 
-    public OutputFileFactory(Config config, EventDispatcher eventDispatcher) {
-        this(config, eventDispatcher, null);
-    }
-
     public OutputFile createOutputFile(Path file, OutputFormat outputFormat) throws IOException {
         file = file.toAbsolutePath().normalize();
         Files.createDirectories(file.getParent());

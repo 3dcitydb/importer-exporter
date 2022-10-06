@@ -135,6 +135,10 @@ public class Exporter implements EventHandler {
         databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
     }
 
+    public Object getEventChannel() {
+        return eventChannel;
+    }
+
     public boolean doExport(Path outputFile) throws CityGMLExportException {
         if (outputFile == null || outputFile.getFileName() == null) {
             throw new CityGMLExportException("The output file '" + outputFile + "' is invalid.");
@@ -232,7 +236,7 @@ public class Exporter implements EventHandler {
         // create feature writer factory
         FeatureWriterFactory writerFactory;
         try {
-            writerFactory = FeatureWriterFactoryBuilder.buildFactory(outputFormat, query, schemaMapping, config);
+            writerFactory = FeatureWriterFactoryBuilder.buildFactory(outputFormat, query, schemaMapping, eventChannel, config);
         } catch (FeatureWriteException e) {
             throw new CityGMLExportException("Failed to build the feature writer factory.", e);
         }
@@ -315,7 +319,7 @@ public class Exporter implements EventHandler {
         }
 
         // create output file factory
-        OutputFileFactory fileFactory = new OutputFileFactory(config, eventDispatcher);
+        OutputFileFactory fileFactory = new OutputFileFactory(config, eventDispatcher, eventChannel);
 
         // process export folder for texture files
         String textureFolder = null;

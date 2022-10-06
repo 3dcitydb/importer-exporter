@@ -56,17 +56,19 @@ public class CityGMLReader implements FeatureReader, EventHandler {
     private final CounterFilter counterFilter;
     private final ValidationErrorHandler validationHandler;
     private final CityGMLInputFactory factory;
+    private final Object eventChannel;
     private final Config config;
     private final EventDispatcher eventDispatcher;
     private final int minThreads, maxThreads;
 
     private volatile boolean shouldRun = true;
 
-    CityGMLReader(CityGMLInputFilter typeFilter, CounterFilter counterFilter, ValidationErrorHandler validationHandler, CityGMLInputFactory factory, Config config) {
+    CityGMLReader(CityGMLInputFilter typeFilter, CounterFilter counterFilter, ValidationErrorHandler validationHandler, CityGMLInputFactory factory, Object eventChannel, Config config) {
         this.typeFilter = typeFilter;
         this.counterFilter = counterFilter;
         this.validationHandler = validationHandler;
         this.factory = factory;
+        this.eventChannel = eventChannel;
         this.config = config;
 
         minThreads = config.getImportConfig().getResources().getThreadPool().getMinThreads();
@@ -100,6 +102,7 @@ public class CityGMLReader implements FeatureReader, EventHandler {
                     maxThreads * 2,
                     false);
 
+            featureWorkerPool.setEventSource(eventChannel);
             featureWorkerPool.prestartCoreWorkers();
 
             try {

@@ -71,8 +71,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.NumberFormatter;
 import javax.xml.datatype.DatatypeConstants;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
@@ -859,9 +857,11 @@ public class VisExportPanel extends DefaultViewComponent implements EventHandler
             viewController.setStatusText(Language.I18N.getString("main.status.visExport.label"));
             log.info("Initializing database export...");
 
-            // get event dispatcher
-            final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-            final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(),
+            VisExporter visExporter = new VisExporter();
+
+            // initialize event dispatcher
+            EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+            ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(),
                     Language.I18N.getString("visExport.dialog.window"),
                     Language.I18N.getString("export.dialog.msg"),
                     true);
@@ -871,22 +871,15 @@ public class VisExportPanel extends DefaultViewComponent implements EventHandler
                 exportDialog.setVisible(true);
             });
 
-            exportDialog.getCancelButton().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            eventDispatcher.triggerEvent(new InterruptEvent(
-                                    "User abort of database export.",
-                                    LogLevel.WARN,
-                                    Event.GLOBAL_CHANNEL));
-                        }
-                    });
-                }
-            });
+            exportDialog.getCancelButton().addActionListener(e ->
+                    SwingUtilities.invokeLater(() -> eventDispatcher.triggerEvent(new InterruptEvent(
+                            "User abort of database export.",
+                            LogLevel.WARN,
+                            visExporter.getEventChannel()))));
 
             boolean success = false;
             try {
-                success = new VisExporter().doExport(Paths.get(browseText.getText()));
+                success = visExporter.doExport(Paths.get(browseText.getText()));
             } catch (VisExportException e) {
                 log.error(e.getMessage(), e.getCause());
                 switch (e.getErrorCode()) {

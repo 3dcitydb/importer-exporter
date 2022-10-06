@@ -134,7 +134,7 @@ public class DBSplitter {
 				objectCount++;
 			}
 
-			if (query.isSetTiling())
+			if (shouldRun && query.isSetTiling())
 				Logger.getInstance().debug(objectCount + " candidate objects found for Tile_" + activeTile.getRow() + "_" + activeTile.getColumn() + ".");
 		}
 	}

@@ -100,6 +100,10 @@ public class Deleter implements EventHandler {
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 	}
 
+	public Object getEventChannel() {
+		return eventChannel;
+	}
+
 	public boolean doDelete(boolean preview) throws DeleteException {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);

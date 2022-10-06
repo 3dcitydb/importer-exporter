@@ -50,7 +50,6 @@ import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.plugin.util.DefaultViewComponent;
 import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.util.event.Event;
 import org.citydb.util.event.EventDispatcher;
 import org.citydb.util.event.global.InterruptEvent;
 import org.citydb.util.log.Logger;
@@ -62,8 +61,6 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
@@ -364,9 +361,11 @@ public class ExportPanel extends DefaultViewComponent implements DropTargetListe
 			viewController.setStatusText(Language.I18N.getString("main.status.export.label"));
 			log.info("Initializing database export...");
 
-			// get event dispatcher
-			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(),
+			Exporter exporter = new Exporter();
+
+			// initialize event dispatcher
+			EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+			ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(),
 					Language.I18N.getString("export.dialog.window"),
 					Language.I18N.getString("export.dialog.msg"),
 					tileAmount > 1);
@@ -376,22 +375,15 @@ public class ExportPanel extends DefaultViewComponent implements DropTargetListe
 				exportDialog.setVisible(true);
 			});
 
-			exportDialog.getCancelButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							eventDispatcher.triggerEvent(new InterruptEvent(
-									"User abort of database export.", 
-									LogLevel.WARN,
-									Event.GLOBAL_CHANNEL));
-						}
-					});
-				}
-			});
+			exportDialog.getCancelButton().addActionListener(e ->
+					SwingUtilities.invokeLater(() -> eventDispatcher.triggerEvent(new InterruptEvent(
+							"User abort of database export.",
+							LogLevel.WARN,
+							exporter.getEventChannel()))));
 
 			boolean success = false;
 			try {
-				success = new Exporter().doExport(Paths.get(browseText.getText()));
+				success = exporter.doExport(Paths.get(browseText.getText()));
 			} catch (CityGMLExportException e) {
 				log.error(e.getMessage(), e.getCause());
 				if (e.getErrorCode() == ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED) {

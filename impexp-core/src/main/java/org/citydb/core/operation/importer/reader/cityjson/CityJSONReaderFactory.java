@@ -50,7 +50,7 @@ public class CityJSONReaderFactory implements FeatureReaderFactory {
     private Config config;
 
     @Override
-    public void initializeContext(CityGMLFilter filter, Config config) throws FeatureReadException {
+    public void initializeContext(CityGMLFilter filter, Object eventChannel, Config config) throws FeatureReadException {
         this.config = config;
 
         CityJSONBuilder builder = CityGMLContext.getInstance().createCityJSONBuilder();

@@ -671,7 +671,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		StringBuilder signature = new StringBuilder();
 
 		if (object instanceof AbstractGeometry)		
-			signature.append("gml:").append(((AbstractGeometry)object).getGMLClass());
+			signature.append("gml:").append(object.getGMLClass());
 		else {		
 			AbstractObjectType<?> type = getAbstractObjectType(object);			
 			if (type != null)

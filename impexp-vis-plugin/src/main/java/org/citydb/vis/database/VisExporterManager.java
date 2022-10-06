@@ -38,6 +38,8 @@ import org.citydb.core.ade.ADEExtensionManager;
 import org.citydb.core.ade.visExporter.*;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.BlobExportAdapter;
+import org.citydb.core.database.schema.mapping.AbstractObjectType;
+import org.citydb.core.database.schema.mapping.SchemaMapping;
 import org.citydb.core.query.Query;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
@@ -163,6 +165,16 @@ public class VisExporterManager implements ADEVisExportHelper {
 
 	public ExportTracker getExportTracker() {
 		return this.tracker;
+	}
+
+	public String getObjectSignature(int objectClassId, long id) {
+		SchemaMapping schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+		AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
+		return objectType != null ? getObjectSignature(objectType, id) : "city object (id : " + id + " )";
+	}
+
+	public String getObjectSignature(AbstractObjectType<?> objectType, long id) {
+		return objectType.getSchema().getXMLPrefix() + ":" + objectType.getPath() + " (id: " + id + ")";
 	}
 
 	public void print(List<PlacemarkType> placemarkList,

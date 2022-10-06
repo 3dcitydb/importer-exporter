@@ -111,7 +111,7 @@ public class Importer implements EventHandler {
 
     private final Object eventChannel = new Object();
     private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
-    private final HashMap<Integer, Long> objectCounter = new HashMap<>();
+    private final Map<Integer, Long> objectCounter = new HashMap<>();
     private final EnumMap<GMLClass, Long> geometryCounter = new EnumMap<>(GMLClass.class);
 
     private volatile boolean shouldRun = true;
@@ -128,6 +128,10 @@ public class Importer implements EventHandler {
         config = ObjectRegistry.getInstance().getConfig();
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
         databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+    }
+
+    public Object getEventChannel() {
+        return eventChannel;
     }
 
     public boolean doImport(List<Path> inputFiles) throws CityGMLImportException {
@@ -471,7 +475,7 @@ public class Importer implements EventHandler {
 
                 FeatureReaderFactory factory;
                 try {
-                    factory = builder.buildFactory(file, filter, config);
+                    factory = builder.buildFactory(file, filter, eventChannel, config);
                 } catch (FeatureReadException e) {
                     throw new CityGMLImportException("Failed to read input file '" + contentFile + "'.", e);
                 }
@@ -526,7 +530,7 @@ public class Importer implements EventHandler {
                         splitter = new DBXlinkSplitter(cacheTableManager,
                                 xlinkResolverPool,
                                 xlinkPool,
-                                Event.GLOBAL_CHANNEL,
+                                eventChannel,
                                 eventDispatcher);
 
                         splitter.startQuery();

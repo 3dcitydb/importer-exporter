@@ -32,6 +32,6 @@ import org.citydb.config.Config;
 import org.citydb.core.operation.importer.filter.CityGMLFilter;
 
 public interface FeatureReaderFactory {
-    void initializeContext(CityGMLFilter filter, Config config) throws FeatureReadException;
+    void initializeContext(CityGMLFilter filter, Object eventChannel, Config config) throws FeatureReadException;
     FeatureReader createFeatureReader() throws FeatureReadException;
 }

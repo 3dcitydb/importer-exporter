@@ -62,10 +62,12 @@ public class CityGMLReaderFactory implements FeatureReaderFactory {
     private CityGMLInputFilter typeFilter;
     private CounterFilter counterFilter;
     private ValidationErrorHandler validationHandler;
+    private Object eventChannel;
     private Config config;
 
     @Override
-    public void initializeContext(CityGMLFilter filter, Config config) throws FeatureReadException {
+    public void initializeContext(CityGMLFilter filter, Object eventChannel, Config config) throws FeatureReadException {
+        this.eventChannel = eventChannel;
         this.config = config;
 
         // prepare CityGML input factory
@@ -129,6 +131,6 @@ public class CityGMLReaderFactory implements FeatureReaderFactory {
 
     @Override
     public FeatureReader createFeatureReader() throws FeatureReadException {
-        return new CityGMLReader(typeFilter, counterFilter, validationHandler, factory, config);
+        return new CityGMLReader(typeFilter, counterFilter, validationHandler, factory, eventChannel, config);
     }
 }

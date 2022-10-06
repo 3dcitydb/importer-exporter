@@ -49,11 +49,13 @@ import java.io.OutputStream;
 
 public class CityJSONWriterFactory implements FeatureWriterFactory {
     private final CityJSONOutputFactory factory;
+    private final Object eventChannel;
     private final Config config;
     private final DatabaseSrs targetSrs;
     private final boolean useSequentialWriting;
 
-    public CityJSONWriterFactory(Query query, Config config) throws FeatureWriteException {
+    public CityJSONWriterFactory(Query query, Object eventChannel, Config config) throws FeatureWriteException {
+        this.eventChannel = eventChannel;
         this.config = config;
 
         try {
@@ -90,6 +92,6 @@ public class CityJSONWriterFactory implements FeatureWriterFactory {
             chunkWriter.setVerticesTransformer(new DefaultVerticesTransformer());
         }
 
-        return new CityJSONWriter(chunkWriter, config, targetSrs, useSequentialWriting);
+        return new CityJSONWriter(chunkWriter, config, targetSrs, useSequentialWriting, eventChannel);
     }
 }

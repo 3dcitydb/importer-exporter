@@ -104,21 +104,20 @@ public class VisExporter implements EventHandler {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
+	private final Object eventChannel = new Object();
 	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private final ObjectFactory kmlFactory;
 	private final Map<Integer, Long> objectCounter = new HashMap<>();
 	private final Map<Integer, Long> totalObjectCounter = new HashMap<>();
+	private final String ENCODING = "UTF-8";
+	private final Charset CHARSET = Charset.forName(ENCODING);
 
 	private JAXBContext jaxbKmlContext;
 	private WorkerPool<DBSplittingResult> visWorkerPool;
 	private SingleWorkerPool<SAXEventBuffer> writerPool;
-	private DBSplitter DBSplitter;
-
-	private final String ENCODING = "UTF-8";
-	private final Charset CHARSET = Charset.forName(ENCODING);
+	private DBSplitter dbSplitter;
 	private File lastTempFolder = null;
 	private long geometryCounter;
-
 	private volatile boolean shouldRun = true;
 	private VisExportException exception;
 
@@ -128,6 +127,10 @@ public class VisExporter implements EventHandler {
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		kmlFactory = new ObjectFactory();
+	}
+
+	public Object getEventChannel() {
+		return eventChannel;
 	}
 
 	public boolean doExport(Path outputFile) throws VisExportException {
@@ -461,6 +464,10 @@ public class VisExporter implements EventHandler {
 								300,
 								false);
 
+						// set channel for events triggered by workers
+						writerPool.setEventSource(eventChannel);
+						visWorkerPool.setEventSource(eventChannel);
+
 						// prestart pool workers
 						writerPool.prestartCoreWorkers();
 						visWorkerPool.prestartCoreWorkers();
@@ -501,7 +508,7 @@ public class VisExporter implements EventHandler {
 
 						// get database splitter and start query
 						try {
-							DBSplitter = new DBSplitter(
+							dbSplitter = new DBSplitter(
 									schemaMapping,
 									visWorkerPool,
 									query,
@@ -509,7 +516,7 @@ public class VisExporter implements EventHandler {
 									config);
 
 							if (shouldRun)
-								DBSplitter.startQuery();
+								dbSplitter.startQuery();
 						} catch (SQLException | QueryBuildException | FilterException e) {
 							throw new VisExportException("Failed to query the database.", e);
 						}
@@ -1453,8 +1460,8 @@ public class VisExporter implements EventHandler {
 
 				log.info("Waiting for objects being currently processed to end...");
 
-				if (DBSplitter != null) {
-					DBSplitter.shutdown();
+				if (dbSplitter != null) {
+					dbSplitter.shutdown();
 				}
 
 				if (visWorkerPool != null) {

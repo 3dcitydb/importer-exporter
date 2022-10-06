@@ -29,6 +29,7 @@ package org.citydb.vis.concurrent;
 
 import net.opengis.kml._2.ObjectFactory;
 import org.citydb.config.Config;
+import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.visExporter.Balloon;
 import org.citydb.config.project.visExporter.BalloonContentMode;
 import org.citydb.config.project.visExporter.ColladaOptions;
@@ -42,6 +43,7 @@ import org.citydb.core.util.Util;
 import org.citydb.util.concurrent.Worker;
 import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.util.event.EventDispatcher;
+import org.citydb.util.event.global.InterruptEvent;
 import org.citydb.util.event.global.ObjectCounterEvent;
 import org.citydb.util.log.Logger;
 import org.citydb.vis.database.*;
@@ -371,8 +373,10 @@ public class VisExportWorker extends Worker<DBSplittingResult> {
 					objectGroupCounter.put(objectClass, 0);
 				}
 			}
-		}
-		finally {
+		} catch (Throwable e) {
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during export of " +
+					visExporterManager.getObjectSignature(work.getObjectClassId(), work.getId()) + ".", LogLevel.ERROR, e, eventChannel));
+		} finally {
 			runLock.unlock();
 		}
 	}
