@@ -189,12 +189,11 @@ public class Validator implements EventHandler {
 			shouldRun = false;
 			InterruptEvent event = (InterruptEvent) e;
 
-			if (event.canConsumeLogMessage()) {
+			if (event.getChannel() == eventChannel) {
 				log.log(event.getLogLevelType(), event.getLogMessage());
-			}
-
-			if (event.getCause() != null) {
-				exception = new ValidationException("Aborting validation due to errors.", event.getCause());
+				if (event.getCause() != null) {
+					exception = new ValidationException("Aborting validation due to errors.", event.getCause());
+				}
 			}
 
 			if (directoryScanner != null) {

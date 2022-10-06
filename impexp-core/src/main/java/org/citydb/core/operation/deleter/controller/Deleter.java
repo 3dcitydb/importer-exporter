@@ -365,12 +365,11 @@ public class Deleter implements EventHandler {
 				bundledConnection.setShouldRollback(true);
 				InterruptEvent event = (InterruptEvent) e;
 
-				if (event.canConsumeLogMessage()) {
+				if (event.getChannel() == eventChannel) {
 					log.log(event.getLogLevelType(), event.getLogMessage());
-				}
-
-				if (event.getCause() != null) {
-					setException("Aborting delete due to errors.", event.getCause());
+					if (event.getCause() != null) {
+						setException("Aborting delete due to errors.", event.getCause());
+					}
 				}
 
 				if (deleteManager != null) {
