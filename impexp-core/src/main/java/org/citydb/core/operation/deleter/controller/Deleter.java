@@ -67,7 +67,6 @@ import org.citydb.util.log.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -159,7 +158,7 @@ public class Deleter implements EventHandler {
 		if (!preview && config.getDeleteConfig().getDeleteLog().isSetLogDeletedFeatures()) {
 			try {
 				Path logFile = config.getDeleteConfig().getDeleteLog().isSetLogFile() ?
-						Paths.get(config.getDeleteConfig().getDeleteLog().getLogFile()) :
+						CoreConstants.WORKING_DIR.resolve(config.getDeleteConfig().getDeleteLog().getLogFile()) :
 						CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.DELETE_LOG_DIR);
 				deleteLogger = new DeleteLogger(logFile,
 						config.getDeleteConfig().getMode(),
