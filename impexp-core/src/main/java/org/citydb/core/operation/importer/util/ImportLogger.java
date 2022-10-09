@@ -106,6 +106,7 @@ public class ImportLogger {
 
 	private void writeFooter(boolean success) throws IOException {
 		writer.write(success ? "#Import successfully finished." : "#Import aborted.");
+		writer.newLine();
 	}
 	
 	public void write(ImportLogEntry entry) throws IOException {
