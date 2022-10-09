@@ -59,6 +59,7 @@ public class Validator implements EventHandler {
 	private final Object eventChannel = new Object();
 
 	private volatile boolean shouldRun = true;
+	private boolean logTotalProcessingTime = true;
 	private DirectoryScanner directoryScanner;
 	private ValidationException exception;
 	private int invalidFiles;
@@ -66,6 +67,11 @@ public class Validator implements EventHandler {
 	public Validator() {
 		config = ObjectRegistry.getInstance().getConfig();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+	}
+
+	public Validator logTotalProcessingTime(boolean logTotalProcessingTime) {
+		this.logTotalProcessingTime = logTotalProcessingTime;
+		return this;
 	}
 
 	public Object getEventChannel() {
@@ -79,8 +85,10 @@ public class Validator implements EventHandler {
 
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+		long start = System.currentTimeMillis();
+		boolean success;
 		try {
-			return process(inputFiles);
+			success = process(inputFiles);
 		} catch (ValidationException e) {
 			throw e;
 		} catch (Throwable e) {
@@ -94,6 +102,12 @@ public class Validator implements EventHandler {
 
 			eventDispatcher.removeEventHandler(this);
 		}
+
+		if (logTotalProcessingTime && success) {
+			log.info("Total validation time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+		}
+
+		return success;
 	}
 
 	private boolean process(List<Path> inputFiles) throws ValidationException {
@@ -124,8 +138,6 @@ public class Validator implements EventHandler {
 		// create reader factory builder
 		ValidatorFactoryBuilder builder = new ValidatorFactoryBuilder();
 
-		long start = System.currentTimeMillis();
-		
 		while (shouldRun && fileCounter < files.size()) {
 			try (InputFile file = files.get(fileCounter++)) {
 				Path contentFile = file.getType() != FileType.ARCHIVE ?
@@ -143,16 +155,18 @@ public class Validator implements EventHandler {
 					throw new ValidationException("Failed to validate input file '" + contentFile + "'.", e);
 				}
 
-				log.info("Validating file: " + contentFile.toString());
+				log.info("Validating file: " + contentFile);
 
 				try (org.citydb.core.operation.validator.reader.Validator validator = validatorFactory.createValidator()) {
 					validator.validate(file);
 
-					if (validator.getValidationErrors() == 0) {
-						log.info("The file is valid.");
-					} else {
-						log.warn("The file is invalid. Found " + validator.getValidationErrors() + " error(s).");
-						invalidFiles++;
+					if (shouldRun) {
+						if (validator.getValidationErrors() == 0) {
+							log.info("The file is valid.");
+						} else {
+							log.warn("The file is invalid. Found " + validator.getValidationErrors() + " error(s).");
+							invalidFiles++;
+						}
 					}
 				}
 
@@ -162,17 +176,15 @@ public class Validator implements EventHandler {
 			}
 		}
 
-		if (files.size() > 1) {
+		if (shouldRun && files.size() > 1) {
 			if (invalidFiles == 0) {
 				log.info("All files were successfully validated.");
 			} else {
-				log.warn("Found " + invalidFiles + " invalid file(s).");
+				log.warn("Validation failed for " + invalidFiles + " out of " + files.size() + " input file(s).");
 			}
 		}
 		
-		if (shouldRun) {
-			log.info("Total validation time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-		} else if (exception != null) {
+		if (exception != null) {
 			throw exception;
 		}
 

@@ -112,13 +112,14 @@ public class VisExporter implements EventHandler {
 	private final String ENCODING = "UTF-8";
 	private final Charset CHARSET = Charset.forName(ENCODING);
 
+	private volatile boolean shouldRun = true;
+	private boolean logTotalProcessingTime = true;
 	private JAXBContext jaxbKmlContext;
 	private WorkerPool<DBSplittingResult> visWorkerPool;
 	private SingleWorkerPool<SAXEventBuffer> writerPool;
 	private DBSplitter dbSplitter;
 	private File lastTempFolder = null;
 	private long geometryCounter;
-	private volatile boolean shouldRun = true;
 	private VisExportException exception;
 
 	public VisExporter() {
@@ -127,6 +128,11 @@ public class VisExporter implements EventHandler {
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		kmlFactory = new ObjectFactory();
+	}
+
+	public VisExporter logTotalProcessingTime(boolean logTotalProcessingTime) {
+		this.logTotalProcessingTime = logTotalProcessingTime;
+		return this;
 	}
 
 	public Object getEventChannel() {
@@ -148,8 +154,10 @@ public class VisExporter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+		long start = System.currentTimeMillis();
+		boolean success;
 		try {
-			return process(outputFile);
+			success = process(outputFile);
 		} catch (VisExportException e) {
 			throw e;
 		} catch (Throwable e) {
@@ -157,6 +165,12 @@ public class VisExporter implements EventHandler {
 		} finally {
 			eventDispatcher.removeEventHandler(this);
 		}
+
+		if (logTotalProcessingTime && success) {
+			log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+		}
+
+		return success;
 	}
 
 	private boolean process(Path outputFile) throws VisExportException {
@@ -370,8 +384,6 @@ public class VisExporter implements EventHandler {
 				throw new VisExportException("Failed to write JSON file header.", e);
 			}			
 		}
-
-		long start = System.currentTimeMillis();
 
 		// iterate over tiles
 		for (int row = 0; shouldRun && row < rows; row++) {
@@ -697,9 +709,7 @@ public class VisExporter implements EventHandler {
 		if (lastTempFolder != null && lastTempFolder.exists()) 
 			deleteFolder(lastTempFolder); // just in case
 
-		if (shouldRun) {
-			log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-		} else if (exception != null) {
+		if (exception != null) {
 			throw exception;
 		}
 

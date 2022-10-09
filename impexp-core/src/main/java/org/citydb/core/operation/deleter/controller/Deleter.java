@@ -85,11 +85,12 @@ public class Deleter implements EventHandler {
 	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private final Map<Integer, Long> objectCounter = new HashMap<>();
 
+	private volatile boolean shouldRun = true;
+	private boolean logTotalProcessingTime = true;
 	private DeleteManager deleteManager;
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
 	private BundledConnection bundledConnection;
 	private GlobalAppearanceCleaner globalAppearanceCleaner;
-	private volatile boolean shouldRun = true;
 	private DeleteException exception;
 	private DeleteLogger deleteLogger;
 
@@ -100,6 +101,11 @@ public class Deleter implements EventHandler {
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 	}
 
+	public Deleter logTotalProcessingTime(boolean logTotalProcessingTime) {
+		this.logTotalProcessingTime = logTotalProcessingTime;
+		return this;
+	}
+
 	public Object getEventChannel() {
 		return eventChannel;
 	}
@@ -108,8 +114,10 @@ public class Deleter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+		long start = System.currentTimeMillis();
+		boolean success;
 		try {
-			return process(preview);
+			success = process(preview);
 		} catch (DeleteException e) {
 			throw e;
 		} catch (Throwable e) {
@@ -126,10 +134,15 @@ public class Deleter implements EventHandler {
 				}
 			}
 		}
+
+		if (logTotalProcessingTime && success) {
+			log.info("Total processing time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+		}
+
+		return success;
 	}
 
 	private boolean process(boolean preview) throws DeleteException {
-		long start = System.currentTimeMillis();
 		DeleteMode mode = config.getDeleteConfig().getMode();
 
 		// log workspace
@@ -336,8 +349,6 @@ public class Deleter implements EventHandler {
 				Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
 				typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
 			}
-
-			log.info("Total processing time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 		} else if (exception != null) {
 			throw exception;
 		}

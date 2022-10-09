@@ -123,6 +123,7 @@ public class Exporter implements EventHandler {
     private boolean useTiling;
 
     private volatile boolean shouldRun = true;
+    private boolean logTotalProcessingTime = true;
     private CityGMLExportException exception;
     private CacheTableManager cacheTableManager;
 
@@ -133,6 +134,11 @@ public class Exporter implements EventHandler {
         config = ObjectRegistry.getInstance().getConfig();
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
         databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+    }
+
+    public Exporter logTotalProcessingTime(boolean logTotalProcessingTime) {
+        this.logTotalProcessingTime = logTotalProcessingTime;
+        return this;
     }
 
     public Object getEventChannel() {
@@ -148,14 +154,13 @@ public class Exporter implements EventHandler {
         eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
         eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-        boolean success = true;
+        long start = System.currentTimeMillis();
+        boolean success = false;
         try {
             success = process(outputFile);
         } catch (CityGMLExportException e) {
-            success = false;
             throw e;
         } catch (Throwable e) {
-            success = false;
             throw new CityGMLExportException("An unexpected error occurred.", e);
         } finally {
             eventDispatcher.removeEventHandler(this);
@@ -173,6 +178,10 @@ public class Exporter implements EventHandler {
                     log.error("Failed to close the temporary cache.", e);
                 }
             }
+        }
+
+        if (logTotalProcessingTime && success) {
+            log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
         }
 
         return success;
@@ -361,7 +370,6 @@ public class Exporter implements EventHandler {
         }
 
         int remainingTiles = rows * columns;
-        long start = System.currentTimeMillis();
 
         for (int row = 0; shouldRun && row < rows; row++) {
             for (int column = 0; shouldRun && column < columns; column++) {
@@ -628,9 +636,7 @@ public class Exporter implements EventHandler {
 			}
         }
 
-        if (shouldRun) {
-        	log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-		} else if (exception != null) {
+        if (exception != null) {
             throw exception;
         }
 

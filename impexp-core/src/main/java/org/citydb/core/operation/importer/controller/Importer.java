@@ -115,6 +115,7 @@ public class Importer implements EventHandler {
     private final EnumMap<GMLClass, Long> geometryCounter = new EnumMap<>(GMLClass.class);
 
     private volatile boolean shouldRun = true;
+    private boolean logTotalProcessingTime = true;
     private CityGMLImportException exception;
     private DirectoryScanner directoryScanner;
     private ImportLogger importLogger;
@@ -130,6 +131,11 @@ public class Importer implements EventHandler {
         databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
     }
 
+    public Importer logTotalProcessingTime(boolean logTotalProcessingTime) {
+        this.logTotalProcessingTime = logTotalProcessingTime;
+        return this;
+    }
+
     public Object getEventChannel() {
         return eventChannel;
     }
@@ -143,14 +149,13 @@ public class Importer implements EventHandler {
         eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
         eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-        boolean success = true;
+        long start = System.currentTimeMillis();
+        boolean success = false;
         try {
             success = process(inputFiles);
         } catch (CityGMLImportException e) {
-            success = false;
             throw e;
         } catch (Throwable e) {
-            success = false;
             throw new CityGMLImportException("An unexpected error occurred.", e);
         } finally {
             eventDispatcher.removeEventHandler(this);
@@ -177,6 +182,10 @@ public class Importer implements EventHandler {
                     log.error("Failed to close the temporary cache.", e);
                 }
             }
+        }
+
+        if (logTotalProcessingTime && success) {
+            log.info("Total import time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
         }
 
         return success;
@@ -346,8 +355,6 @@ public class Importer implements EventHandler {
         WorkerPool<DBXlink> xlinkPool = null;
         WorkerPool<DBXlink> xlinkResolverPool = null;
         DBXlinkSplitter splitter;
-
-        long start = System.currentTimeMillis();
 
         while (shouldRun && fileCounter < files.size()) {
             // check whether we reached the counter limit
@@ -625,9 +632,7 @@ public class Importer implements EventHandler {
             log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
         }
 
-        if (shouldRun) {
-            log.info("Total import time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-        } else if (exception != null) {
+        if (exception != null) {
             throw exception;
         }
 
