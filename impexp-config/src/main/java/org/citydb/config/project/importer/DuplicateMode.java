@@ -34,8 +34,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "DuplicateModeType")
 @XmlEnum
 public enum DuplicateMode {
-    @XmlEnumValue("ignore")
-    IGNORE("ignore"),
+    @XmlEnumValue("import")
+    IMPORT("import"),
     @XmlEnumValue("skip")
     SKIP("skip"),
     @XmlEnumValue("terminate")
@@ -60,6 +60,6 @@ public enum DuplicateMode {
             }
         }
 
-        return IGNORE;
+        return IMPORT;
     }
 }

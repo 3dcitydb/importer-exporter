@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class ImportDuplicates {
     @XmlElement(required = true)
-    private DuplicateMode mode = DuplicateMode.IGNORE;
+    private DuplicateMode mode = DuplicateMode.IMPORT;
     private DuplicateLog duplicateLog;
 
     public ImportDuplicates() {
@@ -45,7 +45,7 @@ public class ImportDuplicates {
     }
 
     public DuplicateMode getMode() {
-        return mode != null ? mode : DuplicateMode.IGNORE;
+        return mode != null ? mode : DuplicateMode.IMPORT;
     }
 
     public void setMode(DuplicateMode mode) {

@@ -350,7 +350,7 @@ public class Importer implements EventHandler {
         }
 
         // process duplicate top-level features
-        if (shouldRun && config.getImportConfig().getDuplicates().getMode() != DuplicateMode.IGNORE) {
+        if (shouldRun && config.getImportConfig().getDuplicates().getMode() != DuplicateMode.IMPORT) {
             DuplicateController duplicateController = new DuplicateController(eventChannel);
             if (duplicateController.doCheck(files, filter) && shouldRun) {
                 if (config.getImportConfig().getDuplicates().getMode() == DuplicateMode.TERMINATE
