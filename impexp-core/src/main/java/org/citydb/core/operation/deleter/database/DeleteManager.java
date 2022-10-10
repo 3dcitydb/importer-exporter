@@ -68,9 +68,7 @@ import org.citydb.sqlbuilder.update.Update;
 import org.citydb.sqlbuilder.update.UpdateToken;
 import org.citydb.util.concurrent.WorkerPool;
 import org.citydb.util.event.EventDispatcher;
-import org.citydb.util.event.global.ObjectCounterEvent;
-import org.citydb.util.event.global.ProgressBarEventType;
-import org.citydb.util.event.global.StatusDialogProgressBar;
+import org.citydb.util.event.global.*;
 import org.citydb.util.log.Logger;
 import org.citygml4j.model.module.citygml.CoreModule;
 
@@ -250,6 +248,7 @@ public class DeleteManager {
 			}
 
 			eventDispatcher.triggerEvent(new ObjectCounterEvent(counter, eventChannel));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updated));
 		} else {
 			doDelete(select, hits);
 		}
