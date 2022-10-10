@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "import")
 @XmlType(name = "ImportType", propOrder = {
         "filter",
+        "duplicates",
         "continuation",
         "path",
         "generalOptions",
@@ -51,6 +52,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class ImportConfig {
     private ImportFilter filter;
+    private ImportDuplicates duplicates;
     private Continuation continuation;
     private Path path;
     @XmlElement(name = "general")
@@ -65,18 +67,39 @@ public class ImportConfig {
     private ImportResources resources;
 
     public ImportConfig() {
+        filter = new ImportFilter();
+        duplicates = new ImportDuplicates();
         continuation = new Continuation();
         path = new Path();
         generalOptions = new GeneralOptions();
         resourceId = new ImportResourceId();
         appearances = new ImportAppearance();
-        filter = new ImportFilter();
         affineTransformation = new AffineTransformation();
         cityGMLOptions = new CityGMLOptions();
         cityJSONOptions = new CityJSONOptions();
         indexes = new Index();
         importLog = new ImportLog();
         resources = new ImportResources();
+    }
+
+    public ImportFilter getFilter() {
+        return filter;
+    }
+
+    public void setFilter(ImportFilter filter) {
+        if (filter != null) {
+            this.filter = filter;
+        }
+    }
+
+    public ImportDuplicates getDuplicates() {
+        return duplicates;
+    }
+
+    public void setDuplicates(ImportDuplicates duplicates) {
+        if (duplicates != null) {
+            this.duplicates = duplicates;
+        }
     }
 
     public Continuation getContinuation() {
@@ -126,16 +149,6 @@ public class ImportConfig {
     public void setAppearances(ImportAppearance appearances) {
         if (appearances != null) {
             this.appearances = appearances;
-        }
-    }
-
-    public ImportFilter getFilter() {
-        return filter;
-    }
-
-    public void setFilter(ImportFilter filter) {
-        if (filter != null) {
-            this.filter = filter;
         }
     }
 

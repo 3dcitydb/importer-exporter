@@ -45,6 +45,7 @@ public class CoreConstants {
 
     public static final Path IMPEXP_DATA_DIR = Paths.get(System.getProperty("user.home"), "3dcitydb", "importer-exporter").toAbsolutePath();
     public static final String IMPORT_LOG_DIR = "imported-features";
+    public static final String DUPLICATE_LOG_DIR = "duplicate-features";
     public static final String DELETE_LOG_DIR = "deleted-features";
     public static final String LIBRARY_OBJECTS_DIR = "library-objects";
     public static final URL CITYDB_SCHEMA_MAPPING_FILE = CoreConstants.class.getResource("/org/citydb/core/database/schema/3dcitydb-schema.xml");

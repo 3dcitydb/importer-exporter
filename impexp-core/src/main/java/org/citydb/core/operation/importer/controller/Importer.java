@@ -307,7 +307,6 @@ public class Importer implements EventHandler {
                 && config.getImportConfig().getFilter().getImportList().hasFiles()) {
             log.info("Loading import list into local cache...");
 
-            // create local cache manager
             try {
                 importListCacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.LOCAL);
             } catch (SQLException e) {
