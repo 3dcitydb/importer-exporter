@@ -103,6 +103,9 @@ public class CacheTable extends AbstractCacheTable {
 			case ID_LIST:
 				this.model = CacheTableIdList.getInstance();
 				break;
+			case DUPLICATE_LIST:
+				this.model = CacheTableDuplicateList.getInstance();
+				break;
 			default:
 				throw new IllegalArgumentException("Unsupported cache table type " + model);
 		}

@@ -32,6 +32,7 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.CacheMode;
+import org.citydb.config.project.importer.DuplicateMode;
 import org.citydb.config.project.importer.ImportList;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractUtilAdapter;
@@ -65,6 +66,7 @@ import org.citydb.core.operation.importer.concurrent.DBImportXlinkWorkerFactory;
 import org.citydb.core.operation.importer.database.xlink.resolver.DBXlinkSplitter;
 import org.citydb.core.operation.importer.filter.CityGMLFilter;
 import org.citydb.core.operation.importer.filter.CityGMLFilterBuilder;
+import org.citydb.core.operation.importer.filter.selection.id.DuplicateListFilter;
 import org.citydb.core.operation.importer.reader.FeatureReadException;
 import org.citydb.core.operation.importer.reader.FeatureReader;
 import org.citydb.core.operation.importer.reader.FeatureReaderFactory;
@@ -121,6 +123,7 @@ public class Importer implements EventHandler {
     private ImportLogger importLogger;
     private CacheTableManager cacheTableManager;
     private CacheTable importListCacheTable;
+    private CacheTable duplicateListCacheTable;
 
     public Importer() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
@@ -344,6 +347,24 @@ public class Importer implements EventHandler {
             filter = builder.buildCityGMLFilter(config.getImportConfig().getFilter(), importListCacheTable);
         } catch (FilterException e) {
             throw new CityGMLImportException("Failed to build the import filter.", e);
+        }
+
+        // process duplicate top-level features
+        if (shouldRun && config.getImportConfig().getDuplicates().getMode() != DuplicateMode.IGNORE) {
+            DuplicateController duplicateController = new DuplicateController(eventChannel);
+            if (duplicateController.doCheck(files, filter) && shouldRun) {
+                if (config.getImportConfig().getDuplicates().getMode() == DuplicateMode.TERMINATE
+                        || config.getImportConfig().getDuplicates().getMode() == DuplicateMode.DELETE) {
+                    duplicateController.doDelete();
+                } else if (config.getImportConfig().getDuplicates().getMode() == DuplicateMode.SKIP) {
+                    log.info("Skipping duplicate top-level features from import.");
+                    duplicateListCacheTable = duplicateController.createDuplicateList(cacheTableManager);
+                    if (duplicateListCacheTable != null) {
+                        DuplicateListFilter duplicateListFilter = new DuplicateListFilter(duplicateListCacheTable);
+                        filter.getSelectionFilter().setDuplicateListFilter(duplicateListFilter);
+                    }
+                }
+            }
         }
 
         // create reader factory builder
@@ -592,7 +613,8 @@ public class Importer implements EventHandler {
                 if (cacheTableManager != null) {
                     try {
                         log.info("Cleaning temporary cache.");
-                        cacheTableManager.dropIf(table -> table != importListCacheTable);
+                        cacheTableManager.dropIf(table -> table != importListCacheTable
+                                && table != duplicateListCacheTable);
                     } catch (SQLException e) {
                         setException("Failed to clean the temporary cache.", e);
                         shouldRun = false;

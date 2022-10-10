@@ -108,11 +108,11 @@ public class DuplicateLogger {
                 entry.file + System.lineSeparator());
     }
 
-    public IdList toIdList() {
+    public IdList toIdList(IdColumnType columnType) {
         IdList idList = new IdList().withDefaultCommentCharacter('#');
         idList.setFiles(Collections.singletonList(logFile.toAbsolutePath().toString()));
-        idList.setIdColumnType(IdColumnType.DATABASE_ID);
-        idList.setIdColumnIndex(1);
+        idList.setIdColumnType(columnType);
+        idList.setIdColumnIndex(columnType == IdColumnType.DATABASE_ID ? 1 : 2);
         idList.setHasHeader(true);
 
         return idList;
