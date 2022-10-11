@@ -35,6 +35,7 @@ import org.citydb.config.project.common.IdList;
 import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.CacheMode;
+import org.citydb.config.project.importer.Continuation;
 import org.citydb.config.project.importer.OverwriteMode;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.InputFile;
@@ -210,6 +211,14 @@ public class DuplicateController implements EventHandler {
             deleteConfig.setMode(config.getImportConfig().getMode().getOverwriteMode() == OverwriteMode.DELETE_EXISTING ?
                     DeleteMode.DELETE :
                     DeleteMode.TERMINATE);
+
+            if (deleteConfig.getMode() == DeleteMode.TERMINATE) {
+                Continuation continuation = config.getImportConfig().getContinuation();
+                deleteConfig.getContinuation().setLineage(continuation.getLineage());
+                deleteConfig.getContinuation().setUpdatingPersonMode(continuation.getUpdatingPersonMode());
+                deleteConfig.getContinuation().setUpdatingPerson(continuation.getUpdatingPerson());
+                deleteConfig.getContinuation().setReasonForUpdate(continuation.getReasonForUpdate());
+            }
 
             try {
                 config.setDeleteConfig(deleteConfig);
