@@ -625,11 +625,13 @@ public class Importer implements EventHandler {
             log.info("Imported city objects:");
             Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
             typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
-        }
 
-        // show processed geometries
-        if (!geometryCounter.isEmpty()) {
-            log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
+            // show processed geometries
+            if (!geometryCounter.isEmpty()) {
+                log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
+            }
+        } else {
+            log.info("No city objects were imported.");
         }
 
         if (exception != null) {
