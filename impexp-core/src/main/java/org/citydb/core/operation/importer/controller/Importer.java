@@ -361,14 +361,14 @@ public class Importer implements EventHandler {
                 if (config.getImportConfig().getMode().getOperation() == OperationName.OVERWRITE) {
                     duplicateController.doDelete();
                 } else if (config.getImportConfig().getMode().getInsertMode() == InsertMode.SKIP_EXISTING) {
-                    log.info("Skipping duplicate top-level features from import.");
+                    log.info("Skipping top-level features that already exist in the database.");
                     duplicateListCacheTable = duplicateController.createDuplicateList(cacheTableManager);
                     if (duplicateListCacheTable != null) {
                         DuplicateListFilter duplicateListFilter = new DuplicateListFilter(duplicateListCacheTable);
                         filter.getSelectionFilter().setDuplicateListFilter(duplicateListFilter);
                     }
                 } else if (config.getImportConfig().getMode().getInsertMode() == InsertMode.IMPORT_ALL) {
-                    log.info("Duplicate top-level features are imported into the database.");
+                    log.info("Duplicate top-level features are also imported.");
                 }
             }
         }

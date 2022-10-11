@@ -191,7 +191,7 @@ public class DuplicateController implements EventHandler {
         long duplicates = worker.getNumberOfDuplicates();
         if (shouldRun) {
             log.info(duplicates > 0 ?
-                    "Found " + duplicates + " duplicate top-level features." :
+                    "Found " + duplicates + " duplicate top-level features in the database." :
                     "No duplicate top-level features found.");
         }
 
