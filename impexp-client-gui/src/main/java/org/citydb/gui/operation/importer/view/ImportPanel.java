@@ -31,7 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.config.project.importer.ImportFilter;
+import org.citydb.config.project.importer.*;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.core.database.DatabaseController;
 import org.citydb.core.operation.importer.CityGMLImportException;
@@ -77,6 +77,15 @@ public class ImportPanel extends DefaultViewComponent {
 	private JButton removeButton;
 	private JButton importButton;
 	private JButton validateButton;
+	private JLabel importModeLabel;
+	private JToggleButton insertMode;
+	private JToggleButton overwriteMode;
+	private JLabel optionsLabel;
+	private JPanel optionsPanel;
+	private JToggleButton importAll;
+	private JToggleButton skipExisting;
+	private JToggleButton deleteExisting;
+	private JToggleButton terminateExisting;
 	private FilterPanel filterPanel;
 
 	public ImportPanel(ViewController viewController, Config config) {
@@ -94,6 +103,15 @@ public class ImportPanel extends DefaultViewComponent {
 		filterPanel = new FilterPanel(viewController, config);
 		importButton = new JButton();
 		validateButton = new JButton();
+
+		importModeLabel = new JLabel();
+		optionsLabel = new JLabel();
+		insertMode = new JToggleButton();
+		overwriteMode = new JToggleButton();
+		importAll = new JToggleButton();
+		skipExisting = new JToggleButton();
+		deleteExisting = new JToggleButton();
+		terminateExisting = new JToggleButton();
 
 		FileListTransferHandler transferHandler = new FileListTransferHandler(fileList)
 				.withFilesAddedHandler(model -> config.getImportConfig().getPath().setLastUsedPath(model.get(0).getAbsolutePath()))
@@ -134,21 +152,73 @@ public class ImportPanel extends DefaultViewComponent {
 				removeButton.setEnabled(true);
 		});
 
+		insertMode.addActionListener(e -> switchOptionsPanel(true));
+		overwriteMode.addActionListener(e -> switchOptionsPanel(false));
+
 		setLayout(new GridBagLayout());
 
         JPanel filePanel = new JPanel();
         filePanel.setLayout(new GridBagLayout());
-        JScrollPane fileScroll = new JScrollPane(fileList);
-		fileScroll.setMinimumSize(fileList.getPreferredScrollableViewportSize());
-		fileScroll.setPreferredSize(fileList.getPreferredScrollableViewportSize());
+		{
+			JScrollPane fileScroll = new JScrollPane(fileList);
+			fileScroll.setMinimumSize(fileList.getPreferredScrollableViewportSize());
+			fileScroll.setPreferredSize(fileList.getPreferredScrollableViewportSize());
 
-        filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 2, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
-		filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
-		filePanel.add(removeButton, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 5, 20, 0));
+			filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 2, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
+			filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+			filePanel.add(removeButton, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 5, 20, 0));
+		}
+
+		optionsPanel = new JPanel();
+		optionsPanel.setLayout(new CardLayout());
+
+		JPanel importModePanel = new JPanel();
+		importModePanel.setLayout(new GridBagLayout());
+		{
+			JToolBar importMode = new JToolBar();
+			importMode.setBorder(BorderFactory.createEmptyBorder());
+			importMode.setFloatable(false);
+			importMode.add(insertMode);
+			importMode.add(overwriteMode);
+
+			JToolBar insertOptions = new JToolBar();
+			insertOptions.setBorder(BorderFactory.createEmptyBorder());
+			insertOptions.setFloatable(false);
+			insertOptions.add(importAll);
+			insertOptions.add(skipExisting);
+
+			JToolBar overwriteOptions = new JToolBar();
+			overwriteOptions.setBorder(BorderFactory.createEmptyBorder());
+			overwriteOptions.setFloatable(false);
+			overwriteOptions.add(deleteExisting);
+			overwriteOptions.add(terminateExisting);
+
+			optionsPanel.add(insertOptions, "insert");
+			optionsPanel.add(overwriteOptions, "overwrite");
+
+			ButtonGroup modeGroup = new ButtonGroup();
+			modeGroup.add(insertMode);
+			modeGroup.add(overwriteMode);
+
+			ButtonGroup insertOptionsGroup = new ButtonGroup();
+			insertOptionsGroup.add(importAll);
+			insertOptionsGroup.add(skipExisting);
+
+			ButtonGroup overwriteOptionsGroup = new ButtonGroup();
+			overwriteOptionsGroup.add(deleteExisting);
+			overwriteOptionsGroup.add(terminateExisting);
+
+			importModePanel.add(importModeLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+			importModePanel.add(importMode, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+			importModePanel.add(optionsLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
+			importModePanel.add(optionsPanel, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+		}
 
         JPanel view = new ScrollablePanel(true, false);
         view.setLayout(new GridBagLayout());
-		view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
+		{
+			view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
+		}
 
         JScrollPane scrollPane = new JScrollPane(view);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -156,15 +226,23 @@ public class ImportPanel extends DefaultViewComponent {
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridBagLayout());
-        buttonPanel.add(importButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
-        buttonPanel.add(validateButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
+		{
+			buttonPanel.add(importButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
+			buttonPanel.add(validateButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
+		}
 
         add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
-        add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(buttonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
+		add(importModePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 10, 10, 10));
+        add(scrollPane, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(buttonPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
 
 		PopupMenuDecorator.getInstance().decorate(fileList);
     }
+
+	private void switchOptionsPanel(boolean showInsertOptions) {
+		CardLayout layout = (CardLayout) optionsPanel.getLayout();
+		layout.show(optionsPanel, showInsertOptions ? "insert" : "overwrite");
+	}
 
 	@Override
 	public void switchLocale(Locale locale) {
@@ -172,16 +250,44 @@ public class ImportPanel extends DefaultViewComponent {
 		removeButton.setText(Language.I18N.getString("import.button.remove"));
 		importButton.setText(Language.I18N.getString("import.button.import"));
 		validateButton.setText(Language.I18N.getString("import.button.validate"));
+		importModeLabel.setText(Language.I18N.getString("import.mode"));
+		optionsLabel.setText(Language.I18N.getString("import.options"));
+		insertMode.setText(Language.I18N.getString("import.mode.insert"));
+		overwriteMode.setText(Language.I18N.getString("import.mode.overwrite"));
+		importAll.setText(Language.I18N.getString("import.insert.importAll"));
+		skipExisting.setText(Language.I18N.getString("import.insert.skipExisting"));
+		deleteExisting.setText(Language.I18N.getString("import.overwrite.deleteExisting"));
+		terminateExisting.setText(Language.I18N.getString("import.overwrite.terminateExisting"));
 		filterPanel.switchLocale(locale);
 	}
 
 	@Override
 	public void loadSettings() {
+		ImportMode mode = config.getImportConfig().getMode();
+		if (mode.getOperation() == OperationName.OVERWRITE) {
+			overwriteMode.setSelected(true);
+		} else {
+			insertMode.setSelected(true);
+		}
+
+		importAll.setSelected(mode.getInsertMode() == InsertMode.IMPORT_ALL);
+		skipExisting.setSelected(mode.getInsertMode() == InsertMode.SKIP_EXISTING);
+		deleteExisting.setSelected(mode.getOverwriteMode() == OverwriteMode.DELETE_EXISTING);
+		terminateExisting.setSelected(mode.getOverwriteMode() == OverwriteMode.TERMINATE_EXISTING);
+		switchOptionsPanel(insertMode.isSelected());
+
 		filterPanel.loadSettings();
 	}
 
 	@Override
 	public void setSettings() {
+		ImportMode mode = config.getImportConfig().getMode();
+		mode.setOperation(overwriteMode.isSelected() ? OperationName.OVERWRITE : OperationName.INSERT);
+		mode.setInsertMode(skipExisting.isSelected() ? InsertMode.SKIP_EXISTING : InsertMode.IMPORT_ALL);
+		mode.setOverwriteMode(terminateExisting.isSelected() ?
+				OverwriteMode.TERMINATE_EXISTING :
+				OverwriteMode.DELETE_EXISTING);
+
 		filterPanel.setSettings();
 	}
 

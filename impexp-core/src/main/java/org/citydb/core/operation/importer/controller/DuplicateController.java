@@ -35,7 +35,7 @@ import org.citydb.config.project.common.IdList;
 import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.CacheMode;
-import org.citydb.config.project.importer.DuplicateMode;
+import org.citydb.config.project.importer.OverwriteMode;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.file.input.AbstractArchiveInputFile;
@@ -132,7 +132,7 @@ public class DuplicateController implements EventHandler {
         eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.duplicates.check")));
 
         try {
-            duplicateLogger = new DuplicateLogger(config.getImportConfig().getDuplicates().getDuplicateLog(),
+            duplicateLogger = new DuplicateLogger(config.getImportConfig().getDuplicateLog(),
                     config.getDatabaseConfig().getActiveConnection());
             if (!duplicateLogger.isTemporary()) {
                 log.info("Log file of duplicate top-level features: " + duplicateLogger.getLogFilePath().toString());
@@ -207,7 +207,7 @@ public class DuplicateController implements EventHandler {
             DeleteConfig deleteConfig = new DeleteConfig();
             deleteConfig.setUseDeleteList(true);
             deleteConfig.setDeleteList(duplicateLogger.toIdList(IdColumnType.DATABASE_ID));
-            deleteConfig.setMode(config.getImportConfig().getDuplicates().getMode() == DuplicateMode.DELETE ?
+            deleteConfig.setMode(config.getImportConfig().getMode().getOverwriteMode() == OverwriteMode.DELETE_EXISTING ?
                     DeleteMode.DELETE :
                     DeleteMode.TERMINATE);
 

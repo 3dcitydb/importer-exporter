@@ -36,8 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "import")
 @XmlType(name = "ImportType", propOrder = {
+        "mode",
         "filter",
-        "duplicates",
         "continuation",
         "path",
         "generalOptions",
@@ -48,11 +48,12 @@ import javax.xml.bind.annotation.XmlType;
         "cityJSONOptions",
         "indexes",
         "importLog",
+        "duplicateLog",
         "resources"
 })
 public class ImportConfig {
+    private ImportMode mode;
     private ImportFilter filter;
-    private ImportDuplicates duplicates;
     private Continuation continuation;
     private Path path;
     @XmlElement(name = "general")
@@ -64,11 +65,12 @@ public class ImportConfig {
     private CityJSONOptions cityJSONOptions;
     private Index indexes;
     private ImportLog importLog;
+    private DuplicateLog duplicateLog;
     private ImportResources resources;
 
     public ImportConfig() {
+        mode = new ImportMode();
         filter = new ImportFilter();
-        duplicates = new ImportDuplicates();
         continuation = new Continuation();
         path = new Path();
         generalOptions = new GeneralOptions();
@@ -79,7 +81,18 @@ public class ImportConfig {
         cityJSONOptions = new CityJSONOptions();
         indexes = new Index();
         importLog = new ImportLog();
+        duplicateLog = new DuplicateLog();
         resources = new ImportResources();
+    }
+
+    public ImportMode getMode() {
+        return mode;
+    }
+
+    public void setMode(ImportMode mode) {
+        if (mode != null) {
+            this.mode = mode;
+        }
     }
 
     public ImportFilter getFilter() {
@@ -89,16 +102,6 @@ public class ImportConfig {
     public void setFilter(ImportFilter filter) {
         if (filter != null) {
             this.filter = filter;
-        }
-    }
-
-    public ImportDuplicates getDuplicates() {
-        return duplicates;
-    }
-
-    public void setDuplicates(ImportDuplicates duplicates) {
-        if (duplicates != null) {
-            this.duplicates = duplicates;
         }
     }
 
@@ -199,6 +202,16 @@ public class ImportConfig {
     public void setImportLog(ImportLog importLog) {
         if (importLog != null) {
             this.importLog = importLog;
+        }
+    }
+
+    public DuplicateLog getDuplicateLog() {
+        return duplicateLog;
+    }
+
+    public void setDuplicateLog(DuplicateLog duplicateLog) {
+        if (duplicateLog != null) {
+            this.duplicateLog = duplicateLog;
         }
     }
 

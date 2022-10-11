@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2022
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -25,40 +25,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.citydb.config.project.importer;
 
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "ImportDuplicatesType", propOrder = {
-        "mode",
-        "duplicateLog"
-})
-public class ImportDuplicates {
-    @XmlElement(required = true)
-    private DuplicateMode mode = DuplicateMode.IMPORT;
-    private DuplicateLog duplicateLog;
+@XmlType(name = "OverwriteModeType")
+@XmlEnum
+public enum OverwriteMode {
+    @XmlEnumValue("deleteExisting")
+    DELETE_EXISTING("deleteExisting"),
+    @XmlEnumValue("terminateExisting")
+    TERMINATE_EXISTING("terminateExisting");
 
-    public ImportDuplicates() {
-        duplicateLog = new DuplicateLog();
+    private final String value;
+
+    OverwriteMode(String v) {
+        value = v;
     }
 
-    public DuplicateMode getMode() {
-        return mode != null ? mode : DuplicateMode.IMPORT;
+    public String value() {
+        return value;
     }
 
-    public void setMode(DuplicateMode mode) {
-        this.mode = mode;
-    }
-
-    public DuplicateLog getDuplicateLog() {
-        return duplicateLog;
-    }
-
-    public void setDuplicateLog(DuplicateLog duplicateLog) {
-        if (duplicateLog != null) {
-            this.duplicateLog = duplicateLog;
+    public static OverwriteMode fromValue(String v) {
+        for (OverwriteMode c : OverwriteMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
         }
+
+        return DELETE_EXISTING;
     }
 }

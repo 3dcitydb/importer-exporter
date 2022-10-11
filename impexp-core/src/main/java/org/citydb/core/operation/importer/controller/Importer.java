@@ -32,8 +32,9 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.CacheMode;
-import org.citydb.config.project.importer.DuplicateMode;
 import org.citydb.config.project.importer.ImportList;
+import org.citydb.config.project.importer.InsertMode;
+import org.citydb.config.project.importer.OperationName;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractUtilAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo;
@@ -350,13 +351,13 @@ public class Importer implements EventHandler {
         }
 
         // process duplicate top-level features
-        if (shouldRun && config.getImportConfig().getDuplicates().getMode() != DuplicateMode.IMPORT) {
+        if (shouldRun && (config.getImportConfig().getMode().getOperation() != OperationName.INSERT
+                || config.getImportConfig().getMode().getInsertMode() != InsertMode.IMPORT_ALL)) {
             DuplicateController duplicateController = new DuplicateController(eventChannel);
             if (duplicateController.doCheck(files, filter) && shouldRun) {
-                if (config.getImportConfig().getDuplicates().getMode() == DuplicateMode.TERMINATE
-                        || config.getImportConfig().getDuplicates().getMode() == DuplicateMode.DELETE) {
+                if (config.getImportConfig().getMode().getOperation() == OperationName.OVERWRITE) {
                     duplicateController.doDelete();
-                } else if (config.getImportConfig().getDuplicates().getMode() == DuplicateMode.SKIP) {
+                } else if (config.getImportConfig().getMode().getInsertMode() == InsertMode.SKIP_EXISTING) {
                     log.info("Skipping duplicate top-level features from import.");
                     duplicateListCacheTable = duplicateController.createDuplicateList(cacheTableManager);
                     if (duplicateListCacheTable != null) {

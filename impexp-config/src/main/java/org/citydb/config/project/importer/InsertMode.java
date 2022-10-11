@@ -31,21 +31,17 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "DuplicateModeType")
+@XmlType(name = "InsertModeType")
 @XmlEnum
-public enum DuplicateMode {
-    @XmlEnumValue("import")
-    IMPORT("import"),
-    @XmlEnumValue("skip")
-    SKIP("skip"),
-    @XmlEnumValue("terminate")
-    TERMINATE("terminate"),
-    @XmlEnumValue("delete")
-    DELETE("delete");
+public enum InsertMode {
+    @XmlEnumValue("importAll")
+    IMPORT_ALL("importAll"),
+    @XmlEnumValue("skipExisting")
+    SKIP_EXISTING("skipExisting");
 
     private final String value;
 
-    DuplicateMode(String v) {
+    InsertMode(String v) {
         value = v;
     }
 
@@ -53,13 +49,13 @@ public enum DuplicateMode {
         return value;
     }
 
-    public static DuplicateMode fromValue(String v) {
-        for (DuplicateMode c : DuplicateMode.values()) {
+    public static InsertMode fromValue(String v) {
+        for (InsertMode c : InsertMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
         }
 
-        return IMPORT;
+        return IMPORT_ALL;
     }
 }
