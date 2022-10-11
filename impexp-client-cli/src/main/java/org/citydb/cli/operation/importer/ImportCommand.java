@@ -78,6 +78,9 @@ public class ImportCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false, heading = "Metadata options:%n")
     private MetadataOption metadataOption;
 
+    @CommandLine.ArgGroup(exclusive = false, heading = "Handling of conflicting top-level features:%n")
+    private DuplicateModeOption duplicateModeOption;
+
     @CommandLine.ArgGroup(exclusive = false, heading = "Import filter options:%n")
     private FilterOption filterOption;
 
@@ -176,6 +179,11 @@ public class ImportCommand extends CliCommand {
 
         if (metadataOption != null) {
             importConfig.setContinuation(metadataOption.toContinuation());
+        }
+
+        if (duplicateModeOption != null) {
+            importConfig.setMode(duplicateModeOption.toImportMode());
+            importConfig.setDuplicateLog(duplicateModeOption.toDuplicateLog());
         }
 
         if (filterOption != null) {
