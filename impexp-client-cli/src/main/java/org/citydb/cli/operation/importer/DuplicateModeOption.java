@@ -43,8 +43,7 @@ public class DuplicateModeOption implements CliOption {
     private Mode mode;
 
     @CommandLine.Option(names = "--duplicate-log", paramLabel = "<file>",
-            description = "Record already existing top-level features to this file. Use only if duplicate mode " +
-                    "is not set to import_all.")
+            description = "Record already existing top-level features to this file.")
     private Path duplicateLogFile;
 
     public ImportMode toImportMode() {

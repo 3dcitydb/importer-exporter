@@ -351,8 +351,11 @@ public class Importer implements EventHandler {
         }
 
         // process duplicate top-level features
-        if (shouldRun && (config.getImportConfig().getMode().getOperation() != OperationName.INSERT
-                || config.getImportConfig().getMode().getInsertMode() != InsertMode.IMPORT_ALL)) {
+        boolean checkForDuplicates = config.getImportConfig().getMode().getOperation() != OperationName.INSERT
+                || config.getImportConfig().getMode().getInsertMode() != InsertMode.IMPORT_ALL
+                || config.getImportConfig().getDuplicateLog().isSetLogDuplicates();
+
+        if (shouldRun && checkForDuplicates) {
             DuplicateController duplicateController = new DuplicateController(eventChannel);
             if (duplicateController.doCheck(files, filter) && shouldRun) {
                 if (config.getImportConfig().getMode().getOperation() == OperationName.OVERWRITE) {
@@ -364,6 +367,8 @@ public class Importer implements EventHandler {
                         DuplicateListFilter duplicateListFilter = new DuplicateListFilter(duplicateListCacheTable);
                         filter.getSelectionFilter().setDuplicateListFilter(duplicateListFilter);
                     }
+                } else if (config.getImportConfig().getMode().getInsertMode() == InsertMode.IMPORT_ALL) {
+                    log.info("Duplicate top-level features are imported into the database.");
                 }
             }
         }
