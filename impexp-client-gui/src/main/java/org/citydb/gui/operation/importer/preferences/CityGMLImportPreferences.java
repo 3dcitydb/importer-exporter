@@ -56,7 +56,7 @@ public class CityGMLImportPreferences extends DefaultPreferences {
 
 		rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
 		rootEntry.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ImportLogPanel(config)));
+		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ImportLogsPanel(config)));
 		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
 	}
 
