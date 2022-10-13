@@ -699,7 +699,7 @@ public class DatabasePanel extends DefaultViewComponent implements ConnectionVie
 		String name = databaseConnection.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("db.label.copyConnection") + ".*$", "");
 		String copy = name + " - " + Language.I18N.getString("db.label.copyConnection");
 		for (DatabaseConnection conn : databaseConfig.getConnections())
-			if (conn.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("db.label.copyConnection") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
+			if (conn.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("db.label.copyConnection") + ".*$", "").equalsIgnoreCase(name))
 				nr++;
 
 		if (nr > 1)

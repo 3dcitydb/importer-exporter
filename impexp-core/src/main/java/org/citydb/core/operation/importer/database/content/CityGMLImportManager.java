@@ -727,7 +727,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	private void doExecuteBatch(String tableName) throws CityGMLImportException, SQLException {
-		// check whether whether we deal with a predefined 3dcitydb table
+		// check whether we deal with a predefined 3dcitydb table
 		// in which case we pick a predefined importer to execute the batch
 		TableEnum table = TableEnum.fromTableName(tableName);
 		if (table != TableEnum.UNDEFINED) {

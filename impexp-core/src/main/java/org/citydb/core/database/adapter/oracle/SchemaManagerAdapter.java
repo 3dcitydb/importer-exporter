@@ -33,6 +33,7 @@ import org.citydb.core.database.adapter.AbstractSchemaManagerAdapter;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 
@@ -94,6 +95,6 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 
 	@Override
 	public String formatSchema(String schema) {
-		return schema != null ? schema.trim().toUpperCase() : null;
+		return schema != null ? schema.trim().toUpperCase(Locale.ROOT) : null;
 	}
 }

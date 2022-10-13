@@ -347,7 +347,7 @@ public class Util {
 
 	private static String getFileExtension(String file, boolean checkSeparator) {
 		int extension = indexOfExtension(file, checkSeparator);
-		return extension > 0 ? file.substring(extension + 1).toLowerCase() : "";
+		return extension > 0 ? file.substring(extension + 1).toLowerCase(Locale.ROOT) : "";
 	}
 
 	public static String stripFileExtension(String file) {

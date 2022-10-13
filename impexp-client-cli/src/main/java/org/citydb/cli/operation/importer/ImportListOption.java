@@ -36,6 +36,7 @@ import picocli.CommandLine;
 
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class ImportListOption implements CliOption {
@@ -79,7 +80,7 @@ public class ImportListOption implements CliOption {
         }
 
         if (modeOption != null) {
-            switch (modeOption.toLowerCase()) {
+            switch (modeOption.toLowerCase(Locale.ROOT)) {
                 case "import":
                     mode = ImportListMode.IMPORT;
                     break;

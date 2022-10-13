@@ -37,7 +37,7 @@ import java.lang.reflect.Proxy;
 import java.util.Locale;
 
 public class OSXAdapter implements InvocationHandler {
-    public static final boolean IS_MAC_OS = System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac");
+    public static final boolean IS_MAC_OS = System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("mac");
     private static Object macOSApplication;
 
     protected Object targetObject;

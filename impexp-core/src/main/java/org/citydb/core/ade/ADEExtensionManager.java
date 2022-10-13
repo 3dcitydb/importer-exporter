@@ -140,7 +140,7 @@ public class ADEExtensionManager {
 				if (extensionMapping.isSetMetadata()) {
 					Metadata metadata = extensionMapping.getMetadata();
 					extension.setMetadata(metadata);
-					extensionsByTablePrefix.put(metadata.getDBPrefix().toLowerCase(), extension);
+					extensionsByTablePrefix.put(metadata.getDBPrefix().toLowerCase(Locale.ROOT), extension);
 				} else {
 					throw new SchemaMappingException("The schema mapping does not provide metadata.");
 				}
@@ -279,7 +279,7 @@ public class ADEExtensionManager {
 	public ADEExtension getExtensionByTableName(String tableName) {
 		int index = tableName.indexOf('_');
 		if (index > 0) {
-			String prefix = tableName.substring(0, index).toLowerCase();
+			String prefix = tableName.substring(0, index).toLowerCase(Locale.ROOT);
 			return extensionsByTablePrefix.get(prefix);
 		}
 

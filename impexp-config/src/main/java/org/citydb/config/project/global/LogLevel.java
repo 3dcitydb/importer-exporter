@@ -30,6 +30,7 @@ package org.citydb.config.project.global;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
+import java.util.Locale;
 
 @XmlType(name = "LogLevelType")
 @XmlEnum
@@ -45,6 +46,6 @@ public enum LogLevel {
 
     @Override
     public String toString() {
-        return name().toLowerCase();
+        return name().toLowerCase(Locale.ROOT);
     }
 }

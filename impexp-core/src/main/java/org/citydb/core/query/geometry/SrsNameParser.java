@@ -31,7 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SrsNameParser {
-	private Matcher matcher;
+	private final Matcher matcher;
 	private Pattern httpPattern;
 	private Pattern urnPattern;
 	private Pattern epsgPattern;
@@ -71,9 +71,9 @@ public class SrsNameParser {
 		
 		matcher.reset(srsName).usePattern(urnPattern);
 		if (matcher.matches()) {
-			if (matcher.group(1).toLowerCase().equals("epsg")) {
+			if (matcher.group(1).equalsIgnoreCase("epsg")) {
 				try {
-					return Integer.valueOf(matcher.group(2));
+					return Integer.parseInt(matcher.group(2));
 				} catch (NumberFormatException e) {
 					throw new SrsParseException("Failed to interpret EPSG code from the srsName '" + srsName + "'.");
 				}		
@@ -90,9 +90,9 @@ public class SrsNameParser {
 		
 		matcher.reset(srsName).usePattern(httpPattern);
 		if (matcher.matches()) {
-			if (matcher.group(1).toLowerCase().equals("epsg")) {
+			if (matcher.group(1).equalsIgnoreCase("epsg")) {
 				try {
-					return Integer.valueOf(matcher.group(2));
+					return Integer.parseInt(matcher.group(2));
 				} catch (NumberFormatException e) {
 					throw new SrsParseException("Failed to interpret EPSG code from the srsName '" + srsName + "'.");
 				}
@@ -110,7 +110,7 @@ public class SrsNameParser {
 		matcher.reset(srsName).usePattern(epsgPattern);
 		if (matcher.matches()) {
 			try {
-				return Integer.valueOf(matcher.group(1));
+				return Integer.parseInt(matcher.group(1));
 			} catch (NumberFormatException e) {
 				throw new SrsParseException("Failed to interpret EPSG code from the srsName '" + srsName + "'.");
 			}	

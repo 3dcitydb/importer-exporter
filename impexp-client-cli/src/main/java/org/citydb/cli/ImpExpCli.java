@@ -537,7 +537,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         if (Files.exists(path)) {
             try (Stream<Path> stream = Files.walk(path)
                     .filter(Files::isRegularFile)
-                    .filter(file -> file.getFileName().toString().toLowerCase().endsWith(".jar"))) {
+                    .filter(file -> file.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar"))) {
                 stream.forEach(classLoader::addPath);
             }
         }
@@ -613,12 +613,12 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     private String[] addDefaultCommand(CommandLine cmd, String[] args) {
         Set<String> subCommands = cmd.getSubcommands().keySet().stream()
-                .map(String::toLowerCase)
+                .map(command -> command.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toSet());
 
         CommandLine.Model.CommandSpec commandSpec = cmd.getCommandSpec().mixins().get("mixinStandardHelpOptions");
         for (String arg : args) {
-            if (subCommands.contains(arg.toLowerCase())
+            if (subCommands.contains(arg.toLowerCase(Locale.ROOT))
                     || (commandSpec != null
                     && commandSpec.findOption(arg) != null)) {
                 return args;

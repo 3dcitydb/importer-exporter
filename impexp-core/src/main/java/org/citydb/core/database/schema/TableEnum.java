@@ -27,6 +27,8 @@
  */
 package org.citydb.core.database.schema;
 
+import java.util.Locale;
+
 public enum TableEnum {
 	UNDEFINED,
 	ADDRESS,
@@ -96,8 +98,8 @@ public enum TableEnum {
 	}
 	
 	public static TableEnum fromTableName(String name) {
-		name = name.toLowerCase();
-		
+		name = name.toLowerCase(Locale.ROOT);
+
 		for (TableEnum table : TableEnum.values()) {
 			if (table.getName().equals(name)) {
 				return table;
@@ -108,7 +110,7 @@ public enum TableEnum {
 	}
 	
 	public String getName() {
-		return super.toString().toLowerCase();
+		return super.toString().toLowerCase(Locale.ROOT);
 	}
 
 	@Override

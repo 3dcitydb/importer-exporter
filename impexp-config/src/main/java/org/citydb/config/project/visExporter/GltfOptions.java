@@ -56,7 +56,7 @@ public class GltfOptions {
         useDracoCompression = true;
 
         pathToConverter = "contribs" + File.separator + "collada2gltf";
-        String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
+        String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
         if (osName.contains("windows"))
             pathToConverter += File.separator + "COLLADA2GLTF-v2.1.4-windows-Release-x64" + File.separator + "COLLADA2GLTF-bin.exe";
         else if (osName.contains("mac"))

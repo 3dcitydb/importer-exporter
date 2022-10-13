@@ -35,6 +35,7 @@ import org.citydb.config.project.visExporter.DisplayForms;
 import org.citydb.config.project.visExporter.VisExportConfig;
 import picocli.CommandLine;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -107,7 +108,7 @@ public class DisplayOption implements CliOption {
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
         if (lodOption != null) {
-            switch (lodOption.toLowerCase()) {
+            switch (lodOption.toLowerCase(Locale.ROOT)) {
                 case "0":
                 case "1":
                 case "2":

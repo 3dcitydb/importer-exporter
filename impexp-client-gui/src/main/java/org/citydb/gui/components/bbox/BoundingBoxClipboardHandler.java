@@ -51,7 +51,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	private BoundingBoxClipboardHandler() {
 		// just to thwart instantiation
 		config = ObjectRegistry.getInstance().getConfig();
-		isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+		isMac = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("mac");
 		clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 	}
 
@@ -132,7 +132,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 				String value = pair[1].trim();
 
 				if (key != null && value != null && key.length() > 0 && value.length() > 0) {
-					if ("bbox".equals(key.toLowerCase())) {
+					if ("bbox".equalsIgnoreCase(key)) {
 						String[] coords = value.split("[,|;|\\s]+");
 
 						if (coords != null && coords.length == 4) {
@@ -148,7 +148,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 								//
 							}
 						}
-					} else if ("3dcitydb_srs".equals(key.toLowerCase())) {
+					} else if ("3dcitydb_srs".equalsIgnoreCase(key)) {
 						for (DatabaseSrs srs : config.getDatabaseConfig().getReferenceSystems()) {
 							if (value.equals(srs.getId())) {
 								bbox.setSrs(srs);

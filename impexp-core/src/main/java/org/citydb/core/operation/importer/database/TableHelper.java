@@ -32,11 +32,8 @@ import org.citydb.core.database.schema.mapping.*;
 import org.citydb.core.operation.importer.database.content.*;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TableHelper {
@@ -74,7 +71,7 @@ public class TableHelper {
 
 		weightedTables = weights.entrySet().stream()
 				.sorted(Entry.<String, Integer>comparingByValue().reversed())
-				.map(e -> e.getKey())
+				.map(Entry::getKey)
 				.collect(Collectors.toList());
 
 		// clean up
@@ -88,7 +85,7 @@ public class TableHelper {
 	public List<String> getCommitOrder(String table) {
 		Set<String> dependencies = getTransitiveDependencies(getTableName(table));		
 		return weightedTables.stream()
-				.filter(t -> dependencies.contains(t))
+				.filter(dependencies::contains)
 				.collect(Collectors.toList());
 	}
 
@@ -207,12 +204,7 @@ public class TableHelper {
 		if (dependency.equals(table))
 			return;
 
-		Set<String> dependencies = dependencyMap.get(table);
-		if (dependencies == null) {
-			dependencies = new HashSet<>();
-			dependencyMap.put(table, dependencies);
-		}
-
+		Set<String> dependencies = dependencyMap.computeIfAbsent(table, k -> new HashSet<>());
 		dependencies.add(dependency);
 	}
 
@@ -220,7 +212,7 @@ public class TableHelper {
 		if (table.equals(MappingConstants.TARGET_TABLE_TOKEN))
 			table = "cityobject";
 
-		return table.toLowerCase();
+		return table.toLowerCase(Locale.ROOT);
 	}
 	
 	public Class<? extends DBImporter> getImporterClass(TableEnum table) throws SQLException {

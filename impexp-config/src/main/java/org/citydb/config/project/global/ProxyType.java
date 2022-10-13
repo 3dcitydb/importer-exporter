@@ -30,6 +30,7 @@ package org.citydb.config.project.global;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
+import java.util.Locale;
 
 @XmlType(name = "ProxyType")
 @XmlEnum
@@ -51,7 +52,7 @@ public enum ProxyType {
 
     public static ProxyType fromProtocol(String protocol) {
         if (protocol != null) {
-            String p = protocol.toLowerCase().trim();
+            String p = protocol.toLowerCase(Locale.ROOT).trim();
             for (ProxyType type : ProxyType.values()) {
                 for (String tmp : type.protocols) {
                     if (tmp.equals(p))

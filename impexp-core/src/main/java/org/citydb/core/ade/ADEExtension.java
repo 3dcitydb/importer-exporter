@@ -40,6 +40,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 public abstract class ADEExtension {
@@ -126,7 +127,7 @@ public abstract class ADEExtension {
 			Path path = basePath.resolve(SCHEMA_MAPPING_PATH);
 			if (Files.exists(path)) {
 				try (Stream<Path> stream = Files.walk(path)
-						.filter(candidate -> candidate.getFileName().toString().toLowerCase().endsWith(".xml"))) {
+						.filter(candidate -> candidate.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".xml"))) {
 					stream.forEach(candidates::add);
 				}
 			}
