@@ -52,7 +52,7 @@ import javax.xml.bind.annotation.XmlType;
         "resources"
 })
 public class ImportConfig {
-    private ImportMode mode;
+    private ImportMode mode = ImportMode.IMPORT_ALL;
     private ImportFilter filter;
     private Continuation continuation;
     private Path path;
@@ -69,7 +69,6 @@ public class ImportConfig {
     private ImportResources resources;
 
     public ImportConfig() {
-        mode = new ImportMode();
         filter = new ImportFilter();
         continuation = new Continuation();
         path = new Path();
@@ -86,13 +85,11 @@ public class ImportConfig {
     }
 
     public ImportMode getMode() {
-        return mode;
+        return mode != null ? mode : ImportMode.IMPORT_ALL;
     }
 
     public void setMode(ImportMode mode) {
-        if (mode != null) {
-            this.mode = mode;
-        }
+        this.mode = mode;
     }
 
     public ImportFilter getFilter() {

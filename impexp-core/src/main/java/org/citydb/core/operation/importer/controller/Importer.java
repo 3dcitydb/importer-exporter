@@ -33,8 +33,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.CacheMode;
 import org.citydb.config.project.importer.ImportList;
-import org.citydb.config.project.importer.InsertMode;
-import org.citydb.config.project.importer.OperationName;
+import org.citydb.config.project.importer.ImportMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractUtilAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo;
@@ -351,24 +350,26 @@ public class Importer implements EventHandler {
         }
 
         // process duplicate top-level features
-        boolean checkForDuplicates = config.getImportConfig().getMode().getOperation() != OperationName.INSERT
-                || config.getImportConfig().getMode().getInsertMode() != InsertMode.IMPORT_ALL
-                || config.getImportConfig().getDuplicateLog().isSetLogDuplicates();
-
-        if (shouldRun && checkForDuplicates) {
+        if (shouldRun && (config.getImportConfig().getMode() != ImportMode.IMPORT_ALL
+                || config.getImportConfig().getDuplicateLog().isSetLogDuplicates())) {
             DuplicateController duplicateController = new DuplicateController(eventChannel);
             if (duplicateController.doCheck(files, filter) && shouldRun) {
-                if (config.getImportConfig().getMode().getOperation() == OperationName.OVERWRITE) {
-                    duplicateController.doDelete();
-                } else if (config.getImportConfig().getMode().getInsertMode() == InsertMode.SKIP_EXISTING) {
-                    log.info("Skipping top-level features that already exist in the database.");
-                    duplicateListCacheTable = duplicateController.createDuplicateList(cacheTableManager);
-                    if (duplicateListCacheTable != null) {
-                        DuplicateListFilter duplicateListFilter = new DuplicateListFilter(duplicateListCacheTable);
-                        filter.getSelectionFilter().setDuplicateListFilter(duplicateListFilter);
-                    }
-                } else if (config.getImportConfig().getMode().getInsertMode() == InsertMode.IMPORT_ALL) {
-                    log.info("Duplicate top-level features are also imported.");
+                switch (config.getImportConfig().getMode()) {
+                    case IMPORT_ALL:
+                        log.info("Duplicate top-level features are also imported.");
+                        break;
+                    case SKIP_EXISTING:
+                        log.info("Skipping top-level features that already exist in the database.");
+                        duplicateListCacheTable = duplicateController.createDuplicateList(cacheTableManager);
+                        if (duplicateListCacheTable != null) {
+                            DuplicateListFilter duplicateListFilter = new DuplicateListFilter(duplicateListCacheTable);
+                            filter.getSelectionFilter().setDuplicateListFilter(duplicateListFilter);
+                        }
+                        break;
+                    case DELETE_EXISTING:
+                    case TERMINATE_EXISTING:
+                        duplicateController.doDelete();
+                        break;
                 }
             }
         }

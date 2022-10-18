@@ -25,44 +25,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.citydb.config.project.importer;
 
-import javax.xml.bind.annotation.XmlElement;
+import org.citydb.config.i18n.Language;
+
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "ImportModeType", propOrder = {
-        "operation",
-        "insertMode",
-        "overwriteMode"
-})
-public class ImportMode {
-    @XmlElement(required = true)
-    private OperationName operation = OperationName.INSERT;
-    private InsertMode insertMode = InsertMode.IMPORT_ALL;
-    private OverwriteMode overwriteMode = OverwriteMode.DELETE_EXISTING;
+@XmlType(name = "ImportModeType")
+@XmlEnum
+public enum ImportMode {
+    @XmlEnumValue("importAll")
+    IMPORT_ALL("importAll"),
+    @XmlEnumValue("skipExisting")
+    SKIP_EXISTING("skipExisting"),
+    @XmlEnumValue("deleteExisting")
+    DELETE_EXISTING("deleteExisting"),
+    @XmlEnumValue("terminateExisting")
+    TERMINATE_EXISTING("terminateExisting");
 
-    public OperationName getOperation() {
-        return operation != null ? operation : OperationName.INSERT;
+    private final String value;
+
+    ImportMode(String v) {
+        value = v;
     }
 
-    public void setOperation(OperationName operation) {
-        this.operation = operation;
+    public String value() {
+        return value;
     }
 
-    public InsertMode getInsertMode() {
-        return insertMode != null ? insertMode : InsertMode.IMPORT_ALL;
+    public static ImportMode fromValue(String v) {
+        for (ImportMode c : ImportMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+
+        return IMPORT_ALL;
     }
 
-    public void setInsertMode(InsertMode insertMode) {
-        this.insertMode = insertMode;
-    }
-
-    public OverwriteMode getOverwriteMode() {
-        return overwriteMode != null ? overwriteMode : OverwriteMode.DELETE_EXISTING;
-    }
-
-    public void setOverwriteMode(OverwriteMode overwriteMode) {
-        this.overwriteMode = overwriteMode;
+    @Override
+    public String toString() {
+        switch (this) {
+            case IMPORT_ALL:
+                return Language.I18N.getString("import.mode.importAll");
+            case SKIP_EXISTING:
+                return Language.I18N.getString("import.mode.skipExisting");
+            case DELETE_EXISTING:
+                return Language.I18N.getString("import.mode.deleteExisting");
+            case TERMINATE_EXISTING:
+                return Language.I18N.getString("import.mode.terminateExisting");
+            default:
+                return "";
+        }
     }
 }

@@ -36,7 +36,7 @@ import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.CacheMode;
 import org.citydb.config.project.importer.Continuation;
-import org.citydb.config.project.importer.OverwriteMode;
+import org.citydb.config.project.importer.ImportMode;
 import org.citydb.core.file.FileType;
 import org.citydb.core.file.InputFile;
 import org.citydb.core.file.input.AbstractArchiveInputFile;
@@ -208,7 +208,7 @@ public class DuplicateController implements EventHandler {
             DeleteConfig deleteConfig = new DeleteConfig();
             deleteConfig.setUseDeleteList(true);
             deleteConfig.setDeleteList(duplicateLogger.toIdList(IdColumnType.DATABASE_ID));
-            deleteConfig.setMode(config.getImportConfig().getMode().getOverwriteMode() == OverwriteMode.DELETE_EXISTING ?
+            deleteConfig.setMode(config.getImportConfig().getMode() == ImportMode.DELETE_EXISTING ?
                     DeleteMode.DELETE :
                     DeleteMode.TERMINATE);
 

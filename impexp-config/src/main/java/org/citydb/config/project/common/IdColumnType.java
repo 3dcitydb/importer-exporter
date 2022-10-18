@@ -61,7 +61,6 @@ public enum IdColumnType {
         return RESOURCE_ID;
     }
 
-
     @Override
     public String toString() {
         switch (this) {
