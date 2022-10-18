@@ -32,6 +32,7 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.importer.ImportFilter;
+import org.citydb.config.project.importer.ImportMode;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.core.database.DatabaseController;
 import org.citydb.core.operation.importer.CityGMLImportException;
@@ -59,10 +60,8 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ImportPanel extends DefaultViewComponent {
@@ -77,6 +76,8 @@ public class ImportPanel extends DefaultViewComponent {
 	private JButton removeButton;
 	private JButton importButton;
 	private JButton validateButton;
+	private JLabel importModeLabel;
+	private JComboBox<ImportMode> importMode;
 	private FilterPanel filterPanel;
 
 	public ImportPanel(ViewController viewController, Config config) {
@@ -94,6 +95,10 @@ public class ImportPanel extends DefaultViewComponent {
 		filterPanel = new FilterPanel(viewController, config);
 		importButton = new JButton();
 		validateButton = new JButton();
+
+		importModeLabel = new JLabel();
+		importMode = new JComboBox<>();
+		Arrays.stream(ImportMode.values()).forEach(importMode::addItem);
 
 		FileListTransferHandler transferHandler = new FileListTransferHandler(fileList)
 				.withFilesAddedHandler(model -> config.getImportConfig().getPath().setLastUsedPath(model.get(0).getAbsolutePath()))
@@ -138,17 +143,28 @@ public class ImportPanel extends DefaultViewComponent {
 
         JPanel filePanel = new JPanel();
         filePanel.setLayout(new GridBagLayout());
-        JScrollPane fileScroll = new JScrollPane(fileList);
-		fileScroll.setMinimumSize(fileList.getPreferredScrollableViewportSize());
-		fileScroll.setPreferredSize(fileList.getPreferredScrollableViewportSize());
+		{
+			JScrollPane fileScroll = new JScrollPane(fileList);
+			fileScroll.setMinimumSize(fileList.getPreferredScrollableViewportSize());
+			fileScroll.setPreferredSize(fileList.getPreferredScrollableViewportSize());
 
-        filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 2, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
-		filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
-		filePanel.add(removeButton, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 5, 20, 0));
+			filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 2, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
+			filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+			filePanel.add(removeButton, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 5, 20, 0));
+		}
+
+		JPanel importModePanel = new JPanel();
+		importModePanel.setLayout(new GridBagLayout());
+		{
+			importModePanel.add(importModeLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+			importModePanel.add(importMode, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+		}
 
         JPanel view = new ScrollablePanel(true, false);
         view.setLayout(new GridBagLayout());
-		view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
+		{
+			view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
+		}
 
         JScrollPane scrollPane = new JScrollPane(view);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -156,12 +172,15 @@ public class ImportPanel extends DefaultViewComponent {
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridBagLayout());
-        buttonPanel.add(importButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
-        buttonPanel.add(validateButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
+		{
+			buttonPanel.add(importButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
+			buttonPanel.add(validateButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
+		}
 
         add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
-        add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(buttonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
+		add(importModePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 10, 10, 10));
+        add(scrollPane, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(buttonPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
 
 		PopupMenuDecorator.getInstance().decorate(fileList);
     }
@@ -172,16 +191,20 @@ public class ImportPanel extends DefaultViewComponent {
 		removeButton.setText(Language.I18N.getString("import.button.remove"));
 		importButton.setText(Language.I18N.getString("import.button.import"));
 		validateButton.setText(Language.I18N.getString("import.button.validate"));
+		importModeLabel.setText(Language.I18N.getString("import.mode"));
+		importMode.updateUI();
 		filterPanel.switchLocale(locale);
 	}
 
 	@Override
 	public void loadSettings() {
+		importMode.setSelectedItem(config.getImportConfig().getMode());
 		filterPanel.loadSettings();
 	}
 
 	@Override
 	public void setSettings() {
+		config.getImportConfig().setMode((ImportMode) importMode.getSelectedItem());
 		filterPanel.setSettings();
 	}
 

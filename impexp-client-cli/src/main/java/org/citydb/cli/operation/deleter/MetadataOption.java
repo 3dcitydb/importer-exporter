@@ -46,8 +46,6 @@ public class MetadataOption implements CliOption {
             description = "Reason for deleting the data.")
     private String reasonForUpdate;
 
-    private Continuation continuation;
-
     public Continuation toContinuation() {
         Continuation continuation = new Continuation();
 

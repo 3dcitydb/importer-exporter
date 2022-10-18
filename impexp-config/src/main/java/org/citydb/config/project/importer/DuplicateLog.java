@@ -25,38 +25,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.core.operation.common.cache.model;
+package org.citydb.config.project.importer;
 
-public enum CacheTableModel {
-	// provide a unique id for the tmp table
-	// that does not extend 6 chars!
-	OBJECT_GMLID("OID"),
-	GEOMETRY_GMLID("GID"),
-	SURFACE_GEOMETRY("SG"),
-	SOLID_GEOMETRY("SOG"),
-	BASIC("BA"),
-	LINEAR_RING("LR"),
-	TEXTURE_COORD_LIST("TC"),
-	TEXTUREPARAM("TP"),
-	TEXTUREASSOCIATION("TA"),
-	TEXTUREASSOCIATION_TARGET("TAT"),
-	TEXTURE_FILE_ID("TID"),
-	TEXTURE_FILE("TF"),
-	SURFACE_DATA_TO_TEX_IMAGE("STT"),
-	LIBRARY_OBJECT("LO"),
-	DEPRECATED_MATERIAL("DP"),
-	GROUP_TO_CITYOBJECT("GTC"),
-	GLOBAL_APPEARANCE("GA"),
-	ID_LIST("IDL"),
-	DUPLICATE_LIST("DUL");
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
-	private final String value;
+@XmlType(name = "DuplicateLogType", propOrder = {
+        "logDuplicates",
+        "logFile"
+})
+public class DuplicateLog {
+    @XmlElement(required = true, defaultValue = "false")
+    private Boolean logDuplicates = false;
+    private String logFile;
 
-	CacheTableModel(String v) {
-        value = v;
+    public boolean isSetLogDuplicates() {
+        return logDuplicates != null ? logDuplicates : false;
     }
 
-    public String value() {
-        return value;
+    public Boolean getLogDuplicates() {
+        return logDuplicates;
+    }
+
+    public void setLogDuplicates(Boolean logDuplicates) {
+        this.logDuplicates = logDuplicates;
+    }
+
+    public boolean isSetLogFile() {
+        return logFile != null;
+    }
+
+    public String getLogFile() {
+        return logFile;
+    }
+
+    public void setLogFile(String logFile) {
+        if (logFile != null && !logFile.isEmpty()) {
+            this.logFile = logFile;
+        }
     }
 }

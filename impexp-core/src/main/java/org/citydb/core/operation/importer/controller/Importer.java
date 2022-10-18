@@ -33,6 +33,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.CacheMode;
 import org.citydb.config.project.importer.ImportList;
+import org.citydb.config.project.importer.ImportMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.adapter.AbstractUtilAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo;
@@ -65,6 +66,7 @@ import org.citydb.core.operation.importer.concurrent.DBImportXlinkWorkerFactory;
 import org.citydb.core.operation.importer.database.xlink.resolver.DBXlinkSplitter;
 import org.citydb.core.operation.importer.filter.CityGMLFilter;
 import org.citydb.core.operation.importer.filter.CityGMLFilterBuilder;
+import org.citydb.core.operation.importer.filter.selection.id.DuplicateListFilter;
 import org.citydb.core.operation.importer.reader.FeatureReadException;
 import org.citydb.core.operation.importer.reader.FeatureReader;
 import org.citydb.core.operation.importer.reader.FeatureReaderFactory;
@@ -121,6 +123,7 @@ public class Importer implements EventHandler {
     private ImportLogger importLogger;
     private CacheTableManager cacheTableManager;
     private CacheTable importListCacheTable;
+    private CacheTable duplicateListCacheTable;
 
     public Importer() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
@@ -307,7 +310,6 @@ public class Importer implements EventHandler {
                 && config.getImportConfig().getFilter().getImportList().hasFiles()) {
             log.info("Loading import list into local cache...");
 
-            // create local cache manager
             try {
                 importListCacheTable = cacheTableManager.createCacheTable(CacheTableModel.ID_LIST, CacheMode.LOCAL);
             } catch (SQLException e) {
@@ -345,6 +347,31 @@ public class Importer implements EventHandler {
             filter = builder.buildCityGMLFilter(config.getImportConfig().getFilter(), importListCacheTable);
         } catch (FilterException e) {
             throw new CityGMLImportException("Failed to build the import filter.", e);
+        }
+
+        // process duplicate top-level features
+        if (shouldRun && (config.getImportConfig().getMode() != ImportMode.IMPORT_ALL
+                || config.getImportConfig().getDuplicateLog().isSetLogDuplicates())) {
+            DuplicateController duplicateController = new DuplicateController(eventChannel);
+            if (duplicateController.doCheck(files, filter) && shouldRun) {
+                switch (config.getImportConfig().getMode()) {
+                    case IMPORT_ALL:
+                        log.info("Duplicate top-level features are also imported.");
+                        break;
+                    case SKIP_EXISTING:
+                        log.info("Skipping top-level features that already exist in the database.");
+                        duplicateListCacheTable = duplicateController.createDuplicateList(cacheTableManager);
+                        if (duplicateListCacheTable != null) {
+                            DuplicateListFilter duplicateListFilter = new DuplicateListFilter(duplicateListCacheTable);
+                            filter.getSelectionFilter().setDuplicateListFilter(duplicateListFilter);
+                        }
+                        break;
+                    case DELETE_EXISTING:
+                    case TERMINATE_EXISTING:
+                        duplicateController.doDelete();
+                        break;
+                }
+            }
         }
 
         // create reader factory builder
@@ -593,7 +620,8 @@ public class Importer implements EventHandler {
                 if (cacheTableManager != null) {
                     try {
                         log.info("Cleaning temporary cache.");
-                        cacheTableManager.dropIf(table -> table != importListCacheTable);
+                        cacheTableManager.dropIf(table -> table != importListCacheTable
+                                && table != duplicateListCacheTable);
                     } catch (SQLException e) {
                         setException("Failed to clean the temporary cache.", e);
                         shouldRun = false;

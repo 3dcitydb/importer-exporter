@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "import")
 @XmlType(name = "ImportType", propOrder = {
+        "mode",
         "filter",
         "continuation",
         "path",
@@ -47,9 +48,11 @@ import javax.xml.bind.annotation.XmlType;
         "cityJSONOptions",
         "indexes",
         "importLog",
+        "duplicateLog",
         "resources"
 })
 public class ImportConfig {
+    private ImportMode mode = ImportMode.IMPORT_ALL;
     private ImportFilter filter;
     private Continuation continuation;
     private Path path;
@@ -62,21 +65,41 @@ public class ImportConfig {
     private CityJSONOptions cityJSONOptions;
     private Index indexes;
     private ImportLog importLog;
+    private DuplicateLog duplicateLog;
     private ImportResources resources;
 
     public ImportConfig() {
+        filter = new ImportFilter();
         continuation = new Continuation();
         path = new Path();
         generalOptions = new GeneralOptions();
         resourceId = new ImportResourceId();
         appearances = new ImportAppearance();
-        filter = new ImportFilter();
         affineTransformation = new AffineTransformation();
         cityGMLOptions = new CityGMLOptions();
         cityJSONOptions = new CityJSONOptions();
         indexes = new Index();
         importLog = new ImportLog();
+        duplicateLog = new DuplicateLog();
         resources = new ImportResources();
+    }
+
+    public ImportMode getMode() {
+        return mode != null ? mode : ImportMode.IMPORT_ALL;
+    }
+
+    public void setMode(ImportMode mode) {
+        this.mode = mode;
+    }
+
+    public ImportFilter getFilter() {
+        return filter;
+    }
+
+    public void setFilter(ImportFilter filter) {
+        if (filter != null) {
+            this.filter = filter;
+        }
     }
 
     public Continuation getContinuation() {
@@ -129,16 +152,6 @@ public class ImportConfig {
         }
     }
 
-    public ImportFilter getFilter() {
-        return filter;
-    }
-
-    public void setFilter(ImportFilter filter) {
-        if (filter != null) {
-            this.filter = filter;
-        }
-    }
-
     public Index getIndexes() {
         return indexes;
     }
@@ -186,6 +199,16 @@ public class ImportConfig {
     public void setImportLog(ImportLog importLog) {
         if (importLog != null) {
             this.importLog = importLog;
+        }
+    }
+
+    public DuplicateLog getDuplicateLog() {
+        return duplicateLog;
+    }
+
+    public void setDuplicateLog(DuplicateLog duplicateLog) {
+        if (duplicateLog != null) {
+            this.duplicateLog = duplicateLog;
         }
     }
 

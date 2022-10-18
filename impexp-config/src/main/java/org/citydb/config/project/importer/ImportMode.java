@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2021
+ * Copyright 2013 - 2022
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.common;
+package org.citydb.config.project.importer;
 
 import org.citydb.config.i18n.Language;
 
@@ -33,17 +33,21 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "IdColumnType")
+@XmlType(name = "ImportModeType")
 @XmlEnum
-public enum IdColumnType {
-    @XmlEnumValue("resource")
-    RESOURCE_ID("resource"),
-    @XmlEnumValue("database")
-    DATABASE_ID("database");
+public enum ImportMode {
+    @XmlEnumValue("importAll")
+    IMPORT_ALL("importAll"),
+    @XmlEnumValue("skipExisting")
+    SKIP_EXISTING("skipExisting"),
+    @XmlEnumValue("deleteExisting")
+    DELETE_EXISTING("deleteExisting"),
+    @XmlEnumValue("terminateExisting")
+    TERMINATE_EXISTING("terminateExisting");
 
     private final String value;
 
-    IdColumnType(String v) {
+    ImportMode(String v) {
         value = v;
     }
 
@@ -51,23 +55,27 @@ public enum IdColumnType {
         return value;
     }
 
-    public static IdColumnType fromValue(String v) {
-        for (IdColumnType c : IdColumnType.values()) {
+    public static ImportMode fromValue(String v) {
+        for (ImportMode c : ImportMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
         }
 
-        return RESOURCE_ID;
+        return IMPORT_ALL;
     }
 
     @Override
     public String toString() {
         switch (this) {
-            case RESOURCE_ID:
-                return Language.I18N.getString("filter.idList.id.resource");
-            case DATABASE_ID:
-                return Language.I18N.getString("filter.idList.id.database");
+            case IMPORT_ALL:
+                return Language.I18N.getString("import.mode.importAll");
+            case SKIP_EXISTING:
+                return Language.I18N.getString("import.mode.skipExisting");
+            case DELETE_EXISTING:
+                return Language.I18N.getString("import.mode.deleteExisting");
+            case TERMINATE_EXISTING:
+                return Language.I18N.getString("import.mode.terminateExisting");
             default:
                 return "";
         }

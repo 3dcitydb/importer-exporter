@@ -37,6 +37,7 @@ import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.config.project.importer.ImportList;
 import org.citydb.config.project.importer.ImportLogFileMode;
+import org.citydb.config.project.importer.ImportMode;
 import org.citydb.core.database.DatabaseController;
 import org.citydb.core.operation.common.csv.IdListPreviewer;
 import org.citydb.core.operation.importer.CityGMLImportException;
@@ -56,6 +57,8 @@ import java.util.List;
         description = "Imports data in CityGML or CityJSON format."
 )
 public class ImportCommand extends CliCommand {
+    enum Mode {import_all, skip, delete, terminate}
+
     @CommandLine.Parameters(paramLabel = "<file>", arity = "1",
             description = "Files or directories to import (glob patterns allowed).")
     private String[] files;
@@ -64,9 +67,18 @@ public class ImportCommand extends CliCommand {
             description = "Encoding of the input file(s).")
     private String encoding;
 
+    @CommandLine.Option(names = {"-o", "--import-mode"}, defaultValue = "import_all",
+            description = "Import mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
+    private Mode mode;
+
     @CommandLine.Option(names = "--import-log", paramLabel = "<file>",
             description = "Record imported top-level features to this file.")
     private Path importLogFile;
+
+    @CommandLine.Option(names = "--duplicate-log", paramLabel = "<file>",
+            description = "Record top-level features from the input file(s) that already exist in the database " +
+                    "to this file.")
+    private Path duplicateLogFile;
 
     @CommandLine.Option(names = "--fail-fast", negatable = true,
             description = "Fail fast on errors (default: true).")
@@ -164,10 +176,31 @@ public class ImportCommand extends CliCommand {
     private void setImportOptions(ImportConfig importConfig) {
         importConfig.getGeneralOptions().setFileEncoding(encoding);
 
+        if (mode != null) {
+            switch (mode) {
+                case skip:
+                    importConfig.setMode(ImportMode.SKIP_EXISTING);
+                    break;
+                case delete:
+                    importConfig.setMode(ImportMode.DELETE_EXISTING);
+                    break;
+                case terminate:
+                    importConfig.setMode(ImportMode.TERMINATE_EXISTING);
+                    break;
+                default:
+                    importConfig.setMode(ImportMode.IMPORT_ALL);
+            }
+        }
+
         if (importLogFile != null) {
             importConfig.getImportLog().setLogFile(importLogFile.toAbsolutePath().toString());
             importConfig.getImportLog().setLogImportedFeatures(true);
             importConfig.getImportLog().setLogFileMode(ImportLogFileMode.TRUNCATE);
+        }
+
+        if (duplicateLogFile != null) {
+            importConfig.getDuplicateLog().setLogFile(duplicateLogFile.toAbsolutePath().toString());
+            importConfig.getDuplicateLog().setLogDuplicates(true);
         }
 
         if (failFast != null) {

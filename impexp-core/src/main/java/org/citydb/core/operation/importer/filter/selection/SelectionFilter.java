@@ -28,6 +28,7 @@
 package org.citydb.core.operation.importer.filter.selection;
 
 import org.citydb.core.operation.importer.filter.selection.comparison.LikeFilter;
+import org.citydb.core.operation.importer.filter.selection.id.DuplicateListFilter;
 import org.citydb.core.operation.importer.filter.selection.id.ImportListFilter;
 import org.citydb.core.operation.importer.filter.selection.id.ResourceIdFilter;
 import org.citydb.core.operation.importer.filter.selection.spatial.SimpleBBOXFilter;
@@ -38,6 +39,7 @@ public class SelectionFilter {
 	private ResourceIdFilter resourceIdFilter;
 	private LikeFilter nameFilter;
 	private ImportListFilter importListFilter;
+	private DuplicateListFilter duplicateListFilter;
 	private SimpleBBOXFilter bboxFilter;
 
 	public ResourceIdFilter getResourceIdFilter() {
@@ -76,6 +78,18 @@ public class SelectionFilter {
 		this.importListFilter = importListFilter;
 	}
 
+	public DuplicateListFilter getDuplicateListFilter() {
+		return duplicateListFilter;
+	}
+
+	public boolean isSetDuplicateListFilter() {
+		return duplicateListFilter != null;
+	}
+
+	public void setDuplicateListFilter(DuplicateListFilter duplicateListFilter) {
+		this.duplicateListFilter = duplicateListFilter;
+	}
+
 	public SimpleBBOXFilter getBboxFilter() {
 		return bboxFilter;
 	}
@@ -98,6 +112,10 @@ public class SelectionFilter {
 		}
 
 		if (importListFilter != null && !importListFilter.isSatisfiedBy(feature)) {
+			return false;
+		}
+
+		if (duplicateListFilter != null && !duplicateListFilter.isSatisfiedBy(feature)) {
 			return false;
 		}
 

@@ -28,6 +28,7 @@
 package org.citydb.gui.components.dialog;
 
 import org.citydb.config.i18n.Language;
+import org.citydb.core.operation.importer.controller.DuplicateController;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.Event;
@@ -69,6 +70,7 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_TITLE, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+		eventDispatcher.addEventHandler(EventType.GENERIC_EVENT, this);
 
 		initGUI(message);
 	}
@@ -181,6 +183,12 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 			messageLabel.setText(((StatusDialogMessage) e).getMessage());
 		} else if (e.getEventType() == EventType.STATUS_DIALOG_TITLE && acceptStatusUpdate) {
 			fileName.setText(((StatusDialogTitle) e).getTitle());
+		} else if (e.getEventType() == EventType.GENERIC_EVENT) {
+			GenericEvent event = (GenericEvent) e;
+			if (DuplicateController.DELETE_DUPLICATES_COMPLETE.equals(event.getId())) {
+				featureCounter = 0;
+				featureCounterLabel.setText("0");
+			}
 		}
 	}
 }
