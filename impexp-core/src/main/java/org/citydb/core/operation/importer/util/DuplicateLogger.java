@@ -87,7 +87,7 @@ public class DuplicateLogger {
 
     private void writeHeader(DatabaseConnection connection) throws IOException {
         writer.write('#' + getClass().getPackage().getImplementationTitle() +
-                ", version \"" + getClass().getPackage().getImplementationVersion());
+                ", version \"" + getClass().getPackage().getImplementationVersion() + "\"");
         writer.newLine();
         writer.write("#Database connection: ");
         writer.write(connection.toConnectString());
