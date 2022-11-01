@@ -35,7 +35,7 @@ import javax.xml.namespace.NamespaceContext;
 import java.util.Map;
 
 public class TypeNamesOption implements CliOption {
-    @CommandLine.Option(names = {"-t", "--type-name"}, split = ",", paramLabel = "<[prefix:]name>",
+    @CommandLine.Option(names = {"-t", "--type-name"}, split = ",", paramLabel = "<[prefix:]name>", required = true,
             description = "Names of the top-level features to process.")
     private String[] typeNames;
 
