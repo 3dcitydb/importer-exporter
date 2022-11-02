@@ -535,6 +535,9 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     private void loadClasses(Path path, Util.URLClassLoader classLoader) throws IOException {
         if (Files.exists(path)) {
+            if (Files.isSymbolicLink(path)) {
+                path = Files.readSymbolicLink(path);
+            }
             try (Stream<Path> stream = Files.walk(path)
                     .filter(Files::isRegularFile)
                     .filter(file -> file.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar"))) {
