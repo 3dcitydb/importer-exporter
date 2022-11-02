@@ -72,6 +72,7 @@ import java.io.Console;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.ProxySelector;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -535,7 +536,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     private void loadClasses(Path path, Util.URLClassLoader classLoader) throws IOException {
         if (Files.exists(path)) {
-            try (Stream<Path> stream = Files.walk(path)
+            try (Stream<Path> stream = Files.walk(path, FileVisitOption.FOLLOW_LINKS)
                     .filter(Files::isRegularFile)
                     .filter(file -> file.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar"))) {
                 stream.forEach(classLoader::addPath);
