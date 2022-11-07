@@ -47,6 +47,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class CliOptionBuilder {
@@ -67,7 +69,7 @@ public class CliOptionBuilder {
                     glob.append(File.separator).append(String.join(File.separator, elements));
 
                     PathMatcher matcher = FileSystems.getDefault().getPathMatcher(glob.toString().replace("\\", "\\\\"));
-                    try (Stream<Path> stream = Files.walk(path)) {
+                    try (Stream<Path> stream = Files.walk(path, FileVisitOption.FOLLOW_LINKS)) {
                         stream.filter(Files::isRegularFile).forEach(p -> {
                             if (matcher.matches(p.toAbsolutePath().normalize())) {
                                 inputFiles.add(p);
@@ -268,13 +270,24 @@ public class CliOptionBuilder {
     }
 
     private static LinkedList<String> parseInputFile(String file, Path baseDir) {
+        Matcher matcher = Pattern.compile("[^*?{}!\\[\\]]+").matcher("");
         LinkedList<String> elements = new LinkedList<>();
         Path path = null;
 
+        if (file.startsWith("~" + File.separator)) {
+            file = System.getProperty("user.home") + file.substring(1);
+        }
+
         do {
-            try {
-                path = Paths.get(file);
-            } catch (Exception e) {
+            if (matcher.reset(file).matches()) {
+                try {
+                    path = Paths.get(file);
+                } catch (Exception e) {
+                    //
+                }
+            }
+
+            if (path == null) {
                 // the file is not a valid path, possibly because of glob patterns.
                 // so, let's iteratively truncate the last path element and try again.
                 int index = file.lastIndexOf(File.separator);
