@@ -1,6 +1,41 @@
 Change Log
 ==========
 
+### 5.3.0 - tba
+
+##### Additions
+* The CityGML/CityJSON import operation has been enhanced to avoid duplicate top-level city objects in the database.
+  The identifiers of all top-level city objects to be imported from the input files are collected and queried
+  against the database. The user can choose from different strategies for handling conflicting city objects with
+  matching identifiers. [#273](https://github.com/3dcitydb/importer-exporter/pull/273)
+  * The city objects in the database can be replaced with the city objects from input files by either
+    deleting or terminating them.
+  * Alternatively, conflicting city objects from the input files can be skipped or imported anyway. The latter option
+    still results in duplicate objects in the database.
+* Added an option to convert global appearances to local ones on-the-fly when exporting to CityGML. [#269](https://github.com/3dcitydb/importer-exporter/pull/269)
+* ID lists used as filters for import and delete operations can now be composed of multiple CSV files. [#271](https://github.com/3dcitydb/importer-exporter/pull/271)
+* Added a timeout when prompting for a password on the command-line. [#256](https://github.com/3dcitydb/importer-exporter/pull/256)
+
+#### Changes
+* Changed the API for handling internal events. This change has an impact on plugins and ADE extensions using the
+  event bus of the Importer/Exporter. For this reason, please make sure that your plugins and ADE extensions
+  have been built for and tested with this version of the Importer/Exporter.
+
+#### Fixes
+* Fixed missing appearances in CityJSON exports when the appearances are stored as global appearances in the database. [#269](https://github.com/3dcitydb/importer-exporter/pull/269)
+* Fixed loading of plugins and ADE extensions in case their path contains symbolic links. [#273](https://github.com/3dcitydb/importer-exporter/pull/273)
+* Fixed localization issues when internally converting strings. One effect of this issue was that the import operation
+  failed to find the predefined 3DCityDB tables by their name and, thus, the import itself failed. [#108](https://github.com/3dcitydb/importer-exporter/issues/108)
+* Fixed invalid line numbers in CSV preview in case the CSV files use a non-system line separator.
+* Fixed NPE when using a relative path for the delete log.
+* Fixed support for glob patterns and symbolic links when providing input files for the CLI commands.
+* Fixed invalid XML schema of the Importer/Exporter configuration file.
+
+##### Miscellaneous
+* Updated citygml4j to 2.12.2
+* Updated PostgreSQL driver to 42.5.0
+* Updated GeoTools to 27.2.
+
 ### 5.2.1 - 2022-07-29
 
 #### Fixes
