@@ -4,14 +4,14 @@ Change Log
 ### 5.3.0 - tba
 
 ##### Additions
-* The CityGML/CityJSON import operation has been enhanced to avoid duplicate top-level city objects in the database.
+* The CityGML/CityJSON import operation has been improved to avoid duplicate top-level city objects in the database.
   The identifiers of all top-level city objects to be imported from the input files are collected and queried
-  against the database. The user can choose from different strategies for handling conflicting city objects with
-  matching identifiers. [#273](https://github.com/3dcitydb/importer-exporter/pull/273)
-  * The city objects in the database can be replaced with the city objects from input files by either
-    deleting or terminating them.
-  * Alternatively, conflicting city objects from the input files can be skipped or imported anyway. The latter option
-    still results in duplicate objects in the database.
+  in the database. If conflicting city objects with identical identifiers are found in the database, the user
+  can choose from different strategies to resolve the conflict. [#273](https://github.com/3dcitydb/importer-exporter/pull/273)
+  * The city objects from the input files take precedence and overwrite the city objects in the database. For this
+    purpose, the duplicate objects in the database can be either physically deleted or terminated.
+  * Alternatively, conflicting city objects from the input files are skipped or imported anyway. The latter option
+    still results in duplicate objects and corresponds to the import mode of earlier versions of the Importer/Exporter.
 * Added an option to convert global appearances to local ones on-the-fly when exporting to CityGML. [#269](https://github.com/3dcitydb/importer-exporter/pull/269)
 * ID lists used as filters for import and delete operations can now be composed of multiple CSV files. [#271](https://github.com/3dcitydb/importer-exporter/pull/271)
 * Added a timeout when prompting for a password on the command-line. [#256](https://github.com/3dcitydb/importer-exporter/pull/256)
