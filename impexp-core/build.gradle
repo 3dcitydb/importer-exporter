@@ -11,7 +11,7 @@ dependencies {
     api 'net.postgis:postgis-jdbc:2021.1.0'
     api 'com.oracle.database.jdbc:ojdbc8:21.3.0.0'
     api 'com.oracle.sdoapi:sdoapi:21.3.0.0'
-    api 'org.apache.tika:tika-core:2.5.0'
+    api 'org.apache.tika:tika-core:2.6.0'
     api 'com.univocity:univocity-parsers:2.9.1'
     api 'org.slf4j:slf4j-nop:2.0.3'
     implementation 'com.h2database:h2:2.1.214'
