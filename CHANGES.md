@@ -34,7 +34,7 @@ Change Log
 ##### Miscellaneous
 * Updated citygml4j to 2.12.2
 * Updated PostgreSQL driver to 42.5.0
-* Updated GeoTools to 27.2.
+* Updated GeoTools to 27.2 and replaced `gt-epsg-hsql` with `gt-epsg-wkt`.
 
 ### 5.2.1 - 2022-07-29
 
