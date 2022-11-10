@@ -3,7 +3,7 @@ Change Log
 
 ### 5.3.0 - tba
 
-##### Additions
+#### Additions
 * The CityGML/CityJSON import operation has been improved to avoid duplicate top-level city objects in the database.
   The identifiers of all top-level city objects to be imported from the input files are collected and queried
   in the database. If conflicting city objects with identical identifiers are found in the database, the user
@@ -31,7 +31,7 @@ Change Log
 * Fixed support for glob patterns and symbolic links when providing input files for the CLI commands.
 * Fixed invalid XML schema of the Importer/Exporter configuration file.
 
-##### Miscellaneous
+#### Miscellaneous
 * Updated citygml4j to 2.12.2
 * Updated PostgreSQL driver to 42.5.0
 * Updated GeoTools to 27.2 and replaced `gt-epsg-hsql` with `gt-epsg-wkt`.
@@ -45,7 +45,7 @@ Change Log
 
 ### 5.2.0 - 2022-05-23
 
-##### Additions
+#### Additions
 * Added an option to replace all identifiers of features and geometries with UUIDs when exporting to CityGML/CityJSON. [#249](https://github.com/3dcitydb/importer-exporter/pull/249)
 * Extended options for defining the subdirectories and filenames for storing tiles when tiling is enabled for CityGML exports. [#250](https://github.com/3dcitydb/importer-exporter/pull/250)
 
@@ -62,26 +62,26 @@ This fix requires a **3DCityDB version 4.3.0 or higher** to work. [#243](https:/
 * Fixed bug in the output of the VIS exporter when filenames of texture files contain `#` characters. [#254](https://github.com/3dcitydb/importer-exporter/pull/254)
 * Fixed example balloon templates for KML exports to support generic measure attributes. [#210](https://github.com/3dcitydb/importer-exporter/issues/210)
 
-##### Miscellaneous
+#### Miscellaneous
 * Updated PostgreSQL driver to 42.3.4
 * Updated Oracle driver to 21.3.0.0
 * Updated GeoTools to 26.4.
 
 ### 5.1.1 - 2022-04-12
 
-##### Fixes
+#### Fixes
 * Fixed initialization of GUI extensions. [#244](https://github.com/3dcitydb/importer-exporter/pull/244)
 * Fixed missing srsName on envelopes when using an LoD filer. [#248](https://github.com/3dcitydb/importer-exporter/issues/248)
 
 ### 5.1.0 - 2022-02-10
 
-##### Additions
+#### Additions
 * Added the possibility to generate a `SELECT` statement from an XML query expression used in the Importer/Exporter. [#231](https://github.com/3dcitydb/importer-exporter/pull/231)
 * Added an option to control whether to compute the number of top-level features matching the filter criteria for
 CityGML exports. This can take a long time on large databases. When disabled, the export process
 starts immediately instead. [#235](https://github.com/3dcitydb/importer-exporter/pull/235)
 
-##### Changes
+#### Changes
 * Changed the handling of date-time values and timezones in the Importer/Exporter. Before this change, `xsd:date` values
 in CityGML exports could be different from the values stored in the database in case different timezone settings were
 used for the database server and the import and export operations. [#226](https://github.com/3dcitydb/importer-exporter/pull/226)
@@ -94,7 +94,7 @@ features/tables to avoid extremely large result sets causing performance issues.
 * When using an LoD filter for CityGML/CityJSON exports, the bounding box of the city objects is now calculated
 based on the exported geometries instead of using the `ENVELOPE` value stored in the database. [#104](https://github.com/3dcitydb/importer-exporter/issues/104), [#239](https://github.com/3dcitydb/importer-exporter/pull/239)
 
-##### Fixes
+#### Fixes
 
 * Fixed bug in parsing of XPath expressions of XML queries that caused a slash `/` being part of a literal value
 to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-exporter/issues/220), [#221](https://github.com/3dcitydb/importer-exporter/pull/221)
@@ -107,14 +107,14 @@ to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-
 * The SRS information was not correctly updated in the GUI after changing the reference system on the `Database` tab.
 * Avoid importing empty CityGML boundary surfaces for unreferenced semantic surfaces in CityJSON input files.
 
-##### Miscellaneous
+#### Miscellaneous
 * Updated H2 database used for local caching to 2.1.210. [#236](https://github.com/3dcitydb/importer-exporter/pull/236)
 * Updated PostgreSQL driver to 42.3.1 and PostGIS driver to 2021.1.0.
 * Updated citygml4j to 2.12.0.
 
 ### 5.0.0 - 2021-10-08
 
-##### Additions
+#### Additions
 * Added Docker files to build your own images for the Importer/Exporter command-line interface. Pre-built Docker images
   are available from Docker Hub at https://hub.docker.com/r/3dcitydb/impexp. [#209](https://github.com/3dcitydb/importer-exporter/pull/209)
 * Added an import list filter to the import operation for both the GUI and the CLI that allows a user to provide a CSV
@@ -131,7 +131,7 @@ to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-
   on the command line. [#212](https://github.com/3dcitydb/importer-exporter/pull/212)
 * CityJSON output now uses the latest CityJSON version 1.0.3.
 
-##### Changes
+#### Changes
 * CityGML/CityJSON import and export operations now fail fast on errors by default. [#215](https://github.com/3dcitydb/importer-exporter/pull/215)
 * Avoid pollution of database schema with temporary tables in case an import or export operation terminates
   abnormally. [#190](https://github.com/3dcitydb/importer-exporter/pull/190)
@@ -141,19 +141,19 @@ to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-
 * Moved installer build script to [3dcitydb-suite](https://github.com/3dcitydb/3dcitydb-suite) repository. [#186](https://github.com/3dcitydb/importer-exporter/pull/186)
 * *Breaking:* Restructured source code to avoid packages being spread over different modules.
 
-##### Fixes
+#### Fixes
 * Fixed inconsistent behaviour of the feature version filter for different CLI commands. [#188](https://github.com/3dcitydb/importer-exporter/pull/188)
 * Fixed NPE during imports when at least one ADE extension is loaded and the dataset contains 3DCityDB ADE properties.
 * Fixed `StatementFinalizer` of the Tomcat JDBC pool to be thread-safe to avoid that connections cannot be released
   from the pool. [#189](https://github.com/3dcitydb/importer-exporter/pull/189)
 
-##### Miscellaneous
+#### Miscellaneous
 * Updated PostgreSQL driver to 42.2.23 and Oracle driver to 21.1.0.
 * Updated citygml4j to 2.11.4.
 
 ### 4.3.0 - 2021-04-28
 
-##### Additions
+#### Additions
 * Completely redesigned command-line interface (CLI) to be able to invoke default import, export and delete operations
   without the need for passing an XML config file. [#147](https://github.com/3dcitydb/importer-exporter/pull/147)
 * CityJSON import and export. [#88](https://github.com/3dcitydb/importer-exporter/issues/88),
@@ -178,12 +178,12 @@ to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-
 * Completely updated user manual at https://3dcitydb-docs.readthedocs.io/en/release-v4.3.0/
 * General tweaks, bugfixes, and code refactoring
 
-##### Changes
+#### Changes
 * Instead of Oracle, PostgreSQL/PostGIS is now the default database connection. [#162](https://github.com/3dcitydb/importer-exporter/pull/162)
 * Reworked GUI and config file to manage and store one workspace per connection for Oracle databases. [#164](https://github.com/3dcitydb/importer-exporter/pull/164)
 * When importing local geometry XLinks into a 3DCityDB instance of version 4.1, the `IS_XLINK` column of `SURFACE_GEOMETRY` is now filled with value `2`, which allows to substantially improve the export performance. [#159](https://github.com/3dcitydb/importer-exporter/pull/159)
 
-##### Fixes
+#### Fixes
 * Fixed bug in SQL query builder. [#122](https://github.com/3dcitydb/importer-exporter/pull/122)
 * Fixed possible database deadlocks when updating involved tables during XLink resolution.
 * Fixed NPE in CityGML exports in case the output file path has no parent folder.
@@ -199,7 +199,7 @@ to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-
   feature.
 * Fixed hierarchical geometry query to work with Oracle 11g and previous versions.
 
-##### Miscellaneous
+#### Miscellaneous
 * Updated to latest versions of the ADE manager plugin and the Spreadsheet Generator plugin.
 * Upgrade PostgreSQL driver to 42.2.14 and PostGIS to 2.5.0.
 * Updated citygml4j to 2.11.3.
@@ -208,7 +208,7 @@ to be interpreted as step operator. [#220](https://github.com/3dcitydb/importer-
 
 ### 4.2.3 - 2020-04-06
 
-##### Additions
+#### Additions
 * Added support for sorting the top-level features in a CityGML export based on one or more 
 simple thematic attributes. The sorting criteria can be defined using the new `<sortBy>` element of
 the XML query language. [#86](https://github.com/3dcitydb/importer-exporter/pull/86)
@@ -223,14 +223,14 @@ config file lets you define the behavior of the delete operation (e.g. by provid
 * Added date picker in GUI.
 * Added a link to the [online documentation](https://3dcitydb-docs.readthedocs.io/en/release-v4.2.3/) in the `Help` menu of the GUI.
 
-##### Changes
+#### Changes
 * Reworked the feature counter filter for CityGML imports and exports. Instead of providing a lower and upper
 boundary, you can now provide the total `count` of features and the `start index` of the first feature. For 
 exports, this is mapped to SQL `LIMIT` and `OFFSET` clauses. Note that the definition in the XML query
 language now uses a `<limit>` element instead of the previous `<count>` element.
 * Improved SQL query builder to create more concise SQL statements.
 
-##### Fixes
+#### Fixes
 * Fixed memory leak for large exports under PostgreSQL.
 * Fixed OpenStreetMap data not showing in the map window. [#97](https://github.com/3dcitydb/importer-exporter/issues/97)
 * Fixed NPE when importing invalid xAL address elements. [#103](https://github.com/3dcitydb/importer-exporter/issues/103)
@@ -240,7 +240,7 @@ language now uses a `<limit>` element instead of the previous `<count>` element.
 interior start and end points of the segments were imported into the database. This has been corrected.
 * Fixed the `IzPack` library to support automated install scripts.
 
-##### Miscellaneous 
+#### Miscellaneous 
 * Updated to latest versions of the ADE manager plugin and the Spreadsheet Generator plugin.
 * Updated to latest PostgreSQL driver v42.2.10.
 * Updated to latest Oracle driver 19.3.
@@ -249,15 +249,15 @@ interior start and end points of the segments were imported into the database. T
 
 ### 4.2.2 - 2019-08-06
 
-##### Additions
+#### Additions
 * Added config option to suppress the product information header comment. 
 
-##### Changes
+#### Changes
 * Moved input and output file information from internal config to external API.
 
 ### 4.2.1 - 2019-04-17
 
-##### Additions
+#### Additions
 * Added the `-pid-file` command-line argument to create a file storing the process ID of the Importer/Exporter at the 
 provided path. This can be useful to check whether the Importer/Exporter is running or to issue a `kill` command to end it.
 * Added GUI warning dialogs if a Importer/Exporter module does not support ADEs registered in the database.
@@ -265,7 +265,7 @@ provided path. This can be useful to check whether the Importer/Exporter is runn
 * Updated ADE Manager Plugin to version 1.1.2.
 * Updated 3DCityDB-Web-Map to version 1.7.1.
 
-##### Fixes
+#### Fixes
 * Added `distinct` to complex SQL queries to avoid exporting duplicates of a top-level feature.
 * Fixed memory leak when importing ZIP files.
 * Fixed database schema mapping to correctly support qualified XML attributes in CityGML and ADE XML schemas.
@@ -273,7 +273,7 @@ provided path. This can be useful to check whether the Importer/Exporter is runn
 
 ### 4.2 - 2019-02-13
 
-##### Additions
+#### Additions
 * Reworked Plugin API to support non-GUI plugins. [#78](https://github.com/3dcitydb/importer-exporter/pull/78)
   * Added `CityGMLExportExtension` as a first non-GUI extension point for plugins. Using this extension, a plugin receives
   and can process all CityGML features before they are written to the output file. Besides using XSLT stylesheets
@@ -284,24 +284,24 @@ provided path. This can be useful to check whether the Importer/Exporter is runn
 * Added config options to control the writing of `gml:Envelope` elements on features and the root `CityModel`.
 * Added config options to define XML prefixes and schema locations for the CityGML output file.
 
-##### Fixes
+#### Fixes
 * Fixed broken feature type filter for CityGML imports. [#75](https://github.com/3dcitydb/importer-exporter/issues/75)
 * Fixed NPE in `GeometryConverter` when using affine transformations during CityGML imports. [#77](https://github.com/3dcitydb/importer-exporter/issues/77)
 * The CLI version of the Importer/Exporter now returns an exit code of 1 on failures.
 
-##### Miscellaneous 
+#### Miscellaneous 
 * Updated citygml4j to 2.9.1.
 
 ### 4.1 - 2019-01-09
 
-##### Additions
+#### Additions
 * Added support for using SQL queries and XML-based filter expressions in CityGML exports. Please refer to the documentation
 to learn more about the new filter capabilities.
 * Added support for importing CityGML data from ZIP/GZIP files and for exporting CityGML content to ZIP/GZIP files. [#62](https://github.com/3dcitydb/importer-exporter/issues/62), 
 [#63](https://github.com/3dcitydb/importer-exporter/issues/63)
 * Added a counter and a progress bar to spreadsheet exports. [#50](https://github.com/3dcitydb/importer-exporter/issues/50)
 
-##### Changes
+#### Changes
 * Due to changes in the Google Maps API license and usage terms, the Google services now require an API key
 ([read more here](https://developers.google.com/maps/documentation/geocoding/get-api-key)). This affects the map window
 and the KML/COLLADA/glTF export of the Importer/Exporter, where Google services are used for address searches and for
@@ -313,7 +313,7 @@ retrieving height values from the Google Earth terrain model. [#61](https://gith
   * Querying height values from the Google Earth terrain model in KML/COLLADA/glTF exports requires the Google Elevation
     service though. Simply deactivate this option if you do not have an API key.
 
-##### Fixes
+#### Fixes
 * When running on Java 9 or higher, the following warning was printed to the console: `WARNING: Illegal reflective access by com.sun.xml.bind.v2.runtime.reflect.opt.Injector`.
 This [JAXB](https://github.com/eclipse-ee4j/jaxb-ri) issue has been resolved in this release by updating to 
 [citygml4j 2.8.1](https://github.com/citygml4j/citygml4j).
@@ -325,13 +325,13 @@ This [JAXB](https://github.com/eclipse-ee4j/jaxb-ri) issue has been resolved in 
 * Fixed NPE when exporting appearances without textures.
 * Fixed CityGML writer to use default namespaces in tiled exports.
 
-##### Miscellaneous 
+#### Miscellaneous 
 * Upgrade to latest PostgreSQL driver v42.2.5 and PostGIS driver v2.3.0.
 * Upgrade to latest Oracle driver 18.3.
 
 ### 4.0 - 2018-09-18
 
-##### Additions
+#### Additions
 * Added new extension mechanism to support arbitrary CityGML ADEs.
 * Added new ADE manager plugin to dynamically extend a 3DCityDB instance with support for a given CityGML ADE.
 * Added support for connecting to different database schemas with the same user.
@@ -350,7 +350,7 @@ This [JAXB](https://github.com/eclipse-ee4j/jaxb-ri) issue has been resolved in 
 * Source code has been split into modules that are available as Maven artifacts from [Bintray](https://bintray.com/3dcitydb/maven).
 * Switched from Ant to Gradle as build system.
 
-##### Fixes
+#### Fixes
 * Fixed bug when resolving geometry Xlinks and replacing gml:ids.
 * Fixed bug in BBOX calculation on CityGML imports.
 * Fixed `ConcurrentLockManager` to avoid concurrent modification issues.
@@ -362,5 +362,5 @@ This [JAXB](https://github.com/eclipse-ee4j/jaxb-ri) issue has been resolved in 
 * Fixed bug in handling of surface_geometries with multiple surface_data. [#25](https://github.com/3dcitydb/importer-exporter/pull/25)
 * Fixed KML/COLLADA/glTF export of appearances with more than one theme. [#24](https://github.com/3dcitydb/importer-exporter/issues/24)
 
-##### Miscellaneous 
+#### Miscellaneous 
 * [3DCityDB Docker images](https://github.com/tum-gis/3dcitydb-docker-postgis) are now available for a range of 3DCityDB versions to support continuous integration workflows.
