@@ -196,7 +196,6 @@ public class DBBridge implements DBImporter {
 
 			if (multiCurveProperty != null) {
 				multiLine = geometryConverter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
 			}
 
 			if (multiLine != null) {
@@ -225,7 +224,6 @@ public class DBBridge implements DBImporter {
 
 			if (multiCurveProperty != null) {
 				multiLine = geometryConverter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
 			}
 
 			if (multiLine != null) {
@@ -258,7 +256,6 @@ public class DBBridge implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiGeometryId = surfaceGeometryImporter.doImport(multiSurfaceProperty.getMultiSurface(), bridgeId);
-					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -300,7 +297,6 @@ public class DBBridge implements DBImporter {
 			if (solidProperty != null) {
 				if (solidProperty.isSetSolid()) {
 					solidGeometryId = surfaceGeometryImporter.doImport(solidProperty.getSolid(), bridgeId);
-					solidProperty.unsetSolid();
 				} else {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -334,7 +330,6 @@ public class DBBridge implements DBImporter {
 
 				if (boundarySurface != null) {
 					thematicSurfaceImporter.doImport(boundarySurface, bridge, bridgeId);
-					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -355,7 +350,6 @@ public class DBBridge implements DBImporter {
 
 				if (construction != null) {
 					bridgeConstructionImporter.doImport(construction, bridge, bridgeId);
-					property.unsetBridgeConstructionElement();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -376,7 +370,6 @@ public class DBBridge implements DBImporter {
 
 				if (installation != null) {
 					bridgeInstallationImporter.doImport(installation, bridge, bridgeId);
-					property.unsetBridgeInstallation();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -397,7 +390,6 @@ public class DBBridge implements DBImporter {
 
 				if (installation != null) {
 					bridgeInstallationImporter.doImport(installation, bridge, bridgeId);
-					property.unsetIntBridgeInstallation();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -418,7 +410,6 @@ public class DBBridge implements DBImporter {
 
 				if (room != null) {
 					roomImporter.doImport(room, bridgeId);
-					property.unsetBridgeRoom();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -439,7 +430,6 @@ public class DBBridge implements DBImporter {
 
 				if (bridgePart != null) {
 					doImport(bridgePart, bridgeId, rootId);
-					property.unsetBridgePart();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0)
@@ -455,7 +445,6 @@ public class DBBridge implements DBImporter {
 
 				if (address != null) {
 					addressImporter.importBridgeAddress(address, bridgeId);
-					property.unsetAddress();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {

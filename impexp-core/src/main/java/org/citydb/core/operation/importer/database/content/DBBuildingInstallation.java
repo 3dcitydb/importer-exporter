@@ -183,8 +183,6 @@ public class DBBuildingInstallation implements DBImporter {
 						geometryObject = geometryConverter.getPointOrCurveGeometry(abstractGeometry);
 					else 
 						importer.logOrThrowUnsupportedGeometryMessage(buildingInstallation, abstractGeometry);
-
-					geometryProperty.unsetGeometry();
 				} else {
 					String href = geometryProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -276,7 +274,6 @@ public class DBBuildingInstallation implements DBImporter {
 
 				if (boundarySurface != null) {
 					thematicSurfaceImporter.doImport(boundarySurface, buildingInstallation, buildingInstallationId);
-					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -373,8 +370,6 @@ public class DBBuildingInstallation implements DBImporter {
 					geometryObject = geometryConverter.getPointOrCurveGeometry(abstractGeometry);
 				else 
 					importer.logOrThrowUnsupportedGeometryMessage(intBuildingInstallation, abstractGeometry);
-
-				geometryProperty.unsetGeometry();
 			} else {
 				String href = geometryProperty.getHref();
 				if (href != null && href.length() != 0) {
@@ -459,7 +454,6 @@ public class DBBuildingInstallation implements DBImporter {
 
 				if (boundarySurface != null) {
 					thematicSurfaceImporter.doImport(boundarySurface, intBuildingInstallation, intBuildingInstallationId);
-					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {

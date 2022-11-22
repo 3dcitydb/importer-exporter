@@ -168,9 +168,7 @@ public class DBTransportationComplex implements DBImporter {
 				// we do not support XLinks or further geometry types so far
 			}
 
-			transportationComplex.unsetLod0Network();
-
-			if (aggregate.isSetElement() && !aggregate.getElement().isEmpty())   		
+			if (aggregate.isSetElement() && !aggregate.getElement().isEmpty())
 				multiCurve = geometryConverter.getCurveGeometry(aggregate);
 		}
 
@@ -202,7 +200,6 @@ public class DBTransportationComplex implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiGeometryId = surfaceGeometryImporter.doImport(multiSurfaceProperty.getMultiSurface(), transportationComplexId);
-					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -232,7 +229,6 @@ public class DBTransportationComplex implements DBImporter {
 
 				if (trafficArea != null) {
 					trafficAreaImporter.doImport(trafficArea, transportationComplexId);
-					property.unsetAuxiliaryTrafficArea();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -253,7 +249,6 @@ public class DBTransportationComplex implements DBImporter {
 
 				if (trafficArea != null) {
 					trafficAreaImporter.doImport(trafficArea, transportationComplexId);
-					property.unsetTrafficArea();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {

@@ -161,7 +161,6 @@ public class DBGenericCityObject implements DBImporter {
 
 			if (multiCurveProperty != null) {
 				multiLine = geometryConverter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
 			}
 
 			if (multiLine != null) {
@@ -204,8 +203,6 @@ public class DBGenericCityObject implements DBImporter {
 						geometryObject = geometryConverter.getPointOrCurveGeometry(abstractGeometry);
 					else 
 						importer.logOrThrowUnsupportedGeometryMessage(genericCityObject, abstractGeometry);
-
-					geometryProperty.unsetGeometry();
 				} else {
 					String href = geometryProperty.getHref();
 					if (href != null && href.length() != 0) {

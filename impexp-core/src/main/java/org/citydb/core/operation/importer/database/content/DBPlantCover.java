@@ -146,7 +146,6 @@ public class DBPlantCover implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiGeometryId = surfaceGeometryImporter.doImport(multiSurfaceProperty.getMultiSurface(), plantCoverId);
-					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -188,7 +187,6 @@ public class DBPlantCover implements DBImporter {
 			if (multiSolidProperty != null) {
 				if (multiSolidProperty.isSetMultiSolid()) {
 					solidGeometryId = surfaceGeometryImporter.doImport(multiSolidProperty.getMultiSolid(), plantCoverId);
-					multiSolidProperty.unsetMultiSolid();
 				} else {
 					String href = multiSolidProperty.getHref();
 					if (href != null && href.length() != 0) {

@@ -116,7 +116,6 @@ public class DBWaterBoundarySurface implements DBImporter {
 			if (surfaceProperty != null) {
 				if (surfaceProperty.isSetSurface()) {
 					surfaceGeometryId = surfaceGeometryImporter.doImport(surfaceProperty.getSurface(), waterBoundarySurfaceId);
-					surfaceProperty.unsetSurface();
 				} else {
 					String href = surfaceProperty.getHref();
 					if (href != null && href.length() != 0) {

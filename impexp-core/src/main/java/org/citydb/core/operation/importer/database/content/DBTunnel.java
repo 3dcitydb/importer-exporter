@@ -184,7 +184,6 @@ public class DBTunnel implements DBImporter {
 
 			if (multiCurveProperty != null) {
 				multiLine = geometryConverter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
 			}
 
 			if (multiLine != null) {
@@ -213,7 +212,6 @@ public class DBTunnel implements DBImporter {
 
 			if (multiCurveProperty != null) {
 				multiLine = geometryConverter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
 			}
 
 			if (multiLine != null) {
@@ -246,7 +244,6 @@ public class DBTunnel implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiGeometryId = surfaceGeometryImporter.doImport(multiSurfaceProperty.getMultiSurface(), tunnelId);
-					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -288,7 +285,6 @@ public class DBTunnel implements DBImporter {
 			if (solidProperty != null) {
 				if (solidProperty.isSetSolid()) {
 					solidGeometryId = surfaceGeometryImporter.doImport(solidProperty.getSolid(), tunnelId);
-					solidProperty.unsetSolid();
 				} else {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -322,7 +318,6 @@ public class DBTunnel implements DBImporter {
 
 				if (boundarySurface != null) {
 					thematicSurfaceImporter.doImport(boundarySurface, tunnel, tunnelId);
-					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -343,7 +338,6 @@ public class DBTunnel implements DBImporter {
 
 				if (installation != null) {
 					tunnelInstallationImporter.doImport(installation, tunnel, tunnelId);
-					property.unsetTunnelInstallation();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -364,7 +358,6 @@ public class DBTunnel implements DBImporter {
 
 				if (installation != null) {
 					tunnelInstallationImporter.doImport(installation, tunnel, tunnelId);
-					property.unsetIntTunnelInstallation();
 				} else {
 					// xlink
 					String href = property.getHref();
@@ -386,7 +379,6 @@ public class DBTunnel implements DBImporter {
 
 				if (hollowSpace != null) {
 					hollowSpaceImporter.doImport(hollowSpace, tunnelId);
-					property.unsetHollowSpace();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -407,7 +399,6 @@ public class DBTunnel implements DBImporter {
 
 				if (tunnelPart != null) {
 					doImport(tunnelPart, tunnelId, rootId);
-					property.unsetTunnelPart();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0)

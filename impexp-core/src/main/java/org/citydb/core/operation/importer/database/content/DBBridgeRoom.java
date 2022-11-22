@@ -137,7 +137,6 @@ public class DBBridgeRoom implements DBImporter {
 
 			if (multiSurfacePropery.isSetMultiSurface()) {
 				geometryId = surfaceGeometryImporter.doImport(multiSurfacePropery.getMultiSurface(), bridgeRoomId);
-				multiSurfacePropery.unsetMultiSurface();
 			} else {
 				String href = multiSurfacePropery.getHref();
 				if (href != null && href.length() != 0) {
@@ -163,7 +162,6 @@ public class DBBridgeRoom implements DBImporter {
 
 			if (solidProperty.isSetSolid()) {
 				geometryId = surfaceGeometryImporter.doImport(solidProperty.getSolid(), bridgeRoomId);
-				solidProperty.unsetSolid();
 			} else {
 				String href = solidProperty.getHref();
 				if (href != null && href.length() != 0) {
@@ -196,7 +194,6 @@ public class DBBridgeRoom implements DBImporter {
 
 				if (boundarySurface != null) {
 					thematicSurfaceImporter.doImport(boundarySurface, bridgeRoom, bridgeRoomId);
-					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -217,7 +214,6 @@ public class DBBridgeRoom implements DBImporter {
 
 				if (installation != null) {
 					bridgeInstallationImporter.doImport(installation, bridgeRoom, bridgeRoomId);
-					property.unsetIntBridgeInstallation();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -238,7 +234,6 @@ public class DBBridgeRoom implements DBImporter {
 
 				if (furniture != null) {
 					bridgeFurnitureImporter.doImport(furniture, bridgeRoomId);
-					property.unsetBridgeFurniture();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {

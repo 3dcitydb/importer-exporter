@@ -125,7 +125,6 @@ public class DBTunnelThematicSurface implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiSurfaceId = surfaceGeometryImporter.doImport(multiSurfaceProperty.getMultiSurface(), boundarySurfaceId);
-					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -155,7 +154,6 @@ public class DBTunnelThematicSurface implements DBImporter {
 
 				if (opening != null) {
 					openingImporter.doImport(opening, boundarySurface, boundarySurfaceId);
-					property.unsetOpening();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {

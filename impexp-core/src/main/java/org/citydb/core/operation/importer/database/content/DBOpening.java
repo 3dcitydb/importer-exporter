@@ -118,7 +118,6 @@ public class DBOpening implements DBImporter {
 
 				if (address != null) {
 					addressId = addressImporter.doImport(address);
-					property.unsetAddress();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -154,7 +153,6 @@ public class DBOpening implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiSurfaceId = surfaceGeometryImporter.doImport(multiSurfaceProperty.getMultiSurface(), openingId);
-					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {

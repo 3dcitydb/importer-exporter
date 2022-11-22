@@ -178,9 +178,6 @@ public class DBReliefComponent implements DBImporter {
 						if (tin.isSetControlPoint())
 							controlPoints = geometryConverter.getMultiPoint(tin.getControlPoint());
 					}
-
-					tinProperty.unsetTriangulatedSurface();
-
 				} else {
 					String href = tinProperty.getHref();
 					if (href != null && href.length() != 0)
@@ -238,7 +235,6 @@ public class DBReliefComponent implements DBImporter {
 			GeometryObject reliefPoints = null;
 			if (massPointRelief.isSetReliefPoints()) {
 				reliefPoints = geometryConverter.getMultiPoint(massPointRelief.getReliefPoints());
-				massPointRelief.unsetReliefPoints();
 			}
 
 			if (reliefPoints != null)
@@ -265,12 +261,10 @@ public class DBReliefComponent implements DBImporter {
 
 			if (breakLineRelief.isSetRidgeOrValleyLines()) {
 				ridgeOrValleyLines = geometryConverter.getMultiCurve(breakLineRelief.getRidgeOrValleyLines());
-				breakLineRelief.unsetRidgeOrValleyLines();
 			}
 
 			if (breakLineRelief.isSetBreaklines()) {
 				breakLines = geometryConverter.getMultiCurve(breakLineRelief.getBreaklines());
-				breakLineRelief.unsetBreaklines();
 			}
 
 			if (ridgeOrValleyLines != null)

@@ -158,7 +158,6 @@ public class DBCityFurniture implements DBImporter {
 
 			if (multiCurveProperty != null) {
 				multiLine = geometryConverter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
 			}
 
 			if (multiLine != null)
@@ -197,8 +196,6 @@ public class DBCityFurniture implements DBImporter {
 						geometryObject = geometryConverter.getPointOrCurveGeometry(abstractGeometry);
 					else
 						importer.logOrThrowUnsupportedGeometryMessage(cityFurniture, abstractGeometry);
-
-					geometryProperty.unsetGeometry();
 				} else {
 					String href = geometryProperty.getHref();
 					if (href != null && href.length() != 0) {
