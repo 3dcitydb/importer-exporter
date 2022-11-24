@@ -157,7 +157,6 @@ public class DBAppearance implements DBImporter {
 
 				if (surfaceData != null) {
 					surfaceDataImporter.doImport(surfaceData, appearanceId, isLocalAppearance);
-					property.unsetSurfaceData();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {

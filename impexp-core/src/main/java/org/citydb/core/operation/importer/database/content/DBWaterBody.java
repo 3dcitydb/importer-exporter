@@ -146,7 +146,6 @@ public class DBWaterBody implements DBImporter {
 
 			if (multiCurveProperty != null) {
 				multiLine = geometryConverter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
 			}
 
 			if (multiLine != null) {
@@ -173,7 +172,6 @@ public class DBWaterBody implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiGeometryId = surfaceGeometryImporter.doImport(multiSurfaceProperty.getMultiSurface(), waterBodyId);
-					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -215,7 +213,6 @@ public class DBWaterBody implements DBImporter {
 			if (solidProperty != null) {
 				if (solidProperty.isSetSolid()) {
 					solidGeometryId = surfaceGeometryImporter.doImport(solidProperty.getSolid(), waterBodyId);
-					solidProperty.unsetSolid();
 				} else {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
@@ -249,7 +246,6 @@ public class DBWaterBody implements DBImporter {
 
 				if (boundarySurface != null) {
 					boundarySurfaceImporter.doImport(boundarySurface, waterBody, waterBodyId);
-					property.unsetWaterBoundarySurface();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {

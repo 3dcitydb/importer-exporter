@@ -152,8 +152,6 @@ public class DBBuildingFurniture implements DBImporter {
 					geometryObject = geometryConverter.getPointOrCurveGeometry(abstractGeometry);
 				else 
 					importer.logOrThrowUnsupportedGeometryMessage(buildingFurniture, abstractGeometry);
-
-				geometryProperty.unsetGeometry();
 			} else {
 				String href = geometryProperty.getHref();
 				if (href != null && href.length() != 0) {

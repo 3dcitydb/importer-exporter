@@ -136,8 +136,6 @@ public class DBCityObjectGroup implements DBImporter {
 					geometryObject = geometryConverter.getPointOrCurveGeometry(abstractGeometry);
 				else 
 					importer.logOrThrowUnsupportedGeometryMessage(cityObjectGroup, abstractGeometry);
-
-				geometryProperty.unsetGeometry();
 			} else {
 				String href = geometryProperty.getHref();
 				if (href != null && href.length() != 0) {

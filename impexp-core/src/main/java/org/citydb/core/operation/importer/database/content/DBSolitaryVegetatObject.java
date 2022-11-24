@@ -201,8 +201,6 @@ public class DBSolitaryVegetatObject implements DBImporter {
 						geometryObject = geometryConverter.getPointOrCurveGeometry(abstractGeometry);
 					else 
 						importer.logOrThrowUnsupportedGeometryMessage(vegetationObject, abstractGeometry);
-
-					geometryProperty.unsetGeometry();
 				} else {
 					String href = geometryProperty.getHref();
 					if (href != null && href.length() != 0) {

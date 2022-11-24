@@ -71,8 +71,6 @@ public class LocalAppearanceHandler {
 				Appearance appearance = property.getAppearance();
 				
 				if (appearance != null) {
-					// unlink parent to be able to free memory
-					appearance.unsetParent();
 					appearances.add(appearance);
 
 					// check whether we have to deal with textures

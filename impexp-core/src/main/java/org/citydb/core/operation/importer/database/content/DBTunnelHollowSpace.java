@@ -138,7 +138,6 @@ public class DBTunnelHollowSpace implements DBImporter {
 
 			if (multiSurfacePropery.isSetMultiSurface()) {
 				geometryId = surfaceGeometryImporter.doImport(multiSurfacePropery.getMultiSurface(), hollowSpaceId);
-				multiSurfacePropery.unsetMultiSurface();
 			} else {
 				String href = multiSurfacePropery.getHref();
 				if (href != null && href.length() != 0) {
@@ -164,7 +163,6 @@ public class DBTunnelHollowSpace implements DBImporter {
 
 			if (solidProperty.isSetSolid()) {
 				geometryId = surfaceGeometryImporter.doImport(solidProperty.getSolid(), hollowSpaceId);
-				solidProperty.unsetSolid();
 			} else {
 				String href = solidProperty.getHref();
 				if (href != null && href.length() != 0) {
@@ -197,7 +195,6 @@ public class DBTunnelHollowSpace implements DBImporter {
 
 				if (boundarySurface != null) {
 					thematicSurfaceImporter.doImport(boundarySurface, hollowSpace, hollowSpaceId);
-					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -218,7 +215,6 @@ public class DBTunnelHollowSpace implements DBImporter {
 
 				if (installation != null) {
 					tunnelInstallationImporter.doImport(installation, hollowSpace, hollowSpaceId);
-					property.unsetIntTunnelInstallation();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
@@ -239,7 +235,6 @@ public class DBTunnelHollowSpace implements DBImporter {
 
 				if (furniture != null) {
 					tunnelFurnitureImporter.doImport(furniture, hollowSpaceId);
-					property.unsetTunnelFurniture();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {

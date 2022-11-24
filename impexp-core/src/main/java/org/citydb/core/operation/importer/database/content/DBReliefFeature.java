@@ -101,8 +101,6 @@ public class DBReliefFeature implements DBImporter {
 								": Raster relief components are not supported.");
 					else
 						reliefComponentImporter.doImport(component, reliefFeature, reliefFeatureId);
-
-					property.unsetReliefComponent();
 				} else {
 					String href = property.getHref();
 					if (href != null && href.length() != 0) {
