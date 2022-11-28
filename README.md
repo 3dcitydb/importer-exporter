@@ -16,7 +16,7 @@ It allows for high-performance loading and extracting 3D city model data.
 * Support for CityJSON 1.0
 * Support for CityGML Application Domain Extensions (ADEs) through
   software extensions
-* Support for PostgreSQL/PostGIS and Oracle Locator/Spatial
+* Support for PostgreSQL/PostGIS and Oracle Spatial
 * Reading/writing CityGML instance documents of arbitrary file size
 * Export of KML/COLLADA/glTF models including tiling schemas for
   visualization and interactive exploration of large city models
@@ -47,17 +47,18 @@ previous release of the 3D City Database Importer/Exporter under Apache License 
 
 Latest release
 --------------
-The latest stable release of the 3D City Database Importer/Exporter is 5.2.1.
+The latest stable release of the 3D City Database Importer/Exporter is 5.3.0.
 
-Download the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.2.1/3DCityDB-Importer-Exporter-5.2.1.zip).
+Download the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.3.0/3DCityDB-Importer-Exporter-5.3.0.zip).
 Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
 
 System requirements
 -------------------
 * Java JRE or JDK >= 8
 * [3D City Database](https://github.com/3dcitydb/3dcitydb) on
-  - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
-  - Oracle DBMS >= 10G R2 with Spatial or Locator option
+  - PostgreSQL DBMS >= 11 with PostGIS extension >= 2.5
+  - Oracle DBMS >= 19c
+  - PolarDB for PostgresSQL >= 1.1 with Ganos >= 4.6
   
 The 3D City Database Importer/Exporter can be run on any platform providing appropriate Java support.
 
