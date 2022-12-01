@@ -51,6 +51,7 @@ import java.util.Set;
 public class DBGlobalAppearance extends AbstractAppearanceExporter {
 	private final PreparedStatement ps;
 	private final PreparedStatement psImport;
+	private final boolean replaceIds;
 
 	private int batchSize;
 	private int batchCounter;
@@ -59,6 +60,7 @@ public class DBGlobalAppearance extends AbstractAppearanceExporter {
 		super(true, cacheTable, exporter, config);
 		ps = cacheTable.getConnection().prepareStatement(select.toString());
 
+		replaceIds = config.getExportConfig().getResourceId().isReplaceWithUUIDs();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		batchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
 		if (batchSize > exporter.getDatabaseAdapter().getMaxBatchSize())
@@ -81,7 +83,16 @@ public class DBGlobalAppearance extends AbstractAppearanceExporter {
 
 		try (ResultSet rs = ps.executeQuery()) {
 			Map<Long, Appearance> appearances = doExport(rs);
-			return !appearances.isEmpty() ? appearances.values().iterator().next() : null;
+			if (!appearances.isEmpty()) {
+				Appearance appearance = appearances.values().iterator().next();
+				if (replaceIds) {
+					appearance.accept(exporter.getIdReplacer());
+				}
+
+				return appearance;
+			} else {
+				return null;
+			}
 		}
 	}
 
