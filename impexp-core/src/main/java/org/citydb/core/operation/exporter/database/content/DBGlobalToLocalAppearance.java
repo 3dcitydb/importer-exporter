@@ -84,7 +84,7 @@ public class DBGlobalToLocalAppearance extends AbstractAppearanceExporter {
     }
 
     public DBGlobalToLocalAppearance(Connection connection, Query query, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
-        super(false, null, exporter, config);
+        super(Mode.GLOBAL_TO_LOCAL, null, exporter, config);
         this.connection = connection;
 
         replaceIds = config.getExportConfig().getResourceId().isReplaceWithUUIDs();

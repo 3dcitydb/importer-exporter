@@ -81,11 +81,17 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final List<Table> appearanceADEHookTables;
 	private final List<Table> surfaceDataADEHookTables;
 
-	protected AbstractAppearanceExporter(boolean isGlobal, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+	enum Mode {
+		LOCAL,
+		GLOBAL,
+		GLOBAL_TO_LOCAL
+	}
+
+	protected AbstractAppearanceExporter(Mode mode, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(exporter);
 
 		texImageIds = new HashSet<>();
-		lazyTextureImageExport = !isGlobal && exporter.isLazyTextureExport();
+		lazyTextureImageExport = mode == Mode.LOCAL && exporter.isLazyTextureExport();
 		exportTextureImage = exporter.getExportConfig().getAppearances().isSetExportTextureFiles();
 		uniqueFileNames = exporter.getExportConfig().getAppearances().isSetUniqueTextureFileNames();
 		noOfBuckets = exporter.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets();
@@ -123,7 +129,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		appearanceADEHookTables = addJoinsToADEHookTables(TableEnum.APPEARANCE, table);
 		surfaceDataADEHookTables = addJoinsToADEHookTables(TableEnum.SURFACE_DATA, surfaceData);
 
-		if (isGlobal) {
+		if (mode == Mode.GLOBAL) {
 			Table tmp = new Table(cacheTable.getTableName());
 			select.addJoin(JoinFactory.inner(tmp, "id", ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")))
 					.addJoin(JoinFactory.inner(surfaceGeometry, "id", ComparisonName.EQUAL_TO, tmp.getColumn("id")))

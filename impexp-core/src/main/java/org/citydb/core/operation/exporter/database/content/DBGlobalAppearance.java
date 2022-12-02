@@ -57,7 +57,7 @@ public class DBGlobalAppearance extends AbstractAppearanceExporter {
 	private int batchCounter;
 
 	public DBGlobalAppearance(CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
-		super(true, cacheTable, exporter, config);
+		super(Mode.GLOBAL, cacheTable, exporter, config);
 		ps = cacheTable.getConnection().prepareStatement(select.toString());
 
 		replaceIds = config.getExportConfig().getResourceId().isReplaceWithUUIDs();
