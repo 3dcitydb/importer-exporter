@@ -26,6 +26,7 @@ Change Log
 * Fixed loading of plugins and ADE extensions in case their path contains symbolic links. [#273](https://github.com/3dcitydb/importer-exporter/pull/273)
 * Fixed localization issues when internally converting strings. One effect of this issue was that the import operation
   failed to find the predefined 3DCityDB tables by their name and, thus, the import itself failed. [#108](https://github.com/3dcitydb/importer-exporter/issues/108)
+* Fixed export of global appearances when replacing ids. [#276](https://github.com/3dcitydb/importer-exporter/pull/276)
 * Fixed invalid line numbers in CSV preview in case the CSV files use a non-system line separator.
 * Fixed NPE when using a relative path for the delete log.
 * Fixed support for glob patterns and symbolic links when providing input files for the CLI commands.
