@@ -56,7 +56,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 	private List<PlaceHolder<?>> themes;
 
 	public DBLocalAppearance(Connection connection, Query query, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
-		super(false, null, exporter, config);
+		super(Mode.LOCAL, null, exporter, config);
 		batches = new LinkedHashMap<>();
 		batchSize = exporter.getFeatureBatchSize();
 

@@ -616,6 +616,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return affineTransformer;
 	}
 
+	public IdReplacer getIdReplacer() {
+		return idReplacer;
+	}
+
 	public InternalConfig getInternalConfig() {
 		return internalConfig;
 	}

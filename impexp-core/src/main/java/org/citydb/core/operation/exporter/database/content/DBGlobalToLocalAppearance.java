@@ -36,6 +36,7 @@ import org.citydb.core.operation.exporter.util.AppearanceRemover;
 import org.citydb.core.query.Query;
 import org.citydb.core.query.builder.QueryBuildException;
 import org.citydb.core.query.builder.sql.AppearanceFilterBuilder;
+import org.citydb.core.util.CoreConstants;
 import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
@@ -68,6 +69,7 @@ public class DBGlobalToLocalAppearance extends AbstractAppearanceExporter {
     private final Select appearanceQuery;
     private final Table textureParam;
 
+    private final boolean replaceIds;
     private final boolean handleImplicitGeometries;
     private final AppearanceRemover appearanceRemover;
     private final Map<Long, AbstractCityObject> batches;
@@ -82,9 +84,10 @@ public class DBGlobalToLocalAppearance extends AbstractAppearanceExporter {
     }
 
     public DBGlobalToLocalAppearance(Connection connection, Query query, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
-        super(false, null, exporter, config);
+        super(Mode.GLOBAL_TO_LOCAL, null, exporter, config);
         this.connection = connection;
 
+        replaceIds = config.getExportConfig().getResourceId().isReplaceWithUUIDs();
         handleImplicitGeometries = exporter.getInternalConfig().getOutputFormat() == OutputFormat.CITYGML;
         if (handleImplicitGeometries) {
             copyBuilder = new DeepCopyBuilder();
@@ -144,7 +147,11 @@ public class DBGlobalToLocalAppearance extends AbstractAppearanceExporter {
                             GeometryType.IMPLICIT_GEOMETRY :
                             GeometryType.GEOMETRY;
 
-                    targets.computeIfAbsent(type, v -> new HashSet<>()).add("#" + geometry.getId());
+                    String target = replaceIds ?
+                            (String) geometry.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) :
+                            geometry.getId();
+
+                    targets.computeIfAbsent(type, v -> new HashSet<>()).add("#" + target);
                 }
             }
         });
@@ -217,9 +224,17 @@ public class DBGlobalToLocalAppearance extends AbstractAppearanceExporter {
         if (geometryTargets != null) {
             appearanceRemover.cleanupAppearances(appearances.values(), geometryTargets);
             for (Map.Entry<Long, Appearance> entry : appearances.entrySet()) {
+                if (replaceIds) {
+                    entry.getValue().accept(exporter.getIdReplacer());
+                }
+
                 AbstractCityObject cityObject = batches.get(entry.getKey());
                 cityObject.addAppearance(new AppearanceProperty(entry.getValue()));
             }
+        }
+
+        if (replaceIds) {
+            globalAppearances.forEach(appearance -> appearance.accept(exporter.getIdReplacer()));
         }
 
         return globalAppearances;
