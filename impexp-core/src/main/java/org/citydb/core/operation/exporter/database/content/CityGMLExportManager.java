@@ -777,6 +777,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return cache != null && cache.get(gmlId) != null;
 	}
 
+	@Override
+	public String replaceObjectId(String gmlId) {
+		return idReplacer != null && gmlId != null ? idReplacer.replaceId(gmlId) : gmlId;
+	}
+
 	public void putObjectId(String gmlId, long id, int objectClassId) {
 		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		if (cache != null)
