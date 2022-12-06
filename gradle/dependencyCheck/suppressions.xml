@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+   file name: ant-1.10.5.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.ant/ant@.*$</packageUrl>
+        <cpe>cpe:/a:apache:ant</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: ant-1.10.5.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.ant/ant@.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-36373</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: ant-1.10.5.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.ant/ant@.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-36374</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: ant-1.10.5.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.ant/ant@.*$</packageUrl>
+        <vulnerabilityName>CVE-2020-1945</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: ant-launcher-1.10.5.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.ant/ant\-launcher@.*$</packageUrl>
+        <cpe>cpe:/a:apache:ant</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-beanutils-1.9.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-beanutils/commons\-beanutils@.*$</packageUrl>
+        <cpe>cpe:/a:apache:commons_beanutils</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-beanutils-1.9.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-beanutils/commons\-beanutils@.*$</packageUrl>
+        <vulnerabilityName>CVE-2014-0114</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-beanutils-1.9.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-beanutils/commons\-beanutils@.*$</packageUrl>
+        <cve>CVE-2019-10086</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-2.1.214.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <cve>CVE-2022-45868</cve>
+    </suppress>
+</suppressions>

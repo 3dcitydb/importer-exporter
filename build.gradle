@@ -2,6 +2,13 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
     id 'com.jfrog.artifactory' version '4.24.21'
+    id 'org.owasp.dependencycheck' version '7.4.0'
+}
+
+dependencyCheck {
+    failOnError = true
+    failBuildOnCVSS = 5
+    suppressionFile = 'gradle/dependencyCheck/suppressions.xml'
 }
 
 apply from: 'properties.gradle'
@@ -12,6 +19,7 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.artifactory'
+    apply plugin: 'org.owasp.dependencycheck'
 
     group 'org.citydb'
     version parent.version
