@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 5.3.0 - tba
+### 5.3.0 - 2022-12-15
 
 #### Additions
 * The CityGML/CityJSON import operation has been improved to avoid duplicate top-level city objects in the database.
