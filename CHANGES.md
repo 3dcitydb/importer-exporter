@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 5.3.0 - tba
+### 5.3.0 - 2022-12-15
 
 #### Additions
 * The CityGML/CityJSON import operation has been improved to avoid duplicate top-level city objects in the database.
@@ -26,6 +26,7 @@ Change Log
 * Fixed loading of plugins and ADE extensions in case their path contains symbolic links. [#273](https://github.com/3dcitydb/importer-exporter/pull/273)
 * Fixed localization issues when internally converting strings. One effect of this issue was that the import operation
   failed to find the predefined 3DCityDB tables by their name and, thus, the import itself failed. [#108](https://github.com/3dcitydb/importer-exporter/issues/108)
+* Fixed export of global appearances when replacing ids. [#276](https://github.com/3dcitydb/importer-exporter/pull/276)
 * Fixed invalid line numbers in CSV preview in case the CSV files use a non-system line separator.
 * Fixed NPE when using a relative path for the delete log.
 * Fixed support for glob patterns and symbolic links when providing input files for the CLI commands.
@@ -33,7 +34,7 @@ Change Log
 
 #### Miscellaneous
 * Updated citygml4j to 2.12.2
-* Updated PostgreSQL driver to 42.5.0
+* Updated PostgreSQL driver to 42.5.1
 * Updated GeoTools to 27.2 and replaced `gt-epsg-hsql` with `gt-epsg-wkt`.
 
 ### 5.2.1 - 2022-07-29

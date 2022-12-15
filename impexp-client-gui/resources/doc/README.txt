@@ -55,7 +55,7 @@ loading and extracting 3D city model data.
 * Support for CityJSON 1.0
 * Support for CityGML Application Domain Extensions (ADEs) through
   software extensions
-* Support for PostgreSQL/PostGIS and Oracle Locator/Spatial
+* Support for PostgreSQL/PostGIS and Oracle Spatial
 * Reading/writing CityGML instance documents of arbitrary file size
 * Export of KML/COLLADA/glTF models including tiling schemas for 
   visualization and interactive exploration of large city models
@@ -83,8 +83,9 @@ third party applications.
 
 * Java JRE or JDK >= 8
 * @citydbName@ version @citydbVersion@ on
-  - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
-  - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
+  - PostgreSQL DBMS >= 11 with PostGIS extension >= 2.5
+  - Oracle Spatial DBMS >= 19c
+  - PolarDB for PostgresSQL >= 1.1 with Ganos >= 4.6
 
 The @name@ can be run on any platform 
 providing appropriate Java support. It has been tested on the 

@@ -66,6 +66,7 @@ import java.util.*;
 
 public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final Logger log = Logger.getInstance();
+	private final Mode mode;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean lazyTextureImageExport;
 	private final boolean exportTextureImage;
@@ -81,11 +82,18 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final List<Table> appearanceADEHookTables;
 	private final List<Table> surfaceDataADEHookTables;
 
-	protected AbstractAppearanceExporter(boolean isGlobal, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+	enum Mode {
+		LOCAL,
+		GLOBAL,
+		GLOBAL_TO_LOCAL
+	}
+
+	protected AbstractAppearanceExporter(Mode mode, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(exporter);
+		this.mode = mode;
 
 		texImageIds = new HashSet<>();
-		lazyTextureImageExport = !isGlobal && exporter.isLazyTextureExport();
+		lazyTextureImageExport = mode == Mode.LOCAL && exporter.isLazyTextureExport();
 		exportTextureImage = exporter.getExportConfig().getAppearances().isSetExportTextureFiles();
 		uniqueFileNames = exporter.getExportConfig().getAppearances().isSetUniqueTextureFileNames();
 		noOfBuckets = exporter.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets();
@@ -123,7 +131,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		appearanceADEHookTables = addJoinsToADEHookTables(TableEnum.APPEARANCE, table);
 		surfaceDataADEHookTables = addJoinsToADEHookTables(TableEnum.SURFACE_DATA, surfaceData);
 
-		if (isGlobal) {
+		if (mode == Mode.GLOBAL) {
 			Table tmp = new Table(cacheTable.getTableName());
 			select.addJoin(JoinFactory.inner(tmp, "id", ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")))
 					.addJoin(JoinFactory.inner(surfaceGeometry, "id", ComparisonName.EQUAL_TO, tmp.getColumn("id")))
@@ -203,7 +211,10 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 	private Appearance getAppearance(long appearanceId, ResultSet rs) throws CityGMLExportException, SQLException {
 		Appearance appearance = new Appearance();
-		appearance.setId(rs.getString(2));
+
+		if (mode != Mode.GLOBAL_TO_LOCAL) {
+			appearance.setId(rs.getString(2));
+		}
 
 		for (SplitValue splitValue : valueSplitter.split(rs.getString(3), rs.getString(4))) {
 			Code name = new Code(splitValue.result(0));
@@ -231,16 +242,20 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 	private SurfaceDataProperty getSurfaceData(long surfaceDataId, ResultSet rs, SurfaceDataProperty empty) throws CityGMLExportException, SQLException {
 		int objectClassId = rs.getInt(8);
-		String gmlId = rs.getString(9);
 
+		String gmlId = null;
 		boolean generateNewGmlId = false;
-		if (gmlId != null) {
-			// process xlink
-			if (exporter.lookupAndPutObjectId(gmlId, surfaceDataId, objectClassId)) {
-				if (useXLink)
-					return new SurfaceDataProperty("#" + gmlId);
-				else {
-					generateNewGmlId = true;
+
+		if (mode != Mode.GLOBAL_TO_LOCAL) {
+			gmlId = rs.getString(9);
+			if (gmlId != null) {
+				// process xlink
+				if (exporter.lookupAndPutObjectId(gmlId, surfaceDataId, objectClassId)) {
+					if (useXLink)
+						return new SurfaceDataProperty("#" + gmlId);
+					else {
+						generateNewGmlId = true;
+					}
 				}
 			}
 		}

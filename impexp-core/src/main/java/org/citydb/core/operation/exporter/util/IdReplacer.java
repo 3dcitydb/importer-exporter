@@ -146,9 +146,7 @@ public class IdReplacer extends GMLWalker {
     }
 
     private void process(List<String> references) {
-        for (int i = 0; i < references.size(); i++) {
-            references.set(i, process(references.get(i)));
-        }
+        references.replaceAll(this::process);
     }
 
     private String process(String reference) {
@@ -164,7 +162,7 @@ public class IdReplacer extends GMLWalker {
         return !id.isEmpty() ? prefix + replaceId(id) : reference;
     }
 
-    private String replaceId(String id) {
+    public String replaceId(String id) {
         return prefix + UUID.nameUUIDFromBytes(md5.digest(id.getBytes()));
     }
 }

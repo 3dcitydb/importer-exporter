@@ -616,6 +616,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return affineTransformer;
 	}
 
+	public IdReplacer getIdReplacer() {
+		return idReplacer;
+	}
+
 	public InternalConfig getInternalConfig() {
 		return internalConfig;
 	}
@@ -771,6 +775,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	public boolean lookupObjectId(String gmlId) {
 		IdCache cache = idCacheManager.getCache(IdCacheType.OBJECT);
 		return cache != null && cache.get(gmlId) != null;
+	}
+
+	@Override
+	public String replaceObjectId(String gmlId) {
+		return idReplacer != null && gmlId != null ? idReplacer.replaceId(gmlId) : gmlId;
 	}
 
 	public void putObjectId(String gmlId, long id, int objectClassId) {
