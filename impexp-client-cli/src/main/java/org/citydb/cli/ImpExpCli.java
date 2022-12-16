@@ -38,7 +38,6 @@ import org.citydb.cli.option.StartupProgressListener;
 import org.citydb.cli.util.CliConstants;
 import org.citydb.cli.util.PidFile;
 import org.citydb.config.Config;
-import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.ProjectConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LanguageType;
@@ -60,6 +59,7 @@ import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.core.util.InternalProxySelector;
 import org.citydb.core.util.Util;
+import org.citydb.util.config.ConfigUtil;
 import org.citydb.util.log.Logger;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
@@ -221,6 +221,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     }
 
     private int process(String[] args) throws Exception {
+        System.setProperty("picocli.disable.closures", "true");
         CommandLine cmd = new CommandLine(this);
 
         try {
