@@ -1,8 +1,8 @@
-![Gradle build](https://img.shields.io/github/workflow/status/3dcitydb/importer-exporter/impexp-build?logo=Gradle&logoColor=white&style=flat-square)
+![Gradle build](https://img.shields.io/github/actions/workflow/status/3dcitydb/importer-exporter/impexp-build.yml?logo=Gradle&logoColor=white&style=flat-square)
 [
-![Docker build 3dcitydb/impexp:edge](https://img.shields.io/github/workflow/status/3dcitydb/importer-exporter/docker-build-edge?label=debian&style=flat-square&logo=Docker&logoColor=white)
+![Docker build 3dcitydb/impexp:edge](https://img.shields.io/github/actions/workflow/status/3dcitydb/importer-exporter/docker-build-edge.yml?label=debian&style=flat-square&logo=Docker&logoColor=white)
 ![debian size](https://img.shields.io/docker/image-size/3dcitydb/impexp/edge?label=debian&logo=Docker&logoColor=white&style=flat-square)
-![https://hub.docker.com/repository/docker/3dcitydb/impexp](https://img.shields.io/github/workflow/status/3dcitydb/importer-exporter/docker-build-edge-alpine?label=alpine&style=flat-square&logo=Docker&logoColor=white)
+![https://hub.docker.com/repository/docker/3dcitydb/impexp](https://img.shields.io/github/actions/workflow/status/3dcitydb/importer-exporter/docker-build-edge-alpine.yml?label=alpine&style=flat-square&logo=Docker&logoColor=white)
 ![alpine size](https://img.shields.io/docker/image-size/3dcitydb/impexp/edge-alpine?label=alpine&logo=Docker&logoColor=white&style=flat-square)
 ](https://hub.docker.com/repository/docker/3dcitydb/impexp)
 
