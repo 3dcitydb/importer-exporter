@@ -172,9 +172,6 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener, E
 		};
 
 		// get rid of icons
-		renderer.setLeafIcon(null);
-		renderer.setOpenIcon(null);
-		renderer.setClosedIcon(null);
 		menuTree.setCellRenderer(renderer);
 
 		// layout
