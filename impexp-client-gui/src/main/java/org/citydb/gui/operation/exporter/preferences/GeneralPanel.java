@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.operation.exporter.preferences;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.FeatureEnvelopeMode;
@@ -36,6 +37,9 @@ import org.citydb.config.project.query.filter.version.CityGMLVersionType;
 import org.citydb.core.registry.ObjectRegistry;
 import org.citydb.core.util.Util;
 import org.citydb.gui.components.TitledPanel;
+import org.citydb.gui.components.popup.AddTokenMenu;
+import org.citydb.gui.components.popup.PopupMenuDecorator;
+import org.citydb.gui.components.popup.TokenSettingsMenu;
 import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.event.global.PropertyChangeEvent;
@@ -51,12 +55,22 @@ public class GeneralPanel extends InternalPreferencesComponent {
 	private JLabel versionHintLabel;
 	private JCheckBox failFastOnErrors;
 	private JCheckBox computeNumberMatched;
+	private JLabel featureEnvelopeLabel;
+	private JComboBox<FeatureEnvelopeMode> featureEnvelope;
 	private JLabel compressedOutputFormatLabel;
 	private JComboBox<OutputFormat> compressedOutputFormat;
 
-	private TitledPanel envelopePanel;
-	private JLabel featureEnvelopeLabel;
-	private JComboBox<FeatureEnvelopeMode> featureEnvelope;
+	private TitledPanel metadataPanel;
+	private JLabel nameLabel;
+	private JTextField name;
+	private JButton nameTokenButton;
+	private JButton nameTokenSettingsButton;
+	private TokenSettingsMenu nameTokenSettings;
+	private JLabel descriptionLabel;
+	private JTextField description;
+	private JButton descriptionTokenButton;
+	private JButton descriptionTokenSettingsButton;
+	private TokenSettingsMenu descriptionTokenSettings;
 	private JCheckBox cityModelEnvelope;
 	private JCheckBox useTileExtent;
 
@@ -76,6 +90,10 @@ public class GeneralPanel extends InternalPreferencesComponent {
 		if (computeNumberMatched.isSelected() != generalOptions.getComputeNumberMatched().isEnabled()) return true;
 		if (compressedOutputFormat.getSelectedItem() != generalOptions.getCompressedOutputFormat()) return true;
 		if (featureEnvelope.getSelectedItem() != generalOptions.getEnvelope().getFeatureMode()) return true;
+		if (!name.getText().equals(generalOptions.getDatasetName().getValue())) return true;
+		if (nameTokenSettings.isModified(generalOptions.getDatasetName())) return true;
+		if (!description.getText().equals(generalOptions.getDatasetDescription().getValue())) return true;
+		if (descriptionTokenSettings.isModified(generalOptions.getDatasetDescription())) return true;
 		if (cityModelEnvelope.isSelected() != generalOptions.getEnvelope().isUseEnvelopeOnCityModel()) return true;
 		if (useTileExtent.isSelected() != generalOptions.getEnvelope().isUseTileExtentForCityModel()) return true;
 
@@ -95,11 +113,6 @@ public class GeneralPanel extends InternalPreferencesComponent {
 
 		failFastOnErrors = new JCheckBox();
 		computeNumberMatched = new JCheckBox();
-		compressedOutputFormatLabel = new JLabel();
-		compressedOutputFormat = new JComboBox<>();
-		for (OutputFormat outputFormat : OutputFormat.values()) {
-			compressedOutputFormat.addItem(outputFormat);
-		}
 
 		featureEnvelopeLabel = new JLabel();
 		featureEnvelope = new JComboBox<>();
@@ -122,13 +135,53 @@ public class GeneralPanel extends InternalPreferencesComponent {
 			}
 		});
 
+		compressedOutputFormatLabel = new JLabel();
+		compressedOutputFormat = new JComboBox<>();
+		for (OutputFormat outputFormat : OutputFormat.values()) {
+			compressedOutputFormat.addItem(outputFormat);
+		}
+
+		nameLabel = new JLabel();
+		name = new JTextField();
+		nameTokenButton = new JButton();
+		nameTokenButton.setHorizontalTextPosition(SwingConstants.LEFT);
+		nameTokenButton.setIcon(new FlatSVGIcon("org/citydb/gui/icons/expand_more.svg"));
+		nameTokenSettingsButton = new JButton();
+		nameTokenSettingsButton.setIcon(new FlatSVGIcon("org/citydb/gui/icons/settings.svg"));
+		nameTokenSettings = new TokenSettingsMenu();
+
+		descriptionLabel = new JLabel();
+		description = new JTextField();
+		descriptionTokenButton = new JButton();
+		descriptionTokenButton.setHorizontalTextPosition(SwingConstants.LEFT);
+		descriptionTokenButton.setIcon(new FlatSVGIcon("org/citydb/gui/icons/expand_more.svg"));
+		descriptionTokenSettingsButton = new JButton();
+		descriptionTokenSettingsButton.setIcon(new FlatSVGIcon("org/citydb/gui/icons/settings.svg"));
+		descriptionTokenSettings = new TokenSettingsMenu();
+
 		cityModelEnvelope = new JCheckBox();
 		useTileExtent = new JCheckBox();
+
+		PopupMenuDecorator.getInstance().decorate(name);
 
 		setLayout(new GridBagLayout());
 		{
 			JPanel content = new JPanel();
 			content.setLayout(new GridBagLayout());
+
+			JPanel envelopePanel = new JPanel();
+			envelopePanel.setLayout(new GridBagLayout());
+			{
+				envelopePanel.add(featureEnvelopeLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+				envelopePanel.add(featureEnvelope, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+			}
+
+			JPanel compressedOutputPanel = new JPanel();
+			compressedOutputPanel.setLayout(new GridBagLayout());
+			{
+				compressedOutputPanel.add(compressedOutputFormatLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+				compressedOutputPanel.add(compressedOutputFormat, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+			}
 
 			int lmargin = GuiUtil.getTextOffset(cityGMLv2);
 			content.add(cityGMLv2, GuiUtil.setConstraints(0, 0, 2, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -136,8 +189,8 @@ public class GeneralPanel extends InternalPreferencesComponent {
 			content.add(cityGMLv1, GuiUtil.setConstraints(0, 2, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
 			content.add(failFastOnErrors, GuiUtil.setConstraints(0, 3, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
 			content.add(computeNumberMatched, GuiUtil.setConstraints(0, 4, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			content.add(compressedOutputFormatLabel, GuiUtil.setConstraints(0, 5, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
-			content.add(compressedOutputFormat, GuiUtil.setConstraints(1, 5, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+			content.add(envelopePanel, GuiUtil.setConstraints(0, 5, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+			content.add(compressedOutputPanel, GuiUtil.setConstraints(0, 6, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
 
 			generalPanel = new TitledPanel().build(content);
 		}
@@ -145,19 +198,63 @@ public class GeneralPanel extends InternalPreferencesComponent {
 			JPanel content = new JPanel();
 			content.setLayout(new GridBagLayout());
 
-			int lmargin = GuiUtil.getTextOffset(cityModelEnvelope);
-			content.add(featureEnvelopeLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-			content.add(featureEnvelope, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-			content.add(cityModelEnvelope, GuiUtil.setConstraints(0, 1, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			content.add(useTileExtent, GuiUtil.setConstraints(0, 2, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
+			JToolBar nameToolBar = new JToolBar();
+			nameToolBar.add(nameTokenButton);
+			nameToolBar.addSeparator();
+			nameToolBar.add(nameTokenSettingsButton);
 
-			envelopePanel = new TitledPanel().build(content);
+			JToolBar descriptionToolBar = new JToolBar();
+			descriptionToolBar.add(descriptionTokenButton);
+			descriptionToolBar.addSeparator();
+			descriptionToolBar.add(descriptionTokenSettingsButton);
+
+			int lmargin = GuiUtil.getTextOffset(cityModelEnvelope);
+			content.add(nameLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+			content.add(name, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+			content.add(nameToolBar, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+			content.add(descriptionLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+			content.add(description, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+			content.add(descriptionToolBar, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+			content.add(cityModelEnvelope, GuiUtil.setConstraints(0, 2, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			content.add(useTileExtent, GuiUtil.setConstraints(0, 3, 2, 1, 1, 1, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
+
+			metadataPanel = new TitledPanel().build(content);
 		}
 
 		add(generalPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(envelopePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(metadataPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		cityModelEnvelope.addActionListener(e -> setEnabledEnvelopeOptions());
+
+		int x = UIManager.getInsets("Button.toolbar.spacingInsets").left;
+		nameTokenButton.addActionListener(e -> AddTokenMenu.newInstance()
+				.withTarget(name)
+				.show(nameTokenButton, x, nameTokenButton.getHeight()));
+		descriptionTokenButton.addActionListener(e -> AddTokenMenu.newInstance()
+				.withTarget(description)
+				.show(descriptionTokenButton, x, descriptionTokenButton.getHeight()));
+
+		nameTokenSettingsButton.addActionListener(
+				e -> nameTokenSettings.show(nameTokenSettingsButton, x, nameTokenSettingsButton.getHeight()));
+		descriptionTokenSettingsButton.addActionListener(
+				e -> descriptionTokenSettings.show(descriptionTokenSettingsButton, x, descriptionTokenSettingsButton.getHeight()));
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
+			}
+		});
+
+		updateComponentUI();
+	}
+
+	private void setEnabledEnvelopeOptions() {
+		useTileExtent.setEnabled(cityModelEnvelope.isSelected());
+	}
+
+	private void updateComponentUI() {
+		nameTokenSettings.updateUI();
+		descriptionTokenSettings.updateUI();
 	}
 
 	@Override
@@ -168,11 +265,19 @@ public class GeneralPanel extends InternalPreferencesComponent {
 		versionHintLabel.setText(Language.I18N.getString("pref.export.general.label.versionHint"));
 		failFastOnErrors.setText(Language.I18N.getString("pref.export.general.failFastOnError"));
 		computeNumberMatched.setText(Language.I18N.getString("pref.export.general.computeNumberMatched"));
-		compressedOutputFormatLabel.setText(Language.I18N.getString("pref.export.general.label.compressedFormat"));
-		envelopePanel.setTitle(Language.I18N.getString("pref.export.general.border.bbox"));
 		featureEnvelopeLabel.setText(Language.I18N.getString("pref.export.general.label.feature"));
+		compressedOutputFormatLabel.setText(Language.I18N.getString("pref.export.general.label.compressedFormat"));
+
+		metadataPanel.setTitle(Language.I18N.getString("pref.export.general.border.metadata"));
+		nameLabel.setText(Language.I18N.getString("pref.export.general.label.datasetName"));
+		nameTokenButton.setText(Language.I18N.getString("pref.export.tiling.label.token"));
+		descriptionLabel.setText(Language.I18N.getString("pref.export.general.label.datasetDescription"));
+		descriptionTokenButton.setText(Language.I18N.getString("pref.export.tiling.label.token"));
 		cityModelEnvelope.setText(Language.I18N.getString("pref.export.general.label.cityModel"));
 		useTileExtent.setText(Language.I18N.getString("pref.export.general.label.useTileExtent"));
+
+		nameTokenSettings.switchLocale(locale);
+		descriptionTokenSettings.switchLocale(locale);
 	}
 
 	@Override
@@ -189,8 +294,15 @@ public class GeneralPanel extends InternalPreferencesComponent {
 		GeneralOptions generalOptions = config.getExportConfig().getGeneralOptions();
 		failFastOnErrors.setSelected(generalOptions.isFailFastOnErrors());
 		computeNumberMatched.setSelected(generalOptions.getComputeNumberMatched().isEnabled());
-		compressedOutputFormat.setSelectedItem(generalOptions.getCompressedOutputFormat());
 		featureEnvelope.setSelectedItem(generalOptions.getEnvelope().getFeatureMode());
+		compressedOutputFormat.setSelectedItem(generalOptions.getCompressedOutputFormat());
+
+		name.setText(generalOptions.getDatasetName().getValue());
+		name.setCaretPosition(name.getText().length());
+		nameTokenSettings.loadSettings(generalOptions.getDatasetName());
+		description.setText(generalOptions.getDatasetDescription().getValue());
+		description.setCaretPosition(description.getText().length());
+		descriptionTokenSettings.loadSettings(generalOptions.getDatasetDescription());
 		cityModelEnvelope.setSelected(generalOptions.getEnvelope().isUseEnvelopeOnCityModel());
 		useTileExtent.setSelected(generalOptions.getEnvelope().isUseTileExtentForCityModel());
 
@@ -206,14 +318,15 @@ public class GeneralPanel extends InternalPreferencesComponent {
 		GeneralOptions generalOptions = config.getExportConfig().getGeneralOptions();
 		generalOptions.setFailFastOnErrors(failFastOnErrors.isSelected());
 		generalOptions.getComputeNumberMatched().setEnabled(computeNumberMatched.isSelected());
-		generalOptions.setCompressedOutputFormat((OutputFormat) compressedOutputFormat.getSelectedItem());
 		generalOptions.getEnvelope().setFeatureMode((FeatureEnvelopeMode) featureEnvelope.getSelectedItem());
+		generalOptions.setCompressedOutputFormat((OutputFormat) compressedOutputFormat.getSelectedItem());
+
+		generalOptions.getDatasetName().setValue(name.getText());
+		nameTokenSettings.setSettings(generalOptions.getDatasetName());
+		generalOptions.getDatasetDescription().setValue(description.getText());
+		descriptionTokenSettings.setSettings(generalOptions.getDatasetDescription());
 		generalOptions.getEnvelope().setUseEnvelopeOnCityModel(cityModelEnvelope.isSelected());
 		generalOptions.getEnvelope().setUseTileExtentForCityModel(useTileExtent.isSelected());
-	}
-
-	private void setEnabledEnvelopeOptions() {
-		useTileExtent.setEnabled(cityModelEnvelope.isSelected());
 	}
 
 	@Override

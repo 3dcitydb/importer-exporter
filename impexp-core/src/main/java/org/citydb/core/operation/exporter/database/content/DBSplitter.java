@@ -33,6 +33,7 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.GeneralOptions;
+import org.citydb.config.project.exporter.TileTokenValue;
 import org.citydb.config.project.global.CacheMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
@@ -57,6 +58,7 @@ import org.citydb.core.query.builder.sql.SQLQueryBuilder;
 import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.query.filter.selection.Predicate;
 import org.citydb.core.query.filter.selection.SelectionFilter;
+import org.citydb.core.query.filter.tiling.Tile;
 import org.citydb.core.query.filter.type.FeatureTypeFilter;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.sqlbuilder.expression.LiteralList;
@@ -558,6 +560,16 @@ public class DBSplitter {
 	}
 
 	private void writeDocumentHeader() throws FeatureWriteException {
+		if (config.getExportConfig().getGeneralOptions().getDatasetName().isSetValue()) {
+			TileTokenValue name = config.getExportConfig().getGeneralOptions().getDatasetName();
+			writer.getMetadata().setDatasetName(replaceAndFormat(name));
+		}
+
+		if (config.getExportConfig().getGeneralOptions().getDatasetDescription().isSetValue()) {
+			TileTokenValue description = config.getExportConfig().getGeneralOptions().getDatasetDescription();
+			writer.getMetadata().setDatasetDescription(replaceAndFormat(description));
+		}
+
 		if (metadataProviders != null && !metadataProviders.isEmpty()) {
 			for (MetadataProvider metadataProvider : metadataProviders) {
 				try {
@@ -573,4 +585,20 @@ public class DBSplitter {
 		writer.writeHeader();
 	}
 
+	private String replaceAndFormat(TileTokenValue value) {
+		int row, column;
+		if (query.isSetTiling()) {
+			Tile tile = query.getTiling().getActiveTile();
+			row = tile.getRow();
+			column = tile.getColumn();
+		} else {
+			row = column = 0;
+		}
+
+		BoundingBox extent = writer.getMetadata().isSetSpatialExtent() ?
+				writer.getMetadata().getSpatialExtent() :
+				new BoundingBox(new Position(0.0, 0.0), new Position(0.0, 0.0));
+
+		return value.formatAndResolveTokens(row, column, extent);
+	}
 }

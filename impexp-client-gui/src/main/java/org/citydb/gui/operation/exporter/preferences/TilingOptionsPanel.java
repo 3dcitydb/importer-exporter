@@ -28,14 +28,13 @@
 package org.citydb.gui.operation.exporter.preferences;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import com.formdev.flatlaf.extras.components.FlatTextField;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
-import org.citydb.config.project.exporter.TileTokenValue;
 import org.citydb.gui.components.TitledPanel;
-import org.citydb.gui.components.popup.AbstractPopupMenu;
+import org.citydb.gui.components.popup.AddTokenMenu;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
+import org.citydb.gui.components.popup.TokenSettingsMenu;
 import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
@@ -325,158 +324,5 @@ public class TilingOptionsPanel extends InternalPreferencesComponent {
 	@Override
 	public String getLocalizedTitle() {
 		return Language.I18N.getString("pref.tree.export.tiling");
-	}
-
-	private static class AddTokenMenu extends JPopupMenu {
-		private JTextField textField;
-
-		static AddTokenMenu newInstance() {
-			return new AddTokenMenu();
-		}
-
-		private AddTokenMenu() {
-			JMenuItem row = new JMenuItem(Language.I18N.getString("pref.export.tiling.label.row"));
-			JMenuItem column = new JMenuItem(Language.I18N.getString("pref.export.tiling.label.column"));
-			JMenuItem xmin = new JMenuItem("<html>x<sub>min</sub></html>");
-			JMenuItem ymin = new JMenuItem("<html>y<sub>min</sub></html>");
-			JMenuItem xmax = new JMenuItem("<html>x<sub>max</sub></html>");
-			JMenuItem ymax = new JMenuItem("<html>y<sub>max</sub></html>");
-
-			add(row);
-			add(column);
-			addSeparator();
-			add(xmin);
-			add(ymin);
-			add(xmax);
-			add(ymax);
-
-			row.addActionListener(e -> addToken(TileTokenValue.ROW_TOKEN));
-			column.addActionListener(e -> addToken(TileTokenValue.COLUMN_TOKEN));
-			xmin.addActionListener(e -> addToken(TileTokenValue.X_MIN_TOKEN));
-			ymin.addActionListener(e -> addToken(TileTokenValue.Y_MIN_TOKEN));
-			xmax.addActionListener(e -> addToken(TileTokenValue.X_MAX_TOKEN));
-			ymax.addActionListener(e -> addToken(TileTokenValue.Y_MAX_TOKEN));
-		}
-
-		AddTokenMenu withTarget(JTextField textField) {
-			this.textField = textField;
-			return this;
-		}
-
-		private void addToken(String token) {
-			if (textField != null) {
-				String text = textField.getText();
-				int dot = textField.getCaretPosition();
-				int start = textField.getSelectionStart();
-				int end = textField.getSelectionEnd();
-
-				if (start != dot || end != dot) {
-					text = text.substring(0, start) + text.substring(end);
-					dot = start;
-				}
-
-				textField.setText(text.substring(0, dot) + token + text.substring(dot));
-				textField.setCaretPosition(dot + token.length());
-			}
-		}
-	}
-
-	private static class TokenSettingsMenu extends AbstractPopupMenu {
-		private final JPanel settingsPanel;
-		private final JLabel rowLabel;
-		private final JLabel columnLabel;
-		private final JTextField rowFormat;
-		private final JTextField columnFormat;
-		private final JTextField xminFormat;
-		private final JTextField yminFormat;
-		private final JTextField xmaxFormat;
-		private final JTextField ymaxFormat;
-
-		TokenSettingsMenu() {
-			settingsPanel = new JPanel();
-			settingsPanel.setLayout(new GridBagLayout());
-			{
-				rowLabel = new JLabel();
-				columnLabel = new JLabel();
-				rowFormat = createTextField();
-				columnFormat = createTextField();
-				xminFormat = createTextField();
-				yminFormat = createTextField();
-				xmaxFormat = createTextField();
-				ymaxFormat = createTextField();
-
-				JLabel xminLabel = new JLabel("<html>x<sub>min</sub></html>");
-				JLabel yminLabel = new JLabel("<html>y<sub>min</sub></html>");
-				JLabel xmaxLabel = new JLabel("<html>x<sub>max</sub></html>");
-				JLabel ymaxLabel = new JLabel("<html>y<sub>max</sub></html>");
-
-				int separatorHeight = UIManager.getInt("Separator.height");
-				settingsPanel.add(rowLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
-				settingsPanel.add(rowFormat, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 10));
-				settingsPanel.add(columnLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 10, 0, 5));
-				settingsPanel.add(columnFormat, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 10));
-				settingsPanel.add(new JSeparator(), GuiUtil.setConstraints(0, 2, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5 + separatorHeight, 0, separatorHeight, 0));
-				settingsPanel.add(xminLabel, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.HORIZONTAL, 5, 10, 0, 5));
-				settingsPanel.add(xminFormat, GuiUtil.setConstraints(1, 3, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 10));
-				settingsPanel.add(yminLabel, GuiUtil.setConstraints(0, 4, 0, 0, GridBagConstraints.HORIZONTAL, 5, 10, 0, 5));
-				settingsPanel.add(yminFormat, GuiUtil.setConstraints(1, 4, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 10));
-				settingsPanel.add(xmaxLabel, GuiUtil.setConstraints(0, 5, 0, 0, GridBagConstraints.HORIZONTAL, 5, 10, 0, 5));
-				settingsPanel.add(xmaxFormat, GuiUtil.setConstraints(1, 5, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 10));
-				settingsPanel.add(ymaxLabel, GuiUtil.setConstraints(0, 6, 0, 0, GridBagConstraints.HORIZONTAL, 5, 10, 0, 5));
-				settingsPanel.add(ymaxFormat, GuiUtil.setConstraints(1, 6, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 10));
-			}
-
-			add(settingsPanel);
-		}
-
-		private JTextField createTextField() {
-			FlatTextField textField = new FlatTextField();
-			textField.setColumns(8);
-			textField.setPlaceholderText(TileTokenValue.DEFAULT_TOKEN_FORMAT);
-			return textField;
-		}
-
-		boolean isModified(TileTokenValue value) {
-			if (!rowFormat.getText().equals(value.getRowFormat())) return true;
-			if (!columnFormat.getText().equals(value.getColumnFormat())) return true;
-			if (!xminFormat.getText().equals(value.getXminFormat())) return true;
-			if (!yminFormat.getText().equals(value.getYminFormat())) return true;
-			if (!xmaxFormat.getText().equals(value.getXmaxFormat())) return true;
-			return !ymaxFormat.getText().equals(value.getYmaxFormat());
-		}
-
-		void loadSettings(TileTokenValue value) {
-			rowFormat.setText(value.getRowFormat());
-			columnFormat.setText(value.getColumnFormat());
-			xminFormat.setText(value.getXminFormat());
-			yminFormat.setText(value.getYminFormat());
-			xmaxFormat.setText(value.getXmaxFormat());
-			ymaxFormat.setText(value.getYmaxFormat());
-		}
-
-		void setSettings(TileTokenValue value) {
-			value.setRowFormat(rowFormat.getText());
-			value.setColumnFormat(columnFormat.getText());
-			value.setXminFormat(xminFormat.getText());
-			value.setYminFormat(yminFormat.getText());
-			value.setXmaxFormat(xmaxFormat.getText());
-			value.setYmaxFormat(ymaxFormat.getText());
-			loadSettings(value);
-		}
-
-		@Override
-		public void switchLocale(Locale locale) {
-			rowLabel.setText(Language.I18N.getString("pref.export.tiling.label.row"));
-			columnLabel.setText(Language.I18N.getString("pref.export.tiling.label.column"));
-		}
-
-		@Override
-		public void updateUI() {
-			super.updateUI();
-			if (settingsPanel != null) {
-				SwingUtilities.updateComponentTreeUI(settingsPanel);
-				settingsPanel.setBackground(getBackground());
-			}
-		}
 	}
 }

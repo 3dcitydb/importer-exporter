@@ -55,8 +55,8 @@ public class SimpleTilingOptions extends AbstractTilingOptions {
 
     public SimpleTilingOptions() {
         subDir = new TileTokenValue(getDefaultSubDir());
-        filenameSuffix = new TileTokenValue("");
-        attributeValue = new TileTokenValue("");
+        filenameSuffix = new TileTokenValue();
+        attributeValue = new TileTokenValue();
     }
 
     public boolean isUseSubDir() {
