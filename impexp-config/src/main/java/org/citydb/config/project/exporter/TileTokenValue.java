@@ -131,12 +131,14 @@ public class TileTokenValue {
     }
 
     public String formatAndResolveTokens(int row, int column, double xmin, double ymin, double xmax, double ymax) {
-        return value.replaceAll(ROW_TOKEN, getFormattedString(getRowFormat(), row))
-                .replaceAll(COLUMN_TOKEN, getFormattedString(getColumnFormat(), column))
-                .replaceAll(X_MIN_TOKEN, getFormattedString(getXminFormat(), xmin))
-                .replaceAll(Y_MIN_TOKEN, getFormattedString(getYminFormat(), ymin))
-                .replaceAll(X_MAX_TOKEN, getFormattedString(getXmaxFormat(), xmax))
-                .replaceAll(Y_MAX_TOKEN, getFormattedString(getYmaxFormat(), ymax));
+        return value != null ?
+                value.replaceAll(ROW_TOKEN, getFormattedString(getRowFormat(), row))
+                        .replaceAll(COLUMN_TOKEN, getFormattedString(getColumnFormat(), column))
+                        .replaceAll(X_MIN_TOKEN, getFormattedString(getXminFormat(), xmin))
+                        .replaceAll(Y_MIN_TOKEN, getFormattedString(getYminFormat(), ymin))
+                        .replaceAll(X_MAX_TOKEN, getFormattedString(getXmaxFormat(), xmax))
+                        .replaceAll(Y_MAX_TOKEN, getFormattedString(getYmaxFormat(), ymax)) :
+                null;
     }
 
     public String formatAndResolveTokens(int row, int column, BoundingBox extent) {

@@ -39,10 +39,14 @@ public class GeneralOptions {
     private ComputeNumberMatched computeNumberMatched;
     private String fileEncoding;
     private OutputFormat compressedOutputFormat = OutputFormat.CITYGML;
+    private TileTokenValue datasetName;
+    private TileTokenValue datasetDescription;
     private ExportEnvelope envelope;
 
     public GeneralOptions() {
         computeNumberMatched = new ComputeNumberMatched();
+        datasetName = new TileTokenValue();
+        datasetDescription = new TileTokenValue();
         envelope = new ExportEnvelope();
     }
 
@@ -82,6 +86,26 @@ public class GeneralOptions {
 
     public void setCompressedOutputFormat(OutputFormat compressedOutputFormat) {
         this.compressedOutputFormat = compressedOutputFormat;
+    }
+
+    public TileTokenValue getDatasetName() {
+        return datasetName;
+    }
+
+    public void setDatasetName(TileTokenValue datasetName) {
+        if (datasetName != null) {
+            this.datasetName = datasetName;
+        }
+    }
+
+    public TileTokenValue getDatasetDescription() {
+        return datasetDescription;
+    }
+
+    public void setDatasetDescription(TileTokenValue datasetDescription) {
+        if (datasetDescription != null) {
+            this.datasetDescription = datasetDescription;
+        }
     }
 
     public ExportEnvelope getEnvelope() {
