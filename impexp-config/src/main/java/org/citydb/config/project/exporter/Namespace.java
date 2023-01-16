@@ -30,6 +30,7 @@ package org.citydb.config.project.exporter;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
+import java.util.Objects;
 
 @XmlType(name = "NamespaceType", propOrder = {
         "prefix",
@@ -85,5 +86,23 @@ public class Namespace {
 
     public void setSchemaLocation(String schemaLocation) {
         this.schemaLocation = schemaLocation;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uri, prefix, schemaLocation, mode);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (!(obj instanceof Namespace)) {
+            return false;
+        }
+
+        return uri.equals(((Namespace) obj).getURI());
     }
 }

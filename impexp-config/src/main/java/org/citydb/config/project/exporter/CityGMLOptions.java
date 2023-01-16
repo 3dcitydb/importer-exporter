@@ -32,10 +32,6 @@ import org.citydb.config.project.common.XSLTransformation;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 @XmlType(name = "CityGMLExportOptionsType", propOrder = {})
 public class CityGMLOptions {
@@ -43,13 +39,13 @@ public class CityGMLOptions {
     @XmlElement(defaultValue = "true")
     private boolean prettyPrint = true;
     private boolean convertGlobalAppearances = false;
-    @XmlJavaTypeAdapter(NamespaceAdapter.class)
-    private LinkedHashMap<String, Namespace> namespaces;
+    private Namespaces namespaces;
     private ExportAddress address;
     private XLink xlink;
     private XSLTransformation xslTransformation;
 
     public CityGMLOptions() {
+        namespaces = new Namespaces();
         address = new ExportAddress();
         xlink = new XLink();
         xslTransformation = new XSLTransformation();
@@ -79,26 +75,14 @@ public class CityGMLOptions {
         this.convertGlobalAppearances = convertGlobalAppearances;
     }
 
-    public boolean isSetNamespaces() {
-        return namespaces != null && !namespaces.isEmpty();
-    }
-
-    public Namespace getNamespace(String uri) {
-        return namespaces != null ? namespaces.get(uri) : null;
-    }
-
-    public Map<String, Namespace> getNamespaces() {
+    public Namespaces getNamespaces() {
         return namespaces;
     }
 
-    public void setNamespaces(List<Namespace> namespaces) {
-        if (this.namespaces == null) {
-            this.namespaces = new LinkedHashMap<>();
+    public void setNamespaces(Namespaces namespaces) {
+        if (namespaces != null) {
+            this.namespaces = namespaces;
         }
-
-        namespaces.stream()
-                .filter(Namespace::isSetURI)
-                .forEach(v -> this.namespaces.put(v.getURI(), v));
     }
 
     public ExportAddress getAddress() {

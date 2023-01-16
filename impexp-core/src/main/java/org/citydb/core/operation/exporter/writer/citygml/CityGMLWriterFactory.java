@@ -141,20 +141,20 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 
 		// add default prefixes and schema locations
 		Namespace core = namespaces.get(moduleContext.getModule(CityGMLModuleType.CORE).getNamespaceURI());
-		if (core.getMode() != NamespaceMode.SKIP) {
+		if (core != null && core.getMode() != NamespaceMode.SKIP) {
 			saxWriter.setPrefix(core.getPrefix(), core.getURI());
 			if (core.isSetSchemaLocation())
 				saxWriter.setSchemaLocation(core.getURI(), core.getSchemaLocation());
 		}
 
 		Namespace generics = namespaces.get(moduleContext.getModule(CityGMLModuleType.GENERICS).getNamespaceURI());
-		if (generics.getMode() != NamespaceMode.SKIP) {
+		if (generics != null && generics.getMode() != NamespaceMode.SKIP) {
 			saxWriter.setPrefix(generics.getPrefix(), generics.getURI());
 			saxWriter.setSchemaLocation(generics.getURI(), generics.getSchemaLocation());
 		}
 
 		Namespace appearance = namespaces.get(moduleContext.getModule(CityGMLModuleType.APPEARANCE).getNamespaceURI());
-		if (appearance.getMode() != NamespaceMode.SKIP && config.getExportConfig().getAppearances().isSetExportAppearance()) {
+		if (appearance != null && appearance.getMode() != NamespaceMode.SKIP && config.getExportConfig().getAppearances().isSetExportAppearance()) {
 			saxWriter.setPrefix(appearance.getPrefix(), appearance.getURI());
 			saxWriter.setSchemaLocation(appearance.getURI(), appearance.getSchemaLocation());
 		}
@@ -168,7 +168,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 					continue;
 
 				Namespace namespace = namespaces.get(module.getNamespaceURI());
-				if (namespace.getMode() != NamespaceMode.SKIP) {
+				if (namespace != null && namespace.getMode() != NamespaceMode.SKIP) {
 					saxWriter.setPrefix(namespace.getPrefix(), namespace.getURI());
 					if (module instanceof ADEModule)
 						saxWriter.setSchemaLocation(namespace.getURI(), namespace.getSchemaLocation());
@@ -193,7 +193,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 
 		for (CityGMLModule module : modules) {
 			Namespace namespace = namespaces.get(module.getNamespaceURI());
-			if (namespace.getMode() != NamespaceMode.SKIP) {
+			if (namespace != null && namespace.getMode() != NamespaceMode.SKIP) {
 				saxWriter.setPrefix(namespace.getPrefix(), namespace.getURI());
 				saxWriter.setSchemaLocation(namespace.getURI(), namespace.getSchemaLocation());
 			}
@@ -212,17 +212,22 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 	}
 
 	private Map<String, Namespace> getNamespaces(ModuleContext moduleContext) {
-		Map<String, Namespace> namespaces = cityGMLOptions.isSetNamespaces() ? new LinkedHashMap<>(cityGMLOptions.getNamespaces()) : new LinkedHashMap<>();
-		for (Module module : moduleContext.getModules()) {
-			Namespace namespace = namespaces.get(module.getNamespaceURI());
-			if (namespace == null) {
-				namespace = new Namespace();
-				namespace.setURI(module.getNamespaceURI());
-				namespace.setSchemaLocation(module.getSchemaLocation());
-				namespace.setPrefix(module.getType() != CityGMLModuleType.CORE ? module.getNamespacePrefix() : XMLConstants.DEFAULT_NS_PREFIX);
-			}
+		Map<String, Namespace> namespaces = new LinkedHashMap<>();
+		if (cityGMLOptions.getNamespaces().isEnabled()) {
+			namespaces.putAll(cityGMLOptions.getNamespaces().getNamespaces());
+		}
 
-			namespaces.put(namespace.getURI(), namespace);
+		if (!cityGMLOptions.getNamespaces().isEnabled() || !cityGMLOptions.getNamespaces().isSkipOthers()) {
+			for (Module module : moduleContext.getModules()) {
+				Namespace namespace = namespaces.get(module.getNamespaceURI());
+				if (namespace == null) {
+					namespace = new Namespace();
+					namespace.setURI(module.getNamespaceURI());
+					namespace.setSchemaLocation(module.getSchemaLocation());
+					namespace.setPrefix(module.getType() != CityGMLModuleType.CORE ? module.getNamespacePrefix() : XMLConstants.DEFAULT_NS_PREFIX);
+					namespaces.put(namespace.getURI(), namespace);
+				}
+			}
 		}
 
 		return namespaces;
