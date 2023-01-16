@@ -52,6 +52,7 @@ public class CityGMLExportPreferences extends DefaultPreferences {
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new CityGMLGeneralPanel(config)));
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XLinkPanel(config)));
+		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new NamespacesPanel(config)));
 		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(
 				() -> config.getExportConfig().getCityGMLOptions().getXSLTransformation(),
 				config)));
