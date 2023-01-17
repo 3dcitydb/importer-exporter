@@ -40,7 +40,7 @@ public class Namespaces {
     @XmlAttribute
     private boolean skipOthers;
     @XmlElement(name = "namespace")
-    private Set<Namespace> namespaces;
+    private LinkedHashSet<Namespace> namespaces;
 
     public boolean isEnabled() {
         return isEnabled;
