@@ -57,7 +57,7 @@ public class TileTokenValue {
     @XmlAttribute(name = "ymax")
     private String ymaxFormat;
     @XmlValue
-    private String value;
+    private String value = "";
 
     public TileTokenValue() {
     }
