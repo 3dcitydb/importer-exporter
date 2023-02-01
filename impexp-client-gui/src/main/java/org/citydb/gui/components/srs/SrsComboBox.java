@@ -47,7 +47,7 @@ public class SrsComboBox extends JComboBox<DatabaseSrs> implements EventHandler 
                             candidate = null;
                             break;
                         } else if (candidate == null && item.getSrid() == srs.getSrid()) {
-                            candidate = srs;
+                            candidate = item;
                         }
                     }
                 }
