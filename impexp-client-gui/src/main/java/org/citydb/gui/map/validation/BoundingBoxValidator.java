@@ -28,6 +28,7 @@
 package org.citydb.gui.map.validation;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.formdev.flatlaf.icons.FlatOptionPaneWarningIcon;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
@@ -256,7 +257,7 @@ public class BoundingBoxValidator {
 			srsComboBox = SrsComboBoxFactory.getInstance().createSrsComboBox(true);
 
 			messageLabel = new JLabel("<html>" + message.replaceAll("\\n", "<br>") + "</html>");
-			messageLabel.setIcon(new FlatSVGIcon("org/citydb/gui/icons/warning_dialog.svg"));
+			messageLabel.setIcon(new FlatOptionPaneWarningIcon());
 			messageLabel.setIconTextGap(10);
 		}
 

@@ -27,7 +27,7 @@
  */
 package org.citydb.gui.components.dialog;
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.formdev.flatlaf.icons.FlatOptionPaneQuestionIcon;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LanguageType;
@@ -95,7 +95,7 @@ public class InfoDialog extends JDialog {
 		JLabel support = new JLabel(MessageFormat.format(text, "<html><a href=\"\">https://github.com/3dcitydb</a>"));
 		support.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		support.addMouseListener(openInBrowserAdapter("https://github.com/3dcitydb"));
-		support.setIcon(new FlatSVGIcon("org/citydb/gui/icons/question_dialog.svg"));
+		support.setIcon(new FlatOptionPaneQuestionIcon());
 		support.setIconTextGap(10);
 
 		TitledPanel supportPanel = new TitledPanel()
