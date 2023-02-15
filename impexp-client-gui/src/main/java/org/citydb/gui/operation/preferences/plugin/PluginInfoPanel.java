@@ -19,6 +19,8 @@ import java.awt.event.MouseAdapter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PluginInfoPanel extends ScrollablePanel {
@@ -103,11 +105,7 @@ public class PluginInfoPanel extends ScrollablePanel {
                 adeSupportPanel.add(content);
             }
 
-            extensionPointsPane.setText(Arrays.stream(plugin.getClass().getInterfaces())
-                    .filter(Extension.class::isAssignableFrom)
-                    .map(Class::getSimpleName)
-                    .sorted()
-                    .collect(Collectors.joining(", ")));
+            extensionPointsPane.setText(getExtensionPoints(plugin.getClass()));
 
             detailsPanel.add(adeSupportLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
             detailsPanel.add(adeSupportPanel, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
@@ -192,6 +190,20 @@ public class PluginInfoPanel extends ScrollablePanel {
         } catch (MalformedURLException e) {
             return false;
         }
+    }
+
+    private String getExtensionPoints(Class<?> type) {
+        Set<String> extensions = new HashSet<>();
+        do {
+            Arrays.stream(type.getInterfaces())
+                    .filter(Extension.class::isAssignableFrom)
+                    .map(Class::getSimpleName)
+                    .forEach(extensions::add);
+        } while ((type = type.getSuperclass()) != Object.class);
+
+        return extensions.stream()
+                .sorted()
+                .collect(Collectors.joining(", "));
     }
 
     ImageIcon getPluginLogo(Plugin plugin, int width, int height) {
