@@ -17,7 +17,7 @@ dependencies {
     implementation 'com.h2database:h2:2.1.214'
     implementation 'net.sf.saxon:Saxon-HE:12.1'
     implementation 'org.apache.tomcat:tomcat-jdbc:10.0.23'
-    implementation 'org.apache.commons:commons-compress:1.21'
+    implementation 'org.apache.commons:commons-compress:1.22'
 }
 
 javadoc {
