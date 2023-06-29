@@ -202,8 +202,10 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 
 						if (calculateExtent && feature.isSetBoundedBy()) {
 							BoundingShape boundedBy = feature.calcBoundedBy(bboxOptions);
-							boundedBy.getEnvelope().setSrsName(feature.getBoundedBy().getEnvelope().getSrsName());
-							feature.setBoundedBy(boundedBy);
+							if (boundedBy.isSetEnvelope()) {
+								boundedBy.getEnvelope().setSrsName(feature.getBoundedBy().getEnvelope().getSrsName());
+								feature.setBoundedBy(boundedBy);
+							}
 						}
 
 						if (++topLevelFeatureCounter == 20) {
