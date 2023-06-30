@@ -189,7 +189,7 @@ public class GeometryObject {
             if (exteriorRings[i] >= coordinates.length)
                 throw new IllegalArgumentException("The " + (i + 1) + ". exterior linear ring is not backed by a coordinate array.");
 
-            geometryObject.elementTypes[i] = ElementType.EXTERIOR_LINEAR_RING;
+            geometryObject.elementTypes[exteriorRings[i]] = ElementType.EXTERIOR_LINEAR_RING;
         }
 
         return geometryObject;

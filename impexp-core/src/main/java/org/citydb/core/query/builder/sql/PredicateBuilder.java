@@ -135,7 +135,7 @@ public class PredicateBuilder {
 
 	private boolean requiresLeftJoins(Predicate predicate) {
 		if (predicate instanceof NotOperator)
-			return requiresLeftJoins(((NotOperator) predicate).getOperand());
+			requiresLeftJoins(((NotOperator) predicate).getOperand());
 		else if (predicate instanceof BinaryLogicalOperator) {
 			BinaryLogicalOperator binaryOperator = (BinaryLogicalOperator) predicate;
 			if (binaryOperator.getOperatorName() == LogicalOperatorName.OR)
