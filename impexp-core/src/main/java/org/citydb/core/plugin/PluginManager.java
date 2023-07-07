@@ -65,7 +65,7 @@ public class PluginManager {
             for (Plugin plugin : pluginLoader) {
                 plugins.add(plugin);
             }
-        } catch (NoClassDefFoundError e) {
+        } catch (Throwable e) {
             log.error("Failed to load plugins.", e);
             return;
         }
