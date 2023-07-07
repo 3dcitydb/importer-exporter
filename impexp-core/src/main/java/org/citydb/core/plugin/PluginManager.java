@@ -42,6 +42,7 @@ import java.util.*;
 
 public class PluginManager {
     private static PluginManager instance;
+    private final Logger log = Logger.getInstance();
     private final List<InternalPlugin> internalPlugins = new ArrayList<>();
     private final List<Plugin> externalPlugins = new ArrayList<>();
     private final List<CliCommand> commands = new ArrayList<>();
@@ -58,7 +59,18 @@ public class PluginManager {
     public void loadPlugins(ClassLoader loader) {
         JAXBContext context = createJAXBContext();
         ServiceLoader<Plugin> pluginLoader = ServiceLoader.load(Plugin.class, loader);
-        for (Plugin plugin : pluginLoader) {
+
+        List<Plugin> plugins = new ArrayList<>();
+        try {
+            for (Plugin plugin : pluginLoader) {
+                plugins.add(plugin);
+            }
+        } catch (NoClassDefFoundError e) {
+            log.error("Failed to load plugins.", e);
+            return;
+        }
+
+        for (Plugin plugin : plugins) {
             registerExternalPlugin(plugin, context);
         }
     }
@@ -225,7 +237,6 @@ public class PluginManager {
 
     public void logExceptions() {
         if (exceptions != null) {
-            Logger log = Logger.getInstance();
             for (Map.Entry<String, List<PluginException>> entry : exceptions.entrySet()) {
                 log.error("Failed to initialize the plugin " + entry.getKey());
                 for (PluginException e : entry.getValue()) {
