@@ -57,21 +57,14 @@ public class PluginManager {
     }
 
     public void loadPlugins(ClassLoader loader) {
-        JAXBContext context = createJAXBContext();
-        ServiceLoader<Plugin> pluginLoader = ServiceLoader.load(Plugin.class, loader);
-
-        List<Plugin> plugins = new ArrayList<>();
         try {
+            JAXBContext context = createJAXBContext();
+            ServiceLoader<Plugin> pluginLoader = ServiceLoader.load(Plugin.class, loader);
             for (Plugin plugin : pluginLoader) {
-                plugins.add(plugin);
+                registerExternalPlugin(plugin, context);
             }
         } catch (Throwable e) {
-            log.error("Failed to load plugins.", e);
-            return;
-        }
-
-        for (Plugin plugin : plugins) {
-            registerExternalPlugin(plugin, context);
+            addException(null, new PluginException(e));
         }
     }
 
@@ -238,7 +231,9 @@ public class PluginManager {
     public void logExceptions() {
         if (exceptions != null) {
             for (Map.Entry<String, List<PluginException>> entry : exceptions.entrySet()) {
-                log.error("Failed to initialize the plugin " + entry.getKey());
+                log.error(!entry.getKey().isEmpty() ?
+                        "Failed to initialize the plugin " + entry.getKey() :
+                        "Failed to initialize a plugin.");
                 for (PluginException e : entry.getValue()) {
                     log.error("Caused by: " + e.getMessage(), e.getCause());
                 }
@@ -255,8 +250,8 @@ public class PluginManager {
             exceptions = new HashMap<>();
         }
 
-        exceptions.computeIfAbsent(plugin.getClass().getName(), k -> new ArrayList<>())
-                .add(exception);
+        String key = plugin != null ? plugin.getClass().getName() : "";
+        exceptions.computeIfAbsent(key, k -> new ArrayList<>()).add(exception);
     }
 
     private JAXBContext createJAXBContext() {
