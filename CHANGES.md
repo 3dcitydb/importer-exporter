@@ -9,7 +9,7 @@ Change Log
 * Improved exception handling when loading plugins fails.
 
 #### Fixes
-* Fixed query builder to correctly determine whether to use left joins in case <not> is used. [#281](https://github.com/3dcitydb/importer-exporter/pull/281)
+* Fixed query builder to correctly determine whether to use left joins in case `<not>` is used. [#281](https://github.com/3dcitydb/importer-exporter/pull/281)
 * Fixed a bug in the SrsComboBox component.
 * Fixed display of plugin extensions to include extension interfaces defined for a super class.
 * Fixed NPE when recalculating envelope in case the LoD filter is used.
