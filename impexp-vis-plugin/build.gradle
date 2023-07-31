@@ -13,9 +13,7 @@ configurations {
 dependencies {
     api project(':impexp-core')
     api 'org.citydb:texture-atlas-creator:1.4.0'
-    implementation 'java3d:j3d-core:1.5.2'
     implementation 'java3d:j3d-core-utils:1.5.2'
-    implementation 'java3d:vecmath:1.5.2'
 
     jaxb 'org.glassfish.jaxb:jaxb-xjc:2.3.2'
     jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics:0.12.0'

@@ -1,9 +1,5 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-plugins {
-    id 'com.jfrog.artifactory' version '4.24.21'
-}
-
 apply from: 'properties.gradle'
 
 version '5.3.0'
@@ -11,7 +7,6 @@ version '5.3.0'
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.artifactory'
 
     group 'org.citydb'
     version parent.version
@@ -30,10 +25,14 @@ subprojects {
 
     repositories {
         maven {
-            url 'https://repo.osgeo.org/repository/release'
+            url 'https://maven.pkg.github.com/3dcitydb/3dcitydb-suite'
+            credentials {
+                username = project.findProperty("gpr.username") ?: System.getenv("GPR_USERNAME")
+                password = project.findProperty("gpr.token") ?: System.getenv("GPR_TOKEN")
+            }
         }
         maven {
-            url 'https://citydb.jfrog.io/artifactory/maven'
+            url 'https://repo.osgeo.org/repository/release'
         }
         maven {
             url 'https://oss.sonatype.org/content/repositories/snapshots/'
@@ -102,6 +101,15 @@ subprojects {
     }
 
     publishing {
+        repositories {
+            maven {
+                url 'https://maven.pkg.github.com/3dcitydb/3dcitydb-suite'
+                credentials {
+                    username = project.findProperty("gpr.username") ?: System.getenv("GPR_USERNAME")
+                    password = project.findProperty("gpr.token") ?: System.getenv("GPR_TOKEN")
+                }
+            }
+        }
         publications {
             mavenJava(MavenPublication) {
                 from components.java
@@ -120,21 +128,6 @@ subprojects {
                         connection = 'scm:git:' + project.impexpGit
                     }
                 }
-            }
-        }
-    }
-
-    artifactory {
-        contextUrl = project.hasProperty('artifactory_contextUrl') ? project.property('artifactory_contextUrl') : System.getenv('artifactory_contextUrl')
-        publish {
-            repository {
-                repoKey = 'maven'
-                username = project.hasProperty('artifactory_user') ? project.property('artifactory_user') : System.getenv('artifactory_user')
-                password = project.hasProperty('artifactory_password') ? project.property('artifactory_password') : System.getenv('artifactory_password')
-                maven = true
-            }
-            defaults {
-                publications('mavenJava')
             }
         }
     }
