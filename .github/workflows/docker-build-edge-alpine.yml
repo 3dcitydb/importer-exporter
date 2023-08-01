@@ -26,6 +26,8 @@ jobs:
         tags: 3dcitydb/impexp:edge-alpine
         build-args: |
           IMPEXP_VERSION=${{ steps.short-sha.outputs.sha }}
+          GPR_USERNAME=${{ vars.GPR_USERNAME  }}
+          GPR_TOKEN=${{ vars.GPR_TOKEN }}
     -
       name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}

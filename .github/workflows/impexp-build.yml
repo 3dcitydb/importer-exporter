@@ -6,6 +6,10 @@ on:
     - master
   pull_request:
 
+env:
+  GPR_USERNAME: ${{ vars.GPR_USERNAME }}
+  GPR_TOKEN: ${{ vars.GPR_TOKEN }}
+
 jobs:
   build:
 

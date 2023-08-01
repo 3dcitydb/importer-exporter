@@ -11,12 +11,17 @@ ARG RUNTIME_IMAGE_TAG='17'
 # Base image
 FROM bellsoft/liberica-openjdk-alpine:${BUILDER_IMAGE_TAG} AS builder
 
+ARG GPR_USERNAME
+ENV GPR_USERNAME=${GPR_USERNAME}
+ARG GPR_TOKEN
+ENV GPR_TOKEN=${GPR_TOKEN}
+
 # Copy source code
 WORKDIR /build
 COPY . /build
 
 # Build
-RUN chmod u+x ./gradlew && ./gradlew installDockerDist
+RUN chmod u+x ./gradlew && ./gradlew installDockerDist -Pgpr.username=${GPR_USERNAME} -Pgpr.token=${GPR_TOKEN}
 
 # Runtime stage ###############################################################
 # Base image
