@@ -1,9 +1,5 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-plugins {
-    id 'com.jfrog.artifactory' version '4.24.21'
-}
-
 apply from: 'properties.gradle'
 
 version '5.4.0'
@@ -11,7 +7,6 @@ version '5.4.0'
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.artifactory'
 
     group 'org.citydb'
     version parent.version
@@ -33,10 +28,10 @@ subprojects {
             url 'https://repo.osgeo.org/repository/release'
         }
         maven {
-            url 'https://citydb.jfrog.io/artifactory/maven'
+            url 'https://oss.sonatype.org/content/repositories/snapshots/'
         }
         maven {
-            url 'https://oss.sonatype.org/content/repositories/snapshots/'
+            url project.citydbMavenUrl
         }
         mavenCentral()
     }
@@ -103,38 +98,21 @@ subprojects {
 
     publishing {
         publications {
-            mavenJava(MavenPublication) {
+            maven(MavenPublication) {
                 from components.java
-                pom {
-                    name = project.name
-                    url = project.citydbVcsUrl
-                    licenses {
-                        license {
-                            name = 'The Apache License, Version 2.0'
-                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                            distribution = 'repo'
-                        }
-                    }
-                    scm {
-                        url = project.impexpVcsUrl
-                        connection = 'scm:git:' + project.impexpGit
-                    }
-                }
             }
         }
-    }
-
-    artifactory {
-        contextUrl = project.hasProperty('artifactory_contextUrl') ? project.property('artifactory_contextUrl') : System.getenv('artifactory_contextUrl')
-        publish {
-            repository {
-                repoKey = 'maven'
-                username = project.hasProperty('artifactory_user') ? project.property('artifactory_user') : System.getenv('artifactory_user')
-                password = project.hasProperty('artifactory_password') ? project.property('artifactory_password') : System.getenv('artifactory_password')
-                maven = true
-            }
-            defaults {
-                publications('mavenJava')
+        repositories {
+            maven {
+                url project.citydbMavenUrl
+                name 'gitlab-maven'
+                credentials(HttpHeaderCredentials) {
+                    name = 'Private-Token'
+                    value = project.hasProperty('gitLab_private_token') ? project.property('gitLab_private_token') : System.getenv('gitLab_private_token')
+                }
+                authentication {
+                    header(HttpHeaderAuthentication)
+                }
             }
         }
     }
