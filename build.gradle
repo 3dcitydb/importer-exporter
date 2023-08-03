@@ -108,7 +108,7 @@ subprojects {
                 name 'gitlab-maven'
                 credentials(HttpHeaderCredentials) {
                     name = 'Private-Token'
-                    value = project.hasProperty('gitLab_private_token') ? project.property('gitLab_private_token') : System.getenv('gitLab_private_token')
+                    value = project.hasProperty('gitLab_private_token') ? project.property('gitLab_private_token') : System.getenv('GITLAB_PRIVATE_TOKEN')
                 }
                 authentication {
                     header(HttpHeaderAuthentication)
