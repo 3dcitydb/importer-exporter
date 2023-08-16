@@ -11,9 +11,9 @@ configurations {
 
 dependencies {
     api project(':impexp-client-cli')
-    api 'com.formdev:flatlaf:3.1'
-    api 'com.formdev:flatlaf-extras:3.1'
-    api 'com.formdev:flatlaf-swingx:3.1'
+    api 'com.formdev:flatlaf:3.2'
+    api 'com.formdev:flatlaf-extras:3.2'
+    api 'com.formdev:flatlaf-swingx:3.2'
     api 'com.fifesoft:rsyntaxtextarea:3.3.3'
     api 'com.github.vertical-blank:sql-formatter:2.0.3'
     api ('org.citydb:swingx-ws:1.1.5') {
