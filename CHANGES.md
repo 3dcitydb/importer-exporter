@@ -17,16 +17,18 @@ Change Log
 * Fixed inconsistent value of the `gen:dateAttribute` attribute after database import and export.
 
 #### Miscellaneous
-* Updated FlatLaf to 3.1
-* Updated rsyntaxtextarea to 3.3.3
-* Updated picocli to 4.7.2
+* Updated FlatLaf to 3.2
+* Updated rsyntaxtextarea to 3.3.4
+* Updated picocli to 4.7.5
+* Updated sql-formatter to 2.0.4
 * Updated slf4j-nop to 2.0.7
 * Updated citygml4j to 2.12.4
 * Updated PostgreSQL JDBC drivers to 42.6.0
-* Updated GeoTools JDBC drivers to 29.0
-* Updated tomcat-jdbc to 10.1.7
+* Updated GeoTools to 28.4
+* Updated tomcat-jdbc to 10.1.12
 * Updated commons-compress to 1.22
-* Updated tika-core to 2.7
+* Updated tika-core to 2.8.0
+* Updated h2 to 2.2.220
 
 ### 5.3.0 - 2022-12-15
 
