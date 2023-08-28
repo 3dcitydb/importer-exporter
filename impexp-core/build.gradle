@@ -1,6 +1,6 @@
 dependencies {
     api project(':impexp-util')
-    api 'info.picocli:picocli:4.7.4'
+    api 'info.picocli:picocli:4.7.5'
     api 'org.citydb:sqlbuilder:2.2.1'
     api 'org.citydb:3dcitydb-ade-citygml4j:1.1.3'
     api 'org.geotools:gt-epsg-extension:29.2'
