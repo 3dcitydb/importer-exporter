@@ -25,7 +25,7 @@ Change Log
 * Updated citygml4j to 2.12.4
 * Updated PostgreSQL JDBC drivers to 42.6.0
 * Updated GeoTools to 28.4
-* Updated tomcat-jdbc to 10.1.12
+* Updated tomcat-jdbc to 10.0.27
 * Updated commons-compress to 1.22
 * Updated tika-core to 2.8.0
 * Updated h2 to 2.2.220
