@@ -47,9 +47,9 @@ previous release of the 3D City Database Importer/Exporter under Apache License 
 
 Latest release
 --------------
-The latest stable release of the 3D City Database Importer/Exporter is 5.3.0.
+The latest stable release of the 3D City Database Importer/Exporter is 5.4.0.
 
-Download the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.3.0/3DCityDB-Importer-Exporter-5.3.0.zip).
+Download the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.4.0/3DCityDB-Importer-Exporter-5.4.0.zip).
 Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
 
 System requirements
@@ -65,7 +65,7 @@ The 3D City Database Importer/Exporter can be run on any platform providing appr
 Documentation and literature
 ----------------------------
 A complete and comprehensive user manual on the 3D City Database and the Importer/Exporter is available
-[online](https://3dcitydb-docs.readthedocs.io/en/version-2022.2/).
+[online](https://3dcitydb-docs.readthedocs.io/en/version-2023.0/).
 
 An Open Access paper on the 3DCityDB has been published in the International Journal on Open Geospatial Data,
 Software and Standards 3 (5), 2018: [Z. Yao, C. Nagel, F. Kunde, G. Hudra, P. Willkomm, A. Donaubauer, T. Adolphi, T. H. Kolbe: 3DCityDB - a 3D geodatabase solution for the management, analysis, and visualization of semantic 3D city models based on CityGML](https://doi.org/10.1186/s40965-018-0046-7). Please use this reference when citing the 3DCityDB project.
@@ -82,7 +82,7 @@ The easiest way to get the Importer/Exporter running on your computer is to down
 [3D City Database Suite installer](https://github.com/3dcitydb/3dcitydb-suite/releases). In addition to the
 Importer/Exporter software, this installer also bundles the 3D City Database scripts, the 3D Web Map Client,
 Importer/Exporter plugins, test datasets, etc. A setup wizard will guide you through the separate steps of the
-installation process. Please refer to the [user manual](https://3dcitydb-docs.readthedocs.io/en/version-2022.2/)
+installation process. Please refer to the [user manual](https://3dcitydb-docs.readthedocs.io/en/version-2023.0/)
 for more information on how to install and use the tool.
 
 After successful installation, start scripts are available in the installation directory to run the application.
@@ -135,7 +135,7 @@ Using the Docker image of the Importer/Exporter is simple:
 This will show the help message and all available commands of the Importer/Exporter.
 
 More details on how to use the Importer/Exporter with Docker can be found in the
-[online documentation](https://3dcitydb-docs.readthedocs.io/en/version-2022.2/).
+[online documentation](https://3dcitydb-docs.readthedocs.io/en/version-2023.0/).
 
 Cooperation partners and supporters
 -----------------------------------
