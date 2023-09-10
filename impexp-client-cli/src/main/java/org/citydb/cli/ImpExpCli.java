@@ -476,7 +476,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             for (Plugin plugin : pluginManager.getExternalPlugins()) {
                 boolean enable = enabledPlugins != null ?
                         enabledPlugins.getOrDefault(plugin.getClass().getName(), false) :
-                        config.isPluginEnabled(plugin.getClass().getName());
+                        config.isPluginEnabled(plugin.getClass().getName(), plugin.getMetadata().isStartEnabled());
 
                 plugins.put(plugin, enable);
             }
