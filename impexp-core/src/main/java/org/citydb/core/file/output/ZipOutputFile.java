@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
@@ -130,8 +131,9 @@ public class ZipOutputFile extends AbstractArchiveOutputFile {
 
             // merge scatter screams into final zip
             log.info("Merging temporary files to target ZIP file...");
+            Set<String> entries = new HashSet<>();
             for (ScatterZipOutputStream scatterStream : scatterStreams) {
-                scatterStream.writeTo(out);
+                scatterStream.writeTo(out, entries);
                 scatterStream.close();
             }
         } catch (InterruptedException e) {
