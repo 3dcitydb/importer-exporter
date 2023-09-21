@@ -1,6 +1,6 @@
 Change Log
 ==========
-### 5.4.0 - tba
+### 5.4.0 - 2023-09-21
 
 #### Additions
 * Added UI options to set the dataset metadata e.g. name, description and bounding box. [#278](https://github.com/3dcitydb/importer-exporter/pull/278)
@@ -19,7 +19,7 @@ Change Log
 * Fixed inconsistent value of the `gen:dateAttribute` attribute after database import and export.
 
 #### Miscellaneous
-* Updated FlatLaf to 3.2
+* Updated FlatLaf to 3.2.1
 * Updated rsyntaxtextarea to 3.3.4
 * Updated picocli to 4.7.5
 * Updated sql-formatter to 2.0.4
