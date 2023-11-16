@@ -19,6 +19,7 @@ public class PluginMetadata {
     private PluginVendor vendor;
     @XmlElement(name = "ade-support", defaultValue = "false")
     private Boolean adeSupport;
+    private Boolean startEnabled;
 
     public String getName() {
         return name;
@@ -81,5 +82,13 @@ public class PluginMetadata {
 
     public void setADESupport(boolean adeSupport) {
         this.adeSupport = adeSupport;
+    }
+
+    public boolean isStartEnabled() {
+        return startEnabled != null ? startEnabled : true;
+    }
+
+    public void setStartEnabled(boolean startEnabled) {
+        this.startEnabled = startEnabled;
     }
 }

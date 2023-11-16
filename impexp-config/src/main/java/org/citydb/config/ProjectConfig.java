@@ -165,8 +165,8 @@ public class ProjectConfig {
         }
     }
 
-    boolean isPluginEnabled(String pluginClass) {
-        return plugins.getOrDefault(pluginClass, true);
+    boolean isPluginEnabled(String pluginClass, boolean defaultValue) {
+        return plugins.getOrDefault(pluginClass, defaultValue);
     }
 
     void setPluginEnabled(String pluginClass, boolean enable) {

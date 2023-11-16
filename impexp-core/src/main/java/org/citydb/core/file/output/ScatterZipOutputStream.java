@@ -38,6 +38,7 @@ import org.apache.commons.compress.utils.BoundedInputStream;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 import java.util.zip.Deflater;
 
 public class ScatterZipOutputStream implements Closeable {
@@ -65,7 +66,7 @@ public class ScatterZipOutputStream implements Closeable {
         }
     }
 
-    void writeTo(ZipArchiveOutputStream target) throws IOException {
+    void writeTo(ZipArchiveOutputStream target, Set<String> entries) throws IOException {
         entryStore.closeForWriting();
         backingStore.closeForWriting();
         String line;
@@ -77,14 +78,18 @@ public class ScatterZipOutputStream implements Closeable {
                 if (values.length != 5)
                     throw new IOException("Failed to read temporary zip entry.");
 
-                ZipArchiveEntry entry = new ZipArchiveEntry(values[0]);
-                entry.setMethod(Integer.parseInt(values[1]));
-                entry.setCrc(Long.parseLong(values[2]));
-                entry.setCompressedSize(Long.parseLong(values[3]));
-                entry.setSize(Long.parseLong(values[4]));
+                if (entries.add(values[0])) {
+                    ZipArchiveEntry entry = new ZipArchiveEntry(values[0]);
+                    entry.setMethod(Integer.parseInt(values[1]));
+                    entry.setCrc(Long.parseLong(values[2]));
+                    entry.setCompressedSize(Long.parseLong(values[3]));
+                    entry.setSize(Long.parseLong(values[4]));
 
-                try (BoundedInputStream rawStream = new BoundedInputStream(stream, entry.getCompressedSize())) {
-                    target.addRawArchiveEntry(entry, rawStream);
+                    try (BoundedInputStream rawStream = new BoundedInputStream(stream, entry.getCompressedSize())) {
+                        target.addRawArchiveEntry(entry, rawStream);
+                    }
+                } else {
+                    stream.skip(Long.parseLong(values[3]));
                 }
             }
         } catch (NumberFormatException e) {

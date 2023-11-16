@@ -1,15 +1,17 @@
 Change Log
 ==========
-### 5.4.0 - tba
+### 5.4.0 - 2023-09-21
 
 #### Additions
 * Added UI options to set the dataset metadata e.g. name, description and bounding box. [#278](https://github.com/3dcitydb/importer-exporter/pull/278)
 * Added UI preferences dialog to customize XML namespaces for CityGML exports. [#279](https://github.com/3dcitydb/importer-exporter/pull/279)
+* Added option to specify default start mode for plugins. [#293](https://github.com/3dcitydb/importer-exporter/pull/293)
 * Added support for XSLT/XPath 2.0 and 3.0 through Saxon-HE.
 * Improved exception handling when loading plugins fails.
 
 #### Fixes
 * Fixed query builder to correctly determine whether to use left joins in case `<not>` is used. [#281](https://github.com/3dcitydb/importer-exporter/pull/281)
+* Fixed NPE due to duplicate ZIP entries. [#292](https://github.com/3dcitydb/importer-exporter/pull/292)
 * Fixed a bug in the SrsComboBox component.
 * Fixed display of plugin extensions to include extension interfaces defined for a super class.
 * Fixed NPE when recalculating envelope in case the LoD filter is used.
@@ -17,7 +19,7 @@ Change Log
 * Fixed inconsistent value of the `gen:dateAttribute` attribute after database import and export.
 
 #### Miscellaneous
-* Updated FlatLaf to 3.2
+* Updated FlatLaf to 3.2.1
 * Updated rsyntaxtextarea to 3.3.4
 * Updated picocli to 4.7.5
 * Updated sql-formatter to 2.0.4
@@ -26,7 +28,7 @@ Change Log
 * Updated PostgreSQL JDBC drivers to 42.6.0
 * Updated GeoTools to 28.4
 * Updated tomcat-jdbc to 10.0.27
-* Updated commons-compress to 1.22
+* Updated commons-compress to 1.24.0
 * Updated tika-core to 2.8.0
 * Updated h2 to 2.2.220
 
