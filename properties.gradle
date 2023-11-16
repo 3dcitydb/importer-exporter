@@ -14,7 +14,6 @@ ext {
     citydbVersion = '4.4.x'
     citydbWebsiteUrl = 'https://www.3dcitydb.org'
     citydbVcsUrl = 'https://github.com/3dcitydb'
-    citydbMavenUrl = 'https://gitlab.lrz.de/api/v4/projects/150792/packages/maven'
 
     // Importer/Exporter
     impexpShortName = 'Importer/Exporter'
