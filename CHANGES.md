@@ -1,5 +1,10 @@
 Change Log
 ==========
+### 5.4.1 - 2024-01-19
+
+#### Fixes
+* Fixed exception when dropping empty cache tables.
+
 ### 5.4.0 - 2023-09-21
 
 #### Additions
