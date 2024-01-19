@@ -2,7 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply from: 'properties.gradle'
 
-version '5.4.0'
+version '5.4.1'
 
 subprojects {
     apply plugin: 'java-library'
@@ -104,7 +104,7 @@ subprojects {
         }
         repositories {
             maven {
-                url 'https://3dcitydb.org/maven'
+                url project.hasProperty('gitLab_maven_url') ? project.property('gitLab_maven_url') : System.getenv('GITLAB_MAVEN_URL')
                 name 'gitlab-maven'
                 credentials(HttpHeaderCredentials) {
                     name = 'Private-Token'
