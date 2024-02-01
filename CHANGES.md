@@ -1,5 +1,10 @@
 Change Log
 ==========
+### 5.4.2 - 2024-02-01
+
+#### Fixes
+* Fixed global-to-local appearance converter to avoid duplicate exports.[#298](https://github.com/3dcitydb/importer-exporter/pull/298)
+
 ### 5.4.1 - 2024-01-19
 
 #### Fixes
