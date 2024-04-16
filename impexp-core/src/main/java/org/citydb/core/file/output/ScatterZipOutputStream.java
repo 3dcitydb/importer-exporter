@@ -34,7 +34,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.apache.commons.compress.parallel.ScatterGatherBackingStore;
 import org.apache.commons.compress.parallel.ScatterGatherBackingStoreSupplier;
-import org.apache.commons.compress.utils.BoundedInputStream;
+import org.apache.commons.io.input.BoundedInputStream;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
