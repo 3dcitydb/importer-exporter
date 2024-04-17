@@ -46,9 +46,9 @@ import org.citydb.core.query.builder.sql.BuildProperties;
 import org.citydb.core.query.builder.sql.SQLQueryBuilder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.referencing.CRS;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import javax.xml.bind.JAXBException;
 import java.sql.*;
