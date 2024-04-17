@@ -1,5 +1,23 @@
 Change Log
 ==========
+### 5.4.3 - 2024-04-17
+
+#### Miscellaneous
+* Updated FlatLaf to 3.4.1
+* Updated rsyntaxtextarea to 3.4.0
+* Updated sql-formatter to 2.0.5
+* Updated GeoTools to 31.0
+* Updated PostgreSQL JDBC driver to 42.7.3
+* Updated PostGIS JDBC driver to 2023.1.0
+* Update Oracle JDBC driver to 23.3.0.23.09
+* Update Oracle sdoapi to 23.3.0.0
+* Updated tika-core to 2.9.2
+* Updated slf4j-nop to 2.0.10
+* Updated h2 to 2.2.224
+* Updated Saxon-HE to 12.4
+* Updated tomcat-jdbc to 10.1.20
+* Updated commons-compress to 1.26.1
+
 ### 5.4.2 - 2024-02-01
 
 #### Fixes
