@@ -85,7 +85,9 @@ public class ScatterZipOutputStream implements Closeable {
                     entry.setCompressedSize(Long.parseLong(values[3]));
                     entry.setSize(Long.parseLong(values[4]));
 
-                    try (BoundedInputStream rawStream = new BoundedInputStream(stream, entry.getCompressedSize())) {
+                    try (BoundedInputStream rawStream = BoundedInputStream.builder()
+                            .setInputStream(stream)
+                            .setMaxCount(entry.getCompressedSize()).get()) {
                         target.addRawArchiveEntry(entry, rawStream);
                     }
                 } else {
