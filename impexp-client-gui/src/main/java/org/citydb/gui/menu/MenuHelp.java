@@ -82,12 +82,14 @@ public class MenuHelp extends JMenu {
 	}
 
 	public void openOnlineDoc() {
-		try {
-			Properties appProperties = new Properties();
+		Properties appProperties = new Properties();
+        try {
 			appProperties.load(getClass().getResourceAsStream("/org/citydb/gui/application.properties"));
 			Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("Failed to open the 3DCityDB online documentation.", e);
+			log.error("Open the URL '" + appProperties.getProperty("docUrl") +
+					"' in your favorite web browser instead.");
 		}
 	}
 	

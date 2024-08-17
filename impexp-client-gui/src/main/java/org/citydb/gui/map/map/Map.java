@@ -207,7 +207,7 @@ public class Map {
 			public void mouseClicked(MouseEvent e) {
 				try {
 					Desktop.getDesktop().browse(new URI("https://osm.org/copyright"));
-				} catch (IOException | URISyntaxException ignored) {
+				} catch (Exception ignored) {
 					//
 				}
 			}

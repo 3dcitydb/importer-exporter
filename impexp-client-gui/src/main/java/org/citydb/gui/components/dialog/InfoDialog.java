@@ -34,6 +34,7 @@ import org.citydb.config.project.global.LanguageType;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,6 +46,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 
 public class InfoDialog extends JDialog {
+	private final Logger log = Logger.getInstance();
 	private final Config config;
 
 	public InfoDialog(Config config, JFrame frame) {
@@ -193,8 +195,9 @@ public class InfoDialog extends JDialog {
 			public void mouseClicked(MouseEvent e) {
 				try {
 					Desktop.getDesktop().browse(URI.create(url));
-				} catch (IOException ioException) {
-					//
+				} catch (Exception exception) {
+					log.error("Failed to open the URL '" + url + "'.", exception);
+					log.error("Open the URL in your favorite web browser instead.");
 				}
 			}
 		};

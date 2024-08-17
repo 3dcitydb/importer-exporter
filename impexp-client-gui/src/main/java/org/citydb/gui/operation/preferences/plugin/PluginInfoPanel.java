@@ -173,6 +173,7 @@ public class PluginInfoPanel extends ScrollablePanel {
                         Desktop.getDesktop().browse(l.getURL().toURI());
                     } catch (Exception e) {
                         log.error("Failed to open the URL '" + l.getURL() + "'.", e);
+                        log.error("Open the URL in your favorite web browser instead.");
                     }
                 } else {
                     log.error("The hyperlink '" + l.getDescription() + "' cannot be opened.");

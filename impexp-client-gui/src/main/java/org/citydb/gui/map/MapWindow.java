@@ -586,10 +586,9 @@ public class MapWindow extends JDialog implements EventHandler {
 			SwingUtilities.invokeLater(() -> {
 				try {
 					Desktop.getDesktop().browse(new URI(url.toString()));
-				} catch (IOException e1) {
-					log.error("Failed to launch default browser.");
-				} catch (URISyntaxException e1) {
-					//
+				} catch (Exception e1) {
+					log.error("Failed to open the URL '" + url + "'.", e1);
+					log.error("Open the URL in your favorite web browser instead.");
 				}
 			});
 		});
