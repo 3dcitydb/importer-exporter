@@ -48,6 +48,7 @@ import org.citygml4j.builder.cityjson.marshal.util.DefaultVerticesTransformer;
 import java.io.OutputStream;
 
 public class CityJSONWriterFactory implements FeatureWriterFactory {
+    private final CityGMLContext context = CityGMLContext.getInstance();
     private final CityJSONOutputFactory factory;
     private final Object eventChannel;
     private final Config config;
@@ -59,7 +60,7 @@ public class CityJSONWriterFactory implements FeatureWriterFactory {
         this.config = config;
 
         try {
-            CityJSONBuilder builder = CityGMLContext.getInstance().createCityJSONBuilder();
+            CityJSONBuilder builder = context.createCityJSONBuilder();
             factory = builder.createCityJSONOutputFactory();
             factory.setRemoveDuplicateChildGeometries(config.getExportConfig().getCityJSONOptions().isRemoveDuplicateChildGeometries());
         } catch (CityJSONBuilderException e) {
@@ -90,6 +91,10 @@ public class CityJSONWriterFactory implements FeatureWriterFactory {
 
         if (cityJSONOptions.isUseGeometryCompression()) {
             chunkWriter.setVerticesTransformer(new DefaultVerticesTransformer());
+        }
+
+        if (context.hasADEContexts()) {
+            chunkWriter.setExtensions(context.getADEContexts());
         }
 
         return new CityJSONWriter(chunkWriter, config, targetSrs, useSequentialWriting, eventChannel);
