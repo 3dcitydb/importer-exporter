@@ -37,6 +37,7 @@ import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citygml4j.builder.cityjson.extension.CityJSONExtension;
+import org.citygml4j.builder.cityjson.extension.CityJSONExtensionContext;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;
@@ -117,7 +118,7 @@ public class ADEInfoDialog extends JDialog {
                 ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionById(adeInfo.getId());
                 cityJSONExtension.setSelected(adeExtension != null
                         && adeExtension.getADEContexts().stream()
-                        .allMatch(adeContext -> adeContext instanceof CityJSONExtension));
+                        .allMatch(adeContext -> adeContext instanceof CityJSONExtensionContext));
 
                 content.add(cityJSONExtension, GuiUtil.setConstraints(i++, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 10));
                 content.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(i, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
