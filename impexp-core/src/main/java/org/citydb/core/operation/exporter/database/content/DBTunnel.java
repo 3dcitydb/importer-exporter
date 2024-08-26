@@ -147,7 +147,7 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 						.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
 				openingADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_OPENING, opening);
 			}
-			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, thematicSurface);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_THEMATIC_SURFACE, thematicSurface);
 		}
 		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
 				&& (projectionFilter.containsProperty("outerTunnelInstallation", tunnelModule)
