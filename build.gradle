@@ -16,7 +16,6 @@ subprojects {
             languageVersion = JavaLanguageVersion.of(11)
         }
         compileJava {
-            options.release = 8
             options.encoding = 'UTF-8'
         }
         withJavadocJar()
