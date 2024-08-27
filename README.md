@@ -54,7 +54,7 @@ Previous releases are available from the [releases section](https://github.com/3
 
 System requirements
 -------------------
-* Java JRE or JDK >= 8
+* Java JRE or JDK >= 11
 * [3D City Database](https://github.com/3dcitydb/3dcitydb) on
   - PostgreSQL DBMS >= 11 with PostGIS extension >= 2.5
   - Oracle DBMS >= 19c
