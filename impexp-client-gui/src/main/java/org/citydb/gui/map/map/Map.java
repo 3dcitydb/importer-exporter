@@ -44,9 +44,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 public class Map {
 	private JXMapKit mapKit;
@@ -147,6 +145,7 @@ public class Map {
 		mapKit.getMiniMap().setMouseWheelZoomStyle(MouseWheelZoomStyle.VIEW_CENTER);
 		mapKit.getMiniMap().setRestrictOutsidePanning(true);
 		mapKit.getMiniMap().setHorizontalWrapped(false);
+		mapKit.getMiniMap().setBorder(BorderFactory.createMatteBorder(1, 1, 0, 0, Color.BLACK));
 
 		CompoundPainter<JXMapViewer> compound = new CompoundPainter<>();
 		compound.setPainters(selectionPainter, zoomPainter, waypointPainter);
