@@ -40,7 +40,7 @@ import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.GeometryConverter;
 import org.citydb.core.operation.importer.util.LocalAppearanceHandler;
-import org.citydb.core.operation.importer.util.RingValidator;
+import org.citydb.core.operation.importer.util.GeometryValidator;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
@@ -71,7 +71,7 @@ public class DBSurfaceGeometry implements DBImporter {
     private final DBAppearance appearanceImporter;
     private final IdManager ids;
 	private final LocalAppearanceHandler localAppearanceHandler;
-	private final RingValidator ringValidator;
+	private final GeometryValidator geometryValidator;
 
 	private final boolean replaceGmlId;
 	private final boolean importAppearance;
@@ -126,7 +126,7 @@ public class DBSurfaceGeometry implements DBImporter {
         localAppearanceHandler = importer.getLocalAppearanceHandler();
         geometryConverter = importer.getGeometryConverter();
         ids = new IdManager();
-        ringValidator = new RingValidator(importer.isFailOnError());
+        geometryValidator = new GeometryValidator(importer.isFailOnError());
     }
 
     protected long doImport(AbstractGeometry geometry, long cityObjectId) throws CityGMLImportException, SQLException {
@@ -228,7 +228,7 @@ public class DBSurfaceGeometry implements DBImporter {
                 AbstractRing exterior = polygon.getExterior().getRing();
                 if (exterior != null) {
                     List<Double> points = exterior.toList3d(reverse);
-                    if (!ringValidator.validate(points, exterior))
+                    if (!geometryValidator.isValidRing(points, exterior))
                         return 0;
 
                     if (applyTransformation)
@@ -254,7 +254,7 @@ public class DBSurfaceGeometry implements DBImporter {
                             AbstractRing interior = property.getRing();
                             if (interior != null) {
                                 List<Double> interiorPoints = interior.toList3d(reverse);
-                                if (!ringValidator.validate(interiorPoints, interior))
+                                if (!geometryValidator.isValidRing(interiorPoints, interior))
                                     continue;
 
                                 if (applyTransformation)

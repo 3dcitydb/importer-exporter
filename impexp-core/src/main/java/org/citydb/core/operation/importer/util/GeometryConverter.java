@@ -48,12 +48,12 @@ import java.util.*;
 
 public class GeometryConverter {
 	private AffineTransformer affineTransformer;
-	private final RingValidator ringValidator;
+	private final GeometryValidator geometryValidator;
 	private final int dbSrid;
 	private final boolean hasSolidSupport;
 
 	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter, boolean failOnError) {
-		ringValidator = new RingValidator(failOnError);
+		geometryValidator = new GeometryValidator(failOnError);
 		dbSrid = databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid();
 
 		// solid geometries are only supported in Oracle 11g or higher
@@ -289,10 +289,10 @@ public class GeometryConverter {
 		return null;
 	}
 
-	public GeometryObject getCurve(AbstractCurve curve) {
+	public GeometryObject getCurve(AbstractCurve curve) throws CityGMLImportException {
 		if (curve != null) {
 			List<Double> pointList = curve.toList3d();
-			if (!pointList.isEmpty()) {
+			if (geometryValidator.isValidCurve(pointList, curve)) {
 				return GeometryObject.createCurve(convertPrimitive(pointList), 3, dbSrid);
 			}
 		}
@@ -300,7 +300,7 @@ public class GeometryConverter {
 		return null;
 	}
 
-	public GeometryObject getMultiCurve(MultiCurve multiCurve) {
+	public GeometryObject getMultiCurve(MultiCurve multiCurve) throws CityGMLImportException {
 		if (multiCurve != null) {
 			List<List<Double>> pointList = new ArrayList<>();
 
@@ -308,7 +308,7 @@ public class GeometryConverter {
 				for (CurveProperty property : multiCurve.getCurveMember()) {
 					if (property.isSetCurve()) {
 						List<Double> points = property.getCurve().toList3d();
-						if (!points.isEmpty()) {
+						if (geometryValidator.isValidCurve(points, property.getCurve())) {
 							pointList.add(points);
 						}
 					}
@@ -318,7 +318,7 @@ public class GeometryConverter {
 				for (AbstractCurve curve : property.getCurve()) {
 					if (curve != null) {
 						List<Double> points = curve.toList3d();
-						if (!points.isEmpty()) {
+						if (geometryValidator.isValidCurve(points, curve)) {
 							pointList.add(points);
 						}
 					}
@@ -333,7 +333,7 @@ public class GeometryConverter {
 		return null;
 	}
 
-	public GeometryObject getCurveGeometry(GeometricComplex geometricComplex) {
+	public GeometryObject getCurveGeometry(GeometricComplex geometricComplex) throws CityGMLImportException {
 		if (geometricComplex != null && geometricComplex.isSetElement()) {
 			List<List<Double>> pointList = new ArrayList<>();
 
@@ -342,7 +342,7 @@ public class GeometryConverter {
 					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
 					if (primitive instanceof AbstractCurve) {
 						List<Double> points = ((AbstractCurve) primitive).toList3d();
-						if (!points.isEmpty()) {
+						if (geometryValidator.isValidCurve(points, (AbstractCurve) primitive)) {
 							pointList.add(points);
 						}
 					}
@@ -360,7 +360,7 @@ public class GeometryConverter {
 		return null;
 	}
 
-	public GeometryObject getCurveGeometry(MultiGeometry multiGeometry) {
+	public GeometryObject getCurveGeometry(MultiGeometry multiGeometry) throws CityGMLImportException {
 		List<List<Double>> pointList = new ArrayList<>();
 
 		if (multiGeometry != null) {
@@ -368,7 +368,7 @@ public class GeometryConverter {
 				for (GeometryProperty<?> property : multiGeometry.getGeometryMember()) {
 					if (property.isSetGeometry() && property.getGeometry() instanceof AbstractCurve) {
 						List<Double> coords = ((AbstractCurve) property.getGeometry()).toList3d();
-						if (!coords.isEmpty()) {
+						if (geometryValidator.isValidCurve(coords, (AbstractCurve) property.getGeometry())) {
 							pointList.add(coords);
 						}
 					}
@@ -379,7 +379,7 @@ public class GeometryConverter {
 				for (AbstractGeometry member : multiGeometry.getGeometryMembers().getGeometry()) {
 					if (member instanceof AbstractCurve) {
 						List<Double> coords = ((AbstractCurve) member).toList3d();
-						if (!coords.isEmpty()) {
+						if (geometryValidator.isValidCurve(coords, (AbstractCurve) member)) {
 							pointList.add(coords);
 						}
 					}
@@ -397,7 +397,7 @@ public class GeometryConverter {
 		return null;
 	}
 
-	public GeometryObject getMultiCurve(List<LineStringSegmentArrayProperty> propertyList) {
+	public GeometryObject getMultiCurve(List<LineStringSegmentArrayProperty> propertyList) throws CityGMLImportException {
 		if (propertyList != null && !propertyList.isEmpty()) {
 			List<List<Double>> pointList = new ArrayList<>();
 
@@ -407,7 +407,7 @@ public class GeometryConverter {
 
 					for (LineStringSegment segment : property.getLineStringSegment()) {
 						List<Double> coords = segment.toList3d();
-						if (!coords.isEmpty()) {
+						if (geometryValidator.isValidCurve(coords, segment)) {
 							points.addAll(coords);
 						}
 					}
@@ -426,13 +426,13 @@ public class GeometryConverter {
 		return null;
 	}
 
-	public GeometryObject getPoint(PointProperty pointProperty) {
+	public GeometryObject getPoint(PointProperty pointProperty) throws CityGMLImportException {
 		return pointProperty != null ?
 				getPoint(pointProperty.getPoint()) :
 				null;
 	}
 
-	public GeometryObject getMultiPoint(MultiPointProperty multiPointProperty) {
+	public GeometryObject getMultiPoint(MultiPointProperty multiPointProperty) throws CityGMLImportException {
 		return multiPointProperty != null ?
 				getMultiPoint(multiPointProperty.getMultiPoint()) :
 				null;
@@ -444,25 +444,25 @@ public class GeometryConverter {
 				null;
 	}
 
-	public GeometryObject getCurve(CurveProperty curveProperty) {
+	public GeometryObject getCurve(CurveProperty curveProperty) throws CityGMLImportException {
 		return curveProperty != null ?
 				getCurve(curveProperty.getCurve()) :
 				null;
 	}
 
-	public GeometryObject getMultiCurve(MultiCurveProperty multiCurveProperty) {
+	public GeometryObject getMultiCurve(MultiCurveProperty multiCurveProperty) throws CityGMLImportException {
 		return multiCurveProperty != null ?
 				getMultiCurve(multiCurveProperty.getMultiCurve()) :
 				null;
 	}
 
-	public GeometryObject getCurveGeometry(GeometricComplexProperty complexProperty) {
+	public GeometryObject getCurveGeometry(GeometricComplexProperty complexProperty) throws CityGMLImportException {
 		return complexProperty != null && complexProperty.isSetGeometricComplex() ?
 				getCurveGeometry(complexProperty.getGeometricComplex()) :
 				null;
 	}
 
-	public GeometryObject getPointOrCurveGeometry(AbstractGeometry abstractGeometry) {
+	public GeometryObject getPointOrCurveGeometry(AbstractGeometry abstractGeometry) throws CityGMLImportException {
 		switch (abstractGeometry.getGMLClass()) {
 			case POINT:
 				return getPoint((Point) abstractGeometry);
@@ -574,7 +574,7 @@ public class GeometryConverter {
 			AbstractRing exteriorRing = polygon.getExterior().getRing();
 			if (exteriorRing != null) {
 				List<Double> coords = exteriorRing.toList3d(reverse);
-				if (!ringValidator.validate(coords, exteriorRing)) {
+				if (!geometryValidator.isValidRing(coords, exteriorRing)) {
 					return null;
 				}
 
@@ -585,11 +585,9 @@ public class GeometryConverter {
 						AbstractRing interiorRing = abstractRingProperty.getRing();
 						if (interiorRing != null) {
 							coords = interiorRing.toList3d(reverse);
-							if (!ringValidator.validate(coords, interiorRing)) {
-								continue;
+							if (geometryValidator.isValidRing(coords, interiorRing)) {
+                                pointList.add(coords);
 							}
-
-							pointList.add(coords);
 						}
 					}
 				}
@@ -681,7 +679,7 @@ public class GeometryConverter {
 					// required to handle surface patches such as triangles and rectangles
 					List<Double> points = ring.toList3d(reverse);
 					try {
-						if (ringValidator.validate(points, ring)) {
+						if (geometryValidator.isValidRing(points, ring)) {
 							pointList.add(points);
 							rings.add(ringNo);
 							ringNo++;
