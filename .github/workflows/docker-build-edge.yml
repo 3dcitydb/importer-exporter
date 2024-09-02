@@ -9,25 +9,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    -
-      name: Parse short sha
-      uses: benjlevesque/short-sha@v2.2
-      id: short-sha
-    -
-      name: Checkout repo
-      uses: actions/checkout@v4
-    -
-      name: Build and push image
-      id: docker_build
-      uses: docker/build-push-action@v5
-      with:
-        push: false
-        tags: 3dcitydb/impexp:edge
-        build-args: |
-          IMPEXP_VERSION=${{ steps.short-sha.outputs.sha }}
-    -
-      name: Image digest
-      run: echo ${{ steps.docker_build.outputs.digest }}
-    -
-      name: Run container
-      run: docker run -t --rm 3dcitydb/impexp:edge help | grep -i -E "Usage:"
+      - name: Parse short sha
+        uses: benjlevesque/short-sha@v3.0
+        id: short-sha
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Build and push image
+        id: docker_build
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          tags: 3dcitydb/impexp:edge
+          build-args: |
+            IMPEXP_VERSION=${{ steps.short-sha.outputs.sha }}
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+      - name: Run container
+        run: docker run -t --rm 3dcitydb/impexp:edge help | grep -i -E "Usage:"
