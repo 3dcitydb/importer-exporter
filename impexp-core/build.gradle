@@ -1,15 +1,15 @@
 dependencies {
     api project(':impexp-util')
     api 'info.picocli:picocli:4.7.6'
-    api 'org.citydb:sqlbuilder:2.2.1'
+    api 'org.citydb:sqlbuilder:2.3.0-SNAPSHOT'
     api 'org.citydb:3dcitydb-ade-citygml4j:1.2.0'
     api 'org.geotools:gt-epsg-extension:31.3'
     api 'org.geotools:gt-epsg-wkt:31.3'
     api 'org.geotools:gt-referencing:31.3'
     api 'org.locationtech.jts:jts-core:1.19.0'
-    api 'org.postgresql:postgresql:42.7.3'
+    api 'org.postgresql:postgresql:42.7.4'
     api 'net.postgis:postgis-jdbc:2024.1.0'
-    api 'com.oracle.database.jdbc:ojdbc11:23.3.0.23.09'
+    api 'com.oracle.database.jdbc:ojdbc11:23.5.0.24.07'
     api 'com.oracle.sdoapi:sdoapi:23.3.0.0'
     api 'org.apache.tika:tika-core:2.9.2'
     api 'com.univocity:univocity-parsers:2.9.1'
@@ -17,7 +17,7 @@ dependencies {
     implementation 'com.h2database:h2:2.3.232'
     implementation 'net.sf.saxon:Saxon-HE:12.5'
     implementation 'org.apache.tomcat:tomcat-jdbc:10.1.28'
-    implementation 'org.apache.commons:commons-compress:1.27.0'
+    implementation 'org.apache.commons:commons-compress:1.27.1'
 }
 
 javadoc {
