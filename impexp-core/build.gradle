@@ -10,7 +10,7 @@ dependencies {
     api 'org.postgresql:postgresql:42.7.4'
     api 'net.postgis:postgis-jdbc:2024.1.0'
     api 'com.oracle.database.jdbc:ojdbc11:23.5.0.24.07'
-    api 'com.oracle.sdoapi:sdoapi:23.3.0.0'
+    api 'com.oracle.sdoapi:sdoapi:23.5.0.24.07'
     api 'org.apache.tika:tika-core:2.9.2'
     api 'com.univocity:univocity-parsers:2.9.1'
     api 'org.slf4j:slf4j-nop:2.0.13'
