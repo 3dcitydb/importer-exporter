@@ -47,5 +47,6 @@ public interface ADEVisExportQueryHelper {
 	String getWaterBodyQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
 	String getLandUseQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
 	String getTransportationQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+	String getTransportationPointAndCurveQuery(int lodToExportFrom, int objectClassId);
 	String getReliefQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
 }

@@ -56,6 +56,7 @@ import java.util.Map;
         "vegetationBalloon",
         "transportationStyles",
         "transportationBalloon",
+        "transportationPointAndCurve",
         "reliefStyles",
         "reliefBalloon",
         "cityFurnitureStyles",
@@ -109,6 +110,7 @@ public class VisExportConfig {
     @XmlJavaTypeAdapter(StylesAdapter.class)
     private Styles transportationStyles;
     private Balloon transportationBalloon;
+    private PointAndCurve transportationPointAndCurve;
     @XmlJavaTypeAdapter(StylesAdapter.class)
     private Styles reliefStyles;
     private Balloon reliefBalloon;
@@ -166,6 +168,7 @@ public class VisExportConfig {
         vegetationBalloon = new Balloon();
         transportationStyles = new Styles();
         transportationBalloon = new Balloon();
+        transportationPointAndCurve = new PointAndCurve();
         reliefStyles = new Styles();
         reliefBalloon = new Balloon();
         cityFurnitureStyles = new Styles();
@@ -501,6 +504,14 @@ public class VisExportConfig {
 
     public Balloon getTransportationBalloon() {
         return transportationBalloon;
+    }
+
+    public void setTransportationPointAndCurve(PointAndCurve TransportationPointAndCurve) {
+        this.transportationPointAndCurve = TransportationPointAndCurve;
+    }
+
+    public PointAndCurve getTransportationPointAndCurve() {
+        return transportationPointAndCurve;
     }
 
     public Styles getReliefStyles() {

@@ -897,6 +897,7 @@ public class VisExporter implements EventHandler {
 			case RAILWAY:
 			case ROAD:
 			case SQUARE:
+				addPointAndCurveStyle(saxWriter, config.getVisExportConfig().getTransportationPointAndCurve(), Transportation.STYLE_BASIS_NAME);
 				style = config.getVisExportConfig().getTransportationStyles().getOrDefault(type);
 				styleBasisName = Transportation.STYLE_BASIS_NAME;
 				break;

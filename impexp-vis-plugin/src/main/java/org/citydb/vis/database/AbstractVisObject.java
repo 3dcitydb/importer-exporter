@@ -181,7 +181,7 @@ public abstract class AbstractVisObject {
 		defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
 		defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
 
-		queries = new Queries(databaseAdapter, visExporterManager.getDatabaseAdapter().getConnectionDetails().getSchema());
+		queries = new Queries(databaseAdapter, visExporterManager.getDatabaseAdapter().getConnectionDetails().getSchema(), this.visExporterManager);
 		imageReader = new ImageReader();
 	}
 
