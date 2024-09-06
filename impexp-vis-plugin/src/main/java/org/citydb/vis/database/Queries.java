@@ -1943,6 +1943,17 @@ public class Queries implements ADEVisExportQueryHelper {
 		return query;		
 	}
 
+	@Override
+	public String getTransportationPointAndCurveQuery(int lodToExportFrom, int objectClassId) {
+		String query = new StringBuilder("SELECT tc.lod0_network, ")
+				.append(implicitGeometryNullColumns)
+				.append("FROM ").append(schema).append(".transportation_complex tc ")
+				.append("WHERE tc.id = ? ")
+				.append("AND tc.lod0_network IS NOT NULL").toString();
+
+		return unionADEQueries(QUERY_POINT_AND_CURVE_GEOMETRY, query, lodToExportFrom, objectClassId);
+	}
+
 	// ----------------------------------------------------------------------
 	// RELIEF QUERIES
 	// ----------------------------------------------------------------------
