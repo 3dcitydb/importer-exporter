@@ -34,83 +34,83 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 public class SplashScreen extends JWindow {
-	private final JLabel message;
-	private final JProgressBar progressBar;
+    private final JLabel message;
+    private final JProgressBar progressBar;
 
-	public SplashScreen(int left, int top, Color messageColor) {
-		Object arc = UIManager.get("ProgressBar.arc");
-		UIManager.put("ProgressBar.arc", 0);
+    public SplashScreen(int left, int top, Color messageColor) {
+        Object arc = UIManager.get("ProgressBar.arc");
+        UIManager.put("ProgressBar.arc", 0);
 
-		ImageIcon icon = new ImageIcon(getToolkit().getImage(this.getClass().getResource("/org/citydb/gui/splash/splash.png")));
-		JPanel content = new JPanel() {
-			public boolean isOptimizedDrawingEnabled() {
-				return false;
-			}
-		};
-		
-		content.setLayout(new OverlayLayout(content));
-		content.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-		
-		JPanel dynamicContent = new JPanel();
-		dynamicContent.setOpaque(false);
-		dynamicContent.setLayout(new GridBagLayout());
-			
-		message = new JLabel();
-		message.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
-		message.setForeground(messageColor);
-		
-		progressBar = new JProgressBar();
-		progressBar.setIndeterminate(false);
-		progressBar.setVisible(false);
+        ImageIcon icon = new ImageIcon(getToolkit().getImage(this.getClass().getResource("/org/citydb/gui/splash/splash.png")));
+        JPanel content = new JPanel() {
+            public boolean isOptimizedDrawingEnabled() {
+                return false;
+            }
+        };
 
-		Component placeholder = Box.createVerticalStrut(progressBar.getPreferredSize().height);
+        content.setLayout(new OverlayLayout(content));
+        content.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
 
-		dynamicContent.add(message, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, top, left, 0, 5));
-		dynamicContent.add(placeholder, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-		dynamicContent.add(progressBar, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-		
-		dynamicContent.setAlignmentX(0);
-		dynamicContent.setAlignmentY(0);
-		content.add(dynamicContent);
-		
-		JLabel image = new JLabel(icon);
-		image.setAlignmentX(0);
-		image.setAlignmentY(0);
-		content.add(image);
-		
-		add(content, BorderLayout.CENTER);
-		UIManager.put("ProgressBar.arc", arc);
-		
-		// center on screen
-		GraphicsDevice screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-		Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(screen.getDefaultConfiguration());
+        JPanel dynamicContent = new JPanel();
+        dynamicContent.setOpaque(false);
+        dynamicContent.setLayout(new GridBagLayout());
 
-		Rectangle screenBounds = screen.getDefaultConfiguration().getBounds();
-		AffineTransform transform = screen.getDefaultConfiguration().getDefaultTransform();
-		screenBounds.width = screenBounds.width - (int) ((screenInsets.left + screenInsets.right) / transform.getScaleX());
-		screenBounds.height = screenBounds.height - (int) ((screenInsets.top + screenInsets.bottom) / transform.getScaleY());
+        message = new JLabel();
+        message.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        message.setForeground(messageColor);
 
-		int x = (screenBounds.width - icon.getIconWidth()) / 2;
-		int y = (screenBounds.height - icon.getIconHeight()) / 2;
-		setMinimumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
-		setLocation(x, y);
-		setAlwaysOnTop(true);
-	}
+        progressBar = new JProgressBar();
+        progressBar.setIndeterminate(false);
+        progressBar.setVisible(false);
 
-	public void setMessage(String message) {
-		this.message.setText(message);
-	}
+        Component placeholder = Box.createVerticalStrut(progressBar.getPreferredSize().height);
 
-	public void nextStep(int current, int maximum) {
-		if (current == 1) {
-			progressBar.setMaximum(maximum);
-			progressBar.setVisible(true);
-		}
+        dynamicContent.add(message, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, top, left, 0, 5));
+        dynamicContent.add(placeholder, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+        dynamicContent.add(progressBar, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 
-		progressBar.setValue(current);
-	}
+        dynamicContent.setAlignmentX(0);
+        dynamicContent.setAlignmentY(0);
+        content.add(dynamicContent);
 
-	public void close() {
-		dispose();
-	}
+        JLabel image = new JLabel(icon);
+        image.setAlignmentX(0);
+        image.setAlignmentY(0);
+        content.add(image);
+
+        add(content, BorderLayout.CENTER);
+        UIManager.put("ProgressBar.arc", arc);
+
+        // center on screen
+        GraphicsDevice screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(screen.getDefaultConfiguration());
+
+        Rectangle screenBounds = screen.getDefaultConfiguration().getBounds();
+        AffineTransform transform = screen.getDefaultConfiguration().getDefaultTransform();
+        screenBounds.width = screenBounds.width - (int) ((screenInsets.left + screenInsets.right) / transform.getScaleX());
+        screenBounds.height = screenBounds.height - (int) ((screenInsets.top + screenInsets.bottom) / transform.getScaleY());
+
+        int x = (screenBounds.width - icon.getIconWidth()) / 2;
+        int y = (screenBounds.height - icon.getIconHeight()) / 2;
+        setMinimumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+        setLocation(x, y);
+        setAlwaysOnTop(true);
+    }
+
+    public void setMessage(String message) {
+        this.message.setText(message);
+    }
+
+    public void nextStep(int current, int maximum) {
+        if (current == 1) {
+            progressBar.setMaximum(maximum);
+            progressBar.setVisible(true);
+        }
+
+        progressBar.setValue(current);
+    }
+
+    public void close() {
+        dispose();
+    }
 }

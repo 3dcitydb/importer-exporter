@@ -30,97 +30,97 @@ package org.citydb.core.operation.common.xlink;
 import org.citydb.config.geometry.GeometryObject;
 
 public class DBXlinkTextureCoordList implements DBXlink {
-	private long id;
-	private String gmlId;
-	private String texParamGmlId;
-	private GeometryObject textureCoord;
-	private long targetId;
-	
-	private long surfaceGeometryId;
-	private boolean isReverse;
+    private long id;
+    private String gmlId;
+    private String texParamGmlId;
+    private GeometryObject textureCoord;
+    private long targetId;
 
-	public DBXlinkTextureCoordList(long id, 
-			String gmlId, 
-			String texParamGmlId, 
-			long targetId) {
-		this.id = id;
-		this.gmlId = gmlId;
-		this.texParamGmlId = texParamGmlId;
-		this.targetId = targetId;
-	}
-	
-	public DBXlinkTextureCoordList(long id, 
-			String gmlId, 
-			String texParamGmlId, 
-			GeometryObject textureCoord,
-			long targetId) {
-		this.id = id;
-		this.gmlId = gmlId;
-		this.texParamGmlId = texParamGmlId;
-		this.textureCoord = textureCoord;
-		this.targetId = targetId;
-	}
+    private long surfaceGeometryId;
+    private boolean isReverse;
 
-	public long getId() {
-		return id;
-	}
+    public DBXlinkTextureCoordList(long id,
+                                   String gmlId,
+                                   String texParamGmlId,
+                                   long targetId) {
+        this.id = id;
+        this.gmlId = gmlId;
+        this.texParamGmlId = texParamGmlId;
+        this.targetId = targetId;
+    }
 
-	public void setId(long id) {
-		this.id = id;
-	}
+    public DBXlinkTextureCoordList(long id,
+                                   String gmlId,
+                                   String texParamGmlId,
+                                   GeometryObject textureCoord,
+                                   long targetId) {
+        this.id = id;
+        this.gmlId = gmlId;
+        this.texParamGmlId = texParamGmlId;
+        this.textureCoord = textureCoord;
+        this.targetId = targetId;
+    }
 
-	@Override
-	public String getGmlId() {
-		return gmlId;
-	}
+    public long getId() {
+        return id;
+    }
 
-	@Override
-	public void setGmlId(String gmlId) {
-		this.gmlId = gmlId;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public String getTexParamGmlId() {
-		return texParamGmlId;
-	}
+    @Override
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public void setTexParamGmlId(String texParamGmlId) {
-		this.texParamGmlId = texParamGmlId;
-	}
+    @Override
+    public void setGmlId(String gmlId) {
+        this.gmlId = gmlId;
+    }
 
-	public GeometryObject getTextureCoord() {
-		return textureCoord;
-	}
+    public String getTexParamGmlId() {
+        return texParamGmlId;
+    }
 
-	public void setTextureCoord(GeometryObject textureCoord) {
-		this.textureCoord = textureCoord;
-	}
+    public void setTexParamGmlId(String texParamGmlId) {
+        this.texParamGmlId = texParamGmlId;
+    }
 
-	public long getTargetId() {
-		return targetId;
-	}
+    public GeometryObject getTextureCoord() {
+        return textureCoord;
+    }
 
-	public void setTargetId(long targetId) {
-		this.targetId = targetId;
-	}
+    public void setTextureCoord(GeometryObject textureCoord) {
+        this.textureCoord = textureCoord;
+    }
 
-	public long getSurfaceGeometryId() {
-		return surfaceGeometryId;
-	}
+    public long getTargetId() {
+        return targetId;
+    }
 
-	public void setSurfaceGeometryId(long surfaceGeometryId) {
-		this.surfaceGeometryId = surfaceGeometryId;
-	}
+    public void setTargetId(long targetId) {
+        this.targetId = targetId;
+    }
 
-	public boolean isReverse() {
-		return isReverse;
-	}
+    public long getSurfaceGeometryId() {
+        return surfaceGeometryId;
+    }
 
-	public void setReverse(boolean isReverse) {
-		this.isReverse = isReverse;
-	}
+    public void setSurfaceGeometryId(long surfaceGeometryId) {
+        this.surfaceGeometryId = surfaceGeometryId;
+    }
 
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.TEXTURE_COORD_LIST;
-	}
+    public boolean isReverse() {
+        return isReverse;
+    }
+
+    public void setReverse(boolean isReverse) {
+        this.isReverse = isReverse;
+    }
+
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.TEXTURE_COORD_LIST;
+    }
 }

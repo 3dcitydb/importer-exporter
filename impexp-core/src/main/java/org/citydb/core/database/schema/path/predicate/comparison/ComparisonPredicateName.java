@@ -30,17 +30,17 @@ package org.citydb.core.database.schema.path.predicate.comparison;
 import org.citydb.core.database.schema.path.predicate.PredicateName;
 
 public enum ComparisonPredicateName implements PredicateName {
-	EQUAL_TO("=");
+    EQUAL_TO("=");
 
-	final String symbol;
+    final String symbol;
 
-	ComparisonPredicateName(String symbol) {
-		this.symbol = symbol;
-	}
+    ComparisonPredicateName(String symbol) {
+        this.symbol = symbol;
+    }
 
-	@Override
-	public String getSymbol() {
-		return symbol;
-	}
-	
+    @Override
+    public String getSymbol() {
+        return symbol;
+    }
+
 }

@@ -127,7 +127,7 @@ public class Exporter implements EventHandler {
     private CityGMLExportException exception;
     private CacheTableManager cacheTableManager;
 
-	public Exporter() {
+    public Exporter() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
         pluginManager = PluginManager.getInstance();
@@ -294,9 +294,9 @@ public class Exporter implements EventHandler {
         // cache gml:ids of city objects in case we have to export groups
         internalConfig.setRegisterGmlIdInCache(!config.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
                 && query.getFeatureTypeFilter().containsFeatureType(
-                		schemaMapping.getFeatureType(query.getTargetVersion()
-								.getCityGMLModule(CityGMLModuleType.CITY_OBJECT_GROUP)
-								.getFeatureName(CityObjectGroup.class))));
+                schemaMapping.getFeatureType(query.getTargetVersion()
+                        .getCityGMLModule(CityGMLModuleType.CITY_OBJECT_GROUP)
+                        .getFeatureName(CityObjectGroup.class))));
 
         // tiling
         Tiling tiling = query.getTiling();
@@ -338,13 +338,13 @@ public class Exporter implements EventHandler {
         if (exportAppearance) {
             textureFolder = config.getExportConfig().getAppearances().getTexturePath().getPath();
             if (textureFolder == null || textureFolder.isEmpty()) {
-            	textureFolder = "appearance";
-			}
+                textureFolder = "appearance";
+            }
 
             textureFolderIsAbsolute = new File(textureFolder).isAbsolute();
             if (!textureFolderIsAbsolute) {
-            	textureFolder = textureFolder.replace("\\", "/");
-			}
+                textureFolder = textureFolder.replace("\\", "/");
+            }
 
             if (textureFolderIsAbsolute) {
                 try {
@@ -385,9 +385,9 @@ public class Exporter implements EventHandler {
                         tiling.setActiveTile(tile);
 
                         Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
-						query.setSelection(predicate != null ?
-								new SelectionFilter(LogicalOperationFactory.AND(predicate, bboxFilter)) :
-								new SelectionFilter(bboxFilter));
+                        query.setSelection(predicate != null ?
+                                new SelectionFilter(LogicalOperationFactory.AND(predicate, bboxFilter)) :
+                                new SelectionFilter(bboxFilter));
                     } catch (FilterException e) {
                         throw new CityGMLExportException("Failed to get tile at [" + row + "," + column + "].", e);
                     }
@@ -514,8 +514,8 @@ public class Exporter implements EventHandler {
 
                     // fail if we could not start a single import worker
                     if (dbWorkerPool.getPoolSize() == 0) {
-                    	throw new CityGMLExportException("Failed to start database export worker pool. Check the database connection pool settings.");
-					}
+                        throw new CityGMLExportException("Failed to start database export worker pool. Check the database connection pool settings.");
+                    }
 
                     log.info("Exporting to file: " + file.getFile());
 
@@ -573,12 +573,12 @@ public class Exporter implements EventHandler {
 
                     // clean up
                     if (xlinkExporterPool != null && !xlinkExporterPool.isTerminated()) {
-                    	xlinkExporterPool.shutdownNow();
-					}
+                        xlinkExporterPool.shutdownNow();
+                    }
 
                     if (dbWorkerPool != null && !dbWorkerPool.isTerminated()) {
-                    	dbWorkerPool.shutdownNow();
-					}
+                        dbWorkerPool.shutdownNow();
+                    }
 
                     try {
                         eventDispatcher.flushEvents();
@@ -615,8 +615,8 @@ public class Exporter implements EventHandler {
 
                 // show processed geometries
                 if (!geometryCounter.isEmpty()) {
-                	log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
-				}
+                    log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
+                }
 
                 objectCounter.clear();
                 geometryCounter.clear();
@@ -632,8 +632,8 @@ public class Exporter implements EventHandler {
             }
 
             if (!totalGeometryCounter.isEmpty()) {
-            	log.info("Total processed objects: " + totalGeometryCounter.values().stream().reduce(0L, Long::sum));
-			}
+                log.info("Total processed objects: " + totalGeometryCounter.values().stream().reduce(0L, Long::sum));
+            }
         }
 
         if (exception != null) {
@@ -644,21 +644,21 @@ public class Exporter implements EventHandler {
     }
 
     private void setOutputFormatOptions(OutputFormat outputFormat, InternalConfig internalConfig) {
-	    internalConfig.setOutputFormat(outputFormat);
+        internalConfig.setOutputFormat(outputFormat);
 
-	    if (outputFormat == OutputFormat.CITYJSON) {
-	        internalConfig.setExportFeatureReferences(false);
-	        internalConfig.setExportGeometryReferences(true);
+        if (outputFormat == OutputFormat.CITYJSON) {
+            internalConfig.setExportFeatureReferences(false);
+            internalConfig.setExportGeometryReferences(true);
         } else {
             XLink xlinkOptions = config.getExportConfig().getCityGMLOptions().getXlink();
-	        internalConfig.setExportFeatureReferences(xlinkOptions.getFeature().isModeXLink());
-	        internalConfig.setExportGeometryReferences(xlinkOptions.getGeometry().isModeXLink());
+            internalConfig.setExportFeatureReferences(xlinkOptions.getFeature().isModeXLink());
+            internalConfig.setExportGeometryReferences(xlinkOptions.getGeometry().isModeXLink());
         }
     }
 
     private void setException(String message, Throwable cause) {
-	    if (exception == null) {
-	        exception = new CityGMLExportException(message, cause);
+        if (exception == null) {
+            exception = new CityGMLExportException(message, cause);
         }
     }
 
@@ -697,16 +697,16 @@ public class Exporter implements EventHandler {
                 }
 
                 if (dbSplitter != null) {
-                	dbSplitter.shutdown();
-				}
+                    dbSplitter.shutdown();
+                }
 
                 if (dbWorkerPool != null) {
-                	dbWorkerPool.drainWorkQueue();
-				}
+                    dbWorkerPool.drainWorkQueue();
+                }
 
                 if (xlinkExporterPool != null) {
-                	xlinkExporterPool.drainWorkQueue();
-				}
+                    xlinkExporterPool.drainWorkQueue();
+                }
             }
         }
     }

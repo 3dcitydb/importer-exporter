@@ -30,26 +30,26 @@ package org.citydb.core.operation.common.cache.model;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 
 public class CacheTableTextureAssociation extends AbstractCacheTableModel {
-	public static CacheTableTextureAssociation instance = null;
-	
-	public synchronized static CacheTableTextureAssociation getInstance() {
-		if (instance == null)
-			instance = new CacheTableTextureAssociation();
-		
-		return instance;
-	}
+    public static CacheTableTextureAssociation instance = null;
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.TEXTUREASSOCIATION;
-	}
-	
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"ID " + sqlAdapter.getBigInt() + ", " +
-				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"TARGET_URI " + sqlAdapter.getCharacterVarying(256) +
-				")";
-	}
+    public synchronized static CacheTableTextureAssociation getInstance() {
+        if (instance == null)
+            instance = new CacheTableTextureAssociation();
+
+        return instance;
+    }
+
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.TEXTUREASSOCIATION;
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "ID " + sqlAdapter.getBigInt() + ", " +
+                "GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+                "TARGET_URI " + sqlAdapter.getCharacterVarying(256) +
+                ")";
+    }
 }

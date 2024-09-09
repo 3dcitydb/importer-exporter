@@ -30,20 +30,20 @@ package org.citydb.util.event.global;
 import org.citydb.util.event.Event;
 
 public final class DatabaseConnectionStateEvent extends Event {
-	private final boolean wasConnected;
-	private final boolean isConnected;
-	
-	public DatabaseConnectionStateEvent(boolean wasConnected, boolean isConnected) {
-		super(EventType.DATABASE_CONNECTION_STATE, GLOBAL_CHANNEL);
-		this.wasConnected = wasConnected;
-		this.isConnected = isConnected;
-	}
+    private final boolean wasConnected;
+    private final boolean isConnected;
 
-	public boolean isConnected() {
-		return isConnected;
-	}
+    public DatabaseConnectionStateEvent(boolean wasConnected, boolean isConnected) {
+        super(EventType.DATABASE_CONNECTION_STATE, GLOBAL_CHANNEL);
+        this.wasConnected = wasConnected;
+        this.isConnected = isConnected;
+    }
 
-	public boolean wasConnected() {
-		return wasConnected;
-	}
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public boolean wasConnected() {
+        return wasConnected;
+    }
 }

@@ -42,47 +42,47 @@ import org.citydb.util.log.Logger;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
-	private final Logger log = Logger.getInstance();
-	private final ConnectionManager connectionManager;
-	private final DeleteLogger deleteLogger;
-	private final InternalConfig internalConfig;
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
+public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult> {
+    private final Logger log = Logger.getInstance();
+    private final ConnectionManager connectionManager;
+    private final DeleteLogger deleteLogger;
+    private final InternalConfig internalConfig;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
 
-	public DBDeleteWorkerFactory(
-			ConnectionManager connectionManager,
-			DeleteLogger deleteLogger,
-			InternalConfig internalConfig,
-			Config config,
-			EventDispatcher eventDispatcher) {
-		this.connectionManager = connectionManager;
-		this.deleteLogger = deleteLogger;
-		this.internalConfig = internalConfig;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public DBDeleteWorkerFactory(
+            ConnectionManager connectionManager,
+            DeleteLogger deleteLogger,
+            InternalConfig internalConfig,
+            Config config,
+            EventDispatcher eventDispatcher) {
+        this.connectionManager = connectionManager;
+        this.deleteLogger = deleteLogger;
+        this.internalConfig = internalConfig;
+        this.config = config;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	public DBDeleteWorkerFactory(
-			ConnectionManager connectionManager,
-			InternalConfig internalConfig,
-			Config config,
-			EventDispatcher eventDispatcher) {
-		this(connectionManager, null, internalConfig, config, eventDispatcher);
-	}
-	
-	@Override
-	public Worker<DBSplittingResult> createWorker() {	
-		DBDeleteWorker dbWorker = null;
-	
-		try {
-			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-			Connection connection = connectionManager.getConnection();
-			dbWorker = new DBDeleteWorker(connection, databaseAdapter, deleteLogger, internalConfig, config, eventDispatcher);
-		} catch (SQLException e) {
-			log.error("Failed to create delete worker.", e);
-		}
-		
-		return dbWorker;
-	}
+    public DBDeleteWorkerFactory(
+            ConnectionManager connectionManager,
+            InternalConfig internalConfig,
+            Config config,
+            EventDispatcher eventDispatcher) {
+        this(connectionManager, null, internalConfig, config, eventDispatcher);
+    }
+
+    @Override
+    public Worker<DBSplittingResult> createWorker() {
+        DBDeleteWorker dbWorker = null;
+
+        try {
+            AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+            Connection connection = connectionManager.getConnection();
+            dbWorker = new DBDeleteWorker(connection, databaseAdapter, deleteLogger, internalConfig, config, eventDispatcher);
+        } catch (SQLException e) {
+            log.error("Failed to create delete worker.", e);
+        }
+
+        return dbWorker;
+    }
 }

@@ -106,9 +106,12 @@ public class Balloon {
         if (!balloonToCompare.getBalloonContentTemplateFile().equals(getBalloonContentTemplateFile())) return false;
         if (balloonToCompare.isBalloonContentInSeparateFile() != isBalloonContentInSeparateFile()) return false;
         if (balloonToCompare.isIncludeDescription() != isIncludeDescription()) return false;
-        if (balloonToCompare.getBalloonContentPath().getPathMode() != getBalloonContentPath().getPathMode()) return false;
-        if (!balloonToCompare.getBalloonContentPath().getLastUsedPath().equals(getBalloonContentPath().getLastUsedPath())) return false;
-        if (!balloonToCompare.getBalloonContentPath().getStandardPath().equals(getBalloonContentPath().getStandardPath())) return false;
+        if (balloonToCompare.getBalloonContentPath().getPathMode() != getBalloonContentPath().getPathMode())
+            return false;
+        if (!balloonToCompare.getBalloonContentPath().getLastUsedPath().equals(getBalloonContentPath().getLastUsedPath()))
+            return false;
+        if (!balloonToCompare.getBalloonContentPath().getStandardPath().equals(getBalloonContentPath().getStandardPath()))
+            return false;
 
         return true;
     }

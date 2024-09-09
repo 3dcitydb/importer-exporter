@@ -30,5 +30,5 @@ package org.citydb.core.operation.exporter.writer;
 import java.io.OutputStream;
 
 public interface FeatureWriterFactory {
-	FeatureWriter createFeatureWriter(OutputStream outputStream) throws FeatureWriteException;
+    FeatureWriter createFeatureWriter(OutputStream outputStream) throws FeatureWriteException;
 }

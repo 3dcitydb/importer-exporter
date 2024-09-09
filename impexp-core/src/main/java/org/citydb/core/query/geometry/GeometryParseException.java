@@ -28,22 +28,22 @@
 package org.citydb.core.query.geometry;
 
 public class GeometryParseException extends Exception {
-	private static final long serialVersionUID = -2099896956174757521L;
+    private static final long serialVersionUID = -2099896956174757521L;
 
-	public GeometryParseException() {
-		super();
-	}
-	
-	public GeometryParseException(String message) {
-		super(message);
-	}
-	
-	public GeometryParseException(Throwable cause) {
-		super(cause);
-	}
-	
-	public GeometryParseException(String message, Throwable cause) {
-		super(message, cause);
-	}
-	
+    public GeometryParseException() {
+        super();
+    }
+
+    public GeometryParseException(String message) {
+        super(message);
+    }
+
+    public GeometryParseException(Throwable cause) {
+        super(cause);
+    }
+
+    public GeometryParseException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

@@ -45,227 +45,227 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class DBTunnelHollowSpace implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psHollowSpace;
-	private DBCityObject cityObjectImporter;
-	private DBSurfaceGeometry surfaceGeometryImporter;
-	private DBTunnelThematicSurface thematicSurfaceImporter;
-	private DBTunnelFurniture tunnelFurnitureImporter;
-	private DBTunnelInstallation tunnelInstallationImporter;
-	private AttributeValueJoiner valueJoiner;
-	
-	private boolean hasObjectClassIdColumn;
-	private int batchCounter;
+    private PreparedStatement psHollowSpace;
+    private DBCityObject cityObjectImporter;
+    private DBSurfaceGeometry surfaceGeometryImporter;
+    private DBTunnelThematicSurface thematicSurfaceImporter;
+    private DBTunnelFurniture tunnelFurnitureImporter;
+    private DBTunnelInstallation tunnelInstallationImporter;
+    private AttributeValueJoiner valueJoiner;
 
-	public DBTunnelHollowSpace(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
-		this.importer = importer;
+    private boolean hasObjectClassIdColumn;
+    private int batchCounter;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+    public DBTunnelHollowSpace(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
+        this.importer = importer;
 
-		String stmt = "insert into " + schema + ".tunnel_hollow_space (id, class, class_codespace, function, function_codespace, usage, usage_codespace, tunnel_id, " +
-				"lod4_multi_surface_id, lod4_solid_id" +
-				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
-				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
-				(hasObjectClassIdColumn ? ", ?)" : ")");
-		psHollowSpace = batchConn.prepareStatement(stmt);
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
-		thematicSurfaceImporter = importer.getImporter(DBTunnelThematicSurface.class);
-		tunnelFurnitureImporter = importer.getImporter(DBTunnelFurniture.class);
-		tunnelInstallationImporter = importer.getImporter(DBTunnelInstallation.class);
-		valueJoiner = importer.getAttributeValueJoiner();
-	}
+        String stmt = "insert into " + schema + ".tunnel_hollow_space (id, class, class_codespace, function, function_codespace, usage, usage_codespace, tunnel_id, " +
+                "lod4_multi_surface_id, lod4_solid_id" +
+                (hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+                (hasObjectClassIdColumn ? ", ?)" : ")");
+        psHollowSpace = batchConn.prepareStatement(stmt);
 
-	protected long doImport(HollowSpace hollowSpace) throws CityGMLImportException, SQLException {
-		return doImport(hollowSpace, 0);
-	}
+        surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
+        cityObjectImporter = importer.getImporter(DBCityObject.class);
+        thematicSurfaceImporter = importer.getImporter(DBTunnelThematicSurface.class);
+        tunnelFurnitureImporter = importer.getImporter(DBTunnelFurniture.class);
+        tunnelInstallationImporter = importer.getImporter(DBTunnelInstallation.class);
+        valueJoiner = importer.getAttributeValueJoiner();
+    }
 
-	public long doImport(HollowSpace hollowSpace, long tunnelId) throws CityGMLImportException, SQLException {
-		FeatureType featureType = importer.getFeatureType(hollowSpace);
-		if (featureType == null)
-			throw new SQLException("Failed to retrieve feature type.");
+    protected long doImport(HollowSpace hollowSpace) throws CityGMLImportException, SQLException {
+        return doImport(hollowSpace, 0);
+    }
 
-		// import city object information
-		long hollowSpaceId = cityObjectImporter.doImport(hollowSpace, featureType);
+    public long doImport(HollowSpace hollowSpace, long tunnelId) throws CityGMLImportException, SQLException {
+        FeatureType featureType = importer.getFeatureType(hollowSpace);
+        if (featureType == null)
+            throw new SQLException("Failed to retrieve feature type.");
 
-		// import hollow space information
-		// primary id
-		psHollowSpace.setLong(1, hollowSpaceId);
+        // import city object information
+        long hollowSpaceId = cityObjectImporter.doImport(hollowSpace, featureType);
 
-		// tun:class
-		if (hollowSpace.isSetClazz() && hollowSpace.getClazz().isSetValue()) {
-			psHollowSpace.setString(2, hollowSpace.getClazz().getValue());
-			psHollowSpace.setString(3, hollowSpace.getClazz().getCodeSpace());
-		} else {
-			psHollowSpace.setNull(2, Types.VARCHAR);
-			psHollowSpace.setNull(3, Types.VARCHAR);
-		}
+        // import hollow space information
+        // primary id
+        psHollowSpace.setLong(1, hollowSpaceId);
 
-		// tun:function
-		if (hollowSpace.isSetFunction()) {
-			valueJoiner.join(hollowSpace.getFunction(), Code::getValue, Code::getCodeSpace);
-			psHollowSpace.setString(4, valueJoiner.result(0));
-			psHollowSpace.setString(5, valueJoiner.result(1));
-		} else {
-			psHollowSpace.setNull(4, Types.VARCHAR);
-			psHollowSpace.setNull(5, Types.VARCHAR);
-		}
+        // tun:class
+        if (hollowSpace.isSetClazz() && hollowSpace.getClazz().isSetValue()) {
+            psHollowSpace.setString(2, hollowSpace.getClazz().getValue());
+            psHollowSpace.setString(3, hollowSpace.getClazz().getCodeSpace());
+        } else {
+            psHollowSpace.setNull(2, Types.VARCHAR);
+            psHollowSpace.setNull(3, Types.VARCHAR);
+        }
 
-		// tun:usage
-		if (hollowSpace.isSetUsage()) {
-			valueJoiner.join(hollowSpace.getUsage(), Code::getValue, Code::getCodeSpace);
-			psHollowSpace.setString(6, valueJoiner.result(0));
-			psHollowSpace.setString(7, valueJoiner.result(1));
-		} else {
-			psHollowSpace.setNull(6, Types.VARCHAR);
-			psHollowSpace.setNull(7, Types.VARCHAR);
-		}
+        // tun:function
+        if (hollowSpace.isSetFunction()) {
+            valueJoiner.join(hollowSpace.getFunction(), Code::getValue, Code::getCodeSpace);
+            psHollowSpace.setString(4, valueJoiner.result(0));
+            psHollowSpace.setString(5, valueJoiner.result(1));
+        } else {
+            psHollowSpace.setNull(4, Types.VARCHAR);
+            psHollowSpace.setNull(5, Types.VARCHAR);
+        }
 
-		// parent tunnel id
-		if (tunnelId != 0)
-			psHollowSpace.setLong(8, tunnelId);
-		else
-			psHollowSpace.setNull(8, Types.NULL);
+        // tun:usage
+        if (hollowSpace.isSetUsage()) {
+            valueJoiner.join(hollowSpace.getUsage(), Code::getValue, Code::getCodeSpace);
+            psHollowSpace.setString(6, valueJoiner.result(0));
+            psHollowSpace.setString(7, valueJoiner.result(1));
+        } else {
+            psHollowSpace.setNull(6, Types.VARCHAR);
+            psHollowSpace.setNull(7, Types.VARCHAR);
+        }
 
-		// tun:lod4MultiSurface
-		long geometryId = 0;
+        // parent tunnel id
+        if (tunnelId != 0)
+            psHollowSpace.setLong(8, tunnelId);
+        else
+            psHollowSpace.setNull(8, Types.NULL);
 
-		if (hollowSpace.isSetLod4MultiSurface()) {
-			MultiSurfaceProperty multiSurfacePropery = hollowSpace.getLod4MultiSurface();
+        // tun:lod4MultiSurface
+        long geometryId = 0;
 
-			if (multiSurfacePropery.isSetMultiSurface()) {
-				geometryId = surfaceGeometryImporter.doImport(multiSurfacePropery.getMultiSurface(), hollowSpaceId);
-			} else {
-				String href = multiSurfacePropery.getHref();
-				if (href != null && href.length() != 0) {
-					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							TableEnum.TUNNEL_HOLLOW_SPACE.getName(),
-							hollowSpaceId, 
-							href, 
-							"lod4_multi_surface_id"));
-				}
-			}
-		} 
+        if (hollowSpace.isSetLod4MultiSurface()) {
+            MultiSurfaceProperty multiSurfacePropery = hollowSpace.getLod4MultiSurface();
 
-		if (geometryId != 0)
-			psHollowSpace.setLong(9, geometryId);
-		else
-			psHollowSpace.setNull(9, Types.NULL);
+            if (multiSurfacePropery.isSetMultiSurface()) {
+                geometryId = surfaceGeometryImporter.doImport(multiSurfacePropery.getMultiSurface(), hollowSpaceId);
+            } else {
+                String href = multiSurfacePropery.getHref();
+                if (href != null && href.length() != 0) {
+                    importer.propagateXlink(new DBXlinkSurfaceGeometry(
+                            TableEnum.TUNNEL_HOLLOW_SPACE.getName(),
+                            hollowSpaceId,
+                            href,
+                            "lod4_multi_surface_id"));
+                }
+            }
+        }
 
-		// tun:lod4Solid
-		geometryId = 0;
+        if (geometryId != 0)
+            psHollowSpace.setLong(9, geometryId);
+        else
+            psHollowSpace.setNull(9, Types.NULL);
 
-		if (hollowSpace.isSetLod4Solid()) {
-			SolidProperty solidProperty = hollowSpace.getLod4Solid();
+        // tun:lod4Solid
+        geometryId = 0;
 
-			if (solidProperty.isSetSolid()) {
-				geometryId = surfaceGeometryImporter.doImport(solidProperty.getSolid(), hollowSpaceId);
-			} else {
-				String href = solidProperty.getHref();
-				if (href != null && href.length() != 0) {
-					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							TableEnum.TUNNEL_HOLLOW_SPACE.getName(),
-							hollowSpaceId, 
-							href, 
-							"lod4_solid_id"));
-				}
-			}
-		} 
+        if (hollowSpace.isSetLod4Solid()) {
+            SolidProperty solidProperty = hollowSpace.getLod4Solid();
 
-		if (geometryId != 0)
-			psHollowSpace.setLong(10, geometryId);
-		else
-			psHollowSpace.setNull(10, Types.NULL);
+            if (solidProperty.isSetSolid()) {
+                geometryId = surfaceGeometryImporter.doImport(solidProperty.getSolid(), hollowSpaceId);
+            } else {
+                String href = solidProperty.getHref();
+                if (href != null && href.length() != 0) {
+                    importer.propagateXlink(new DBXlinkSurfaceGeometry(
+                            TableEnum.TUNNEL_HOLLOW_SPACE.getName(),
+                            hollowSpaceId,
+                            href,
+                            "lod4_solid_id"));
+                }
+            }
+        }
 
-		// objectclass id
-		if (hasObjectClassIdColumn)
-			psHollowSpace.setLong(11, featureType.getObjectClassId());
+        if (geometryId != 0)
+            psHollowSpace.setLong(10, geometryId);
+        else
+            psHollowSpace.setNull(10, Types.NULL);
 
-		psHollowSpace.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.TUNNEL_HOLLOW_SPACE);
+        // objectclass id
+        if (hasObjectClassIdColumn)
+            psHollowSpace.setLong(11, featureType.getObjectClassId());
 
-		// tun:boundedBy
-		if (hollowSpace.isSetBoundedBySurface()) {
-			for (BoundarySurfaceProperty property : hollowSpace.getBoundedBySurface()) {
-				AbstractBoundarySurface boundarySurface = property.getBoundarySurface();
+        psHollowSpace.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.TUNNEL_HOLLOW_SPACE);
 
-				if (boundarySurface != null) {
-					thematicSurfaceImporter.doImport(boundarySurface, hollowSpace, hollowSpaceId);
-				} else {
-					String href = property.getHref();
-					if (href != null && href.length() != 0) {
-						importer.propagateXlink(new DBXlinkBasic(
-								TableEnum.TUNNEL_THEMATIC_SURFACE.getName(),
-								href,
-								hollowSpaceId,
-								"tunnel_hollow_space_id"));
-					}
-				}
-			}
-		}
+        // tun:boundedBy
+        if (hollowSpace.isSetBoundedBySurface()) {
+            for (BoundarySurfaceProperty property : hollowSpace.getBoundedBySurface()) {
+                AbstractBoundarySurface boundarySurface = property.getBoundarySurface();
 
-		// tun:hollowSpaceInstallation
-		if (hollowSpace.isSetHollowSpaceInstallation()) {
-			for (IntTunnelInstallationProperty property : hollowSpace.getHollowSpaceInstallation()) {
-				IntTunnelInstallation installation = property.getObject();
+                if (boundarySurface != null) {
+                    thematicSurfaceImporter.doImport(boundarySurface, hollowSpace, hollowSpaceId);
+                } else {
+                    String href = property.getHref();
+                    if (href != null && href.length() != 0) {
+                        importer.propagateXlink(new DBXlinkBasic(
+                                TableEnum.TUNNEL_THEMATIC_SURFACE.getName(),
+                                href,
+                                hollowSpaceId,
+                                "tunnel_hollow_space_id"));
+                    }
+                }
+            }
+        }
 
-				if (installation != null) {
-					tunnelInstallationImporter.doImport(installation, hollowSpace, hollowSpaceId);
-				} else {
-					String href = property.getHref();
-					if (href != null && href.length() != 0) {
-						importer.propagateXlink(new DBXlinkBasic(
-								TableEnum.TUNNEL_INSTALLATION.getName(),
-								href,
-								hollowSpaceId,
-								"tunnel_hollow_space_id"));
-					}
-				}
-			}
-		}
+        // tun:hollowSpaceInstallation
+        if (hollowSpace.isSetHollowSpaceInstallation()) {
+            for (IntTunnelInstallationProperty property : hollowSpace.getHollowSpaceInstallation()) {
+                IntTunnelInstallation installation = property.getObject();
 
-		// tun:interiorFurniture
-		if (hollowSpace.isSetInteriorFurniture()) {
-			for (InteriorFurnitureProperty property : hollowSpace.getInteriorFurniture()) {
-				TunnelFurniture furniture = property.getObject();
+                if (installation != null) {
+                    tunnelInstallationImporter.doImport(installation, hollowSpace, hollowSpaceId);
+                } else {
+                    String href = property.getHref();
+                    if (href != null && href.length() != 0) {
+                        importer.propagateXlink(new DBXlinkBasic(
+                                TableEnum.TUNNEL_INSTALLATION.getName(),
+                                href,
+                                hollowSpaceId,
+                                "tunnel_hollow_space_id"));
+                    }
+                }
+            }
+        }
 
-				if (furniture != null) {
-					tunnelFurnitureImporter.doImport(furniture, hollowSpaceId);
-				} else {
-					String href = property.getHref();
-					if (href != null && href.length() != 0) {
-						importer.propagateXlink(new DBXlinkBasic(
-								TableEnum.TUNNEL_FURNITURE.getName(),
-								href,
-								hollowSpaceId,
-								"tunnel_hollow_space_id"));
-					}
-				}
-			}
-		}
-		
-		// ADE-specific extensions
-		if (importer.hasADESupport())
-			importer.delegateToADEImporter(hollowSpace, hollowSpaceId, featureType);
+        // tun:interiorFurniture
+        if (hollowSpace.isSetInteriorFurniture()) {
+            for (InteriorFurnitureProperty property : hollowSpace.getInteriorFurniture()) {
+                TunnelFurniture furniture = property.getObject();
 
-		return hollowSpaceId;
-	}
+                if (furniture != null) {
+                    tunnelFurnitureImporter.doImport(furniture, hollowSpaceId);
+                } else {
+                    String href = property.getHref();
+                    if (href != null && href.length() != 0) {
+                        importer.propagateXlink(new DBXlinkBasic(
+                                TableEnum.TUNNEL_FURNITURE.getName(),
+                                href,
+                                hollowSpaceId,
+                                "tunnel_hollow_space_id"));
+                    }
+                }
+            }
+        }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psHollowSpace.executeBatch();
-			batchCounter = 0;
-		}
-	}
+        // ADE-specific extensions
+        if (importer.hasADESupport())
+            importer.delegateToADEImporter(hollowSpace, hollowSpaceId, featureType);
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psHollowSpace.close();
-	}
+        return hollowSpaceId;
+    }
+
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psHollowSpace.executeBatch();
+            batchCounter = 0;
+        }
+    }
+
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psHollowSpace.close();
+    }
 
 }

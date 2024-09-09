@@ -30,6 +30,7 @@ package org.citydb.core.query.filter.selection;
 import org.citydb.core.query.filter.FilterException;
 
 public interface Predicate {
-	public PredicateName getPredicateName();
-	public Predicate copy() throws FilterException;
+    public PredicateName getPredicateName();
+
+    public Predicate copy() throws FilterException;
 }

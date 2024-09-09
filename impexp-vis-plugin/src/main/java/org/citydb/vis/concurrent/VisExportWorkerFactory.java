@@ -47,54 +47,54 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class VisExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
-	private final Logger log = Logger.getInstance();
+    private final Logger log = Logger.getInstance();
 
-	private final Path outputFile;
-	private final JAXBContext jaxbKmlContext;
-	private final JAXBContext jaxbColladaContext;
-	private final WorkerPool<SAXEventBuffer> writerPool;
-	private final Query query;
-	private final ExportTracker tracker;
-	private final ObjectFactory kmlFactory;
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
+    private final Path outputFile;
+    private final JAXBContext jaxbKmlContext;
+    private final JAXBContext jaxbColladaContext;
+    private final WorkerPool<SAXEventBuffer> writerPool;
+    private final Query query;
+    private final ExportTracker tracker;
+    private final ObjectFactory kmlFactory;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
 
-	public VisExportWorkerFactory(Path outputFile,
-								  JAXBContext jaxbKmlContext,
-								  JAXBContext jaxbColladaContext,
-								  WorkerPool<SAXEventBuffer> writerPool,
-								  ExportTracker tracker,
-								  Query query,
-								  ObjectFactory kmlFactory,
-								  Config config,
-								  EventDispatcher eventDispatcher) {
-		this.outputFile = outputFile;
-		this.jaxbKmlContext = jaxbKmlContext;
-		this.jaxbColladaContext = jaxbColladaContext;
-		this.writerPool = writerPool;
-		this.tracker = tracker;
-		this.query = query;
-		this.kmlFactory = kmlFactory;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public VisExportWorkerFactory(Path outputFile,
+                                  JAXBContext jaxbKmlContext,
+                                  JAXBContext jaxbColladaContext,
+                                  WorkerPool<SAXEventBuffer> writerPool,
+                                  ExportTracker tracker,
+                                  Query query,
+                                  ObjectFactory kmlFactory,
+                                  Config config,
+                                  EventDispatcher eventDispatcher) {
+        this.outputFile = outputFile;
+        this.jaxbKmlContext = jaxbKmlContext;
+        this.jaxbColladaContext = jaxbColladaContext;
+        this.writerPool = writerPool;
+        this.tracker = tracker;
+        this.query = query;
+        this.kmlFactory = kmlFactory;
+        this.config = config;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public Worker<DBSplittingResult> createWorker() {
-		VisExportWorker visWorker = null;
+    @Override
+    public Worker<DBSplittingResult> createWorker() {
+        VisExportWorker visWorker = null;
 
-		try {
-			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-			Connection connection = DatabaseConnectionPool.getInstance().getConnection();
-			connection.setAutoCommit(false);
+        try {
+            AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+            Connection connection = DatabaseConnectionPool.getInstance().getConnection();
+            connection.setAutoCommit(false);
 
-			visWorker = new VisExportWorker(outputFile, connection, databaseAdapter, jaxbKmlContext, jaxbColladaContext,
-					writerPool, tracker, query, kmlFactory, config, eventDispatcher);
-		} catch (SQLException e) {
-			log.error("Failed to create export worker.", e);
-		}
+            visWorker = new VisExportWorker(outputFile, connection, databaseAdapter, jaxbKmlContext, jaxbColladaContext,
+                    writerPool, tracker, query, kmlFactory, config, eventDispatcher);
+        } catch (SQLException e) {
+            log.error("Failed to create export worker.", e);
+        }
 
-		return visWorker;
-	}
+        return visWorker;
+    }
 
 }

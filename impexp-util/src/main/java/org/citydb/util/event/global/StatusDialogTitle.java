@@ -30,14 +30,14 @@ package org.citydb.util.event.global;
 import org.citydb.util.event.Event;
 
 public class StatusDialogTitle extends Event {
-	private final String title;
-	
-	public StatusDialogTitle(String title) {
-		super(EventType.STATUS_DIALOG_TITLE, GLOBAL_CHANNEL);
-		this.title = title;
-	}
+    private final String title;
 
-	public String getTitle() {
-		return title;
-	}
+    public StatusDialogTitle(String title) {
+        super(EventType.STATUS_DIALOG_TITLE, GLOBAL_CHANNEL);
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
 }

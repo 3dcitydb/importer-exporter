@@ -43,199 +43,199 @@ import java.awt.geom.Rectangle2D;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapViewer> {
-	private final JXMapViewer map;
-	private final EventDispatcher eventDispatcher;
+    private final JXMapViewer map;
+    private final EventDispatcher eventDispatcher;
 
-	private Color borderColor = new Color(0, 0, 200);
-	private Color regionColor = new Color(0, 0, 200, 75);
+    private Color borderColor = new Color(0, 0, 200);
+    private Color regionColor = new Color(0, 0, 200, 75);
 
-	private Rectangle2D start, end, selectedArea;
-	private boolean mouseDragged;
+    private Rectangle2D start, end, selectedArea;
+    private boolean mouseDragged;
 
-	private boolean outOfBounds = false;
-	private Point outOfBoundsPoint = null;
-	private AtomicBoolean isThreadRunning = new AtomicBoolean(false);
-	private int shrinkViewPort = 30;
-	private double scale = .0001;		
+    private boolean outOfBounds = false;
+    private Point outOfBoundsPoint = null;
+    private AtomicBoolean isThreadRunning = new AtomicBoolean(false);
+    private int shrinkViewPort = 30;
+    private double scale = .0001;
 
-	public BBoxSelectionPainter(JXMapViewer map) {
-		this.map = map;
-		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+    public BBoxSelectionPainter(JXMapViewer map) {
+        this.map = map;
+        eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 
-		map.addMouseListener(this);
-		map.addMouseMotionListener(this);
-	}
+        map.addMouseListener(this);
+        map.addMouseMotionListener(this);
+    }
 
-	public GeoPosition[] getBoundingBox() {
-		GeoPosition[] bounds = null;
-		if (selectedArea != null) {
-			bounds = new GeoPosition[2];
-			bounds[0] = new GeoPosition(selectedArea.getMinY(), selectedArea.getMinX());
-			bounds[1] = new GeoPosition(selectedArea.getMaxY(), selectedArea.getMaxX());
-		}
+    public GeoPosition[] getBoundingBox() {
+        GeoPosition[] bounds = null;
+        if (selectedArea != null) {
+            bounds = new GeoPosition[2];
+            bounds[0] = new GeoPosition(selectedArea.getMinY(), selectedArea.getMinX());
+            bounds[1] = new GeoPosition(selectedArea.getMaxY(), selectedArea.getMaxX());
+        }
 
-		return bounds;
-	}
+        return bounds;
+    }
 
-	public boolean setBoundingBox(GeoPosition southWest, GeoPosition northEast) {
-		if (isVisibleOnScreen(southWest, northEast)) {
-			selectedArea = createGeoRectangle(southWest, northEast);
-			map.repaint();
-			return true;
-		}
-		
-		return false;
-	}
+    public boolean setBoundingBox(GeoPosition southWest, GeoPosition northEast) {
+        if (isVisibleOnScreen(southWest, northEast)) {
+            selectedArea = createGeoRectangle(southWest, northEast);
+            map.repaint();
+            return true;
+        }
 
-	public void clearBoundingBox() {
-		start = selectedArea = null;
-		map.repaint();
-	}
+        return false;
+    }
 
-	public boolean isVisibleOnScreen(GeoPosition southWest, GeoPosition northEast) {
-		return isVisibleOnScreen(createGeoRectangle(southWest, northEast));
-	}
+    public void clearBoundingBox() {
+        start = selectedArea = null;
+        map.repaint();
+    }
 
-	private boolean isVisibleOnScreen(Rectangle2D bbox) {
-		return bbox != null && !createDrawArea(bbox, map.getTileFactory().getInfo().getMinimumZoomLevel()).isEmpty();
-	}
+    public boolean isVisibleOnScreen(GeoPosition southWest, GeoPosition northEast) {
+        return isVisibleOnScreen(createGeoRectangle(southWest, northEast));
+    }
 
-	@Override
-	public void mouseMoved(MouseEvent e) {
-		if (start != null)
-			checkOutOfBounds(e.getPoint());
-	}
+    private boolean isVisibleOnScreen(Rectangle2D bbox) {
+        return bbox != null && !createDrawArea(bbox, map.getTileFactory().getInfo().getMinimumZoomLevel()).isEmpty();
+    }
 
-	@Override
-	public void mousePressed(MouseEvent e) {
-		if (SwingUtilities.isLeftMouseButton(e) && e.isAltDown()) {
-			start = createGeoRectangle(e.getPoint());
-			map.setPanEnabled(false);
-		} else
-			start = null;
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        if (start != null)
+            checkOutOfBounds(e.getPoint());
+    }
 
-		mouseDragged = false;
-	}
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e) && e.isAltDown()) {
+            start = createGeoRectangle(e.getPoint());
+            map.setPanEnabled(false);
+        } else
+            start = null;
 
-	@Override
-	public void mouseDragged(final MouseEvent e) {
-		if (start != null) {
-			mouseDragged = true;
-			end = createGeoRectangle(e.getPoint());
-			selectedArea = start.createUnion(end);
-			checkOutOfBounds(e.getPoint());
+        mouseDragged = false;
+    }
 
-			if (outOfBounds && isThreadRunning.compareAndSet(false, true)) {
-				new SwingWorker<Void, Void>() {
-					protected Void doInBackground() {
-						while (outOfBounds && selectedArea != null && start != null) {
-							Point2D center = map.getCenter();
-							Rectangle bounds = map.getBounds();
-							bounds.grow(-shrinkViewPort, -shrinkViewPort);
+    @Override
+    public void mouseDragged(final MouseEvent e) {
+        if (start != null) {
+            mouseDragged = true;
+            end = createGeoRectangle(e.getPoint());
+            selectedArea = start.createUnion(end);
+            checkOutOfBounds(e.getPoint());
 
-							int outcode = bounds.outcode(outOfBoundsPoint);
-							double offsetX = 0;
-							double offsetY = 0;
+            if (outOfBounds && isThreadRunning.compareAndSet(false, true)) {
+                new SwingWorker<Void, Void>() {
+                    protected Void doInBackground() {
+                        while (outOfBounds && selectedArea != null && start != null) {
+                            Point2D center = map.getCenter();
+                            Rectangle bounds = map.getBounds();
+                            bounds.grow(-shrinkViewPort, -shrinkViewPort);
 
-							if ((outcode & Rectangle.OUT_BOTTOM) != 0)
-								offsetY = outOfBoundsPoint.y - bounds.getMaxY();
+                            int outcode = bounds.outcode(outOfBoundsPoint);
+                            double offsetX = 0;
+                            double offsetY = 0;
 
-							if ((outcode & Rectangle.OUT_TOP) != 0)
-								offsetY = outOfBoundsPoint.y - bounds.getMinY();
+                            if ((outcode & Rectangle.OUT_BOTTOM) != 0)
+                                offsetY = outOfBoundsPoint.y - bounds.getMaxY();
 
-							if ((outcode & Rectangle.OUT_RIGHT) != 0)
-								offsetX = outOfBoundsPoint.x - bounds.getMaxX();
+                            if ((outcode & Rectangle.OUT_TOP) != 0)
+                                offsetY = outOfBoundsPoint.y - bounds.getMinY();
 
-							if ((outcode & Rectangle.OUT_LEFT) != 0)
-								offsetX = outOfBoundsPoint.x - bounds.getMinX();
+                            if ((outcode & Rectangle.OUT_RIGHT) != 0)
+                                offsetX = outOfBoundsPoint.x - bounds.getMaxX();
 
-							map.setCenter(new Point2D.Double(
-									center.getX() + offsetX * scale,
-									center.getY() + offsetY * scale));
+                            if ((outcode & Rectangle.OUT_LEFT) != 0)
+                                offsetX = outOfBoundsPoint.x - bounds.getMinX();
 
-							end = createGeoRectangle(outOfBoundsPoint);
-							selectedArea = start.createUnion(end);
+                            map.setCenter(new Point2D.Double(
+                                    center.getX() + offsetX * scale,
+                                    center.getY() + offsetY * scale));
 
-							map.repaint();
-						}
+                            end = createGeoRectangle(outOfBoundsPoint);
+                            selectedArea = start.createUnion(end);
 
-						isThreadRunning.set(false);
+                            map.repaint();
+                        }
 
-						return null;
-					}
-				}.execute();
-			}
+                        isThreadRunning.set(false);
 
-			map.repaint();
-		}
-	}
+                        return null;
+                    }
+                }.execute();
+            }
 
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		if (start != null) {
-			outOfBounds = false;
-			selectedArea = null;
+            map.repaint();
+        }
+    }
 
-			if (mouseDragged) {
-				end = createGeoRectangle(e.getPoint());
-				Rectangle2D tmp = start.createUnion(end);
-				if (isVisibleOnScreen(tmp)) {
-					selectedArea = tmp;
-					eventDispatcher.triggerEvent(new BoundingBoxSelectionEvent(getBoundingBox()));
-				}
-			}
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (start != null) {
+            outOfBounds = false;
+            selectedArea = null;
 
-			mouseDragged = false;
-			start = null;
-			map.setPanEnabled(true);
-			map.repaint();
-		}
-	}
+            if (mouseDragged) {
+                end = createGeoRectangle(e.getPoint());
+                Rectangle2D tmp = start.createUnion(end);
+                if (isVisibleOnScreen(tmp)) {
+                    selectedArea = tmp;
+                    eventDispatcher.triggerEvent(new BoundingBoxSelectionEvent(getBoundingBox()));
+                }
+            }
 
-	@Override
-	public void paint(Graphics2D gd, JXMapViewer t, int i, int i1) {
-		if (selectedArea != null) {
-			Rectangle drawArea = createDrawArea(selectedArea, map.getZoom());
+            mouseDragged = false;
+            start = null;
+            map.setPanEnabled(true);
+            map.repaint();
+        }
+    }
 
-			if (!drawArea.isEmpty()) {
-				if (drawArea.contains(map.getBounds()))
-					drawArea = map.getBounds();			
+    @Override
+    public void paint(Graphics2D gd, JXMapViewer t, int i, int i1) {
+        if (selectedArea != null) {
+            Rectangle drawArea = createDrawArea(selectedArea, map.getZoom());
 
-				gd.setColor(regionColor);
-				gd.fillRect(drawArea.x, drawArea.y, drawArea.width, drawArea.height);
+            if (!drawArea.isEmpty()) {
+                if (drawArea.contains(map.getBounds()))
+                    drawArea = map.getBounds();
 
-				gd.setColor(borderColor);
-				gd.drawRect(drawArea.x, drawArea.y, drawArea.width, drawArea.height);
-			}
-		}
-	}
+                gd.setColor(regionColor);
+                gd.fillRect(drawArea.x, drawArea.y, drawArea.width, drawArea.height);
 
-	private void checkOutOfBounds(Point point) {
-		Rectangle bounds = map.getBounds();
-		bounds.grow(-shrinkViewPort, -shrinkViewPort);
+                gd.setColor(borderColor);
+                gd.drawRect(drawArea.x, drawArea.y, drawArea.width, drawArea.height);
+            }
+        }
+    }
 
-		outOfBounds = !bounds.contains(point);
-		if (outOfBounds)
-			outOfBoundsPoint = point;
-	}
+    private void checkOutOfBounds(Point point) {
+        Rectangle bounds = map.getBounds();
+        bounds.grow(-shrinkViewPort, -shrinkViewPort);
 
-	private Rectangle2D createGeoRectangle(GeoPosition southWest, GeoPosition northEast) {
-		Rectangle2D tmp = new Rectangle2D.Double(southWest.getLatitude(), southWest.getLongitude(), 0, 0);
-		tmp = tmp.createUnion(new Rectangle2D.Double(northEast.getLatitude(), northEast.getLongitude(), 0, 0));
+        outOfBounds = !bounds.contains(point);
+        if (outOfBounds)
+            outOfBoundsPoint = point;
+    }
 
-		return tmp;
-	}
+    private Rectangle2D createGeoRectangle(GeoPosition southWest, GeoPosition northEast) {
+        Rectangle2D tmp = new Rectangle2D.Double(southWest.getLatitude(), southWest.getLongitude(), 0, 0);
+        tmp = tmp.createUnion(new Rectangle2D.Double(northEast.getLatitude(), northEast.getLongitude(), 0, 0));
 
-	private Rectangle2D createGeoRectangle(Point point) {
-		GeoPosition pos = map.convertPointToGeoPosition(point);	
-		return new Rectangle2D.Double(pos.getLatitude(), pos.getLongitude(), 0, 0);
-	}
+        return tmp;
+    }
 
-	private Rectangle createDrawArea(Rectangle2D geo, int zoom) {		
-		Point2D southWest = map.convertGeoPositionToPoint(new GeoPosition(geo.getMinX(), geo.getMinY()), zoom);
-		Point2D northEast = map.convertGeoPositionToPoint(new GeoPosition(geo.getMaxX(), geo.getMaxY()), zoom);
+    private Rectangle2D createGeoRectangle(Point point) {
+        GeoPosition pos = map.convertPointToGeoPosition(point);
+        return new Rectangle2D.Double(pos.getLatitude(), pos.getLongitude(), 0, 0);
+    }
 
-		Rectangle drawArea = new Rectangle((int)southWest.getX(), (int)southWest.getY(), 0, 0);
-		return drawArea.union(new Rectangle((int)northEast.getX(), (int)northEast.getY(), 0, 0));
-	}
+    private Rectangle createDrawArea(Rectangle2D geo, int zoom) {
+        Point2D southWest = map.convertGeoPositionToPoint(new GeoPosition(geo.getMinX(), geo.getMinY()), zoom);
+        Point2D northEast = map.convertGeoPositionToPoint(new GeoPosition(geo.getMaxX(), geo.getMaxY()), zoom);
+
+        Rectangle drawArea = new Rectangle((int) southWest.getX(), (int) southWest.getY(), 0, 0);
+        return drawArea.union(new Rectangle((int) northEast.getX(), (int) northEast.getY(), 0, 0));
+    }
 }

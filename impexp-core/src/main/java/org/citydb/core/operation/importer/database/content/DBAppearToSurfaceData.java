@@ -36,41 +36,41 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBAppearToSurfaceData implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psAppearToSurfaceData;
-	private int batchCounter;
+    private PreparedStatement psAppearToSurfaceData;
+    private int batchCounter;
 
-	public DBAppearToSurfaceData(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
-		this.importer = importer;
+    public DBAppearToSurfaceData(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String stmt = "insert into " + schema + ".appear_to_surface_data (surface_data_id, appearance_id) values " +
-				"(?, ?)";
-		psAppearToSurfaceData = batchConn.prepareStatement(stmt);
-	}
+        String stmt = "insert into " + schema + ".appear_to_surface_data (surface_data_id, appearance_id) values " +
+                "(?, ?)";
+        psAppearToSurfaceData = batchConn.prepareStatement(stmt);
+    }
 
-	public void doImport(long surfaceDataId, long appearanceId) throws CityGMLImportException, SQLException {
-		psAppearToSurfaceData.setLong(1, surfaceDataId);
-		psAppearToSurfaceData.setLong(2, appearanceId);
+    public void doImport(long surfaceDataId, long appearanceId) throws CityGMLImportException, SQLException {
+        psAppearToSurfaceData.setLong(1, surfaceDataId);
+        psAppearToSurfaceData.setLong(2, appearanceId);
 
-		psAppearToSurfaceData.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.APPEAR_TO_SURFACE_DATA);
-	}
+        psAppearToSurfaceData.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.APPEAR_TO_SURFACE_DATA);
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psAppearToSurfaceData.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psAppearToSurfaceData.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psAppearToSurfaceData.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psAppearToSurfaceData.close();
+    }
 
 }

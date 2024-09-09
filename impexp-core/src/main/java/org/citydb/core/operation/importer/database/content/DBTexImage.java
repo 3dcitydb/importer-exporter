@@ -46,117 +46,117 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBTexImage implements DBImporter {
-	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBTexImage.class);
-	private final CityGMLImportManager importer;
-	private PreparedStatement psInsertStmt;	
+    private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBTexImage.class);
+    private final CityGMLImportManager importer;
+    private PreparedStatement psInsertStmt;
 
-	private ExternalFileChecker externalFileChecker;
-	private MessageDigest md5;
-	private boolean importTextureImage;
-	private int batchCounter;
+    private ExternalFileChecker externalFileChecker;
+    private MessageDigest md5;
+    private boolean importTextureImage;
+    private int batchCounter;
 
-	public DBTexImage(Connection connection, Config config, CityGMLImportManager importer) throws SQLException {
-		this.importer = importer;
+    public DBTexImage(Connection connection, Config config, CityGMLImportManager importer) throws SQLException {
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-		importTextureImage = config.getImportConfig().getAppearances().isSetImportTextureFiles();
-		externalFileChecker = importer.getExternalFileChecker();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        importTextureImage = config.getImportConfig().getAppearances().isSetImportTextureFiles();
+        externalFileChecker = importer.getExternalFileChecker();
 
-		try {
-			md5 = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			throw new SQLException(e);
-		}
+        try {
+            md5 = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new SQLException(e);
+        }
 
-		String stmt = "insert into " + schema + ".tex_image (id, tex_image_uri, tex_mime_type, tex_mime_type_codespace) values " +
-				"(?, ?, ?, ?)";
-		psInsertStmt = connection.prepareStatement(stmt);
-	}
+        String stmt = "insert into " + schema + ".tex_image (id, tex_image_uri, tex_mime_type, tex_mime_type_codespace) values " +
+                "(?, ?, ?, ?)";
+        psInsertStmt = connection.prepareStatement(stmt);
+    }
 
-	public long doImport(AbstractTexture abstractTexture, long surfaceDataId) throws CityGMLImportException, SQLException {
-		String imageURI = abstractTexture.getImageURI().trim();
-		if (imageURI.isEmpty())
-			return 0;
+    public long doImport(AbstractTexture abstractTexture, long surfaceDataId) throws CityGMLImportException, SQLException {
+        String imageURI = abstractTexture.getImageURI().trim();
+        if (imageURI.isEmpty())
+            return 0;
 
-		long texImageId;
-		String md5URI = toHexString(md5.digest(imageURI.getBytes()));
+        long texImageId;
+        String md5URI = toHexString(md5.digest(imageURI.getBytes()));
 
-		Map.Entry<String, String> fileInfo = null;
-		boolean insertIntoTexImage = false;
+        Map.Entry<String, String> fileInfo = null;
+        boolean insertIntoTexImage = false;
 
-		// synchronize concurrent processing of the same texture image
-		// different texture images however may be processed concurrently
-		ReentrantLock lock = lockManager.getLock(md5URI);
-		lock.lock();
-		try {
-			texImageId = importer.getTextureImageId(md5URI);
-			if (texImageId == -1) {
-				try {
-					fileInfo = externalFileChecker.getFileInfo(imageURI);
-					texImageId = importer.getNextSequenceValue(SequenceEnum.TEX_IMAGE_ID_SEQ.getName());
-					insertIntoTexImage = true;
-				} catch (IOException e) {
-					importer.logOrThrowErrorMessage("Failed to read image file at '" + imageURI + "'.", e);
-					texImageId = 0;
-				}
+        // synchronize concurrent processing of the same texture image
+        // different texture images however may be processed concurrently
+        ReentrantLock lock = lockManager.getLock(md5URI);
+        lock.lock();
+        try {
+            texImageId = importer.getTextureImageId(md5URI);
+            if (texImageId == -1) {
+                try {
+                    fileInfo = externalFileChecker.getFileInfo(imageURI);
+                    texImageId = importer.getNextSequenceValue(SequenceEnum.TEX_IMAGE_ID_SEQ.getName());
+                    insertIntoTexImage = true;
+                } catch (IOException e) {
+                    importer.logOrThrowErrorMessage("Failed to read image file at '" + imageURI + "'.", e);
+                    texImageId = 0;
+                }
 
-				importer.putTextureImageId(md5URI, texImageId);
-			}
-		} finally {
-			lockManager.releaseLock(md5URI);
-			lock.unlock();
-		}
+                importer.putTextureImageId(md5URI, texImageId);
+            }
+        } finally {
+            lockManager.releaseLock(md5URI);
+            lock.unlock();
+        }
 
-		if (insertIntoTexImage) {
-			// fill TEX_IMAGE with texture file properties
-			String fileName = fileInfo.getValue();
-			String mimeType = null;
-			String codeSpace = null;
+        if (insertIntoTexImage) {
+            // fill TEX_IMAGE with texture file properties
+            String fileName = fileInfo.getValue();
+            String mimeType = null;
+            String codeSpace = null;
 
-			if (abstractTexture.isSetMimeType()) {
-				mimeType = abstractTexture.getMimeType().getValue();
-				codeSpace = abstractTexture.getMimeType().getCodeSpace();
-			}
+            if (abstractTexture.isSetMimeType()) {
+                mimeType = abstractTexture.getMimeType().getValue();
+                codeSpace = abstractTexture.getMimeType().getCodeSpace();
+            }
 
-			psInsertStmt.setLong(1, texImageId);
-			psInsertStmt.setString(2, fileName);
-			psInsertStmt.setString(3, mimeType);
-			psInsertStmt.setString(4, codeSpace);
+            psInsertStmt.setLong(1, texImageId);
+            psInsertStmt.setString(2, fileName);
+            psInsertStmt.setString(3, mimeType);
+            psInsertStmt.setString(4, codeSpace);
 
-			psInsertStmt.addBatch();
-			if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-				importer.executeBatch(TableEnum.TEX_IMAGE);
+            psInsertStmt.addBatch();
+            if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+                importer.executeBatch(TableEnum.TEX_IMAGE);
 
-			if (importTextureImage) {
-				// propagte xlink to import the texture file itself
-				importer.propagateXlink(new DBXlinkTextureFile(
-						texImageId,
-						fileInfo.getKey()));
-			}
-		}
+            if (importTextureImage) {
+                // propagte xlink to import the texture file itself
+                importer.propagateXlink(new DBXlinkTextureFile(
+                        texImageId,
+                        fileInfo.getKey()));
+            }
+        }
 
-		return texImageId;
-	}
+        return texImageId;
+    }
 
-	private String toHexString(byte[] bytes) {
-		StringBuilder hexString = new StringBuilder();
-		for (byte b : bytes)
-			hexString.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+    private String toHexString(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes)
+            hexString.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
 
-		return hexString.toString();
-	}
+        return hexString.toString();
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psInsertStmt.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psInsertStmt.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psInsertStmt.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psInsertStmt.close();
+    }
 
 }

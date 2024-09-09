@@ -28,8 +28,8 @@
 package org.citydb.core.database.connection;
 
 public enum ConnectionState {
-	INIT_CONNECT,
-	FINISH_CONNECT,
-	INIT_DISCONNECT,
-	FINISH_DISCONNECT,
+    INIT_CONNECT,
+    FINISH_CONNECT,
+    INIT_DISCONNECT,
+    FINISH_DISCONNECT,
 }

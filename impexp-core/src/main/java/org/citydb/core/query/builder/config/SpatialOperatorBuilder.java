@@ -43,125 +43,125 @@ import org.citydb.core.query.geometry.GeometryParseException;
 import org.citydb.core.query.geometry.config.SpatialOperandParser;
 
 public class SpatialOperatorBuilder {
-	private final ValueReferenceBuilder valueReferenceBuilder;
-	private final SpatialOperandParser spatialOperandParser;
+    private final ValueReferenceBuilder valueReferenceBuilder;
+    private final SpatialOperandParser spatialOperandParser;
 
-	protected SpatialOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder, AbstractDatabaseAdapter databaseAdapter) {
-		this.valueReferenceBuilder = valueReferenceBuilder;
-		spatialOperandParser = new SpatialOperandParser(databaseAdapter);
-	}
+    protected SpatialOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder, AbstractDatabaseAdapter databaseAdapter) {
+        this.valueReferenceBuilder = valueReferenceBuilder;
+        spatialOperandParser = new SpatialOperandParser(databaseAdapter);
+    }
 
-	protected Predicate buildSpatialOperator(org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator operatorConfig) throws QueryBuildException {
-		AbstractSpatialOperator operator = null;
+    protected Predicate buildSpatialOperator(org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator operatorConfig) throws QueryBuildException {
+        AbstractSpatialOperator operator = null;
 
-		try {
-			switch (operatorConfig.getOperatorName()) {
-			case BBOX:
-				operator = buildBBOXOperator((BBOXOperator)operatorConfig);
-				break;
-			case CONTAINS:
-			case DISJOINT:
-			case EQUALS:
-			case INTERSECTS:
-			case OVERLAPS:
-			case TOUCHES:
-			case WITHIN:
-				operator = buildBinaryOperator((AbstractBinarySpatialOperator)operatorConfig);
-				break;
-			case BEYOND:
-			case DWITHIN:
-				operator = buildDistanceOperator((AbstractDistanceOperator)operatorConfig);
-				break;
-			}
-		} catch (FilterException e) {
-			throw new QueryBuildException("Failed to build the spatial " + operatorConfig.getOperatorName() + " operator.", e);
-		}
+        try {
+            switch (operatorConfig.getOperatorName()) {
+                case BBOX:
+                    operator = buildBBOXOperator((BBOXOperator) operatorConfig);
+                    break;
+                case CONTAINS:
+                case DISJOINT:
+                case EQUALS:
+                case INTERSECTS:
+                case OVERLAPS:
+                case TOUCHES:
+                case WITHIN:
+                    operator = buildBinaryOperator((AbstractBinarySpatialOperator) operatorConfig);
+                    break;
+                case BEYOND:
+                case DWITHIN:
+                    operator = buildDistanceOperator((AbstractDistanceOperator) operatorConfig);
+                    break;
+            }
+        } catch (FilterException e) {
+            throw new QueryBuildException("Failed to build the spatial " + operatorConfig.getOperatorName() + " operator.", e);
+        }
 
-		return operator;
-	}
+        return operator;
+    }
 
-	private BinarySpatialOperator buildBBOXOperator(BBOXOperator bboxConfig) throws FilterException, QueryBuildException {
-		if (!bboxConfig.isSetEnvelope())
-			throw new QueryBuildException("The bbox operator requires an " + GeometryType.ENVELOPE + " as spatial operand.");
+    private BinarySpatialOperator buildBBOXOperator(BBOXOperator bboxConfig) throws FilterException, QueryBuildException {
+        if (!bboxConfig.isSetEnvelope())
+            throw new QueryBuildException("The bbox operator requires an " + GeometryType.ENVELOPE + " as spatial operand.");
 
-		// build the value reference
-		ValueReference valueReference = valueReferenceBuilder.buildValueReference(bboxConfig);
-				
-		// convert the spatial operand
-		GeometryObject spatialOperand = null;
-		try {
-			spatialOperand = spatialOperandParser.parseOperand(bboxConfig.getEnvelope());
-		} catch (GeometryParseException e) {
-			throw new QueryBuildException("Failed to parse the envelope of the bbox operator.", e);
-		}
+        // build the value reference
+        ValueReference valueReference = valueReferenceBuilder.buildValueReference(bboxConfig);
 
-		return SpatialOperationFactory.bbox(valueReference, spatialOperand);
-	}
+        // convert the spatial operand
+        GeometryObject spatialOperand = null;
+        try {
+            spatialOperand = spatialOperandParser.parseOperand(bboxConfig.getEnvelope());
+        } catch (GeometryParseException e) {
+            throw new QueryBuildException("Failed to parse the envelope of the bbox operator.", e);
+        }
 
-	private BinarySpatialOperator buildBinaryOperator(AbstractBinarySpatialOperator operatorConfig) throws FilterException, QueryBuildException {
-		if (!operatorConfig.isSetSpatialOperand())
-			throw new QueryBuildException("No spatial operand provided for the binary spatial operator " + operatorConfig.getOperatorName() + ".");
+        return SpatialOperationFactory.bbox(valueReference, spatialOperand);
+    }
 
-		// build the value reference
-		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
+    private BinarySpatialOperator buildBinaryOperator(AbstractBinarySpatialOperator operatorConfig) throws FilterException, QueryBuildException {
+        if (!operatorConfig.isSetSpatialOperand())
+            throw new QueryBuildException("No spatial operand provided for the binary spatial operator " + operatorConfig.getOperatorName() + ".");
 
-		// convert the spatial operand
-		GeometryObject spatialOperand = null;
-		try {
-			spatialOperand = spatialOperandParser.parseOperand(operatorConfig.getSpatialOperand());
-		} catch (GeometryParseException e) {
-			throw new QueryBuildException("Failed to parse the spatial operand of the binary spatial operator " + operatorConfig.getOperatorName() + ".", e);
-		}
+        // build the value reference
+        ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
 
-		switch (operatorConfig.getOperatorName()) {
-		case CONTAINS:
-			return SpatialOperationFactory.contains(valueReference, spatialOperand);
-		case DISJOINT:
-			return SpatialOperationFactory.disjoint(valueReference, spatialOperand);
-		case EQUALS:
-			return SpatialOperationFactory.equals(valueReference, spatialOperand);
-		case INTERSECTS:
-			return SpatialOperationFactory.intersects(valueReference, spatialOperand);
-		case OVERLAPS:
-			return SpatialOperationFactory.overlaps(valueReference, spatialOperand);
-		case TOUCHES:
-			return SpatialOperationFactory.touches(valueReference, spatialOperand);
-		case WITHIN:
-			return SpatialOperationFactory.within(valueReference, spatialOperand);
-		default:
-			throw new QueryBuildException("Failed to build the binary spatial operator " + operatorConfig.getOperatorName() + ".");
-		}
-	}
+        // convert the spatial operand
+        GeometryObject spatialOperand = null;
+        try {
+            spatialOperand = spatialOperandParser.parseOperand(operatorConfig.getSpatialOperand());
+        } catch (GeometryParseException e) {
+            throw new QueryBuildException("Failed to parse the spatial operand of the binary spatial operator " + operatorConfig.getOperatorName() + ".", e);
+        }
 
-	private DistanceOperator buildDistanceOperator(AbstractDistanceOperator operatorConfig) throws FilterException, QueryBuildException {
-		if (!operatorConfig.isSetSpatialOperand())
-			throw new QueryBuildException("No spatial operand provided for the distance operator " + operatorConfig.getOperatorName() + ".");
+        switch (operatorConfig.getOperatorName()) {
+            case CONTAINS:
+                return SpatialOperationFactory.contains(valueReference, spatialOperand);
+            case DISJOINT:
+                return SpatialOperationFactory.disjoint(valueReference, spatialOperand);
+            case EQUALS:
+                return SpatialOperationFactory.equals(valueReference, spatialOperand);
+            case INTERSECTS:
+                return SpatialOperationFactory.intersects(valueReference, spatialOperand);
+            case OVERLAPS:
+                return SpatialOperationFactory.overlaps(valueReference, spatialOperand);
+            case TOUCHES:
+                return SpatialOperationFactory.touches(valueReference, spatialOperand);
+            case WITHIN:
+                return SpatialOperationFactory.within(valueReference, spatialOperand);
+            default:
+                throw new QueryBuildException("Failed to build the binary spatial operator " + operatorConfig.getOperatorName() + ".");
+        }
+    }
 
-		if (!operatorConfig.isSetDistance())
-			throw new QueryBuildException("The distance operator " + operatorConfig.getOperatorName() + " lacks a distance measure.");
+    private DistanceOperator buildDistanceOperator(AbstractDistanceOperator operatorConfig) throws FilterException, QueryBuildException {
+        if (!operatorConfig.isSetSpatialOperand())
+            throw new QueryBuildException("No spatial operand provided for the distance operator " + operatorConfig.getOperatorName() + ".");
 
-		// build the value reference
-		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
+        if (!operatorConfig.isSetDistance())
+            throw new QueryBuildException("The distance operator " + operatorConfig.getOperatorName() + " lacks a distance measure.");
 
-		// convert the spatial operand
-		GeometryObject spatialOperand = null;
-		try {
-			spatialOperand = spatialOperandParser.parseOperand(operatorConfig.getSpatialOperand());
-		} catch (GeometryParseException e) {
-			throw new QueryBuildException("Failed to parse the spatial operand of the distance operator " + operatorConfig.getOperatorName() + ".", e);
-		}
+        // build the value reference
+        ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
 
-		// build the distance measure
-		DistanceUnit unit = operatorConfig.getDistance().isSetUom() ? DistanceUnit.fromSymbol(operatorConfig.getDistance().getUom()) : DistanceUnit.METER;
-		Distance distance = new Distance(operatorConfig.getDistance().getValue(), unit);
+        // convert the spatial operand
+        GeometryObject spatialOperand = null;
+        try {
+            spatialOperand = spatialOperandParser.parseOperand(operatorConfig.getSpatialOperand());
+        } catch (GeometryParseException e) {
+            throw new QueryBuildException("Failed to parse the spatial operand of the distance operator " + operatorConfig.getOperatorName() + ".", e);
+        }
 
-		switch (operatorConfig.getOperatorName()) {
-		case BEYOND:
-			return SpatialOperationFactory.beyond(valueReference, spatialOperand, distance);
-		case DWITHIN:
-			return SpatialOperationFactory.dWithin(valueReference, spatialOperand, distance);
-		default:
-			throw new QueryBuildException("Failed to build the distance operator " + operatorConfig.getOperatorName() + ".");
-		}
-	}
+        // build the distance measure
+        DistanceUnit unit = operatorConfig.getDistance().isSetUom() ? DistanceUnit.fromSymbol(operatorConfig.getDistance().getUom()) : DistanceUnit.METER;
+        Distance distance = new Distance(operatorConfig.getDistance().getValue(), unit);
+
+        switch (operatorConfig.getOperatorName()) {
+            case BEYOND:
+                return SpatialOperationFactory.beyond(valueReference, spatialOperand, distance);
+            case DWITHIN:
+                return SpatialOperationFactory.dWithin(valueReference, spatialOperand, distance);
+            default:
+                throw new QueryBuildException("Failed to build the distance operator " + operatorConfig.getOperatorName() + ".");
+        }
+    }
 }

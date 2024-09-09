@@ -36,41 +36,41 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBReliefFeatToRelComp implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psReliefFeatToRelComp;
-	private int batchCounter;
+    private PreparedStatement psReliefFeatToRelComp;
+    private int batchCounter;
 
-	public DBReliefFeatToRelComp(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
-		this.importer = importer;
+    public DBReliefFeatToRelComp(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String stmt = "insert into " + schema + ".relief_feat_to_rel_comp (relief_component_id, relief_feature_id) values " +
-				"(?, ?)";
-		psReliefFeatToRelComp = batchConn.prepareStatement(stmt);
-	}
+        String stmt = "insert into " + schema + ".relief_feat_to_rel_comp (relief_component_id, relief_feature_id) values " +
+                "(?, ?)";
+        psReliefFeatToRelComp = batchConn.prepareStatement(stmt);
+    }
 
-	protected void doImport(long reliefComponentId, long reliefFeatureId) throws CityGMLImportException, SQLException {
-		psReliefFeatToRelComp.setLong(1, reliefComponentId);
-		psReliefFeatToRelComp.setLong(2, reliefFeatureId);
+    protected void doImport(long reliefComponentId, long reliefFeatureId) throws CityGMLImportException, SQLException {
+        psReliefFeatToRelComp.setLong(1, reliefComponentId);
+        psReliefFeatToRelComp.setLong(2, reliefFeatureId);
 
-		psReliefFeatToRelComp.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.RELIEF_FEAT_TO_REL_COMP);
-	}
+        psReliefFeatToRelComp.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.RELIEF_FEAT_TO_REL_COMP);
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psReliefFeatToRelComp.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psReliefFeatToRelComp.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psReliefFeatToRelComp.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psReliefFeatToRelComp.close();
+    }
 
 }

@@ -31,49 +31,49 @@ import org.citydb.config.project.database.DatabaseType;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 
 public class OracleAdapter extends AbstractDatabaseAdapter {
-	
-	public OracleAdapter() {
-		geometryAdapter = new GeometryConverterAdapter(this);
-		utilAdapter = new UtilAdapter(this);
-		workspaceAdapter = new WorkspaceManagerAdapter(this);
-		schemaAdapter = new SchemaManagerAdapter(this);
-		sqlAdapter = new SQLAdapter(this);
-	}
 
-	@Override
-	public DatabaseType getDatabaseType() {
-		return DatabaseType.ORACLE;
-	}
+    public OracleAdapter() {
+        geometryAdapter = new GeometryConverterAdapter(this);
+        utilAdapter = new UtilAdapter(this);
+        workspaceAdapter = new WorkspaceManagerAdapter(this);
+        schemaAdapter = new SchemaManagerAdapter(this);
+        sqlAdapter = new SQLAdapter(this);
+    }
 
-	@Override
-	public boolean hasVersioningSupport() {
-		return true;
-	}
-	
-	@Override
-	public boolean hasTableStatsSupport() {
-		return false;
-	}
+    @Override
+    public DatabaseType getDatabaseType() {
+        return DatabaseType.ORACLE;
+    }
+
+    @Override
+    public boolean hasVersioningSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean hasTableStatsSupport() {
+        return false;
+    }
 
 
-	@Override
-	public int getDefaultPort() {
-		return 1521;
-	}
+    @Override
+    public int getDefaultPort() {
+        return 1521;
+    }
 
-	@Override
-	public String getConnectionFactoryClassName() {
-		return "oracle.jdbc.OracleDriver";
-	}
+    @Override
+    public String getConnectionFactoryClassName() {
+        return "oracle.jdbc.OracleDriver";
+    }
 
-	@Override
-	public String getJDBCUrl(String server, int port, String database) {
-		return "jdbc:oracle:thin:@//" + server + ":" + port + "/" + database;
-	}
+    @Override
+    public String getJDBCUrl(String server, int port, String database) {
+        return "jdbc:oracle:thin:@//" + server + ":" + port + "/" + database;
+    }
 
-	@Override
-	public int getMaxBatchSize() {
-		return 65535;
-	}
+    @Override
+    public int getMaxBatchSize() {
+        return 65535;
+    }
 
 }

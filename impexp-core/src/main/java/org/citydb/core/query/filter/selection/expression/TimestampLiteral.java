@@ -36,57 +36,57 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class TimestampLiteral extends AbstractLiteral<Instant> {
-	private String xmlLiteral;
-	private boolean isDate;
+    private String xmlLiteral;
+    private boolean isDate;
 
-	public TimestampLiteral(Instant value) {
-		super(value);
-	}
+    public TimestampLiteral(Instant value) {
+        super(value);
+    }
 
-	public TimestampLiteral(Calendar calendar) {
-		this(calendar.toInstant());
-	}
-	
-	public TimestampLiteral(GregorianCalendar calendar) {
-		this(calendar.toInstant());
-	}
-	
-	public String getXMLLiteral() {
-		return xmlLiteral;
-	}
+    public TimestampLiteral(Calendar calendar) {
+        this(calendar.toInstant());
+    }
 
-	public void setXMLLiteral(String xmlLiteral) {
-		this.xmlLiteral = xmlLiteral;
-	}
+    public TimestampLiteral(GregorianCalendar calendar) {
+        this(calendar.toInstant());
+    }
 
-	@Deprecated
-	public boolean isDate() {
-		return isDate;
-	}
+    public String getXMLLiteral() {
+        return xmlLiteral;
+    }
 
-	@Deprecated
-	public void setDate(boolean isDate) {
-		this.isDate = isDate;
-	}
+    public void setXMLLiteral(String xmlLiteral) {
+        this.xmlLiteral = xmlLiteral;
+    }
 
-	@Override
-	public boolean evaluatesToSchemaType(SimpleType schemaType) {
-		switch (schemaType) {
-		case TIMESTAMP:
-			return true;
-		default:
-			return false;
-		}
-	}
+    @Deprecated
+    public boolean isDate() {
+        return isDate;
+    }
 
-	@Override
-	public PlaceHolder<?> convertToSQLPlaceHolder() {
-		return new PlaceHolder<>(Timestamp.from(value));
-	}
+    @Deprecated
+    public void setDate(boolean isDate) {
+        this.isDate = isDate;
+    }
 
-	@Override
-	public LiteralType getLiteralType() {
-		return LiteralType.TIMESTAMP;
-	}
-	
+    @Override
+    public boolean evaluatesToSchemaType(SimpleType schemaType) {
+        switch (schemaType) {
+            case TIMESTAMP:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    @Override
+    public PlaceHolder<?> convertToSQLPlaceHolder() {
+        return new PlaceHolder<>(Timestamp.from(value));
+    }
+
+    @Override
+    public LiteralType getLiteralType() {
+        return LiteralType.TIMESTAMP;
+    }
+
 }

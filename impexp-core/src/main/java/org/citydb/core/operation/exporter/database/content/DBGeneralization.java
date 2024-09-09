@@ -45,71 +45,71 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DBGeneralization implements DBExporter {
-	private final Connection connection;
-	private final CityGMLExportManager exporter;
-	private final Select select;
-	private final Map<Long, AbstractCityObject> batches;
-	private final int batchSize;
+    private final Connection connection;
+    private final CityGMLExportManager exporter;
+    private final Select select;
+    private final Map<Long, AbstractCityObject> batches;
+    private final int batchSize;
 
-	private PreparedStatement ps;
+    private PreparedStatement ps;
 
-	public DBGeneralization(Connection connection, CityGMLExportManager exporter) {
-		this.connection = connection;
-		this.exporter = exporter;
+    public DBGeneralization(Connection connection, CityGMLExportManager exporter) {
+        this.connection = connection;
+        this.exporter = exporter;
 
-		batches = new LinkedHashMap<>();
-		batchSize = exporter.getFeatureBatchSize();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-		String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
+        batches = new LinkedHashMap<>();
+        batchSize = exporter.getFeatureBatchSize();
+        String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+        String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
 
-		Table table = new Table(TableEnum.CITYOBJECT.getName(), schema);
-		select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"))
-				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders)));
-	}
+        Table table = new Table(TableEnum.CITYOBJECT.getName(), schema);
+        select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"))
+                .addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders)));
+    }
 
-	protected void addBatch(long generalizesToId, AbstractCityObject cityObject) throws CityGMLExportException, SQLException {
-		batches.put(generalizesToId, cityObject);
-		if (batches.size() == batchSize)
-			executeBatch();
-	}
+    protected void addBatch(long generalizesToId, AbstractCityObject cityObject) throws CityGMLExportException, SQLException {
+        batches.put(generalizesToId, cityObject);
+        if (batches.size() == batchSize)
+            executeBatch();
+    }
 
-	protected void executeBatch() throws CityGMLExportException, SQLException {
-		if (!batches.isEmpty()) {
-			try {
-				if (ps == null)
-					ps = connection.prepareStatement(select.toString());
+    protected void executeBatch() throws CityGMLExportException, SQLException {
+        if (!batches.isEmpty()) {
+            try {
+                if (ps == null)
+                    ps = connection.prepareStatement(select.toString());
 
-				Long[] ids = batches.keySet().toArray(new Long[0]);
-				for (int i = 0; i < batchSize; i++)
-					ps.setLong(i + 1, i < ids.length ? ids[i] : 0);
+                Long[] ids = batches.keySet().toArray(new Long[0]);
+                for (int i = 0; i < batchSize; i++)
+                    ps.setLong(i + 1, i < ids.length ? ids[i] : 0);
 
-				try (ResultSet rs = ps.executeQuery()) {
-					while (rs.next()) {
-						long id = rs.getLong(1);
-						String gmlId = rs.getString(2);
-						if (rs.wasNull())
-							continue;
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        long id = rs.getLong(1);
+                        String gmlId = rs.getString(2);
+                        if (rs.wasNull())
+                            continue;
 
-						AbstractCityObject cityObject = batches.get(id);
-						if (cityObject == null) {
-							exporter.logOrThrowErrorMessage("Failed to assign generalization with id " + id + " to a city object.");
-							continue;
-						}
+                        AbstractCityObject cityObject = batches.get(id);
+                        if (cityObject == null) {
+                            exporter.logOrThrowErrorMessage("Failed to assign generalization with id " + id + " to a city object.");
+                            continue;
+                        }
 
-						GeneralizationRelation generalizesTo = new GeneralizationRelation();
-						generalizesTo.setHref("#" + gmlId);
-						cityObject.addGeneralizesTo(generalizesTo);
-					}
-				}
-			} finally {
-				batches.clear();
-			}
-		}
-	}
+                        GeneralizationRelation generalizesTo = new GeneralizationRelation();
+                        generalizesTo.setHref("#" + gmlId);
+                        cityObject.addGeneralizesTo(generalizesTo);
+                    }
+                }
+            } finally {
+                batches.clear();
+            }
+        }
+    }
 
-	@Override
-	public void close() throws SQLException {
-		if (ps != null)
-			ps.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        if (ps != null)
+            ps.close();
+    }
 }

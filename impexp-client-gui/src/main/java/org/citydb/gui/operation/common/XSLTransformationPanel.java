@@ -364,7 +364,7 @@ public class XSLTransformationPanel extends InternalPreferencesComponent {
                     try {
                         dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
 
-                        for (File file : (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor)) {
+                        for (File file : (List<File>) dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor)) {
                             if (file.isFile() && file.canRead()) {
                                 stylesheet.setText(file.getCanonicalPath());
                                 lastPath = file.getParentFile();

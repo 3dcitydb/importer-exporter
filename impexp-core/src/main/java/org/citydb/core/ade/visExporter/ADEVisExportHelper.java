@@ -30,6 +30,7 @@ package org.citydb.core.ade.visExporter;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 
 public interface ADEVisExportHelper {
-	AbstractDatabaseAdapter getDatabaseAdapter();
-	ADEVisExportQueryHelper getSQLQueryHelper();
+    AbstractDatabaseAdapter getDatabaseAdapter();
+
+    ADEVisExportQueryHelper getSQLQueryHelper();
 }

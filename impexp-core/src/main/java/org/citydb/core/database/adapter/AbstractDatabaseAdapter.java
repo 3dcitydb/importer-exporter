@@ -38,80 +38,86 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class AbstractDatabaseAdapter {
-	protected DatabaseConnectionPool connectionPool;	
-	protected DatabaseMetaData metaData;
-	protected DatabaseConnectionDetails connectionDetails;
-	protected AbstractGeometryConverterAdapter geometryAdapter;
-	protected AbstractSchemaManagerAdapter schemaAdapter;
-	protected AbstractWorkspaceManagerAdapter workspaceAdapter;
-	protected AbstractUtilAdapter utilAdapter;
-	protected AbstractSQLAdapter sqlAdapter;
-	private List<DatabaseConnectionWarning> connectionWarnings;
-	
-	public AbstractDatabaseAdapter() {
-		connectionPool = DatabaseConnectionPool.getInstance();
-	}
-	
-	public abstract int getDefaultPort();
-	public abstract String getConnectionFactoryClassName();
-	public abstract String getJDBCUrl(String server, int port, String database);
-	public abstract DatabaseType getDatabaseType();
-	public abstract boolean hasVersioningSupport();
-	public abstract boolean hasTableStatsSupport();
-	public abstract int getMaxBatchSize();
-	
-	public DatabaseConnectionDetails getConnectionDetails() {
-		return connectionDetails;
-	}
+    protected DatabaseConnectionPool connectionPool;
+    protected DatabaseMetaData metaData;
+    protected DatabaseConnectionDetails connectionDetails;
+    protected AbstractGeometryConverterAdapter geometryAdapter;
+    protected AbstractSchemaManagerAdapter schemaAdapter;
+    protected AbstractWorkspaceManagerAdapter workspaceAdapter;
+    protected AbstractUtilAdapter utilAdapter;
+    protected AbstractSQLAdapter sqlAdapter;
+    private List<DatabaseConnectionWarning> connectionWarnings;
 
-	public void setConnectionDetails(DatabaseConnectionDetails connectionDetails) {
-		this.connectionDetails = connectionDetails;
-	}
-	
-	public DatabaseMetaData getConnectionMetaData() {
-		return metaData;
-	}
-	
-	public void setConnectionMetaData(DatabaseMetaData metaData) {
-		this.metaData = metaData;
-	}
+    public AbstractDatabaseAdapter() {
+        connectionPool = DatabaseConnectionPool.getInstance();
+    }
 
-	public AbstractGeometryConverterAdapter getGeometryConverter() {
-		return geometryAdapter;
-	}
-	
-	public AbstractSchemaManagerAdapter getSchemaManager() {
-		return schemaAdapter;
-	}
-	
-	public AbstractWorkspaceManagerAdapter getWorkspaceManager() {
-		return workspaceAdapter;
-	}
+    public abstract int getDefaultPort();
 
-	public AbstractUtilAdapter getUtil() {
-		return utilAdapter;
-	}
-	
-	public AbstractSQLAdapter getSQLAdapter() {
-		return sqlAdapter;
-	}
+    public abstract String getConnectionFactoryClassName();
 
-	public List<DatabaseConnectionWarning> getConnectionWarnings() {
-		return connectionWarnings != null ? connectionWarnings : Collections.emptyList();
-	}
+    public abstract String getJDBCUrl(String server, int port, String database);
 
-	public void addConnectionWarning(DatabaseConnectionWarning connectionWarning) {
-		if (connectionWarnings == null)
-			connectionWarnings = new ArrayList<>();
-		
-		connectionWarnings.add(connectionWarning);
-	}
-	
-	public void addConnectionWarnings(List<DatabaseConnectionWarning> connectionWarnings) {
-		if (this.connectionWarnings == null)
-			this.connectionWarnings = new ArrayList<>(connectionWarnings);
-		else
-			this.connectionWarnings.addAll(connectionWarnings);
-	}
-	
+    public abstract DatabaseType getDatabaseType();
+
+    public abstract boolean hasVersioningSupport();
+
+    public abstract boolean hasTableStatsSupport();
+
+    public abstract int getMaxBatchSize();
+
+    public DatabaseConnectionDetails getConnectionDetails() {
+        return connectionDetails;
+    }
+
+    public void setConnectionDetails(DatabaseConnectionDetails connectionDetails) {
+        this.connectionDetails = connectionDetails;
+    }
+
+    public DatabaseMetaData getConnectionMetaData() {
+        return metaData;
+    }
+
+    public void setConnectionMetaData(DatabaseMetaData metaData) {
+        this.metaData = metaData;
+    }
+
+    public AbstractGeometryConverterAdapter getGeometryConverter() {
+        return geometryAdapter;
+    }
+
+    public AbstractSchemaManagerAdapter getSchemaManager() {
+        return schemaAdapter;
+    }
+
+    public AbstractWorkspaceManagerAdapter getWorkspaceManager() {
+        return workspaceAdapter;
+    }
+
+    public AbstractUtilAdapter getUtil() {
+        return utilAdapter;
+    }
+
+    public AbstractSQLAdapter getSQLAdapter() {
+        return sqlAdapter;
+    }
+
+    public List<DatabaseConnectionWarning> getConnectionWarnings() {
+        return connectionWarnings != null ? connectionWarnings : Collections.emptyList();
+    }
+
+    public void addConnectionWarning(DatabaseConnectionWarning connectionWarning) {
+        if (connectionWarnings == null)
+            connectionWarnings = new ArrayList<>();
+
+        connectionWarnings.add(connectionWarning);
+    }
+
+    public void addConnectionWarnings(List<DatabaseConnectionWarning> connectionWarnings) {
+        if (this.connectionWarnings == null)
+            this.connectionWarnings = new ArrayList<>(connectionWarnings);
+        else
+            this.connectionWarnings.addAll(connectionWarnings);
+    }
+
 }

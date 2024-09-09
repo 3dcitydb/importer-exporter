@@ -36,46 +36,46 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class DateLiteral extends AbstractLiteral<Instant> {
-	private String xmlLiteral;
-	
-	public DateLiteral(Instant value) {
-		super(value);
-	}
-	
-	public DateLiteral(Calendar calendar) {
-		this(calendar.toInstant());
-	}
-	
-	public DateLiteral(GregorianCalendar calendar) {
-		this(calendar.toInstant());
-	}
+    private String xmlLiteral;
 
-	public String getXMLLiteral() {
-		return xmlLiteral;
-	}
+    public DateLiteral(Instant value) {
+        super(value);
+    }
 
-	public void setXMLLiteral(String xmlLiteral) {
-		this.xmlLiteral = xmlLiteral;
-	}
+    public DateLiteral(Calendar calendar) {
+        this(calendar.toInstant());
+    }
 
-	@Override
-	public boolean evaluatesToSchemaType(SimpleType schemaType) {
-		switch (schemaType) {
-		case DATE:
-			return true;
-		default:
-			return false;
-		}
-	}
+    public DateLiteral(GregorianCalendar calendar) {
+        this(calendar.toInstant());
+    }
 
-	@Override
-	public PlaceHolder<?> convertToSQLPlaceHolder() {
-		return new PlaceHolder<>(new Date(value.toEpochMilli()));
-	}
+    public String getXMLLiteral() {
+        return xmlLiteral;
+    }
 
-	@Override
-	public LiteralType getLiteralType() {
-		return LiteralType.DATE;
-	}
-	
+    public void setXMLLiteral(String xmlLiteral) {
+        this.xmlLiteral = xmlLiteral;
+    }
+
+    @Override
+    public boolean evaluatesToSchemaType(SimpleType schemaType) {
+        switch (schemaType) {
+            case DATE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    @Override
+    public PlaceHolder<?> convertToSQLPlaceHolder() {
+        return new PlaceHolder<>(new Date(value.toEpochMilli()));
+    }
+
+    @Override
+    public LiteralType getLiteralType() {
+        return LiteralType.DATE;
+    }
+
 }

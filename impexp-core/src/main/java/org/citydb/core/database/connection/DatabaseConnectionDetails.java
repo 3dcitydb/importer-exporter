@@ -32,103 +32,103 @@ import org.citydb.config.project.database.DatabaseType;
 import org.citydb.config.project.database.Workspace;
 
 public class DatabaseConnectionDetails {
-	private String description;
-	private DatabaseType type;
-	private String server;
-	private int port;
-	private String sid;
-	private String schema;
-	private Workspace workspace;
-	private String user;
-	
-	public DatabaseConnectionDetails(DatabaseConnection connection) {
-		description = connection.getDescription();
-		type = connection.getDatabaseType();
-		server = connection.getServer();
-		port = connection.getPort() != null ? connection.getPort() : 0;
-		sid = connection.getSid();
-		schema = connection.getSchema();
-		user = connection.getUser();
+    private String description;
+    private DatabaseType type;
+    private String server;
+    private int port;
+    private String sid;
+    private String schema;
+    private Workspace workspace;
+    private String user;
 
-		if (connection.isSetWorkspace()) {
-			workspace = new Workspace(connection.getWorkspace());
-		}
-	}
-	
-	public String getDescription() {
-		return description;
-	}
-	
-	void setDescription(String description) {
-		this.description = description;
-	}
-	
-	public DatabaseType getDatabaseType() {
-		return type;
-	}
-	
-	void setType(DatabaseType type) {
-		this.type = type;
-	}
-	
-	public String getServer() {
-		return server;
-	}
-	
-	void setServer(String server) {
-		this.server = server;
-	}
-	
-	public int getPort() {
-		return port;
-	}
-	
-	void setPort(int port) {
-		this.port = port;
-	}
-	
-	public String getSid() {
-		return sid;
-	}
-	
-	void setSid(String sid) {
-		this.sid = sid;
-	}
-	
-	public String getSchema() {
-		return schema;
-	}
-	
-	public boolean isSetSchema() {
-		return schema != null && !schema.trim().isEmpty();
-	}
+    public DatabaseConnectionDetails(DatabaseConnection connection) {
+        description = connection.getDescription();
+        type = connection.getDatabaseType();
+        server = connection.getServer();
+        port = connection.getPort() != null ? connection.getPort() : 0;
+        sid = connection.getSid();
+        schema = connection.getSchema();
+        user = connection.getUser();
 
-	void setSchema(String schema) {
-		this.schema = schema;
-	}
+        if (connection.isSetWorkspace()) {
+            workspace = new Workspace(connection.getWorkspace());
+        }
+    }
 
-	public Workspace getWorkspace() {
-		return workspace;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public boolean isSetWorkspace() {
-		return workspace != null;
-	}
+    void setDescription(String description) {
+        this.description = description;
+    }
 
-	void setWorkspace(Workspace workspace) {
-		this.workspace = workspace;
-	}
+    public DatabaseType getDatabaseType() {
+        return type;
+    }
 
-	public String getUser() {
-		return user;
-	}
-	
-	void setUser(String user) {
-		this.user = user;
-	}
-	
-	public String toConnectString() {
-		return user + "@" + server + ":" + port + "/" + sid;
-	}
-	
+    void setType(DatabaseType type) {
+        this.type = type;
+    }
+
+    public String getServer() {
+        return server;
+    }
+
+    void setServer(String server) {
+        this.server = server;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getSid() {
+        return sid;
+    }
+
+    void setSid(String sid) {
+        this.sid = sid;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public boolean isSetSchema() {
+        return schema != null && !schema.trim().isEmpty();
+    }
+
+    void setSchema(String schema) {
+        this.schema = schema;
+    }
+
+    public Workspace getWorkspace() {
+        return workspace;
+    }
+
+    public boolean isSetWorkspace() {
+        return workspace != null;
+    }
+
+    void setWorkspace(Workspace workspace) {
+        this.workspace = workspace;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    void setUser(String user) {
+        this.user = user;
+    }
+
+    public String toConnectString() {
+        return user + "@" + server + ":" + port + "/" + sid;
+    }
+
 }

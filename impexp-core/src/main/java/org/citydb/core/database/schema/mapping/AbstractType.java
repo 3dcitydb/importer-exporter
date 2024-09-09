@@ -36,170 +36,178 @@ import java.util.List;
 
 @XmlTransient
 public abstract class AbstractType<T extends AbstractType<T>> extends AbstractPathElement {
-	@XmlAttribute(name = "abstract")
-	protected Boolean _abstract;
-	@XmlElements({
-		@XmlElement(name = "attribute", type = SimpleAttribute.class),
-		@XmlElement(name = "complexAttribute", type = ComplexAttribute.class),
-		@XmlElement(name = "complexProperty", type = ComplexProperty.class),
-		@XmlElement(name = "objectProperty", type = ObjectProperty.class),
-		@XmlElement(name = "featureProperty", type = FeatureProperty.class),
-		@XmlElement(name = "geometryProperty", type = GeometryProperty.class),
-		@XmlElement(name = "implicitGeometryProperty", type = ImplicitGeometryProperty.class)
-	})
-	protected List<AbstractProperty> properties;
+    @XmlAttribute(name = "abstract")
+    protected Boolean _abstract;
+    @XmlElements({
+            @XmlElement(name = "attribute", type = SimpleAttribute.class),
+            @XmlElement(name = "complexAttribute", type = ComplexAttribute.class),
+            @XmlElement(name = "complexProperty", type = ComplexProperty.class),
+            @XmlElement(name = "objectProperty", type = ObjectProperty.class),
+            @XmlElement(name = "featureProperty", type = FeatureProperty.class),
+            @XmlElement(name = "geometryProperty", type = GeometryProperty.class),
+            @XmlElement(name = "implicitGeometryProperty", type = ImplicitGeometryProperty.class)
+    })
+    protected List<AbstractProperty> properties;
 
-	@XmlTransient
-	protected SchemaMapping schemaMapping;
+    @XmlTransient
+    protected SchemaMapping schemaMapping;
 
-	protected AbstractType() {
-		properties = new ArrayList<>();
-	}
+    protected AbstractType() {
+        properties = new ArrayList<>();
+    }
 
-	public AbstractType(String path, AppSchema schema, SchemaMapping schemaMapping) {
-		super(path, schema);
-		this.schemaMapping = schemaMapping;
-		properties = new ArrayList<>();
-	}
+    public AbstractType(String path, AppSchema schema, SchemaMapping schemaMapping) {
+        super(path, schema);
+        this.schemaMapping = schemaMapping;
+        properties = new ArrayList<>();
+    }
 
-	public boolean isAbstract() {
-		return _abstract == null ? false : _abstract.booleanValue();
-	}
+    public boolean isAbstract() {
+        return _abstract == null ? false : _abstract.booleanValue();
+    }
 
-	public boolean isSetAbstract() {
-		return _abstract!= null;
-	}
+    public boolean isSetAbstract() {
+        return _abstract != null;
+    }
 
-	public void setAbstract(boolean _abstract) {
-		this._abstract = _abstract ? true : null;
-	}
+    public void setAbstract(boolean _abstract) {
+        this._abstract = _abstract ? true : null;
+    }
 
-	public abstract String getId();
-	public abstract boolean isSetId();
-	public abstract void setId(String id);
+    public abstract String getId();
 
-	public abstract String getTable();
-	public abstract boolean isSetTable();
-	public abstract void setTable(String table);
+    public abstract boolean isSetId();
 
-	public abstract int getObjectClassId();
-	public abstract boolean isSetObjectClass();
-	public abstract void setObjectClassId(int objectClassId);
+    public abstract void setId(String id);
 
-	public abstract AbstractExtension<T> getExtension();
-	public abstract boolean isSetExtension();
-	public abstract void setExtension(AbstractExtension<T> extension);
+    public abstract String getTable();
 
-	public abstract List<T> listSubTypes(boolean skipAbstractTypes);
+    public abstract boolean isSetTable();
 
-	@SuppressWarnings("unchecked")
-	public List<T> listSuperTypes(boolean includeType) {
-		List<T> superTypes = new ArrayList<T>();
-		T type = (T)this;
-		if (includeType)
-			superTypes.add(type);
+    public abstract void setTable(String table);
 
-		while (type.isSetExtension()) {
-			type = type.getExtension().getBase();
-			superTypes.add(type);
-		}
+    public abstract int getObjectClassId();
 
-		return superTypes;
-	}
+    public abstract boolean isSetObjectClass();
 
-	public boolean isSubTypeOf(AbstractType<?> superType) {
-		if (!isSetExtension())
-			return false;
+    public abstract void setObjectClassId(int objectClassId);
 
-		T parent = getExtension().getBase();
-		while (parent != null) {
-			if (parent == superType)
-				return true;
+    public abstract AbstractExtension<T> getExtension();
 
-			parent = parent.isSetExtension() ? parent.getExtension().getBase() : null;
-		}
+    public abstract boolean isSetExtension();
 
-		return false;
-	}
-	
-	public boolean isEqualToOrSubTypeOf(AbstractType<?> superType) {
-		return this == superType || isSubTypeOf(superType);
-	}
+    public abstract void setExtension(AbstractExtension<T> extension);
 
-	protected List<T> listSubTypes(List<T> candidates, boolean skipAbstractTypes) {
-		List<T> result = new ArrayList<T>();
-		for (T candidate : candidates) {
-			if (skipAbstractTypes && candidate.isAbstract())
-				continue;
+    public abstract List<T> listSubTypes(boolean skipAbstractTypes);
 
-			if (candidate.isSubTypeOf(this))
-				result.add(candidate);
-		}
+    @SuppressWarnings("unchecked")
+    public List<T> listSuperTypes(boolean includeType) {
+        List<T> superTypes = new ArrayList<T>();
+        T type = (T) this;
+        if (includeType)
+            superTypes.add(type);
 
-		return result;
-	}
+        while (type.isSetExtension()) {
+            type = type.getExtension().getBase();
+            superTypes.add(type);
+        }
 
-	public List<AbstractProperty> getProperties() {
-		return new ArrayList<>(properties);
-	}
+        return superTypes;
+    }
 
-	public List<AbstractProperty> listProperties(boolean onlyQueryable, boolean includeInherited) {
-		List<AbstractProperty> result = new ArrayList<AbstractProperty>();
-		AbstractType<?> type = this;
+    public boolean isSubTypeOf(AbstractType<?> superType) {
+        if (!isSetExtension())
+            return false;
 
-		while (type != null) {
-			for (AbstractProperty property : type.properties) {
-				if (!onlyQueryable || property.isQueryable())
-					result.add(property);
-			}
+        T parent = getExtension().getBase();
+        while (parent != null) {
+            if (parent == superType)
+                return true;
 
-			type = includeInherited && type.isSetExtension() ? type.getExtension().getBase() : null;
-		}
+            parent = parent.isSetExtension() ? parent.getExtension().getBase() : null;
+        }
 
-		return result;
-	}
+        return false;
+    }
 
-	public AbstractProperty getProperty(String name, String namespaceURI, boolean includeInherited) {
-		for (AbstractProperty property : listProperties(false, includeInherited)) {
-			if (property.getSchema().matchesNamespaceURI(namespaceURI)) {
-				String path = property.getPath();
-				if (path.startsWith("@"))
-					path = path.substring(1, path.length());
+    public boolean isEqualToOrSubTypeOf(AbstractType<?> superType) {
+        return this == superType || isSubTypeOf(superType);
+    }
 
-				if (path.equals(name))
-					return property;
-			}
-		}
+    protected List<T> listSubTypes(List<T> candidates, boolean skipAbstractTypes) {
+        List<T> result = new ArrayList<T>();
+        for (T candidate : candidates) {
+            if (skipAbstractTypes && candidate.isAbstract())
+                continue;
 
-		return null;
-	}
-	
-	public FeatureProperty getFeatureProperty(String name, String namespaceURI, boolean includeInherited) {
-		AbstractProperty property = getProperty(name, namespaceURI, includeInherited);
-		return property != null && property.getElementType() == PathElementType.FEATURE_PROPERTY ? (FeatureProperty)property : null;
-	}
+            if (candidate.isSubTypeOf(this))
+                result.add(candidate);
+        }
 
-	public boolean isSetProperties() {
-		return properties != null && !properties.isEmpty();
-	}
+        return result;
+    }
 
-	public void addProperty(AbstractProperty property) {
-		if (property == null)
-			return;
+    public List<AbstractProperty> getProperties() {
+        return new ArrayList<>(properties);
+    }
 
-		if (property instanceof SimpleAttribute)
-			((SimpleAttribute)property).setParentType(this);
+    public List<AbstractProperty> listProperties(boolean onlyQueryable, boolean includeInherited) {
+        List<AbstractProperty> result = new ArrayList<AbstractProperty>();
+        AbstractType<?> type = this;
 
-		properties.add(property);
-	}
+        while (type != null) {
+            for (AbstractProperty property : type.properties) {
+                if (!onlyQueryable || property.isQueryable())
+                    result.add(property);
+            }
 
-	@Override
-	protected void validate(SchemaMapping schemaMapping, Object parent) throws SchemaMappingException {
-		super.validate(schemaMapping, parent);
-		this.schemaMapping = schemaMapping;
+            type = includeInherited && type.isSetExtension() ? type.getExtension().getBase() : null;
+        }
 
-		for (AbstractProperty property : properties)
-			property.validate(schemaMapping, this);
-	}
+        return result;
+    }
+
+    public AbstractProperty getProperty(String name, String namespaceURI, boolean includeInherited) {
+        for (AbstractProperty property : listProperties(false, includeInherited)) {
+            if (property.getSchema().matchesNamespaceURI(namespaceURI)) {
+                String path = property.getPath();
+                if (path.startsWith("@"))
+                    path = path.substring(1, path.length());
+
+                if (path.equals(name))
+                    return property;
+            }
+        }
+
+        return null;
+    }
+
+    public FeatureProperty getFeatureProperty(String name, String namespaceURI, boolean includeInherited) {
+        AbstractProperty property = getProperty(name, namespaceURI, includeInherited);
+        return property != null && property.getElementType() == PathElementType.FEATURE_PROPERTY ? (FeatureProperty) property : null;
+    }
+
+    public boolean isSetProperties() {
+        return properties != null && !properties.isEmpty();
+    }
+
+    public void addProperty(AbstractProperty property) {
+        if (property == null)
+            return;
+
+        if (property instanceof SimpleAttribute)
+            ((SimpleAttribute) property).setParentType(this);
+
+        properties.add(property);
+    }
+
+    @Override
+    protected void validate(SchemaMapping schemaMapping, Object parent) throws SchemaMappingException {
+        super.validate(schemaMapping, parent);
+        this.schemaMapping = schemaMapping;
+
+        for (AbstractProperty property : properties)
+            property.validate(schemaMapping, this);
+    }
 
 }

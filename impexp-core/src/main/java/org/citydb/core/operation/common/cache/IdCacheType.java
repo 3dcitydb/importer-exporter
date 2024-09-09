@@ -28,7 +28,7 @@
 package org.citydb.core.operation.common.cache;
 
 public enum IdCacheType {
-	OBJECT,
-	GEOMETRY,
-	TEXTURE_IMAGE
+    OBJECT,
+    GEOMETRY,
+    TEXTURE_IMAGE
 }

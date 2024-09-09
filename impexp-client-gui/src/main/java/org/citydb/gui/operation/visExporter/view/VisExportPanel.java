@@ -113,7 +113,7 @@ public class VisExportPanel extends DefaultViewComponent implements EventHandler
     private TitledPanel tilingPanel;
     private TitledPanel lodPanel;
     private TitledPanel displayAsPanel;
-	private TitledPanel featureFilterPanel;
+    private TitledPanel featureFilterPanel;
 
     private FeatureVersionFilterView featureVersionFilter;
     private AttributeFilterView attributeFilter;
@@ -203,18 +203,18 @@ public class VisExportPanel extends DefaultViewComponent implements EventHandler
         lodComboBox.insertItemAt(Language.I18N.getString("visExport.label.highestLODAvailable"), lodComboBox.getItemCount());
         lodComboBox.setSelectedIndex(2);
 
-		footprintCheckbox = new JCheckBox();
-		extrudedCheckbox = new JCheckBox();
-		geometryCheckbox = new JCheckBox();
-		colladaCheckbox = new JCheckBox();
-		visibleFromFootprintLabel = new JLabel();
-		pixelsFootprintLabel = new JLabel();
-		visibleFromExtrudedLabel = new JLabel();
-		pixelsExtrudedLabel = new JLabel();
-		visibleFromGeometryLabel = new JLabel();
-		pixelsGeometryLabel = new JLabel();
-		visibleFromColladaLabel = new JLabel();
-		pixelsColladaLabel = new JLabel();
+        footprintCheckbox = new JCheckBox();
+        extrudedCheckbox = new JCheckBox();
+        geometryCheckbox = new JCheckBox();
+        colladaCheckbox = new JCheckBox();
+        visibleFromFootprintLabel = new JLabel();
+        pixelsFootprintLabel = new JLabel();
+        visibleFromExtrudedLabel = new JLabel();
+        pixelsExtrudedLabel = new JLabel();
+        visibleFromGeometryLabel = new JLabel();
+        pixelsGeometryLabel = new JLabel();
+        visibleFromColladaLabel = new JLabel();
+        pixelsColladaLabel = new JLabel();
 
         BlankNumberFormatter visibleFromFormatter = new BlankNumberFormatter(new DecimalFormat("#"));
         visibleFromFormatter.setLimits(0, 9999);
@@ -228,8 +228,8 @@ public class VisExportPanel extends DefaultViewComponent implements EventHandler
         colladaVisibleFromText.setColumns(10);
 
         themeLabel = new JLabel();
-		themeComboBox = new JComboBox<>();
-		fetchThemesButton = new JButton();
+        themeComboBox = new JComboBox<>();
+        fetchThemesButton = new JButton();
 
         exportButton = new JButton();
 

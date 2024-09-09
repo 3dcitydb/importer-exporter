@@ -33,21 +33,21 @@ import org.citydb.config.gui.GuiConfig;
 import org.citydb.gui.plugin.util.DefaultPreferencesComponent;
 
 public abstract class InternalPreferencesComponent extends DefaultPreferencesComponent {
-	protected final Config config;
+    protected final Config config;
 
-	public InternalPreferencesComponent(Config config) {
-		this.config = config;
-	}
+    public InternalPreferencesComponent(Config config) {
+        this.config = config;
+    }
 
-	public void resetSettings() {
-		ProjectConfig projectConfig = config.getProjectConfig();
-		GuiConfig guiConfig = config.getGuiConfig();
+    public void resetSettings() {
+        ProjectConfig projectConfig = config.getProjectConfig();
+        GuiConfig guiConfig = config.getGuiConfig();
 
-		config.setProjectConfig(new ProjectConfig());
-		config.setGuiConfig(new GuiConfig());
-		loadSettings();
+        config.setProjectConfig(new ProjectConfig());
+        config.setGuiConfig(new GuiConfig());
+        loadSettings();
 
-		config.setProjectConfig(projectConfig);
-		config.setGuiConfig(guiConfig);
-	}
+        config.setProjectConfig(projectConfig);
+        config.setGuiConfig(guiConfig);
+    }
 }

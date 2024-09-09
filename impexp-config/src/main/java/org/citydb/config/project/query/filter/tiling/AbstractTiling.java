@@ -50,6 +50,7 @@ public abstract class AbstractTiling {
     }
 
     public abstract AbstractTilingOptions getTilingOptions();
+
     public abstract boolean isSetTilingOptions();
 
     public boolean isSetExtent() {

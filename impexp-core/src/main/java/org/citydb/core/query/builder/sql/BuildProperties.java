@@ -35,65 +35,65 @@ import java.util.Collections;
 import java.util.List;
 
 public class BuildProperties {
-	protected final DefaultAliasGenerator aliasGenerator;
-	private List<String> projectionColumns;
-	private boolean suppressDistinct;
-	private boolean optimizeJoins = true;
+    protected final DefaultAliasGenerator aliasGenerator;
+    private List<String> projectionColumns;
+    private boolean suppressDistinct;
+    private boolean optimizeJoins = true;
 
-	private BuildProperties() {
-		aliasGenerator = new DefaultAliasGenerator();
-	}
-	
-	public static BuildProperties defaults() {
-		return new BuildProperties().reset();
-	}
-	
-	public BuildProperties reset() {
-		projectionColumns = null;
-		aliasGenerator.reset();
-		return this;
-	}
+    private BuildProperties() {
+        aliasGenerator = new DefaultAliasGenerator();
+    }
 
-	public AliasGenerator getAliasGenerator() {
-		return aliasGenerator;
-	}
-	
-	public BuildProperties addProjectionColumn(String columnName) {
-		if (projectionColumns == null)
-			projectionColumns = new ArrayList<>();
-		
-		if (!projectionColumns.contains(columnName))		
-			projectionColumns.add(columnName);
-		
-		return this;
-	}
-	
-	public BuildProperties addProjectionColumns(String... columnNames) {
-		for (String columnName : columnNames)
-			addProjectionColumn(columnName);
-		
-		return this;
-	}
-	
-	public List<String> getAdditionalProjectionColumns() {
-		return projectionColumns != null ? new ArrayList<>(projectionColumns) : Collections.emptyList();
-	}
+    public static BuildProperties defaults() {
+        return new BuildProperties().reset();
+    }
 
-	public boolean isSuppressDistinct() {
-		return suppressDistinct;
-	}
+    public BuildProperties reset() {
+        projectionColumns = null;
+        aliasGenerator.reset();
+        return this;
+    }
 
-	public BuildProperties suppressDistinct(boolean suppressDistinct) {
-		this.suppressDistinct = suppressDistinct;
-		return this;
-	}
+    public AliasGenerator getAliasGenerator() {
+        return aliasGenerator;
+    }
 
-	public boolean isOptimizeJoins() {
-		return optimizeJoins;
-	}
+    public BuildProperties addProjectionColumn(String columnName) {
+        if (projectionColumns == null)
+            projectionColumns = new ArrayList<>();
 
-	public BuildProperties optimizeJoins(boolean optimizeJoins) {
-		this.optimizeJoins = optimizeJoins;
-		return this;
-	}
+        if (!projectionColumns.contains(columnName))
+            projectionColumns.add(columnName);
+
+        return this;
+    }
+
+    public BuildProperties addProjectionColumns(String... columnNames) {
+        for (String columnName : columnNames)
+            addProjectionColumn(columnName);
+
+        return this;
+    }
+
+    public List<String> getAdditionalProjectionColumns() {
+        return projectionColumns != null ? new ArrayList<>(projectionColumns) : Collections.emptyList();
+    }
+
+    public boolean isSuppressDistinct() {
+        return suppressDistinct;
+    }
+
+    public BuildProperties suppressDistinct(boolean suppressDistinct) {
+        this.suppressDistinct = suppressDistinct;
+        return this;
+    }
+
+    public boolean isOptimizeJoins() {
+        return optimizeJoins;
+    }
+
+    public BuildProperties optimizeJoins(boolean optimizeJoins) {
+        this.optimizeJoins = optimizeJoins;
+        return this;
+    }
 }

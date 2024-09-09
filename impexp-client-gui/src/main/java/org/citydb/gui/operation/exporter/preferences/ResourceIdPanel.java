@@ -41,94 +41,94 @@ import java.awt.*;
 import java.util.Locale;
 
 public class ResourceIdPanel extends InternalPreferencesComponent {
-	private TitledPanel resourceIdPanel;
-	private JCheckBox replaceWithUUIDs;
-	private JLabel idPrefixLabel;
-	private JTextField idPrefix;
+    private TitledPanel resourceIdPanel;
+    private JCheckBox replaceWithUUIDs;
+    private JLabel idPrefixLabel;
+    private JTextField idPrefix;
 
-	public ResourceIdPanel(Config config) {
-		super(config);
-		initGui();
-	}
+    public ResourceIdPanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-	@Override
-	public boolean isModified() {
-		ExportResourceId resourceId = config.getExportConfig().getResourceId();
+    @Override
+    public boolean isModified() {
+        ExportResourceId resourceId = config.getExportConfig().getResourceId();
 
-		if (replaceWithUUIDs.isSelected() != resourceId.isReplaceWithUUIDs()) return true;
-		if (!idPrefix.getText().equals(resourceId.getIdPrefix())) return true;
+        if (replaceWithUUIDs.isSelected() != resourceId.isReplaceWithUUIDs()) return true;
+        if (!idPrefix.getText().equals(resourceId.getIdPrefix())) return true;
 
-		return false;
-	}
+        return false;
+    }
 
-	private void initGui() {
-		replaceWithUUIDs = new JCheckBox();
-		idPrefixLabel = new JLabel();
-		idPrefix = new JTextField();
+    private void initGui() {
+        replaceWithUUIDs = new JCheckBox();
+        idPrefixLabel = new JLabel();
+        idPrefix = new JTextField();
 
-		PopupMenuDecorator.getInstance().decorate(idPrefix);
-		
-		setLayout(new GridBagLayout());
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(idPrefixLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
-				content.add(idPrefix, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
-			}
+        PopupMenuDecorator.getInstance().decorate(idPrefix);
 
-			resourceIdPanel = new TitledPanel().withToggleButton(replaceWithUUIDs).build(content);
-		}
+        setLayout(new GridBagLayout());
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(idPrefixLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+                content.add(idPrefix, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+            }
 
-		add(resourceIdPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            resourceIdPanel = new TitledPanel().withToggleButton(replaceWithUUIDs).build(content);
+        }
 
-		replaceWithUUIDs.addActionListener(e -> setEnabledPrefix());
-	}
-	
-	private void setEnabledPrefix() {
-		idPrefixLabel.setEnabled(replaceWithUUIDs.isSelected());
-		idPrefix.setEnabled(replaceWithUUIDs.isSelected());
-	}
+        add(resourceIdPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-	@Override
-	public void switchLocale(Locale locale) {
-		resourceIdPanel.setTitle(Language.I18N.getString("pref.export.id.label.replace"));
-		idPrefixLabel.setText(Language.I18N.getString("pref.export.id.label.prefix"));
-	}
+        replaceWithUUIDs.addActionListener(e -> setEnabledPrefix());
+    }
 
-	@Override
-	public void loadSettings() {
-		ExportResourceId resourceId = config.getExportConfig().getResourceId();
+    private void setEnabledPrefix() {
+        idPrefixLabel.setEnabled(replaceWithUUIDs.isSelected());
+        idPrefix.setEnabled(replaceWithUUIDs.isSelected());
+    }
 
-		replaceWithUUIDs.setSelected(resourceId.isReplaceWithUUIDs());
+    @Override
+    public void switchLocale(Locale locale) {
+        resourceIdPanel.setTitle(Language.I18N.getString("pref.export.id.label.replace"));
+        idPrefixLabel.setText(Language.I18N.getString("pref.export.id.label.prefix"));
+    }
 
-		if (resourceId.getIdPrefix() != null && resourceId.getIdPrefix().trim().length() != 0) {
-			idPrefix.setText(resourceId.getIdPrefix());
-		} else {
-			idPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
-			resourceId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
-		}
-		
-		setEnabledPrefix();
-	}
+    @Override
+    public void loadSettings() {
+        ExportResourceId resourceId = config.getExportConfig().getResourceId();
 
-	@Override
-	public void setSettings() {
-		ExportResourceId resourceId = config.getExportConfig().getResourceId();
+        replaceWithUUIDs.setSelected(resourceId.isReplaceWithUUIDs());
 
-		resourceId.setReplaceWithUUIDs(replaceWithUUIDs.isSelected());
+        if (resourceId.getIdPrefix() != null && resourceId.getIdPrefix().trim().length() != 0) {
+            idPrefix.setText(resourceId.getIdPrefix());
+        } else {
+            idPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+            resourceId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+        }
 
-		if (idPrefix.getText() != null && DefaultGMLIdManager.getInstance().isValidPrefix(idPrefix.getText())) {
-			resourceId.setIdPrefix(idPrefix.getText());
-		} else {
-			resourceId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
-			idPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
-		}
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.export.id");
-	}
+        setEnabledPrefix();
+    }
+
+    @Override
+    public void setSettings() {
+        ExportResourceId resourceId = config.getExportConfig().getResourceId();
+
+        resourceId.setReplaceWithUUIDs(replaceWithUUIDs.isSelected());
+
+        if (idPrefix.getText() != null && DefaultGMLIdManager.getInstance().isValidPrefix(idPrefix.getText())) {
+            resourceId.setIdPrefix(idPrefix.getText());
+        } else {
+            resourceId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+            idPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+        }
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.export.id");
+    }
 
 }

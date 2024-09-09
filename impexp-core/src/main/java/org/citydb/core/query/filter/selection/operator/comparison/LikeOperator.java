@@ -34,106 +34,106 @@ import org.citydb.core.query.filter.selection.expression.ExpressionName;
 import org.citydb.core.query.filter.selection.expression.ValueReference;
 
 public class LikeOperator extends AbstractComparisonOperator {
-	private Expression leftOperand;
-	private Expression rightOperand;
-	private String wildCard = "*";
-	private String singleCharacter = ".";
-	private String escapeCharacter = "\\";
-	private boolean matchCase = true;
+    private Expression leftOperand;
+    private Expression rightOperand;
+    private String wildCard = "*";
+    private String singleCharacter = ".";
+    private String escapeCharacter = "\\";
+    private boolean matchCase = true;
 
-	public LikeOperator(Expression leftOperand, Expression rightOperand) throws FilterException {
-		setLeftOperand(leftOperand);
-		setRightOperand(rightOperand);
-	}
-	
-	public boolean isSetLeftOperand() {
-		return leftOperand != null;
-	}
-		
-	public Expression getLeftOperand() {
-		return leftOperand;
-	}
-	
-	public void setLeftOperand(Expression leftOperand) throws FilterException {
-		if (leftOperand.getExpressionName() == ExpressionName.VALUE_REFERENCE 
-				&& ((ValueReference)leftOperand).getSchemaPath().getLastNode().getPathElement().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
-			throw new FilterException("The value reference of a like comparison must point to a simple thematic attribute.");
+    public LikeOperator(Expression leftOperand, Expression rightOperand) throws FilterException {
+        setLeftOperand(leftOperand);
+        setRightOperand(rightOperand);
+    }
 
-		this.leftOperand = leftOperand;
-	}
-	
-	public boolean isSetRightOperand() {
-		return rightOperand != null;
-	}
-	
-	public Expression getRightOperand() {
-		return rightOperand;
-	}
-	
-	public void setRightOperand(Expression rightOperand) throws FilterException {
-		if (rightOperand.getExpressionName() == ExpressionName.VALUE_REFERENCE 
-				&& ((ValueReference)rightOperand).getSchemaPath().getLastNode().getPathElement().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
-			throw new FilterException("The value reference of a like comparison must point to a simple thematic attribute.");
+    public boolean isSetLeftOperand() {
+        return leftOperand != null;
+    }
 
-		this.rightOperand = rightOperand;
-	}
-	
-	public Expression[] getOperands() {
-		Expression[] result = new Expression[2];
-		result[0] = leftOperand;
-		result[1] = rightOperand;
-		return result;
-	}
-	
-	public String getWildCard() {
-		return wildCard;
-	}
+    public Expression getLeftOperand() {
+        return leftOperand;
+    }
 
-	public void setWildCard(String wildCard) {
-		if (wildCard != null)
-			this.wildCard = wildCard;
-	}
+    public void setLeftOperand(Expression leftOperand) throws FilterException {
+        if (leftOperand.getExpressionName() == ExpressionName.VALUE_REFERENCE
+                && ((ValueReference) leftOperand).getSchemaPath().getLastNode().getPathElement().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
+            throw new FilterException("The value reference of a like comparison must point to a simple thematic attribute.");
 
-	public String getSingleCharacter() {
-		return singleCharacter;
-	}
+        this.leftOperand = leftOperand;
+    }
 
-	public void setSingleCharacter(String singleCharacter) {
-		if (singleCharacter != null)
-			this.singleCharacter = singleCharacter;
-	}
+    public boolean isSetRightOperand() {
+        return rightOperand != null;
+    }
 
-	public String getEscapeCharacter() {
-		return escapeCharacter;
-	}
+    public Expression getRightOperand() {
+        return rightOperand;
+    }
 
-	public void setEscapeCharacter(String escapeCharacter) {
-		if (escapeCharacter != null)
-			this.escapeCharacter = escapeCharacter;
-	}
+    public void setRightOperand(Expression rightOperand) throws FilterException {
+        if (rightOperand.getExpressionName() == ExpressionName.VALUE_REFERENCE
+                && ((ValueReference) rightOperand).getSchemaPath().getLastNode().getPathElement().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
+            throw new FilterException("The value reference of a like comparison must point to a simple thematic attribute.");
 
-	public boolean isMatchCase() {
-		return matchCase;
-	}
+        this.rightOperand = rightOperand;
+    }
 
-	public void setMatchCase(boolean matchCase) {
-		this.matchCase = matchCase;
-	}
+    public Expression[] getOperands() {
+        Expression[] result = new Expression[2];
+        result[0] = leftOperand;
+        result[1] = rightOperand;
+        return result;
+    }
 
-	@Override
-	public ComparisonOperatorName getOperatorName() {
-		return ComparisonOperatorName.LIKE;
-	}
+    public String getWildCard() {
+        return wildCard;
+    }
 
-	@Override
-	public LikeOperator copy() throws FilterException {
-		LikeOperator copy = new LikeOperator(leftOperand, rightOperand);
-		copy.wildCard = wildCard;
-		copy.singleCharacter = singleCharacter;
-		copy.escapeCharacter = escapeCharacter;
-		copy.matchCase = matchCase;
-		
-		return copy;
-	}
+    public void setWildCard(String wildCard) {
+        if (wildCard != null)
+            this.wildCard = wildCard;
+    }
+
+    public String getSingleCharacter() {
+        return singleCharacter;
+    }
+
+    public void setSingleCharacter(String singleCharacter) {
+        if (singleCharacter != null)
+            this.singleCharacter = singleCharacter;
+    }
+
+    public String getEscapeCharacter() {
+        return escapeCharacter;
+    }
+
+    public void setEscapeCharacter(String escapeCharacter) {
+        if (escapeCharacter != null)
+            this.escapeCharacter = escapeCharacter;
+    }
+
+    public boolean isMatchCase() {
+        return matchCase;
+    }
+
+    public void setMatchCase(boolean matchCase) {
+        this.matchCase = matchCase;
+    }
+
+    @Override
+    public ComparisonOperatorName getOperatorName() {
+        return ComparisonOperatorName.LIKE;
+    }
+
+    @Override
+    public LikeOperator copy() throws FilterException {
+        LikeOperator copy = new LikeOperator(leftOperand, rightOperand);
+        copy.wildCard = wildCard;
+        copy.singleCharacter = singleCharacter;
+        copy.escapeCharacter = escapeCharacter;
+        copy.matchCase = matchCase;
+
+        return copy;
+    }
 
 }

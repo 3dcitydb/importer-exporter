@@ -32,7 +32,7 @@ import org.citydb.config.project.resources.ThreadPool;
 import picocli.CommandLine;
 
 public class ThreadPoolOption implements CliOption {
-    @CommandLine.Option(names = "--worker-threads",  paramLabel = "<threads[,max]>",
+    @CommandLine.Option(names = "--worker-threads", paramLabel = "<threads[,max]>",
             description = "Number of worker threads to use.")
     private String threads;
 

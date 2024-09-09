@@ -33,48 +33,48 @@ import org.citydb.util.log.Logger;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class EventWorker extends Worker<Event> {
-	private final Logger log = Logger.getInstance();
-	private final ReentrantLock runLock = new ReentrantLock();
-	private volatile boolean shouldRun = true;
-	
-	private final EventDispatcher eventDispatcher;
+    private final Logger log = Logger.getInstance();
+    private final ReentrantLock runLock = new ReentrantLock();
+    private volatile boolean shouldRun = true;
 
-	public EventWorker(EventDispatcher eventDispatcher) {
-		this.eventDispatcher = eventDispatcher;
-	}
+    private final EventDispatcher eventDispatcher;
 
-	@Override
-	public void interrupt() {
-		shouldRun = false;
-	}
+    public EventWorker(EventDispatcher eventDispatcher) {
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public void run() {
-		if (firstWork != null) {
-			doWork(firstWork);
-			firstWork = null;
-		}
+    @Override
+    public void interrupt() {
+        shouldRun = false;
+    }
 
-		while (shouldRun) {
-			try {
-				Event work = workQueue.take();
-				doWork(work);
-			} catch (InterruptedException ie) {
-				// re-check state
-			}
-		}
-	}
+    @Override
+    public void run() {
+        if (firstWork != null) {
+            doWork(firstWork);
+            firstWork = null;
+        }
 
-	private void doWork(Event work) {
-		ReentrantLock runLock = this.runLock;
-		runLock.lock();
+        while (shouldRun) {
+            try {
+                Event work = workQueue.take();
+                doWork(work);
+            } catch (InterruptedException ie) {
+                // re-check state
+            }
+        }
+    }
 
-		try {
-			eventDispatcher.propagate(work);
-		} catch (Exception e) {
-			log.error("Internal message bus error.", e);
-		} finally {
-			runLock.unlock();
-		}
-	}
+    private void doWork(Event work) {
+        ReentrantLock runLock = this.runLock;
+        runLock.lock();
+
+        try {
+            eventDispatcher.propagate(work);
+        } catch (Exception e) {
+            log.error("Internal message bus error.", e);
+        } finally {
+            runLock.unlock();
+        }
+    }
 }

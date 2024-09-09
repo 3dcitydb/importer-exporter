@@ -45,7 +45,9 @@ public class ConsoleTextPane extends JTextPane {
             return getUI().getPreferredSize(this).width <= getParent().getSize().width;
         else
             return super.getScrollableTracksViewportWidth();
-    };
+    }
+
+    ;
 
     @Override
     public Dimension getPreferredSize() {
@@ -53,7 +55,9 @@ public class ConsoleTextPane extends JTextPane {
             return getUI().getPreferredSize(this);
         else
             return super.getPreferredSize();
-    };
+    }
+
+    ;
 
     public void setLineWrap(boolean lineWrap) {
         this.lineWrap = lineWrap;

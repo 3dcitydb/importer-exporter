@@ -45,66 +45,66 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 public class ProjectionFilterBuilder {
-	private final SchemaMapping schemaMapping;
+    private final SchemaMapping schemaMapping;
 
-	protected ProjectionFilterBuilder(SchemaMapping schemaMapping) {
-		this.schemaMapping = schemaMapping;
-	}
+    protected ProjectionFilterBuilder(SchemaMapping schemaMapping) {
+        this.schemaMapping = schemaMapping;
+    }
 
-	protected Projection buildProjectionFilter(org.citydb.config.project.query.filter.projection.ProjectionFilter projectionFilterConfig) throws QueryBuildException {
-		Projection projection = new Projection();
-		Map<AbstractObjectType<?>, ProjectionFilter> projectionFilters = new IdentityHashMap<>();
+    protected Projection buildProjectionFilter(org.citydb.config.project.query.filter.projection.ProjectionFilter projectionFilterConfig) throws QueryBuildException {
+        Projection projection = new Projection();
+        Map<AbstractObjectType<?>, ProjectionFilter> projectionFilters = new IdentityHashMap<>();
 
-		for (ProjectionContext context : projectionFilterConfig.getProjectionContexts()) {
-			// get feature type
-			QName typeName = context.getTypeName();
-			if (typeName == null)
-				throw new QueryBuildException("Failed to retrieve the qualified name of the object type.");
+        for (ProjectionContext context : projectionFilterConfig.getProjectionContexts()) {
+            // get feature type
+            QName typeName = context.getTypeName();
+            if (typeName == null)
+                throw new QueryBuildException("Failed to retrieve the qualified name of the object type.");
 
-			AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(typeName);
-			if (objectType == null)
-				throw new QueryBuildException("'" + typeName + "' is not a valid object type.");
+            AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(typeName);
+            if (objectType == null)
+                throw new QueryBuildException("'" + typeName + "' is not a valid object type.");
 
-			if (projectionFilters.containsKey(objectType))
-				throw new QueryBuildException("Multiple projection filters defined for '" + typeName + "'.");
-			
-			// get projection mode
-			ProjectionMode mode = null;
-			switch (context.getMode()) {
-			case KEEP:
-				mode = ProjectionMode.KEEP;
-				break;
-			case REMOVE:
-				mode = ProjectionMode.REMOVE;
-				break;
-			}
+            if (projectionFilters.containsKey(objectType))
+                throw new QueryBuildException("Multiple projection filters defined for '" + typeName + "'.");
 
-			// create projection filter for object type
-			ProjectionFilter projectionFilter = new ProjectionFilter(objectType, mode);
-			projectionFilters.put(objectType, projectionFilter);
+            // get projection mode
+            ProjectionMode mode = null;
+            switch (context.getMode()) {
+                case KEEP:
+                    mode = ProjectionMode.KEEP;
+                    break;
+                case REMOVE:
+                    mode = ProjectionMode.REMOVE;
+                    break;
+            }
 
-			try {				
-				// add properties and generic attributes
-				if (context.isSetPropertyNames()) {
-					for (AbstractPropertyName abstractPropertyName : context.getPropertyNames()) {
-						if (abstractPropertyName instanceof PropertyName)
-							projectionFilter.addProperty(((PropertyName) abstractPropertyName).getName());
+            // create projection filter for object type
+            ProjectionFilter projectionFilter = new ProjectionFilter(objectType, mode);
+            projectionFilters.put(objectType, projectionFilter);
 
-						else if (abstractPropertyName instanceof GenericAttributeName) {
-							GenericAttributeName name = (GenericAttributeName) abstractPropertyName;
-							CityGMLClass type = name.isSetType() ? name.getType().getCityGMLClass() : null;
-							projectionFilter.addGenericAttribute(name.getName(), type);
-						}
-					}
-				}
-			} catch (FilterException e) {
-				throw new QueryBuildException("Failed to build the projection filter.", e);
-			}
+            try {
+                // add properties and generic attributes
+                if (context.isSetPropertyNames()) {
+                    for (AbstractPropertyName abstractPropertyName : context.getPropertyNames()) {
+                        if (abstractPropertyName instanceof PropertyName)
+                            projectionFilter.addProperty(((PropertyName) abstractPropertyName).getName());
 
-			projection.addProjectionFilter(projectionFilter);
-		}
+                        else if (abstractPropertyName instanceof GenericAttributeName) {
+                            GenericAttributeName name = (GenericAttributeName) abstractPropertyName;
+                            CityGMLClass type = name.isSetType() ? name.getType().getCityGMLClass() : null;
+                            projectionFilter.addGenericAttribute(name.getName(), type);
+                        }
+                    }
+                }
+            } catch (FilterException e) {
+                throw new QueryBuildException("Failed to build the projection filter.", e);
+            }
 
-		return projection;
-	}
+            projection.addProjectionFilter(projectionFilter);
+        }
+
+        return projection;
+    }
 
 }

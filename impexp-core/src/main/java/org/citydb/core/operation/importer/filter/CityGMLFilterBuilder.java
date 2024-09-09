@@ -43,92 +43,92 @@ import org.citydb.core.operation.importer.filter.type.FeatureTypeFilter;
 import org.citydb.core.query.filter.FilterException;
 
 public class CityGMLFilterBuilder {
-	private final SchemaMapping schemaMapping;
-	private final AbstractDatabaseAdapter databaseAdapter;
-	
-	public CityGMLFilterBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) {
-		this.schemaMapping = schemaMapping;
-		this.databaseAdapter = databaseAdapter;
-	}
+    private final SchemaMapping schemaMapping;
+    private final AbstractDatabaseAdapter databaseAdapter;
 
-	public CityGMLFilter buildCityGMLFilter(ImportFilter filterConfig, CacheTable importListCacheTable) throws FilterException {
-		CityGMLFilter filter = new CityGMLFilter(schemaMapping);
+    public CityGMLFilterBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) {
+        this.schemaMapping = schemaMapping;
+        this.databaseAdapter = databaseAdapter;
+    }
 
-		// feature type filter
-		if (filterConfig.isUseTypeNames()) {
-			if (filterConfig.isSetFeatureTypeFilter() && !filterConfig.getFeatureTypeFilter().getTypeNames().isEmpty()) {
-				filter.setFeatureTypeFilter(new FeatureTypeFilter(filterConfig.getFeatureTypeFilter(), schemaMapping));
-			} else {
-				throw new FilterException("The feature type filter must not be empty.");
-			}
-		}
+    public CityGMLFilter buildCityGMLFilter(ImportFilter filterConfig, CacheTable importListCacheTable) throws FilterException {
+        CityGMLFilter filter = new CityGMLFilter(schemaMapping);
 
-		// simple attribute filter
-		if (filterConfig.isUseAttributeFilter() && filterConfig.isSetAttributeFilter()) {
-			SimpleAttributeFilter attributeFilterConfig = filterConfig.getAttributeFilter();
+        // feature type filter
+        if (filterConfig.isUseTypeNames()) {
+            if (filterConfig.isSetFeatureTypeFilter() && !filterConfig.getFeatureTypeFilter().getTypeNames().isEmpty()) {
+                filter.setFeatureTypeFilter(new FeatureTypeFilter(filterConfig.getFeatureTypeFilter(), schemaMapping));
+            } else {
+                throw new FilterException("The feature type filter must not be empty.");
+            }
+        }
 
-			// resource id filter
-			if (attributeFilterConfig.isSetResourceIdFilter()
-					&& attributeFilterConfig.getResourceIdFilter().isSetResourceIds()) {
-				filter.getSelectionFilter().setResourceIdFilter(new ResourceIdFilter(attributeFilterConfig.getResourceIdFilter()));
-			}
+        // simple attribute filter
+        if (filterConfig.isUseAttributeFilter() && filterConfig.isSetAttributeFilter()) {
+            SimpleAttributeFilter attributeFilterConfig = filterConfig.getAttributeFilter();
 
-			// name filter
-			if (attributeFilterConfig.isSetNameFilter() && attributeFilterConfig.getNameFilter().isSetLiteral()) {
-				LikeOperator likeOperator = attributeFilterConfig.getNameFilter();
-				if (!likeOperator.isSetWildCard() || likeOperator.getWildCard().length() > 1) {
-					throw new FilterException("Wildcards must be defined by a single character.");
-				}
+            // resource id filter
+            if (attributeFilterConfig.isSetResourceIdFilter()
+                    && attributeFilterConfig.getResourceIdFilter().isSetResourceIds()) {
+                filter.getSelectionFilter().setResourceIdFilter(new ResourceIdFilter(attributeFilterConfig.getResourceIdFilter()));
+            }
 
-				if (!likeOperator.isSetSingleCharacter() || likeOperator.getSingleCharacter().length() > 1) {
-					throw new FilterException("Wildcards must be defined by a single character.");
-				}
+            // name filter
+            if (attributeFilterConfig.isSetNameFilter() && attributeFilterConfig.getNameFilter().isSetLiteral()) {
+                LikeOperator likeOperator = attributeFilterConfig.getNameFilter();
+                if (!likeOperator.isSetWildCard() || likeOperator.getWildCard().length() > 1) {
+                    throw new FilterException("Wildcards must be defined by a single character.");
+                }
 
-				if (!likeOperator.isSetEscapeCharacter() || likeOperator.getEscapeCharacter().length() > 1) {
-					throw new FilterException("An escape character must be defined by a single character.");
-				}
+                if (!likeOperator.isSetSingleCharacter() || likeOperator.getSingleCharacter().length() > 1) {
+                    throw new FilterException("Wildcards must be defined by a single character.");
+                }
 
-				filter.getSelectionFilter().setNameFilter(new LikeFilter(attributeFilterConfig.getNameFilter()));
-			}
-		}
+                if (!likeOperator.isSetEscapeCharacter() || likeOperator.getEscapeCharacter().length() > 1) {
+                    throw new FilterException("An escape character must be defined by a single character.");
+                }
 
-		// import list filter
-		if (filterConfig.isUseImportListFilter() && filterConfig.isSetImportList()) {
-			filter.getSelectionFilter().setImportListFilter(new ImportListFilter(filterConfig.getImportList(), importListCacheTable));
-		}
+                filter.getSelectionFilter().setNameFilter(new LikeFilter(attributeFilterConfig.getNameFilter()));
+            }
+        }
 
-		// counter filter
-		if (filterConfig.isUseCountFilter() && filterConfig.isSetCounterFilter()) {
-			org.citydb.config.project.query.filter.counter.CounterFilter counterFilterConfig = filterConfig.getCounterFilter();
-			if (!counterFilterConfig.isSetCount() && !counterFilterConfig.isSetStartIndex()) {
-				throw new FilterException("Either count or startIndex must be defined for a counter filter.");
-			}
+        // import list filter
+        if (filterConfig.isUseImportListFilter() && filterConfig.isSetImportList()) {
+            filter.getSelectionFilter().setImportListFilter(new ImportListFilter(filterConfig.getImportList(), importListCacheTable));
+        }
 
-			CounterFilter counterFilter = new CounterFilter();
-			if (counterFilterConfig.isSetCount()) {
-				counterFilter.setCount(counterFilterConfig.getCount());
-			}
+        // counter filter
+        if (filterConfig.isUseCountFilter() && filterConfig.isSetCounterFilter()) {
+            org.citydb.config.project.query.filter.counter.CounterFilter counterFilterConfig = filterConfig.getCounterFilter();
+            if (!counterFilterConfig.isSetCount() && !counterFilterConfig.isSetStartIndex()) {
+                throw new FilterException("Either count or startIndex must be defined for a counter filter.");
+            }
 
-			if (counterFilterConfig.isSetStartIndex()) {
-				counterFilter.setStartIndex(counterFilterConfig.getStartIndex());
-			}
+            CounterFilter counterFilter = new CounterFilter();
+            if (counterFilterConfig.isSetCount()) {
+                counterFilter.setCount(counterFilterConfig.getCount());
+            }
 
-			filter.setCounterFilter(counterFilter);
-		}
+            if (counterFilterConfig.isSetStartIndex()) {
+                counterFilter.setStartIndex(counterFilterConfig.getStartIndex());
+            }
 
-		// bbox filter
-		if (filterConfig.isUseBboxFilter()) {
-			if (!filterConfig.getBboxFilter().isSetExtent()) {
-				throw new FilterException("The bounding box filter requires an " + GeometryType.ENVELOPE +
-						" as spatial operand.");
-			}
+            filter.setCounterFilter(counterFilter);
+        }
 
-			SimpleBBOXFilter bboxFilter = new SimpleBBOXFilter(filterConfig.getBboxFilter());
-			bboxFilter.transform(databaseAdapter.getConnectionMetaData().getReferenceSystem(), databaseAdapter);
-			filter.getSelectionFilter().setBboxFilter(bboxFilter);
-		}
+        // bbox filter
+        if (filterConfig.isUseBboxFilter()) {
+            if (!filterConfig.getBboxFilter().isSetExtent()) {
+                throw new FilterException("The bounding box filter requires an " + GeometryType.ENVELOPE +
+                        " as spatial operand.");
+            }
 
-		return filter;
-	}
-	
+            SimpleBBOXFilter bboxFilter = new SimpleBBOXFilter(filterConfig.getBboxFilter());
+            bboxFilter.transform(databaseAdapter.getConnectionMetaData().getReferenceSystem(), databaseAdapter);
+            filter.getSelectionFilter().setBboxFilter(bboxFilter);
+        }
+
+        return filter;
+    }
+
 }

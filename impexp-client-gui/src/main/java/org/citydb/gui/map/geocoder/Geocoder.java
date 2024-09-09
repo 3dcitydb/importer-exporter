@@ -41,85 +41,85 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Geocoder {
-	private static Geocoder instance;
-	private GeocodingService service;
+    private static Geocoder instance;
+    private GeocodingService service;
 
-	private Geocoder() {
-		// just to thwart instantiation
-		service = new OSMGeocoder();
-	}
+    private Geocoder() {
+        // just to thwart instantiation
+        service = new OSMGeocoder();
+    }
 
-	public static synchronized Geocoder getInstance() {
-		if (instance == null)
-			instance = new Geocoder();
+    public static synchronized Geocoder getInstance() {
+        if (instance == null)
+            instance = new Geocoder();
 
-		return instance;
-	}
+        return instance;
+    }
 
-	public GeocoderResult geocode(String address) throws GeocodingServiceException {
-		GeocoderResult result = parseLatLon(address);
-		if (result == null)
-			result = service.geocode(address);
+    public GeocoderResult geocode(String address) throws GeocodingServiceException {
+        GeocoderResult result = parseLatLon(address);
+        if (result == null)
+            result = service.geocode(address);
 
-		return result != null ? result : new GeocoderResult();
-	}
-	
-	public GeocoderResult lookupAddress(GeoPosition latlon, int zoomLevel) throws GeocodingServiceException {
-		GeocoderResult result = service.lookupAddress(latlon, zoomLevel);
-		return result != null ? result : new GeocoderResult();
-	}
+        return result != null ? result : new GeocoderResult();
+    }
 
-	public GeocodingServiceName getGeocodingServiceName() {
-		return service.getName();
-	}
+    public GeocoderResult lookupAddress(GeoPosition latlon, int zoomLevel) throws GeocodingServiceException {
+        GeocoderResult result = service.lookupAddress(latlon, zoomLevel);
+        return result != null ? result : new GeocoderResult();
+    }
 
-	public void setGeocodingService(GeocodingService service) {
-		if (service != null)
-			this.service = service;
-	}
+    public GeocodingServiceName getGeocodingServiceName() {
+        return service.getName();
+    }
 
-	private GeocoderResult parseLatLon(String search) {
-		// parse strings of form "longitude, latitude" where
-		// both longitude and latitude are decimal numbers
-		String separators = "(\\s*[,|;|\\s]\\s*?)";
-		String regex = "([-|\\+]?\\d{1,3}(\\.\\d+?)??)";
-		regex += separators;
-		regex += "([-|\\+]?\\d{1,2}(\\.\\d+?)??)";
+    public void setGeocodingService(GeocodingService service) {
+        if (service != null)
+            this.service = service;
+    }
 
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(search.trim());
+    private GeocoderResult parseLatLon(String search) {
+        // parse strings of form "longitude, latitude" where
+        // both longitude and latitude are decimal numbers
+        String separators = "(\\s*[,|;|\\s]\\s*?)";
+        String regex = "([-|\\+]?\\d{1,3}(\\.\\d+?)??)";
+        regex += separators;
+        regex += "([-|\\+]?\\d{1,2}(\\.\\d+?)??)";
 
-		if (matcher.matches()) {
-			GeocoderResult result = new GeocoderResult();
-			Location location = new Location();
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(search.trim());
 
-			try {
-				NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
-				double lat = format.parse(matcher.group(1)).doubleValue();
-				double lon = format.parse(matcher.group(4)).doubleValue();
+        if (matcher.matches()) {
+            GeocoderResult result = new GeocoderResult();
+            Location location = new Location();
 
-				if (Math.abs(lon) >= 180 || Math.abs(lat) >= 85)
-					return null;
+            try {
+                NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
+                double lat = format.parse(matcher.group(1)).doubleValue();
+                double lon = format.parse(matcher.group(4)).doubleValue();
 
-				double offset = 0.001349;
-				location.setPosition(new GeoPosition(lat, lon));
-				location.setViewPort(
-						new GeoPosition(lat - offset, lon - offset),
-						new GeoPosition(lat + offset, lon + offset));
+                if (Math.abs(lon) >= 180 || Math.abs(lat) >= 85)
+                    return null;
 
-				location.setFormattedAddress(MapWindow.LAT_LON_FORMATTER.format(location.getPosition().getLatitude())
-						+ ", " + MapWindow.LAT_LON_FORMATTER.format(location.getPosition().getLongitude()));
+                double offset = 0.001349;
+                location.setPosition(new GeoPosition(lat, lon));
+                location.setViewPort(
+                        new GeoPosition(lat - offset, lon - offset),
+                        new GeoPosition(lat + offset, lon + offset));
 
-				location.setLocationType(LocationType.PRECISE);
-				result.addLocation(location);
+                location.setFormattedAddress(MapWindow.LAT_LON_FORMATTER.format(location.getPosition().getLatitude())
+                        + ", " + MapWindow.LAT_LON_FORMATTER.format(location.getPosition().getLongitude()));
 
-				return result;
-			} catch (ParseException e) {
-				//
-			}
-		}
+                location.setLocationType(LocationType.PRECISE);
+                result.addLocation(location);
 
-		return null;
-	}
+                return result;
+            } catch (ParseException e) {
+                //
+            }
+        }
+
+        return null;
+    }
 
 }

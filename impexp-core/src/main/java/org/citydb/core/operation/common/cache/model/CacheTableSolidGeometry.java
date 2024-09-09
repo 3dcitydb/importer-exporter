@@ -30,25 +30,25 @@ package org.citydb.core.operation.common.cache.model;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 
 public class CacheTableSolidGeometry extends AbstractCacheTableModel {
-	public static CacheTableSolidGeometry instance = null;
-	
-	public synchronized static CacheTableSolidGeometry getInstance() {
-		if (instance == null)
-			instance = new CacheTableSolidGeometry();
-		
-		return instance;
-	}
+    public static CacheTableSolidGeometry instance = null;
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.SOLID_GEOMETRY;
-	}
-	
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"ID " + sqlAdapter.getBigInt() +
-				")";
-	}
+    public synchronized static CacheTableSolidGeometry getInstance() {
+        if (instance == null)
+            instance = new CacheTableSolidGeometry();
+
+        return instance;
+    }
+
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.SOLID_GEOMETRY;
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "ID " + sqlAdapter.getBigInt() +
+                ")";
+    }
 
 }

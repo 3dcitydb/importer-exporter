@@ -194,7 +194,7 @@ public class LoggingPanel extends InternalPreferencesComponent {
                 sub1.setLayout(new GridBagLayout());
                 {
                     sub1.add(logLevelFileLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
-                    sub1.add(logLevelFileCombo, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0,0));
+                    sub1.add(logLevelFileCombo, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
                 }
 
                 JPanel sub2 = new JPanel();

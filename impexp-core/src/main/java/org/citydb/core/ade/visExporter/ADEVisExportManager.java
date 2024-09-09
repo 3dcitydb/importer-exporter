@@ -28,6 +28,7 @@
 package org.citydb.core.ade.visExporter;
 
 public interface ADEVisExportManager {
-	void init(ADEVisExportHelper helper);
-	ADEVisExporter getVisExporter(int objectClassId) throws ADEVisExportException;
+    void init(ADEVisExportHelper helper);
+
+    ADEVisExporter getVisExporter(int objectClassId) throws ADEVisExportException;
 }

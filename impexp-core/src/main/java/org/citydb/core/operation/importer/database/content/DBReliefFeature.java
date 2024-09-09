@@ -42,97 +42,97 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBReliefFeature implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psReliefFeature;
-	private DBCityObject cityObjectImporter;
-	private DBReliefComponent reliefComponentImporter;
+    private PreparedStatement psReliefFeature;
+    private DBCityObject cityObjectImporter;
+    private DBReliefComponent reliefComponentImporter;
 
-	private boolean hasObjectClassIdColumn;
-	private int batchCounter;
+    private boolean hasObjectClassIdColumn;
+    private int batchCounter;
 
-	public DBReliefFeature(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
-		this.importer = importer;
+    public DBReliefFeature(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		String stmt = "insert into " + schema + ".relief_feature (id, lod" +
-				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
-				"values (?, ?" +
-				(hasObjectClassIdColumn ? ", ?)" : ")");
-		psReliefFeature = batchConn.prepareStatement(stmt);
+        String stmt = "insert into " + schema + ".relief_feature (id, lod" +
+                (hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+                "values (?, ?" +
+                (hasObjectClassIdColumn ? ", ?)" : ")");
+        psReliefFeature = batchConn.prepareStatement(stmt);
 
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
-		reliefComponentImporter = importer.getImporter(DBReliefComponent.class);
-	}
+        cityObjectImporter = importer.getImporter(DBCityObject.class);
+        reliefComponentImporter = importer.getImporter(DBReliefComponent.class);
+    }
 
-	protected long doImport(ReliefFeature reliefFeature) throws CityGMLImportException, SQLException {
-		FeatureType featureType = importer.getFeatureType(reliefFeature);
-		if (featureType == null)
-			throw new SQLException("Failed to retrieve feature type.");
+    protected long doImport(ReliefFeature reliefFeature) throws CityGMLImportException, SQLException {
+        FeatureType featureType = importer.getFeatureType(reliefFeature);
+        if (featureType == null)
+            throw new SQLException("Failed to retrieve feature type.");
 
-		// import city object information
-		long reliefFeatureId = cityObjectImporter.doImport(reliefFeature, featureType);
+        // import city object information
+        long reliefFeatureId = cityObjectImporter.doImport(reliefFeature, featureType);
 
-		// import relief feature information
-		// primary id
-		psReliefFeature.setLong(1, reliefFeatureId);
+        // import relief feature information
+        // primary id
+        psReliefFeature.setLong(1, reliefFeatureId);
 
-		// dem:lod
-		psReliefFeature.setInt(2, reliefFeature.getLod());
+        // dem:lod
+        psReliefFeature.setInt(2, reliefFeature.getLod());
 
-		// objectclass id
-		if (hasObjectClassIdColumn)
-			psReliefFeature.setLong(3, featureType.getObjectClassId());
+        // objectclass id
+        if (hasObjectClassIdColumn)
+            psReliefFeature.setLong(3, featureType.getObjectClassId());
 
-		psReliefFeature.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.RELIEF_FEATURE);
+        psReliefFeature.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.RELIEF_FEATURE);
 
-		// dem:eliefComponent
-		if (reliefFeature.isSetReliefComponent()) {
-			for (ReliefComponentProperty property : reliefFeature.getReliefComponent()) {
-				AbstractReliefComponent component = property.getReliefComponent();
+        // dem:eliefComponent
+        if (reliefFeature.isSetReliefComponent()) {
+            for (ReliefComponentProperty property : reliefFeature.getReliefComponent()) {
+                AbstractReliefComponent component = property.getReliefComponent();
 
-				if (component != null) {
-					if (component instanceof RasterRelief)
-						importer.logOrThrowErrorMessage(importer.getObjectSignature(reliefFeature) +
-								": Raster relief components are not supported.");
-					else
-						reliefComponentImporter.doImport(component, reliefFeature, reliefFeatureId);
-				} else {
-					String href = property.getHref();
-					if (href != null && href.length() != 0) {
-						importer.propagateXlink(new DBXlinkBasic(
-								TableEnum.RELIEF_FEAT_TO_REL_COMP.getName(),
-								reliefFeatureId,
-								"RELIEF_FEATURE_ID",
-								href,
-								"RELIEF_COMPONENT_ID"));
-					}
-				}
-			}
-		}
-		
-		// ADE-specific extensions
-		if (importer.hasADESupport())
-			importer.delegateToADEImporter(reliefFeature, reliefFeatureId, featureType);
+                if (component != null) {
+                    if (component instanceof RasterRelief)
+                        importer.logOrThrowErrorMessage(importer.getObjectSignature(reliefFeature) +
+                                ": Raster relief components are not supported.");
+                    else
+                        reliefComponentImporter.doImport(component, reliefFeature, reliefFeatureId);
+                } else {
+                    String href = property.getHref();
+                    if (href != null && href.length() != 0) {
+                        importer.propagateXlink(new DBXlinkBasic(
+                                TableEnum.RELIEF_FEAT_TO_REL_COMP.getName(),
+                                reliefFeatureId,
+                                "RELIEF_FEATURE_ID",
+                                href,
+                                "RELIEF_COMPONENT_ID"));
+                    }
+                }
+            }
+        }
 
-		return reliefFeatureId;
-	}
+        // ADE-specific extensions
+        if (importer.hasADESupport())
+            importer.delegateToADEImporter(reliefFeature, reliefFeatureId, featureType);
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psReliefFeature.executeBatch();
-			batchCounter = 0;
-		}
-	}
+        return reliefFeatureId;
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psReliefFeature.close();
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psReliefFeature.executeBatch();
+            batchCounter = 0;
+        }
+    }
+
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psReliefFeature.close();
+    }
 
 }

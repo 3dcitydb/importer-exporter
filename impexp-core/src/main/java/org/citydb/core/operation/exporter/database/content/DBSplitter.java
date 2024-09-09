@@ -94,511 +94,511 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class DBSplitter {
-	private final Logger log = Logger.getInstance();
-
-	private final WorkerPool<DBSplittingResult> dbWorkerPool;
-	private final Query query;
-	private final FeatureWriter writer;
-	private final IdCache featureGmlIdCache;
-	private final CacheTableManager cacheTableManager;
-	private final InternalConfig internalConfig;
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
-
-	private final DatabaseConnectionPool connectionPool;
-	private final AbstractDatabaseAdapter databaseAdapter;
-	private final String schema;
-	private final SchemaMapping schemaMapping;
-	private final SQLQueryBuilder builder;
-	private final boolean calculateExtent;
-
-	private List<MetadataProvider> metadataProviders;
-	private volatile boolean shouldRun = true;
-	private boolean calculateNumberMatched;
-	private long sequenceId;
-
-	public DBSplitter(FeatureWriter writer,
-			SchemaMapping schemaMapping,
-			WorkerPool<DBSplittingResult> dbWorkerPool, 
-			Query query,
-			IdCache featureGmlIdCache,
-			CacheTableManager cacheTableManager,
-			EventDispatcher eventDispatcher,
-			InternalConfig internalConfig,
-			Config config) throws SQLException {
-		this.writer = writer;
-		this.schemaMapping = schemaMapping;
-		this.dbWorkerPool = dbWorkerPool;
-		this.query = query;
-		this.featureGmlIdCache = featureGmlIdCache;
-		this.cacheTableManager = cacheTableManager;
-		this.eventDispatcher = eventDispatcher;
-		this.internalConfig = internalConfig;
-		this.config = config;
-
-		connectionPool = DatabaseConnectionPool.getInstance();
-		databaseAdapter = connectionPool.getActiveDatabaseAdapter();
-		schema = databaseAdapter.getConnectionDetails().getSchema();
-
-		GeneralOptions generalOptions = config.getExportConfig().getGeneralOptions();
-		calculateExtent = generalOptions.getEnvelope().isUseEnvelopeOnCityModel();
-		calculateNumberMatched = generalOptions.getComputeNumberMatched().isEnabled()
-				&& (CoreConstants.IS_GUI_MODE
-				|| !generalOptions.getComputeNumberMatched().isOnlyInGuiMode());
-
-		// create temporary table for global appearances if needed
-		if (internalConfig.getGlobalAppearanceMode() == InternalConfig.GlobalAppearanceMode.EXPORT) {
-			cacheTableManager.createCacheTable(CacheTableModel.GLOBAL_APPEARANCE, CacheMode.DATABASE);
-		}
-
-		BuildProperties buildProperties = BuildProperties.defaults()
-				.addProjectionColumn(MappingConstants.GMLID);
-
-		// add envelope column in case of tiled exports or if we must export the extent of the result set
-		if (query.isSetTiling() || calculateExtent)
-			buildProperties.addProjectionColumn(MappingConstants.ENVELOPE);
-
-		builder = new SQLQueryBuilder(
-				schemaMapping, 
-				databaseAdapter, 
-				buildProperties);
-	}
-
-	public List<MetadataProvider> getMetadataProviders() {
-		return metadataProviders;
-	}
-
-	public void setMetadataProviders(List<MetadataProvider> metadataProviders) {
-		this.metadataProviders = metadataProviders;
-	}
-
-	public boolean isCalculateNumberMatched() {
-		return calculateNumberMatched;
-	}
-
-	public void setCalculateNumberMatched(boolean calculateNumberMatched) {
-		this.calculateNumberMatched = calculateNumberMatched;
-	}
-
-	public void shutdown() {
-		shouldRun = false;
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
-	}
-
-	public void startQuery() throws SQLException, QueryBuildException, FilterException, FeatureWriteException {
-		Connection connection = null;
-		try {
-			connection = connectionPool.getConnection();
-			connection.setAutoCommit(false);
-
-			FeatureType cityObjectGroupType = schemaMapping.getFeatureType("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI());
-			Map<Long, DBSplittingResult> cityObjectGroups = new LinkedHashMap<>();
-			sequenceId = 0;
-
-			queryCityObject(cityObjectGroupType, cityObjectGroups, connection);
-
-			if (shouldRun) {
-				try {
-					dbWorkerPool.join();
-				} catch (InterruptedException e) {
-					//
-				}
-			}
-
-			if (!cityObjectGroups.isEmpty()) {
-				queryCityObjectGroups(cityObjectGroupType, cityObjectGroups, connection);
-
-				if (shouldRun) {
-					try {
-						dbWorkerPool.join();
-					} catch (InterruptedException e) {
-						//
-					}
-				}
-			}
-
-			if (internalConfig.getGlobalAppearanceMode() == InternalConfig.GlobalAppearanceMode.EXPORT
-					&& sequenceId > 0) {
-				queryGlobalAppearance();
-			}
-		} finally {
-			if (connection != null) {
-				connectionPool.closeAndRemoveConnection(connection);
-			}
-		}
-	}
-
-	private void queryCityObject(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups, Connection connection) throws SQLException, QueryBuildException, FeatureWriteException {
-		if (!shouldRun)
-			return;
-
-		if (query.getFeatureTypeFilter().isEmpty())
-			return;
-
-		// create query statement
-		Select select = builder.buildQuery(query);
-
-		// calculate hits
-		long hits = 0;
-		if (calculateNumberMatched) {
-			log.debug("Calculating the number of matching top-level features...");
-			hits = getNumberMatched(query, connection);
-		}
-
-		// add spatial extent
-		if (calculateExtent) {
-			Table table = new Table(select);
-			select = new Select().addProjection(table.getColumn(MappingConstants.ID))
-					.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-					.addProjection(table.getColumn(MappingConstants.GMLID))
-					.addProjection(new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geom_extent") +
-					"(" + table.getColumn(MappingConstants.ENVELOPE) + ") over", "extent"));
-			if (query.isSetTiling())
-				select.addProjection(table.getColumn(MappingConstants.ENVELOPE));
-		}
-
-		// issue query
-		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
-			 ResultSet rs = stmt.executeQuery()) {
-			if (rs.next()) {
-				if (calculateNumberMatched) {
-					log.info("Found " + hits + " top-level feature(s) matching the request.");
-
-					if (query.isSetCounterFilter() && query.getCounterFilter().isSetCount()) {
-						long count = query.getCounterFilter().getCount();
-						long startIndex = query.getCounterFilter().isSetStartIndex() ? query.getCounterFilter().getStartIndex() : 0;
-						long numberReturned = Math.min(Math.max(hits - startIndex, 0), count);
-						if (numberReturned < hits) {
-							log.info("Exporting " + numberReturned + " top-level feature(s) due to counter settings.");
-							hits = count;
-						}
-					}
-
-					if (query.isSetTiling())
-						log.info("The total number of exported features might be less due to tiling settings.");
-
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits));
-				}
-
-				if (calculateExtent) {
-					Object extentObj = rs.getObject("extent");
-					if (!rs.wasNull() && extentObj != null) {
-						GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
-						double[] coordinates = extent.getCoordinates(0);
-
-						if (query.isSetTiling() &&
-								config.getExportConfig().getGeneralOptions().getEnvelope().isUseTileExtentForCityModel()) {
-							BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
-							coordinates[0] = tileExtent.getLowerCorner().getX();
-							coordinates[1] = tileExtent.getLowerCorner().getY();
-							coordinates[3] = tileExtent.getUpperCorner().getX();
-							coordinates[4] = tileExtent.getUpperCorner().getY();
-						}
-
-						writer.getMetadata().setSpatialExtent(getSpatialExtent(extent));
-					}
-				}
-
-				writeDocumentHeader();
-
-				do {
-					long id = rs.getLong(MappingConstants.ID);
-					int objectClassId = rs.getInt(MappingConstants.OBJECTCLASS_ID);
-
-					AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
-					if (objectType == null) {
-						log.error("Failed to map the object class id '" + objectClassId + "' to an object type (ID: " + id + ").");
-						continue;
-					}
-
-					Object envelope = query.isSetTiling() ? rs.getObject(MappingConstants.ENVELOPE) : null;
-
-					if (objectType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
-						String gmlId = rs.getString(MappingConstants.GMLID);
-						cityObjectGroups.put(id, new DBSplittingResult(id, objectType, envelope));
-
-						// register group in gml:id cache
-						if (gmlId != null && gmlId.length() > 0)
-							featureGmlIdCache.put(gmlId, id, -1, false, null, objectClassId);
-
-						continue;
-					}
-
-					// set initial context...
-					DBSplittingResult splitter = new DBSplittingResult(id, objectType, envelope, sequenceId++);
-					dbWorkerPool.addWork(splitter);
-				} while (rs.next() && shouldRun);
-			} else {
-				log.info("No top-level feature matches the query expression.");
-
-				if (calculateExtent
-						&& query.isSetTiling()
-						&& config.getExportConfig().getGeneralOptions().getEnvelope().isUseTileExtentForCityModel()) {
-					BoundingBox extent = new BoundingBox(query.getTiling().getActiveTile().getExtent());
-					int srid = extent.isSetSrs() ?
-							extent.getSrs().getSrid() :
-							databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid();
-
-					GeometryObject extentObj = GeometryObject.createEnvelope(extent, 3, srid);
-					writer.getMetadata().setSpatialExtent(getSpatialExtent(extentObj));
-				}
-
-				writeDocumentHeader();
-			}
-		}
-	}
-
-	private void queryCityObjectGroups(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups, Connection connection) throws SQLException, FilterException, QueryBuildException {
-		if (!shouldRun)
-			return;
-
-		log.info("Processing CityObjectGroup features.");
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.group.msg")));
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
-
-		// first step: export group members
-		long hits = 0;
-		if (!config.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
-				&& query.getFeatureTypeFilter().size() == 1
-				&& query.getFeatureTypeFilter().getFeatureTypes().get(0).isEqualToOrSubTypeOf(cityObjectGroupType)) {
-
-			// prepare query for group members
-			Query groupQuery = new Query(query);
-
-			// add all feature types
-			groupQuery.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
-
-			// set generic spatial filter
-			if (groupQuery.isSetSelection()) {
-				Predicate predicate = groupQuery.getSelection().getGenericSpatialFilter(schemaMapping.getCommonSuperType(groupQuery.getFeatureTypeFilter().getFeatureTypes()));
-				groupQuery.setSelection(new SelectionFilter(predicate));
-			}
-
-			// unset sorting and counter settings
-			groupQuery.unsetSorting();
-			groupQuery.unsetCounterFilter();
-
-			// create query statement
-			Select select = builder.buildQuery(groupQuery);
-
-			// join group members
-			Table cityObject = new Table("cityobject", schema);
-			Table cityObjectGroup = new Table("cityobjectgroup", schema);
-			Table groupToCityObject = new Table("group_to_cityobject", schema);
-			LiteralList idLiteralList = new LiteralList(cityObjectGroups.keySet().toArray(new Long[0]));
-
-			select.addSelection(LogicalOperationFactory.AND(
-					ComparisonFactory.in((Column)select.getProjection().get(0), 
-							SetOperationFactory.union(
-									new Select()
-									.addProjection(cityObject.getColumn(MappingConstants.ID))
-									.addJoin(JoinFactory.inner(cityObject, MappingConstants.ID, ComparisonName.EQUAL_TO, groupToCityObject.getColumn("cityobject_id")))
-									.addSelection(ComparisonFactory.in(groupToCityObject.getColumn("cityobjectgroup_id"), idLiteralList)),
-									new Select()
-									.addProjection(cityObjectGroup.getColumn("parent_cityobject_id"))
-									.addSelection(ComparisonFactory.in(cityObjectGroup.getColumn(MappingConstants.ID), idLiteralList))
-									)),
-					ComparisonFactory.notIn((Column)select.getProjection().get(0), idLiteralList)));
-
-			// calculate hits
-			if (calculateNumberMatched) {
-				log.debug("Calculating the number of matching group members...");
-				hits = getNumberMatched(select, connection);
-			}
-
-			// issue query
-			try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
-				 ResultSet rs = stmt.executeQuery()) {
-				if (rs.next()) {
-					if (calculateNumberMatched) {
-						log.info("Found " + hits + " additional group member(s).");
-						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits + cityObjectGroups.size()));
-					}
-
-					do {
-						long id = rs.getLong(MappingConstants.ID);
-						int objectClassId = rs.getInt(MappingConstants.OBJECTCLASS_ID);
-
-						AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
-						if (objectType == null) {
-							log.error("Failed to map object class id '" + objectClassId + "' to an object type (ID: " + id + ").");
-							continue;
-						}
-
-						Object envelope = query.isSetTiling() ? rs.getObject(MappingConstants.ENVELOPE) : null;
-
-						if (objectType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
-							if (!cityObjectGroups.containsKey(id)) {
-								String gmlId = rs.getString(MappingConstants.GMLID);
-								cityObjectGroups.put(id, new DBSplittingResult(id, objectType, envelope));
-
-								// register group in gml:id cache
-								if (gmlId != null && gmlId.length() > 0)
-									featureGmlIdCache.put(gmlId, id, -1, false, null, objectClassId);
-							}
-
-							continue;
-						}
-
-						// set initial context...
-						DBSplittingResult splitter = new DBSplittingResult(id, objectType, envelope);
-						dbWorkerPool.addWork(splitter);
-					} while (rs.next() && shouldRun);
-				}
-			}
-
-			// wait for jobs to be done...
-			try {
-				dbWorkerPool.join();
-			} catch (InterruptedException e) {
-				//
-			}
-		}
-
-		// second step: export groups themselves
-		// we assume that all group members have been exported and their gml:ids
-		// are registered in the gml:id cache
-		if (calculateNumberMatched && hits == 0)
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, cityObjectGroups.size()));
-
-		for (Iterator<Entry<Long, DBSplittingResult>> iter = cityObjectGroups.entrySet().iterator(); shouldRun && iter.hasNext(); ) {
-			Entry<Long, DBSplittingResult> entry = iter.next();
-			DBSplittingResult splitter = new DBSplittingResult(entry.getValue(), sequenceId++);
-			dbWorkerPool.addWork(splitter);
-		}
-	}
-
-	private void queryGlobalAppearance() throws SQLException, QueryBuildException {
-		if (!shouldRun)
-			return;
-
-		log.info("Processing global appearance features.");
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.globalApp.msg")));
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
-
-		CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
-		globalAppTempTable.createIndexes();
-
-		Table appearance = new Table("appearance", schema);
-		Table appearToSurfaceData = new Table("appear_to_surface_data", schema);
-		Table surfaceData = new Table("surface_data", schema);
-		Table textureParam = new Table("textureparam", schema);
-		Table tempTable = new Table(globalAppTempTable.getTableName());
-
-		Select select = new Select().setDistinct(true)
-				.addProjection(appearance.getColumn(MappingConstants.ID))
-				.addJoin(JoinFactory.inner(appearToSurfaceData, "appearance_id", ComparisonName.EQUAL_TO, appearance.getColumn(MappingConstants.ID)))
-				.addJoin(JoinFactory.inner(surfaceData, MappingConstants.ID, ComparisonName.EQUAL_TO, appearToSurfaceData.getColumn("surface_data_id")))
-				.addJoin(JoinFactory.inner(textureParam, "surface_data_id", ComparisonName.EQUAL_TO, surfaceData.getColumn(MappingConstants.ID)))
-				.addJoin(JoinFactory.inner(tempTable, MappingConstants.ID, ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")))
-				.addSelection(ComparisonFactory.isNull(appearance.getColumn("cityobject_id")));
-
-		// add appearance theme filter
-		if (query.isSetAppearanceFilter()) {
-			PredicateToken predicate = new AppearanceFilterBuilder(databaseAdapter)
-					.buildAppearanceFilter(query.getAppearanceFilter(), appearance.getColumn("theme"));
-			select.addSelection(predicate);
-		}
-
-		// calculate hits
-		long hits = 0;
-		if (calculateNumberMatched) {
-			log.debug("Calculating the number of global appearances...");
-			hits = getNumberMatched(select, globalAppTempTable.getConnection());
-		}
-
-		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, globalAppTempTable.getConnection());
-			 ResultSet rs = stmt.executeQuery()) {
-			if (rs.next()) {
-				if (calculateNumberMatched) {
-					log.info("Found " + hits + " global appearance(s).");
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits));
-				}
-
-				FeatureType appearanceType = schemaMapping.getFeatureType("Appearance", AppearanceModule.v2_0_0.getNamespaceURI());
-				do {
-					long appearanceId = rs.getLong(1);
-
-					// send appearance to export workers
-					DBSplittingResult splitter = new DBSplittingResult(appearanceId, appearanceType);
-					dbWorkerPool.addWork(splitter);
-				} while (rs.next() && shouldRun);
-			}
-		}
-	}
-
-	private long getNumberMatched(Query query, Connection connection) throws QueryBuildException, SQLException {
-		Query hitsQuery = new Query(query);
-		hitsQuery.unsetCounterFilter();
-		hitsQuery.unsetSorting();
-
-		return getNumberMatched(builder.buildQuery(hitsQuery), connection);
-	}
-
-	private long getNumberMatched(Select select, Connection connection) throws SQLException {
-		Select hitsQuery = new Select(select)
-				.unsetOrderBy()
-				.removeProjectionIf(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
-
-		hitsQuery = new Select().addProjection(new Function("count", new WildCardColumn(new Table(hitsQuery), false)));
-		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(hitsQuery, connection);
-			 ResultSet rs = stmt.executeQuery()) {
-			return rs.next() ? rs.getLong(1) : 0;
-		}
-	}
-
-	private BoundingBox getSpatialExtent(GeometryObject extentObj) throws SQLException {
-		if (internalConfig.isTransformCoordinates()) {
-			extentObj = databaseAdapter.getUtil().transform(extentObj, query.getTargetSrs()).toEnvelope();
-		}
-
-		double[] coordinates = extentObj.getCoordinates(0);
-		return new BoundingBox(
-				new Position(coordinates[0], coordinates[1], coordinates[2]),
-				new Position(coordinates[3], coordinates[4], coordinates[5]),
-				query.getTargetSrs());
-	}
-
-	private void writeDocumentHeader() throws FeatureWriteException {
-		if (config.getExportConfig().getGeneralOptions().getDatasetName().isSetValue()) {
-			TileTokenValue name = config.getExportConfig().getGeneralOptions().getDatasetName();
-			writer.getMetadata().setDatasetName(replaceAndFormat(name));
-		}
-
-		if (config.getExportConfig().getGeneralOptions().getDatasetDescription().isSetValue()) {
-			TileTokenValue description = config.getExportConfig().getGeneralOptions().getDatasetDescription();
-			writer.getMetadata().setDatasetDescription(replaceAndFormat(description));
-		}
-
-		if (metadataProviders != null && !metadataProviders.isEmpty()) {
-			for (MetadataProvider metadataProvider : metadataProviders) {
-				try {
-					metadataProvider.setMetadata(writer.getMetadata(),
-							query.isSetTiling() ? query.getTiling().getActiveTile() : null,
-							config.getExportConfig());
-				} catch (PluginException e) {
-					throw new FeatureWriteException("Failed to set export metadata.", e);
-				}
-			}
-		}
-
-		writer.writeHeader();
-	}
-
-	private String replaceAndFormat(TileTokenValue value) {
-		int row, column;
-		if (query.isSetTiling()) {
-			Tile tile = query.getTiling().getActiveTile();
-			row = tile.getRow();
-			column = tile.getColumn();
-		} else {
-			row = column = 0;
-		}
-
-		BoundingBox extent = writer.getMetadata().isSetSpatialExtent() ?
-				writer.getMetadata().getSpatialExtent() :
-				new BoundingBox(new Position(0.0, 0.0), new Position(0.0, 0.0));
-
-		return value.formatAndResolveTokens(row, column, extent);
-	}
+    private final Logger log = Logger.getInstance();
+
+    private final WorkerPool<DBSplittingResult> dbWorkerPool;
+    private final Query query;
+    private final FeatureWriter writer;
+    private final IdCache featureGmlIdCache;
+    private final CacheTableManager cacheTableManager;
+    private final InternalConfig internalConfig;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
+
+    private final DatabaseConnectionPool connectionPool;
+    private final AbstractDatabaseAdapter databaseAdapter;
+    private final String schema;
+    private final SchemaMapping schemaMapping;
+    private final SQLQueryBuilder builder;
+    private final boolean calculateExtent;
+
+    private List<MetadataProvider> metadataProviders;
+    private volatile boolean shouldRun = true;
+    private boolean calculateNumberMatched;
+    private long sequenceId;
+
+    public DBSplitter(FeatureWriter writer,
+                      SchemaMapping schemaMapping,
+                      WorkerPool<DBSplittingResult> dbWorkerPool,
+                      Query query,
+                      IdCache featureGmlIdCache,
+                      CacheTableManager cacheTableManager,
+                      EventDispatcher eventDispatcher,
+                      InternalConfig internalConfig,
+                      Config config) throws SQLException {
+        this.writer = writer;
+        this.schemaMapping = schemaMapping;
+        this.dbWorkerPool = dbWorkerPool;
+        this.query = query;
+        this.featureGmlIdCache = featureGmlIdCache;
+        this.cacheTableManager = cacheTableManager;
+        this.eventDispatcher = eventDispatcher;
+        this.internalConfig = internalConfig;
+        this.config = config;
+
+        connectionPool = DatabaseConnectionPool.getInstance();
+        databaseAdapter = connectionPool.getActiveDatabaseAdapter();
+        schema = databaseAdapter.getConnectionDetails().getSchema();
+
+        GeneralOptions generalOptions = config.getExportConfig().getGeneralOptions();
+        calculateExtent = generalOptions.getEnvelope().isUseEnvelopeOnCityModel();
+        calculateNumberMatched = generalOptions.getComputeNumberMatched().isEnabled()
+                && (CoreConstants.IS_GUI_MODE
+                || !generalOptions.getComputeNumberMatched().isOnlyInGuiMode());
+
+        // create temporary table for global appearances if needed
+        if (internalConfig.getGlobalAppearanceMode() == InternalConfig.GlobalAppearanceMode.EXPORT) {
+            cacheTableManager.createCacheTable(CacheTableModel.GLOBAL_APPEARANCE, CacheMode.DATABASE);
+        }
+
+        BuildProperties buildProperties = BuildProperties.defaults()
+                .addProjectionColumn(MappingConstants.GMLID);
+
+        // add envelope column in case of tiled exports or if we must export the extent of the result set
+        if (query.isSetTiling() || calculateExtent)
+            buildProperties.addProjectionColumn(MappingConstants.ENVELOPE);
+
+        builder = new SQLQueryBuilder(
+                schemaMapping,
+                databaseAdapter,
+                buildProperties);
+    }
+
+    public List<MetadataProvider> getMetadataProviders() {
+        return metadataProviders;
+    }
+
+    public void setMetadataProviders(List<MetadataProvider> metadataProviders) {
+        this.metadataProviders = metadataProviders;
+    }
+
+    public boolean isCalculateNumberMatched() {
+        return calculateNumberMatched;
+    }
+
+    public void setCalculateNumberMatched(boolean calculateNumberMatched) {
+        this.calculateNumberMatched = calculateNumberMatched;
+    }
+
+    public void shutdown() {
+        shouldRun = false;
+        eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
+    }
+
+    public void startQuery() throws SQLException, QueryBuildException, FilterException, FeatureWriteException {
+        Connection connection = null;
+        try {
+            connection = connectionPool.getConnection();
+            connection.setAutoCommit(false);
+
+            FeatureType cityObjectGroupType = schemaMapping.getFeatureType("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI());
+            Map<Long, DBSplittingResult> cityObjectGroups = new LinkedHashMap<>();
+            sequenceId = 0;
+
+            queryCityObject(cityObjectGroupType, cityObjectGroups, connection);
+
+            if (shouldRun) {
+                try {
+                    dbWorkerPool.join();
+                } catch (InterruptedException e) {
+                    //
+                }
+            }
+
+            if (!cityObjectGroups.isEmpty()) {
+                queryCityObjectGroups(cityObjectGroupType, cityObjectGroups, connection);
+
+                if (shouldRun) {
+                    try {
+                        dbWorkerPool.join();
+                    } catch (InterruptedException e) {
+                        //
+                    }
+                }
+            }
+
+            if (internalConfig.getGlobalAppearanceMode() == InternalConfig.GlobalAppearanceMode.EXPORT
+                    && sequenceId > 0) {
+                queryGlobalAppearance();
+            }
+        } finally {
+            if (connection != null) {
+                connectionPool.closeAndRemoveConnection(connection);
+            }
+        }
+    }
+
+    private void queryCityObject(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups, Connection connection) throws SQLException, QueryBuildException, FeatureWriteException {
+        if (!shouldRun)
+            return;
+
+        if (query.getFeatureTypeFilter().isEmpty())
+            return;
+
+        // create query statement
+        Select select = builder.buildQuery(query);
+
+        // calculate hits
+        long hits = 0;
+        if (calculateNumberMatched) {
+            log.debug("Calculating the number of matching top-level features...");
+            hits = getNumberMatched(query, connection);
+        }
+
+        // add spatial extent
+        if (calculateExtent) {
+            Table table = new Table(select);
+            select = new Select().addProjection(table.getColumn(MappingConstants.ID))
+                    .addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
+                    .addProjection(table.getColumn(MappingConstants.GMLID))
+                    .addProjection(new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geom_extent") +
+                            "(" + table.getColumn(MappingConstants.ENVELOPE) + ") over", "extent"));
+            if (query.isSetTiling())
+                select.addProjection(table.getColumn(MappingConstants.ENVELOPE));
+        }
+
+        // issue query
+        try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                if (calculateNumberMatched) {
+                    log.info("Found " + hits + " top-level feature(s) matching the request.");
+
+                    if (query.isSetCounterFilter() && query.getCounterFilter().isSetCount()) {
+                        long count = query.getCounterFilter().getCount();
+                        long startIndex = query.getCounterFilter().isSetStartIndex() ? query.getCounterFilter().getStartIndex() : 0;
+                        long numberReturned = Math.min(Math.max(hits - startIndex, 0), count);
+                        if (numberReturned < hits) {
+                            log.info("Exporting " + numberReturned + " top-level feature(s) due to counter settings.");
+                            hits = count;
+                        }
+                    }
+
+                    if (query.isSetTiling())
+                        log.info("The total number of exported features might be less due to tiling settings.");
+
+                    eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits));
+                }
+
+                if (calculateExtent) {
+                    Object extentObj = rs.getObject("extent");
+                    if (!rs.wasNull() && extentObj != null) {
+                        GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
+                        double[] coordinates = extent.getCoordinates(0);
+
+                        if (query.isSetTiling() &&
+                                config.getExportConfig().getGeneralOptions().getEnvelope().isUseTileExtentForCityModel()) {
+                            BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
+                            coordinates[0] = tileExtent.getLowerCorner().getX();
+                            coordinates[1] = tileExtent.getLowerCorner().getY();
+                            coordinates[3] = tileExtent.getUpperCorner().getX();
+                            coordinates[4] = tileExtent.getUpperCorner().getY();
+                        }
+
+                        writer.getMetadata().setSpatialExtent(getSpatialExtent(extent));
+                    }
+                }
+
+                writeDocumentHeader();
+
+                do {
+                    long id = rs.getLong(MappingConstants.ID);
+                    int objectClassId = rs.getInt(MappingConstants.OBJECTCLASS_ID);
+
+                    AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
+                    if (objectType == null) {
+                        log.error("Failed to map the object class id '" + objectClassId + "' to an object type (ID: " + id + ").");
+                        continue;
+                    }
+
+                    Object envelope = query.isSetTiling() ? rs.getObject(MappingConstants.ENVELOPE) : null;
+
+                    if (objectType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
+                        String gmlId = rs.getString(MappingConstants.GMLID);
+                        cityObjectGroups.put(id, new DBSplittingResult(id, objectType, envelope));
+
+                        // register group in gml:id cache
+                        if (gmlId != null && gmlId.length() > 0)
+                            featureGmlIdCache.put(gmlId, id, -1, false, null, objectClassId);
+
+                        continue;
+                    }
+
+                    // set initial context...
+                    DBSplittingResult splitter = new DBSplittingResult(id, objectType, envelope, sequenceId++);
+                    dbWorkerPool.addWork(splitter);
+                } while (rs.next() && shouldRun);
+            } else {
+                log.info("No top-level feature matches the query expression.");
+
+                if (calculateExtent
+                        && query.isSetTiling()
+                        && config.getExportConfig().getGeneralOptions().getEnvelope().isUseTileExtentForCityModel()) {
+                    BoundingBox extent = new BoundingBox(query.getTiling().getActiveTile().getExtent());
+                    int srid = extent.isSetSrs() ?
+                            extent.getSrs().getSrid() :
+                            databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid();
+
+                    GeometryObject extentObj = GeometryObject.createEnvelope(extent, 3, srid);
+                    writer.getMetadata().setSpatialExtent(getSpatialExtent(extentObj));
+                }
+
+                writeDocumentHeader();
+            }
+        }
+    }
+
+    private void queryCityObjectGroups(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups, Connection connection) throws SQLException, FilterException, QueryBuildException {
+        if (!shouldRun)
+            return;
+
+        log.info("Processing CityObjectGroup features.");
+        eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.group.msg")));
+        eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
+
+        // first step: export group members
+        long hits = 0;
+        if (!config.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
+                && query.getFeatureTypeFilter().size() == 1
+                && query.getFeatureTypeFilter().getFeatureTypes().get(0).isEqualToOrSubTypeOf(cityObjectGroupType)) {
+
+            // prepare query for group members
+            Query groupQuery = new Query(query);
+
+            // add all feature types
+            groupQuery.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
+
+            // set generic spatial filter
+            if (groupQuery.isSetSelection()) {
+                Predicate predicate = groupQuery.getSelection().getGenericSpatialFilter(schemaMapping.getCommonSuperType(groupQuery.getFeatureTypeFilter().getFeatureTypes()));
+                groupQuery.setSelection(new SelectionFilter(predicate));
+            }
+
+            // unset sorting and counter settings
+            groupQuery.unsetSorting();
+            groupQuery.unsetCounterFilter();
+
+            // create query statement
+            Select select = builder.buildQuery(groupQuery);
+
+            // join group members
+            Table cityObject = new Table("cityobject", schema);
+            Table cityObjectGroup = new Table("cityobjectgroup", schema);
+            Table groupToCityObject = new Table("group_to_cityobject", schema);
+            LiteralList idLiteralList = new LiteralList(cityObjectGroups.keySet().toArray(new Long[0]));
+
+            select.addSelection(LogicalOperationFactory.AND(
+                    ComparisonFactory.in((Column) select.getProjection().get(0),
+                            SetOperationFactory.union(
+                                    new Select()
+                                            .addProjection(cityObject.getColumn(MappingConstants.ID))
+                                            .addJoin(JoinFactory.inner(cityObject, MappingConstants.ID, ComparisonName.EQUAL_TO, groupToCityObject.getColumn("cityobject_id")))
+                                            .addSelection(ComparisonFactory.in(groupToCityObject.getColumn("cityobjectgroup_id"), idLiteralList)),
+                                    new Select()
+                                            .addProjection(cityObjectGroup.getColumn("parent_cityobject_id"))
+                                            .addSelection(ComparisonFactory.in(cityObjectGroup.getColumn(MappingConstants.ID), idLiteralList))
+                            )),
+                    ComparisonFactory.notIn((Column) select.getProjection().get(0), idLiteralList)));
+
+            // calculate hits
+            if (calculateNumberMatched) {
+                log.debug("Calculating the number of matching group members...");
+                hits = getNumberMatched(select, connection);
+            }
+
+            // issue query
+            try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+                 ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    if (calculateNumberMatched) {
+                        log.info("Found " + hits + " additional group member(s).");
+                        eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits + cityObjectGroups.size()));
+                    }
+
+                    do {
+                        long id = rs.getLong(MappingConstants.ID);
+                        int objectClassId = rs.getInt(MappingConstants.OBJECTCLASS_ID);
+
+                        AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
+                        if (objectType == null) {
+                            log.error("Failed to map object class id '" + objectClassId + "' to an object type (ID: " + id + ").");
+                            continue;
+                        }
+
+                        Object envelope = query.isSetTiling() ? rs.getObject(MappingConstants.ENVELOPE) : null;
+
+                        if (objectType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
+                            if (!cityObjectGroups.containsKey(id)) {
+                                String gmlId = rs.getString(MappingConstants.GMLID);
+                                cityObjectGroups.put(id, new DBSplittingResult(id, objectType, envelope));
+
+                                // register group in gml:id cache
+                                if (gmlId != null && gmlId.length() > 0)
+                                    featureGmlIdCache.put(gmlId, id, -1, false, null, objectClassId);
+                            }
+
+                            continue;
+                        }
+
+                        // set initial context...
+                        DBSplittingResult splitter = new DBSplittingResult(id, objectType, envelope);
+                        dbWorkerPool.addWork(splitter);
+                    } while (rs.next() && shouldRun);
+                }
+            }
+
+            // wait for jobs to be done...
+            try {
+                dbWorkerPool.join();
+            } catch (InterruptedException e) {
+                //
+            }
+        }
+
+        // second step: export groups themselves
+        // we assume that all group members have been exported and their gml:ids
+        // are registered in the gml:id cache
+        if (calculateNumberMatched && hits == 0)
+            eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, cityObjectGroups.size()));
+
+        for (Iterator<Entry<Long, DBSplittingResult>> iter = cityObjectGroups.entrySet().iterator(); shouldRun && iter.hasNext(); ) {
+            Entry<Long, DBSplittingResult> entry = iter.next();
+            DBSplittingResult splitter = new DBSplittingResult(entry.getValue(), sequenceId++);
+            dbWorkerPool.addWork(splitter);
+        }
+    }
+
+    private void queryGlobalAppearance() throws SQLException, QueryBuildException {
+        if (!shouldRun)
+            return;
+
+        log.info("Processing global appearance features.");
+        eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.globalApp.msg")));
+        eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
+
+        CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
+        globalAppTempTable.createIndexes();
+
+        Table appearance = new Table("appearance", schema);
+        Table appearToSurfaceData = new Table("appear_to_surface_data", schema);
+        Table surfaceData = new Table("surface_data", schema);
+        Table textureParam = new Table("textureparam", schema);
+        Table tempTable = new Table(globalAppTempTable.getTableName());
+
+        Select select = new Select().setDistinct(true)
+                .addProjection(appearance.getColumn(MappingConstants.ID))
+                .addJoin(JoinFactory.inner(appearToSurfaceData, "appearance_id", ComparisonName.EQUAL_TO, appearance.getColumn(MappingConstants.ID)))
+                .addJoin(JoinFactory.inner(surfaceData, MappingConstants.ID, ComparisonName.EQUAL_TO, appearToSurfaceData.getColumn("surface_data_id")))
+                .addJoin(JoinFactory.inner(textureParam, "surface_data_id", ComparisonName.EQUAL_TO, surfaceData.getColumn(MappingConstants.ID)))
+                .addJoin(JoinFactory.inner(tempTable, MappingConstants.ID, ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")))
+                .addSelection(ComparisonFactory.isNull(appearance.getColumn("cityobject_id")));
+
+        // add appearance theme filter
+        if (query.isSetAppearanceFilter()) {
+            PredicateToken predicate = new AppearanceFilterBuilder(databaseAdapter)
+                    .buildAppearanceFilter(query.getAppearanceFilter(), appearance.getColumn("theme"));
+            select.addSelection(predicate);
+        }
+
+        // calculate hits
+        long hits = 0;
+        if (calculateNumberMatched) {
+            log.debug("Calculating the number of global appearances...");
+            hits = getNumberMatched(select, globalAppTempTable.getConnection());
+        }
+
+        try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, globalAppTempTable.getConnection());
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                if (calculateNumberMatched) {
+                    log.info("Found " + hits + " global appearance(s).");
+                    eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits));
+                }
+
+                FeatureType appearanceType = schemaMapping.getFeatureType("Appearance", AppearanceModule.v2_0_0.getNamespaceURI());
+                do {
+                    long appearanceId = rs.getLong(1);
+
+                    // send appearance to export workers
+                    DBSplittingResult splitter = new DBSplittingResult(appearanceId, appearanceType);
+                    dbWorkerPool.addWork(splitter);
+                } while (rs.next() && shouldRun);
+            }
+        }
+    }
+
+    private long getNumberMatched(Query query, Connection connection) throws QueryBuildException, SQLException {
+        Query hitsQuery = new Query(query);
+        hitsQuery.unsetCounterFilter();
+        hitsQuery.unsetSorting();
+
+        return getNumberMatched(builder.buildQuery(hitsQuery), connection);
+    }
+
+    private long getNumberMatched(Select select, Connection connection) throws SQLException {
+        Select hitsQuery = new Select(select)
+                .unsetOrderBy()
+                .removeProjectionIf(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
+
+        hitsQuery = new Select().addProjection(new Function("count", new WildCardColumn(new Table(hitsQuery), false)));
+        try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(hitsQuery, connection);
+             ResultSet rs = stmt.executeQuery()) {
+            return rs.next() ? rs.getLong(1) : 0;
+        }
+    }
+
+    private BoundingBox getSpatialExtent(GeometryObject extentObj) throws SQLException {
+        if (internalConfig.isTransformCoordinates()) {
+            extentObj = databaseAdapter.getUtil().transform(extentObj, query.getTargetSrs()).toEnvelope();
+        }
+
+        double[] coordinates = extentObj.getCoordinates(0);
+        return new BoundingBox(
+                new Position(coordinates[0], coordinates[1], coordinates[2]),
+                new Position(coordinates[3], coordinates[4], coordinates[5]),
+                query.getTargetSrs());
+    }
+
+    private void writeDocumentHeader() throws FeatureWriteException {
+        if (config.getExportConfig().getGeneralOptions().getDatasetName().isSetValue()) {
+            TileTokenValue name = config.getExportConfig().getGeneralOptions().getDatasetName();
+            writer.getMetadata().setDatasetName(replaceAndFormat(name));
+        }
+
+        if (config.getExportConfig().getGeneralOptions().getDatasetDescription().isSetValue()) {
+            TileTokenValue description = config.getExportConfig().getGeneralOptions().getDatasetDescription();
+            writer.getMetadata().setDatasetDescription(replaceAndFormat(description));
+        }
+
+        if (metadataProviders != null && !metadataProviders.isEmpty()) {
+            for (MetadataProvider metadataProvider : metadataProviders) {
+                try {
+                    metadataProvider.setMetadata(writer.getMetadata(),
+                            query.isSetTiling() ? query.getTiling().getActiveTile() : null,
+                            config.getExportConfig());
+                } catch (PluginException e) {
+                    throw new FeatureWriteException("Failed to set export metadata.", e);
+                }
+            }
+        }
+
+        writer.writeHeader();
+    }
+
+    private String replaceAndFormat(TileTokenValue value) {
+        int row, column;
+        if (query.isSetTiling()) {
+            Tile tile = query.getTiling().getActiveTile();
+            row = tile.getRow();
+            column = tile.getColumn();
+        } else {
+            row = column = 0;
+        }
+
+        BoundingBox extent = writer.getMetadata().isSetSpatialExtent() ?
+                writer.getMetadata().getSpatialExtent() :
+                new BoundingBox(new Position(0.0, 0.0), new Position(0.0, 0.0));
+
+        return value.formatAndResolveTokens(row, column, extent);
+    }
 }

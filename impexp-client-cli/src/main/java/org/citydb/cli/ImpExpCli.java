@@ -455,7 +455,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void initializeEnvironment(Config config)  {
+    private void initializeEnvironment(Config config) {
         // set internal proxy selector as default selector
         ProxySelector.setDefault(InternalProxySelector.getInstance());
 

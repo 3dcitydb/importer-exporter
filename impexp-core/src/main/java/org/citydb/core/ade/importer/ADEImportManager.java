@@ -37,9 +37,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public interface ADEImportManager {
-	public void init(Connection connection, CityGMLImportHelper helper) throws CityGMLImportException, SQLException;	
-	public void importObject(ADEModelObject object, long objectId, AbstractObjectType<?> objectType, ForeignKeys foreignKeys) throws CityGMLImportException, SQLException;
-	public void importGenericApplicationProperties(ADEPropertyCollection properties, AbstractFeature parent, long parentId, FeatureType parentType) throws CityGMLImportException, SQLException;
-	public void executeBatch(String tableName) throws CityGMLImportException, SQLException;
-	public void close() throws CityGMLImportException, SQLException;
+    public void init(Connection connection, CityGMLImportHelper helper) throws CityGMLImportException, SQLException;
+
+    public void importObject(ADEModelObject object, long objectId, AbstractObjectType<?> objectType, ForeignKeys foreignKeys) throws CityGMLImportException, SQLException;
+
+    public void importGenericApplicationProperties(ADEPropertyCollection properties, AbstractFeature parent, long parentId, FeatureType parentType) throws CityGMLImportException, SQLException;
+
+    public void executeBatch(String tableName) throws CityGMLImportException, SQLException;
+
+    public void close() throws CityGMLImportException, SQLException;
 }

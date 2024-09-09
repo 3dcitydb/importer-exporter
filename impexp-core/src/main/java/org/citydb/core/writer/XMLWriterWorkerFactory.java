@@ -34,16 +34,16 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
 
 public class XMLWriterWorkerFactory implements WorkerFactory<SAXEventBuffer> {
-	private final SAXWriter saxWriter;
-	private final EventDispatcher eventDispatcher;
+    private final SAXWriter saxWriter;
+    private final EventDispatcher eventDispatcher;
 
-	public XMLWriterWorkerFactory(SAXWriter saxWriter, EventDispatcher eventDispatcher) {
-		this.saxWriter = saxWriter;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public XMLWriterWorkerFactory(SAXWriter saxWriter, EventDispatcher eventDispatcher) {
+        this.saxWriter = saxWriter;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public Worker<SAXEventBuffer> createWorker() {
-		return new XMLWriterWorker(saxWriter, eventDispatcher);
-	}
+    @Override
+    public Worker<SAXEventBuffer> createWorker() {
+        return new XMLWriterWorker(saxWriter, eventDispatcher);
+    }
 }

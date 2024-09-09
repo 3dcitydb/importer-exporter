@@ -28,5 +28,5 @@
 package org.citydb.core.ade.visExporter;
 
 public interface ADEVisExportExtension extends ADEBalloonExtension {
-	ADEVisExportManager createADEVisExportManager();
+    ADEVisExportManager createADEVisExportManager();
 }

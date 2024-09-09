@@ -34,45 +34,45 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBXlinkImporterLinearRing implements DBXlinkImporter {
-	private final DBXlinkImporterManager xlinkImporterManager;
-	private PreparedStatement psLinearRing;
-	private int batchCounter;
+    private final DBXlinkImporterManager xlinkImporterManager;
+    private PreparedStatement psLinearRing;
+    private int batchCounter;
 
-	public DBXlinkImporterLinearRing(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
-		this.xlinkImporterManager = xlinkImporterManager;
+    public DBXlinkImporterLinearRing(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+        this.xlinkImporterManager = xlinkImporterManager;
 
-		psLinearRing = tempTable.getConnection().prepareStatement(new StringBuilder()
-		.append("insert into ").append(tempTable.getTableName())
-		.append(" (GMLID, PARENT_ID, RING_NO, REVERSE) values (?, ?, ?, ?)").toString());
-	}
+        psLinearRing = tempTable.getConnection().prepareStatement(new StringBuilder()
+                .append("insert into ").append(tempTable.getTableName())
+                .append(" (GMLID, PARENT_ID, RING_NO, REVERSE) values (?, ?, ?, ?)").toString());
+    }
 
-	public boolean insert(DBXlinkLinearRing xlinkEntry) throws SQLException {
-		psLinearRing.setString(1, xlinkEntry.getGmlId());
-		psLinearRing.setLong(2, xlinkEntry.getParentId());
-		psLinearRing.setInt(3, xlinkEntry.getRingNo());
-		psLinearRing.setInt(4, xlinkEntry.isReverse() ? 1 : 0);
+    public boolean insert(DBXlinkLinearRing xlinkEntry) throws SQLException {
+        psLinearRing.setString(1, xlinkEntry.getGmlId());
+        psLinearRing.setLong(2, xlinkEntry.getParentId());
+        psLinearRing.setInt(3, xlinkEntry.getRingNo());
+        psLinearRing.setInt(4, xlinkEntry.isReverse() ? 1 : 0);
 
-		psLinearRing.addBatch();
-		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
-			executeBatch();
+        psLinearRing.addBatch();
+        if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
+            executeBatch();
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psLinearRing.executeBatch();
-		batchCounter = 0;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psLinearRing.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psLinearRing.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        psLinearRing.close();
+    }
 
-	@Override
-	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.LINEAR_RING;
-	}
+    @Override
+    public DBXlinkImporterEnum getDBXlinkImporterType() {
+        return DBXlinkImporterEnum.LINEAR_RING;
+    }
 
 }

@@ -28,7 +28,9 @@
 package org.citydb.core.operation.common.xlink;
 
 public interface DBXlink {
-	DBXlinkEnum getXlinkType();
-	String getGmlId();
-	void setGmlId(String gmlId);
+    DBXlinkEnum getXlinkType();
+
+    String getGmlId();
+
+    void setGmlId(String gmlId);
 }

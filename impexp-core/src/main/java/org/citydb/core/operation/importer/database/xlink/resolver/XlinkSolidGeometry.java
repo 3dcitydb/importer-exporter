@@ -42,172 +42,172 @@ import java.util.List;
 import java.util.Map;
 
 public class XlinkSolidGeometry implements DBXlinkResolver {
-	private final Logger log = Logger.getInstance();
-	private final Connection connection;
-	private final DBXlinkResolverManager manager;
-	private final PreparedStatement psSelectSurfGeom;
-	private final PreparedStatement psUpdateSurfGeom;
-	private final int dbSrid;
+    private final Logger log = Logger.getInstance();
+    private final Connection connection;
+    private final DBXlinkResolverManager manager;
+    private final PreparedStatement psSelectSurfGeom;
+    private final PreparedStatement psUpdateSurfGeom;
+    private final int dbSrid;
 
-	private int batchCounter;
+    private int batchCounter;
 
-	public XlinkSolidGeometry(Connection connection, DBXlinkResolverManager manager) throws SQLException {
-		this.connection = connection;
-		this.manager = manager;
+    public XlinkSolidGeometry(Connection connection, DBXlinkResolverManager manager) throws SQLException {
+        this.connection = connection;
+        this.manager = manager;
 
-		dbSrid = manager.getDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		psSelectSurfGeom = connection.prepareStatement(manager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
-		String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+        dbSrid = manager.getDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
+        psSelectSurfGeom = connection.prepareStatement(manager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
+        String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder("update ").append(schema).append(".SURFACE_GEOMETRY set SOLID_GEOMETRY=");
-		if (manager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {
-			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
-			// thus, we have to use the database function ST_GeomFromEWKT to insert such geometries
-			// TODO: rework as soon as the JDBC driver supports PolyhedralSurface
-			stmt.append("ST_GeomFromEWKT(?) ");
-		} else
-			stmt.append("? ");
+        StringBuilder stmt = new StringBuilder("update ").append(schema).append(".SURFACE_GEOMETRY set SOLID_GEOMETRY=");
+        if (manager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {
+            // the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
+            // thus, we have to use the database function ST_GeomFromEWKT to insert such geometries
+            // TODO: rework as soon as the JDBC driver supports PolyhedralSurface
+            stmt.append("ST_GeomFromEWKT(?) ");
+        } else
+            stmt.append("? ");
 
-		stmt.append("where ID=?");
-		psUpdateSurfGeom = connection.prepareStatement(stmt.toString());
-	}
+        stmt.append("where ID=?");
+        psUpdateSurfGeom = connection.prepareStatement(stmt.toString());
+    }
 
-	public boolean insert(DBXlinkSolidGeometry xlink) throws SQLException {
-		GeometryNode root = read(xlink.getId());
-		if (root == null) {
-			log.error("Failed to read solid geometry with id '" + xlink.getId() + "'.");
-			return false;
-		}
+    public boolean insert(DBXlinkSolidGeometry xlink) throws SQLException {
+        GeometryNode root = read(xlink.getId());
+        if (root == null) {
+            log.error("Failed to read solid geometry with id '" + xlink.getId() + "'.");
+            return false;
+        }
 
-		// get solids from SURFACE_GEOMETRY as GeometryObject instances
-		List<GeometryObject> solids = new ArrayList<>();
-		rebuildSolids(root, solids, new ArrayList<>());
+        // get solids from SURFACE_GEOMETRY as GeometryObject instances
+        List<GeometryObject> solids = new ArrayList<>();
+        rebuildSolids(root, solids, new ArrayList<>());
 
-		if (!solids.isEmpty()) {
-			GeometryObject solidObj;
+        if (!solids.isEmpty()) {
+            GeometryObject solidObj;
 
-			if (!root.isComposite) 
-				solidObj = solids.get(0);
-			else {
-				GeometryObject[] tmp = new GeometryObject[solids.size()];
+            if (!root.isComposite)
+                solidObj = solids.get(0);
+            else {
+                GeometryObject[] tmp = new GeometryObject[solids.size()];
 
-				int i = 0;
-				for (GeometryObject solid : solids)
-					tmp[i++] = solid;
+                int i = 0;
+                for (GeometryObject solid : solids)
+                    tmp[i++] = solid;
 
-				solidObj = GeometryObject.createCompositeSolid(tmp, dbSrid);
-			}
+                solidObj = GeometryObject.createCompositeSolid(tmp, dbSrid);
+            }
 
-			if (solidObj != null) {
-				psUpdateSurfGeom.setObject(1, manager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(solidObj, connection));
-				psUpdateSurfGeom.setLong(2, xlink.getId());
-				psUpdateSurfGeom.addBatch();
-				if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
-					manager.executeBatch(this);
-			}
-		}
+            if (solidObj != null) {
+                psUpdateSurfGeom.setObject(1, manager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(solidObj, connection));
+                psUpdateSurfGeom.setLong(2, xlink.getId());
+                psUpdateSurfGeom.addBatch();
+                if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
+                    manager.executeBatch(this);
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	private void rebuildSolids(GeometryNode node, List<GeometryObject> solids, List<GeometryObject> surfaces) {
-		if (node.geometry != null)
-			surfaces.add(node.geometry);
+    private void rebuildSolids(GeometryNode node, List<GeometryObject> solids, List<GeometryObject> surfaces) {
+        if (node.geometry != null)
+            surfaces.add(node.geometry);
 
-		// visit child nodes depth-first
-		for (GeometryNode childNode : node.childNodes)
-			rebuildSolids(childNode, solids, surfaces);
+        // visit child nodes depth-first
+        for (GeometryNode childNode : node.childNodes)
+            rebuildSolids(childNode, solids, surfaces);
 
-		// rebuild solid geometry
-		if (node.isSolid && !node.isComposite) {
-			if (!surfaces.isEmpty()) {
-							
-				int nrOfRings = 0;			
-				for (GeometryObject surface : surfaces)
-					nrOfRings += surface.getNumElements();
+        // rebuild solid geometry
+        if (node.isSolid && !node.isComposite) {
+            if (!surfaces.isEmpty()) {
 
-				int[] exteriorRings = new int[surfaces.size()];
-				double[][] coordinates = new double[nrOfRings][];
+                int nrOfRings = 0;
+                for (GeometryObject surface : surfaces)
+                    nrOfRings += surface.getNumElements();
 
-				int ringNo = 0;
-				for (int i = 0; i < surfaces.size(); i++) {
-					GeometryObject surface = surfaces.get(i);
-					exteriorRings[i] = ringNo;
-					for (int j = 0; j < surface.getNumElements(); j++)
-						coordinates[ringNo + j] = surface.getCoordinates(j);
+                int[] exteriorRings = new int[surfaces.size()];
+                double[][] coordinates = new double[nrOfRings][];
 
-					ringNo += surface.getNumElements();
-				}
+                int ringNo = 0;
+                for (int i = 0; i < surfaces.size(); i++) {
+                    GeometryObject surface = surfaces.get(i);
+                    exteriorRings[i] = ringNo;
+                    for (int j = 0; j < surface.getNumElements(); j++)
+                        coordinates[ringNo + j] = surface.getCoordinates(j);
 
-				solids.add(GeometryObject.createSolid(coordinates, exteriorRings, dbSrid));
-				surfaces.clear();
-			}
-		}
-	}
+                    ringNo += surface.getNumElements();
+                }
 
-	private GeometryNode read(long rootId) throws SQLException {
-		psSelectSurfGeom.setLong(1, rootId);
+                solids.add(GeometryObject.createSolid(coordinates, exteriorRings, dbSrid));
+                surfaces.clear();
+            }
+        }
+    }
 
-		try (ResultSet rs = psSelectSurfGeom.executeQuery()) {
-			GeometryNode root = null;
-			Map<Long, GeometryNode> parentMap = new HashMap<>();
+    private GeometryNode read(long rootId) throws SQLException {
+        psSelectSurfGeom.setLong(1, rootId);
 
-			// rebuild geometry hierarchy
-			while (rs.next()) {
-				long id = rs.getLong("id");
-				long parentId = rs.getInt("parent_id");
+        try (ResultSet rs = psSelectSurfGeom.executeQuery()) {
+            GeometryNode root = null;
+            Map<Long, GeometryNode> parentMap = new HashMap<>();
 
-				// constructing a geometry node
-				GeometryNode geomNode = new GeometryNode();
-				geomNode.isSolid = rs.getBoolean("is_solid");
-				geomNode.isComposite = rs.getBoolean("is_composite");
+            // rebuild geometry hierarchy
+            while (rs.next()) {
+                long id = rs.getLong("id");
+                long parentId = rs.getInt("parent_id");
 
-				GeometryObject geometry = null;
-				Object object = rs.getObject("geometry");
-				if (!rs.wasNull() && object != null)
-					geometry = manager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
+                // constructing a geometry node
+                GeometryNode geomNode = new GeometryNode();
+                geomNode.isSolid = rs.getBoolean("is_solid");
+                geomNode.isComposite = rs.getBoolean("is_composite");
 
-				geomNode.geometry = geometry;
+                GeometryObject geometry = null;
+                Object object = rs.getObject("geometry");
+                if (!rs.wasNull() && object != null)
+                    geometry = manager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
 
-				if (root != null) {
-					GeometryNode parentNode = parentMap.get(parentId);
-					if (parentNode == null)
-						return null;
-					
-					parentNode.childNodes.add(geomNode);
-				} else
-					root = geomNode;
+                geomNode.geometry = geometry;
 
-				// make this node the parent for the next hierarchy level
-				if (geomNode.geometry == null)
-					parentMap.put(id, geomNode);			
-			}
+                if (root != null) {
+                    GeometryNode parentNode = parentMap.get(parentId);
+                    if (parentNode == null)
+                        return null;
 
-			return root;
-		}
-	}
+                    parentNode.childNodes.add(geomNode);
+                } else
+                    root = geomNode;
 
-	private static class GeometryNode {
-		private boolean isSolid;
-		private boolean isComposite;
-		private GeometryObject geometry;
-		private final List<GeometryNode> childNodes = new ArrayList<>();
-	}
+                // make this node the parent for the next hierarchy level
+                if (geomNode.geometry == null)
+                    parentMap.put(id, geomNode);
+            }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psUpdateSurfGeom.executeBatch();
-		batchCounter = 0;
-	}
+            return root;
+        }
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psSelectSurfGeom.close();
-		psUpdateSurfGeom.close();
-	}
+    private static class GeometryNode {
+        private boolean isSolid;
+        private boolean isComposite;
+        private GeometryObject geometry;
+        private final List<GeometryNode> childNodes = new ArrayList<>();
+    }
 
-	@Override
-	public DBXlinkResolverEnum getDBXlinkResolverType() {
-		return DBXlinkResolverEnum.SOLID_GEOMETRY;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psUpdateSurfGeom.executeBatch();
+        batchCounter = 0;
+    }
+
+    @Override
+    public void close() throws SQLException {
+        psSelectSurfGeom.close();
+        psUpdateSurfGeom.close();
+    }
+
+    @Override
+    public DBXlinkResolverEnum getDBXlinkResolverType() {
+        return DBXlinkResolverEnum.SOLID_GEOMETRY;
+    }
 }

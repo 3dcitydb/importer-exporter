@@ -36,65 +36,65 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class XlinkDeprecatedMaterial implements DBXlinkResolver {
-	private final DBXlinkResolverManager manager;
-	private final PreparedStatement psSurfaceData;
-	private final PreparedStatement psTextureParam;
+    private final DBXlinkResolverManager manager;
+    private final PreparedStatement psSurfaceData;
+    private final PreparedStatement psTextureParam;
 
-	private int batchCounter;
+    private int batchCounter;
 
-	public XlinkDeprecatedMaterial(Connection batchConn, DBXlinkResolverManager manager) throws SQLException {
-		this.manager = manager;
-		String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+    public XlinkDeprecatedMaterial(Connection batchConn, DBXlinkResolverManager manager) throws SQLException {
+        this.manager = manager;
+        String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		psSurfaceData = batchConn.prepareStatement("insert into " + schema + ".SURFACE_DATA (select ?, GMLID, " +
-				"GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, X3D_SHININESS, X3D_TRANSPARENCY, " +
-				"X3D_AMBIENT_INTENSITY, X3D_SPECULAR_COLOR, X3D_DIFFUSE_COLOR, X3D_EMISSIVE_COLOR, X3D_IS_SMOOTH, " +
-				"TEX_IMAGE_URI, TEX_IMAGE, TEX_MIME_TYPE, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, " +
-				"GT_PREFER_WORLDFILE, GT_ORIENTATION, GT_REFERENCE_POINT from " + schema + ".SURFACE_DATA where ID=?)");
+        psSurfaceData = batchConn.prepareStatement("insert into " + schema + ".SURFACE_DATA (select ?, GMLID, " +
+                "GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, X3D_SHININESS, X3D_TRANSPARENCY, " +
+                "X3D_AMBIENT_INTENSITY, X3D_SPECULAR_COLOR, X3D_DIFFUSE_COLOR, X3D_EMISSIVE_COLOR, X3D_IS_SMOOTH, " +
+                "TEX_IMAGE_URI, TEX_IMAGE, TEX_MIME_TYPE, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, " +
+                "GT_PREFER_WORLDFILE, GT_ORIENTATION, GT_REFERENCE_POINT from " + schema + ".SURFACE_DATA where ID=?)");
 
-		psTextureParam = batchConn.prepareStatement("insert into " + schema + ".TEXTUREPARAM (select ?, " +
-				"IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, ? " +
-				"from " + schema + ".TEXTUREPARAM where SURFACE_DATA_ID=?)");
-	}
+        psTextureParam = batchConn.prepareStatement("insert into " + schema + ".TEXTUREPARAM (select ?, " +
+                "IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, ? " +
+                "from " + schema + ".TEXTUREPARAM where SURFACE_DATA_ID=?)");
+    }
 
-	public boolean insert(DBXlinkDeprecatedMaterial xlink) throws SQLException {
-		IdCacheEntry surfaceDataEntry = manager.getObjectId(xlink.getGmlId());
-		if (surfaceDataEntry == null || surfaceDataEntry.getId() == -1)
-			return false;
+    public boolean insert(DBXlinkDeprecatedMaterial xlink) throws SQLException {
+        IdCacheEntry surfaceDataEntry = manager.getObjectId(xlink.getGmlId());
+        if (surfaceDataEntry == null || surfaceDataEntry.getId() == -1)
+            return false;
 
-		long newSurfaceDataId = manager.getDBId(SequenceEnum.SURFACE_DATA_ID_SEQ.getName());
+        long newSurfaceDataId = manager.getDBId(SequenceEnum.SURFACE_DATA_ID_SEQ.getName());
 
-		psSurfaceData.setLong(1, newSurfaceDataId);
-		psSurfaceData.setLong(2, surfaceDataEntry.getId());
-		psSurfaceData.addBatch();
+        psSurfaceData.setLong(1, newSurfaceDataId);
+        psSurfaceData.setLong(2, surfaceDataEntry.getId());
+        psSurfaceData.addBatch();
 
-		psTextureParam.setLong(1, xlink.getSurfaceGeometryId());
-		psTextureParam.setLong(2, newSurfaceDataId);
-		psTextureParam.setLong(3, surfaceDataEntry.getId());
-		psTextureParam.addBatch();
-		
-		if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
-			manager.executeBatch(this);
+        psTextureParam.setLong(1, xlink.getSurfaceGeometryId());
+        psTextureParam.setLong(2, newSurfaceDataId);
+        psTextureParam.setLong(3, surfaceDataEntry.getId());
+        psTextureParam.addBatch();
 
-		return true;
-	}
+        if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
+            manager.executeBatch(this);
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psSurfaceData.executeBatch();
-		psTextureParam.executeBatch();
-		batchCounter = 0;
-	}
+        return true;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psSurfaceData.close();
-		psTextureParam.close();
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psSurfaceData.executeBatch();
+        psTextureParam.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public DBXlinkResolverEnum getDBXlinkResolverType() {
-		return DBXlinkResolverEnum.XLINK_DEPRECATED_MATERIAL;
-	}
+    @Override
+    public void close() throws SQLException {
+        psSurfaceData.close();
+        psTextureParam.close();
+    }
+
+    @Override
+    public DBXlinkResolverEnum getDBXlinkResolverType() {
+        return DBXlinkResolverEnum.XLINK_DEPRECATED_MATERIAL;
+    }
 
 }

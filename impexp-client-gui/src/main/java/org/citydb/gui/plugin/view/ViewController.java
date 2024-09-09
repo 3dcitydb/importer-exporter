@@ -31,13 +31,21 @@ import javax.swing.*;
 import java.awt.*;
 
 public interface ViewController {
-	JFrame getTopFrame();
-	void clearConsole();
-	void setStatusText(String statusText);
-	void setDefaultStatus();
-	void errorMessage(String title, Object message);
-	int warnMessage(String title, Object message);
-	int showOptionDialog(String title, Object message, int optionType, int messageType);
-	int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType);
-	int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType, Object[] options, Object initialValue);
+    JFrame getTopFrame();
+
+    void clearConsole();
+
+    void setStatusText(String statusText);
+
+    void setDefaultStatus();
+
+    void errorMessage(String title, Object message);
+
+    int warnMessage(String title, Object message);
+
+    int showOptionDialog(String title, Object message, int optionType, int messageType);
+
+    int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType);
+
+    int showOptionDialog(Component parent, String title, Object message, int optionType, int messageType, Object[] options, Object initialValue);
 }

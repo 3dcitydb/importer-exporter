@@ -36,62 +36,62 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ADEBalloonExtensionManager {
-	private static ADEBalloonExtensionManager instance;
-	private final IdentityHashMap<ADEBalloonExtension, ADEBalloonManager> balloonManagers = new IdentityHashMap<>();
+    private static ADEBalloonExtensionManager instance;
+    private final IdentityHashMap<ADEBalloonExtension, ADEBalloonManager> balloonManagers = new IdentityHashMap<>();
 
-	public static synchronized ADEBalloonExtensionManager getInstance() {
-		if (instance == null)
-			instance = new ADEBalloonExtensionManager();
+    public static synchronized ADEBalloonExtensionManager getInstance() {
+        if (instance == null)
+            instance = new ADEBalloonExtensionManager();
 
-		return instance;
-	}
+        return instance;
+    }
 
-	public ADEBalloonExtension getBalloonExtension(ADEExtension extension) {
-		if (extension != null && extension.isEnabled() && extension instanceof ADEBalloonExtension)
-			return ((ADEBalloonExtension) extension);
+    public ADEBalloonExtension getBalloonExtension(ADEExtension extension) {
+        if (extension != null && extension.isEnabled() && extension instanceof ADEBalloonExtension)
+            return ((ADEBalloonExtension) extension);
 
-		return null;
-	}
+        return null;
+    }
 
-	public List<ADEExtension> getUnsupportedADEExtensions() {
-		return ADEExtensionManager.getInstance().getEnabledExtensions()
-				.stream().filter(ade -> getBalloonExtension(ade) == null)
-				.collect(Collectors.toList());
-	}
+    public List<ADEExtension> getUnsupportedADEExtensions() {
+        return ADEExtensionManager.getInstance().getEnabledExtensions()
+                .stream().filter(ade -> getBalloonExtension(ade) == null)
+                .collect(Collectors.toList());
+    }
 
-	public synchronized ADEBalloonManager getBalloonManager(ADEExtension adeExtension) {
-		ADEBalloonManager adeBalloonManager = null;
-		ADEBalloonExtension adeBalloonExtension = getBalloonExtension(adeExtension);
+    public synchronized ADEBalloonManager getBalloonManager(ADEExtension adeExtension) {
+        ADEBalloonManager adeBalloonManager = null;
+        ADEBalloonExtension adeBalloonExtension = getBalloonExtension(adeExtension);
 
-		if (adeBalloonExtension != null) {
-			adeBalloonManager = balloonManagers.get(adeBalloonExtension);
-			if (adeBalloonManager == null) {
-				adeBalloonManager = adeBalloonExtension.createBalloonManager();
-				if (adeBalloonManager != null)
-					balloonManagers.put(adeBalloonExtension, adeBalloonManager);
-			}
-		}
+        if (adeBalloonExtension != null) {
+            adeBalloonManager = balloonManagers.get(adeBalloonExtension);
+            if (adeBalloonManager == null) {
+                adeBalloonManager = adeBalloonExtension.createBalloonManager();
+                if (adeBalloonManager != null)
+                    balloonManagers.put(adeBalloonExtension, adeBalloonManager);
+            }
+        }
 
-		return adeBalloonManager;
-	}
+        return adeBalloonManager;
+    }
 
-	public ADEBalloonManager getBalloonManager(int objectClassId) throws ADEBalloonException {
-		ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId);
-		ADEBalloonManager adeBalloonManager = this.getBalloonManager(adeExtension);
-		if (adeBalloonManager == null) {
-			throw new ADEBalloonException("The Balloon-Export extension is not enabled " +
-					"for the ADE class '" + ObjectRegistry.getInstance().getSchemaMapping().getFeatureType(objectClassId).getPath() + "'.");
-		}
-		return adeBalloonManager;
-	}
+    public ADEBalloonManager getBalloonManager(int objectClassId) throws ADEBalloonException {
+        ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId);
+        ADEBalloonManager adeBalloonManager = this.getBalloonManager(adeExtension);
+        if (adeBalloonManager == null) {
+            throw new ADEBalloonException("The Balloon-Export extension is not enabled " +
+                    "for the ADE class '" + ObjectRegistry.getInstance().getSchemaMapping().getFeatureType(objectClassId).getPath() + "'.");
+        }
+        return adeBalloonManager;
+    }
 
-	public ADEBalloonManager getBalloonManager(String table) throws ADEBalloonException {
-		ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByTableName(table);
-		ADEBalloonManager adeBalloonManager = this.getBalloonManager(adeExtension);
-		if (adeBalloonManager == null) {
-			throw new ADEBalloonException("The ADE Balloon extension is not enabled for the ADE table '" + table + "'.");
-		}
-		return adeBalloonManager;
-	}
+    public ADEBalloonManager getBalloonManager(String table) throws ADEBalloonException {
+        ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByTableName(table);
+        ADEBalloonManager adeBalloonManager = this.getBalloonManager(adeExtension);
+        if (adeBalloonManager == null) {
+            throw new ADEBalloonException("The ADE Balloon extension is not enabled for the ADE table '" + table + "'.");
+        }
+        return adeBalloonManager;
+    }
 
 }

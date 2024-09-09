@@ -34,40 +34,40 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class CacheTableSurfaceGeometry extends AbstractCacheTableModel {
-	public static CacheTableSurfaceGeometry instance = null;
-	
-	public synchronized static CacheTableSurfaceGeometry getInstance() {
-		if (instance == null)
-			instance = new CacheTableSurfaceGeometry();
-		
-		return instance;
-	}
+    public static CacheTableSurfaceGeometry instance = null;
 
-	@Override
-	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		try (Statement stmt = conn.createStatement()) {
-			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (PARENT_ID) " + properties);
-			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (ROOT_ID) " + properties);
-		}
-	}
-	
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.SURFACE_GEOMETRY;
-	}
-	
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"ID " + sqlAdapter.getBigInt() + ", " +
-				"PARENT_ID " + sqlAdapter.getBigInt() + ", " +
-				"ROOT_ID " + sqlAdapter.getBigInt() + ", " +
-				"REVERSE " + sqlAdapter.getNumeric(1, 0) + ", " +
-				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"CITYOBJECT_ID " + sqlAdapter.getBigInt() + ", " +
-				"TABLE_NAME " + sqlAdapter.getCharacterVarying(64) + ", " +
-				"FROM_COLUMN " + sqlAdapter.getCharacterVarying(64) +
-				")";
-	}
+    public synchronized static CacheTableSurfaceGeometry getInstance() {
+        if (instance == null)
+            instance = new CacheTableSurfaceGeometry();
+
+        return instance;
+    }
+
+    @Override
+    public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (PARENT_ID) " + properties);
+            stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (ROOT_ID) " + properties);
+        }
+    }
+
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.SURFACE_GEOMETRY;
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "ID " + sqlAdapter.getBigInt() + ", " +
+                "PARENT_ID " + sqlAdapter.getBigInt() + ", " +
+                "ROOT_ID " + sqlAdapter.getBigInt() + ", " +
+                "REVERSE " + sqlAdapter.getNumeric(1, 0) + ", " +
+                "GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+                "CITYOBJECT_ID " + sqlAdapter.getBigInt() + ", " +
+                "TABLE_NAME " + sqlAdapter.getCharacterVarying(64) + ", " +
+                "FROM_COLUMN " + sqlAdapter.getCharacterVarying(64) +
+                ")";
+    }
 
 }

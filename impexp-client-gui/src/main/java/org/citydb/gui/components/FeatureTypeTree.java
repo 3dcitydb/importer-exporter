@@ -49,238 +49,238 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 public class FeatureTypeTree extends CheckboxTree {
-	private final SchemaMapping schemaMapping;
-	private final ADEExtensionManager adeManager;
+    private final SchemaMapping schemaMapping;
+    private final ADEExtensionManager adeManager;
 
-	private DefaultMutableTreeNode root;
-	private List<DefaultMutableTreeNode> leafs;
-	private CityGMLVersion version;
+    private DefaultMutableTreeNode root;
+    private List<DefaultMutableTreeNode> leafs;
+    private CityGMLVersion version;
 
-	public FeatureTypeTree(Predicate<ADEExtension> adeFilter) {
-		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
-		adeManager = ADEExtensionManager.getInstance();
-		populate(adeFilter);
-		getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE_UP_UNCHECK);
-	}
+    public FeatureTypeTree(Predicate<ADEExtension> adeFilter) {
+        schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+        adeManager = ADEExtensionManager.getInstance();
+        populate(adeFilter);
+        getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE_UP_UNCHECK);
+    }
 
-	public FeatureTypeTree(boolean withADESupport) {
-		this(e -> withADESupport);
-	}
+    public FeatureTypeTree(boolean withADESupport) {
+        this(e -> withADESupport);
+    }
 
-	public FeatureTypeTree() {
-		this(true);
-	}
+    public FeatureTypeTree() {
+        this(true);
+    }
 
-	public FeatureTypeTree(CityGMLVersion version, boolean withADESupport) {
-		this(withADESupport);
-		this.version = version;
-	}
+    public FeatureTypeTree(CityGMLVersion version, boolean withADESupport) {
+        this(withADESupport);
+        this.version = version;
+    }
 
-	public FeatureTypeTree(CityGMLVersion version, Predicate<ADEExtension> adeFilter) {
-		this(adeFilter);
-		this.version = version;
-	}
+    public FeatureTypeTree(CityGMLVersion version, Predicate<ADEExtension> adeFilter) {
+        this(adeFilter);
+        this.version = version;
+    }
 
-	public FeatureTypeTree(CityGMLVersion version) {
-		this(version, true);
-	}
+    public FeatureTypeTree(CityGMLVersion version) {
+        this(version, true);
+    }
 
-	public void updateCityGMLVersion(CityGMLVersion version, boolean refresh) {
-		this.version = version;
-		if (refresh) {
-			setPathsEnabled(true);
-			repaint();
-		}
-	}
+    public void updateCityGMLVersion(CityGMLVersion version, boolean refresh) {
+        this.version = version;
+        if (refresh) {
+            setPathsEnabled(true);
+            repaint();
+        }
+    }
 
-	public List<FeatureType> getFeatureTypes() {
-		List<FeatureType> featureTypes = new ArrayList<>();
-		for (DefaultMutableTreeNode leaf : leafs) {
-			featureTypes.add((FeatureType) leaf.getUserObject());
-		}
+    public List<FeatureType> getFeatureTypes() {
+        List<FeatureType> featureTypes = new ArrayList<>();
+        for (DefaultMutableTreeNode leaf : leafs) {
+            featureTypes.add((FeatureType) leaf.getUserObject());
+        }
 
-		return featureTypes;
-	}
+        return featureTypes;
+    }
 
-	public List<FeatureType> getSelectedFeatureTypes() {
-		List<FeatureType> selection = new ArrayList<>();
-		for (DefaultMutableTreeNode leaf : leafs) {
-			TreePath path = new TreePath(leaf.getPath());
-			if (getCheckingModel().isPathChecked(path))
-				selection.add((FeatureType) leaf.getUserObject());
-		}
+    public List<FeatureType> getSelectedFeatureTypes() {
+        List<FeatureType> selection = new ArrayList<>();
+        for (DefaultMutableTreeNode leaf : leafs) {
+            TreePath path = new TreePath(leaf.getPath());
+            if (getCheckingModel().isPathChecked(path))
+                selection.add((FeatureType) leaf.getUserObject());
+        }
 
-		return selection;
-	}
+        return selection;
+    }
 
-	public List<QName> getSelectedTypeNames() {
-		List<QName> selection = new ArrayList<>();
-		for (FeatureType featureType : getSelectedFeatureTypes()) {
-			if (version != null) {
-				Namespace namespace = featureType.getSchema().getNamespace(version);
-				if (namespace != null) {
-					selection.add(new QName(namespace.getURI(), featureType.getPath()));
-					continue;
-				}
-			}
+    public List<QName> getSelectedTypeNames() {
+        List<QName> selection = new ArrayList<>();
+        for (FeatureType featureType : getSelectedFeatureTypes()) {
+            if (version != null) {
+                Namespace namespace = featureType.getSchema().getNamespace(version);
+                if (namespace != null) {
+                    selection.add(new QName(namespace.getURI(), featureType.getPath()));
+                    continue;
+                }
+            }
 
-			for (Namespace namespace : featureType.getSchema().getNamespaces()) {
-				selection.add(new QName(namespace.getURI(), featureType.getPath()));
-			}
-		}
+            for (Namespace namespace : featureType.getSchema().getNamespaces()) {
+                selection.add(new QName(namespace.getURI(), featureType.getPath()));
+            }
+        }
 
-		return selection;
-	}
+        return selection;
+    }
 
-	public void setSelected(Set<QName> typeNames) {
-		if (typeNames != null) {
-			for (QName name : typeNames) {
-				FeatureType featureType = schemaMapping.getFeatureType(name);
-				if (featureType != null) {
-					setSelected(featureType);
-				}
-			}
-		}
-	}
+    public void setSelected(Set<QName> typeNames) {
+        if (typeNames != null) {
+            for (QName name : typeNames) {
+                FeatureType featureType = schemaMapping.getFeatureType(name);
+                if (featureType != null) {
+                    setSelected(featureType);
+                }
+            }
+        }
+    }
 
-	public void setSelected(FeatureType featureType) {
-		for (DefaultMutableTreeNode node : leafs) {
-			if (node.getUserObject() == featureType) {
-				getCheckingModel().addCheckingPath(new TreePath(node.getPath()));
-				propagateBottomUp(node, true, true);
-			}
-		}
-	}
+    public void setSelected(FeatureType featureType) {
+        for (DefaultMutableTreeNode node : leafs) {
+            if (node.getUserObject() == featureType) {
+                getCheckingModel().addCheckingPath(new TreePath(node.getPath()));
+                propagateBottomUp(node, true, true);
+            }
+        }
+    }
 
-	public void setPathsEnabled(boolean enable) {
-		for (DefaultMutableTreeNode leaf : leafs) {
-			boolean canEnable = enable && canBeEnabled((FeatureType)leaf.getUserObject());			
-			getCheckingModel().setPathEnabled(new TreePath(leaf.getPath()), canEnable);
-			propagateBottomUp(leaf, false, canEnable);
-		}
+    public void setPathsEnabled(boolean enable) {
+        for (DefaultMutableTreeNode leaf : leafs) {
+            boolean canEnable = enable && canBeEnabled((FeatureType) leaf.getUserObject());
+            getCheckingModel().setPathEnabled(new TreePath(leaf.getPath()), canEnable);
+            propagateBottomUp(leaf, false, canEnable);
+        }
 
-		getCheckingModel().setPathEnabled(new TreePath(root), enable);
-	}
+        getCheckingModel().setPathEnabled(new TreePath(root), enable);
+    }
 
-	public void setPathEnabled(String name, String namespaceURI, boolean enable) {
-		FeatureType featureType = schemaMapping.getFeatureType(name, namespaceURI);
-		if (featureType != null) {
-			setPathEnabled(featureType, enable);
-		}
-	}
+    public void setPathEnabled(String name, String namespaceURI, boolean enable) {
+        FeatureType featureType = schemaMapping.getFeatureType(name, namespaceURI);
+        if (featureType != null) {
+            setPathEnabled(featureType, enable);
+        }
+    }
 
-	public void setPathEnabled(FeatureType featureType, boolean enable) {
-		if (enable && !canBeEnabled(featureType)) {
-			return;
-		}
+    public void setPathEnabled(FeatureType featureType, boolean enable) {
+        if (enable && !canBeEnabled(featureType)) {
+            return;
+        }
 
-		for (DefaultMutableTreeNode leaf : leafs) {
-			if (leaf.getUserObject() == featureType) {
-				getCheckingModel().setPathEnabled(new TreePath(leaf.getPath()), enable);
-				propagateBottomUp(leaf, false, enable);
-			}
-		}
-	}
+        for (DefaultMutableTreeNode leaf : leafs) {
+            if (leaf.getUserObject() == featureType) {
+                getCheckingModel().setPathEnabled(new TreePath(leaf.getPath()), enable);
+                propagateBottomUp(leaf, false, enable);
+            }
+        }
+    }
 
-	private boolean canBeEnabled(FeatureType featureType) {
-		return version == null || featureType.isAvailableForCityGML(version);
-	}
+    private boolean canBeEnabled(FeatureType featureType) {
+        return version == null || featureType.isAvailableForCityGML(version);
+    }
 
-	private void propagateBottomUp(DefaultMutableTreeNode node, boolean isSelection, boolean enable) {
-		DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
-		if (parent == root) {
-			return;
-		}
+    private void propagateBottomUp(DefaultMutableTreeNode node, boolean isSelection, boolean enable) {
+        DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+        if (parent == root) {
+            return;
+        }
 
-		boolean allEnabled = enable;
-		for (int i = 0; i < parent.getChildCount(); ++i) {
-			DefaultMutableTreeNode child = (DefaultMutableTreeNode) parent.getChildAt(i);
-			TreePath path = new TreePath(child.getPath());
-			boolean check = isSelection ? getCheckingModel().isPathChecked(path) : getCheckingModel().isPathEnabled(path);
-			if (check != enable) {
-				allEnabled = !enable;
-				break;
-			}
-		}
+        boolean allEnabled = enable;
+        for (int i = 0; i < parent.getChildCount(); ++i) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) parent.getChildAt(i);
+            TreePath path = new TreePath(child.getPath());
+            boolean check = isSelection ? getCheckingModel().isPathChecked(path) : getCheckingModel().isPathEnabled(path);
+            if (check != enable) {
+                allEnabled = !enable;
+                break;
+            }
+        }
 
-		if (allEnabled == enable) {
-			TreePath path = new TreePath(parent.getPath());
-			if (isSelection) {
-				getCheckingModel().addCheckingPath(path);
-			} else {
-				getCheckingModel().setPathEnabled(path, enable);
-			}
+        if (allEnabled == enable) {
+            TreePath path = new TreePath(parent.getPath());
+            if (isSelection) {
+                getCheckingModel().addCheckingPath(path);
+            } else {
+                getCheckingModel().setPathEnabled(path, enable);
+            }
 
-			propagateBottomUp(parent, isSelection, enable);
-		}
-	}	
+            propagateBottomUp(parent, isSelection, enable);
+        }
+    }
 
-	private void populate(Predicate<ADEExtension> adeFilter) {
-		root = new DefaultMutableTreeNode("CityObject");
-		leafs = new ArrayList<>();
+    private void populate(Predicate<ADEExtension> adeFilter) {
+        root = new DefaultMutableTreeNode("CityObject");
+        leafs = new ArrayList<>();
 
-		root.add(getCityGMLModuleNode(BridgeModule.v2_0_0));
-		root.add(getCityGMLModuleNode(BuildingModule.v2_0_0));
-		root.add(getCityGMLModuleNode(CityFurnitureModule.v2_0_0));
-		root.add(getCityGMLModuleNode(CityObjectGroupModule.v2_0_0));
-		root.add(getCityGMLModuleNode(GenericsModule.v2_0_0));
-		root.add(getCityGMLModuleNode(LandUseModule.v2_0_0));
-		root.add(getCityGMLModuleNode(ReliefModule.v2_0_0));
-		root.add(getCityGMLModuleNode(TransportationModule.v2_0_0));
-		root.add(getCityGMLModuleNode(TunnelModule.v2_0_0));
-		root.add(getCityGMLModuleNode(VegetationModule.v2_0_0));
-		root.add(getCityGMLModuleNode(WaterBodyModule.v2_0_0));
+        root.add(getCityGMLModuleNode(BridgeModule.v2_0_0));
+        root.add(getCityGMLModuleNode(BuildingModule.v2_0_0));
+        root.add(getCityGMLModuleNode(CityFurnitureModule.v2_0_0));
+        root.add(getCityGMLModuleNode(CityObjectGroupModule.v2_0_0));
+        root.add(getCityGMLModuleNode(GenericsModule.v2_0_0));
+        root.add(getCityGMLModuleNode(LandUseModule.v2_0_0));
+        root.add(getCityGMLModuleNode(ReliefModule.v2_0_0));
+        root.add(getCityGMLModuleNode(TransportationModule.v2_0_0));
+        root.add(getCityGMLModuleNode(TunnelModule.v2_0_0));
+        root.add(getCityGMLModuleNode(VegetationModule.v2_0_0));
+        root.add(getCityGMLModuleNode(WaterBodyModule.v2_0_0));
 
-		if (adeFilter != null) {
-			for (DefaultMutableTreeNode adeNode : getADENodes(adeFilter)) {
-				root.add(adeNode);
-			}
-		}
+        if (adeFilter != null) {
+            for (DefaultMutableTreeNode adeNode : getADENodes(adeFilter)) {
+                root.add(adeNode);
+            }
+        }
 
-		((DefaultTreeModel) getModel()).setRoot(root);
-	}
+        ((DefaultTreeModel) getModel()).setRoot(root);
+    }
 
-	private DefaultMutableTreeNode getCityGMLModuleNode(CityGMLModule module) {
-		DefaultMutableTreeNode node = new DefaultMutableTreeNode(module.getType());
+    private DefaultMutableTreeNode getCityGMLModuleNode(CityGMLModule module) {
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode(module.getType());
 
-		AppSchema schema = schemaMapping.getSchema(module.getNamespaceURI());
-		if (schema != null) {
-			for (FeatureType featureType : schema.listTopLevelFeatureTypes(true)) {
-				DefaultMutableTreeNode child = new DefaultMutableTreeNode(featureType);
-				node.add(child);
-				leafs.add(child);
-			}
-		}
+        AppSchema schema = schemaMapping.getSchema(module.getNamespaceURI());
+        if (schema != null) {
+            for (FeatureType featureType : schema.listTopLevelFeatureTypes(true)) {
+                DefaultMutableTreeNode child = new DefaultMutableTreeNode(featureType);
+                node.add(child);
+                leafs.add(child);
+            }
+        }
 
-		return node;
-	}
+        return node;
+    }
 
-	private List<DefaultMutableTreeNode> getADENodes(Predicate<ADEExtension> adeFilter) {
-		List<DefaultMutableTreeNode> adeNodes = new ArrayList<>();
+    private List<DefaultMutableTreeNode> getADENodes(Predicate<ADEExtension> adeFilter) {
+        List<DefaultMutableTreeNode> adeNodes = new ArrayList<>();
 
-		for (ADEExtension extension : adeManager.getExtensions()) {
-			if (adeFilter.test(extension)) {
-				DefaultMutableTreeNode adeNode = new DefaultMutableTreeNode(extension.getMetadata().getName());
+        for (ADEExtension extension : adeManager.getExtensions()) {
+            if (adeFilter.test(extension)) {
+                DefaultMutableTreeNode adeNode = new DefaultMutableTreeNode(extension.getMetadata().getName());
 
-				for (AppSchema schema : extension.getSchemas()) {
-					for (FeatureType featureType : schema.listTopLevelFeatureTypes(true)) {
-						DefaultMutableTreeNode child = new DefaultMutableTreeNode(featureType);
-						adeNode.add(child);
-						leafs.add(child);
-					}
-				}
+                for (AppSchema schema : extension.getSchemas()) {
+                    for (FeatureType featureType : schema.listTopLevelFeatureTypes(true)) {
+                        DefaultMutableTreeNode child = new DefaultMutableTreeNode(featureType);
+                        adeNode.add(child);
+                        leafs.add(child);
+                    }
+                }
 
-				if (adeNode.getChildCount() > 0) {
-					adeNodes.add(adeNode);
-				}
-			}
-		}
+                if (adeNode.getChildCount() > 0) {
+                    adeNodes.add(adeNode);
+                }
+            }
+        }
 
-		return adeNodes;
-	}
+        return adeNodes;
+    }
 
-	@Override
-	public Dimension getMinimumSize() {
-		return getPreferredSize();
-	}
+    @Override
+    public Dimension getMinimumSize() {
+        return getPreferredSize();
+    }
 }

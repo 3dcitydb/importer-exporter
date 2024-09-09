@@ -33,13 +33,13 @@ import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 
 public class StylingPanel extends DefaultPreferencesEntry {
 
-	public StylingPanel() {
-		super(EmptyPreferencesComponent.getInstance());
-	}
+    public StylingPanel() {
+        super(EmptyPreferencesComponent.getInstance());
+    }
 
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.visExport.styling");
-	}
-	
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.visExport.styling");
+    }
+
 }

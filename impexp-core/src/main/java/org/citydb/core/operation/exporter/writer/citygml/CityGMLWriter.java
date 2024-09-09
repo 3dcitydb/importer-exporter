@@ -72,201 +72,201 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXResult;
 
 public class CityGMLWriter implements FeatureWriter, EventHandler {
-	private final SingleWorkerPool<SAXEventBuffer> writerPool;
-	private final SAXWriter saxWriter;
-	private final CityGMLBuilder cityGMLBuilder;
-	private final JAXBMarshaller jaxbMarshaller;
-	private final CityGMLVersion version;
-	private final TransformerChainFactory transformerChainFactory;
-	private final boolean useSequentialWriting;
-	private final EventDispatcher eventDispatcher;
+    private final SingleWorkerPool<SAXEventBuffer> writerPool;
+    private final SAXWriter saxWriter;
+    private final CityGMLBuilder cityGMLBuilder;
+    private final JAXBMarshaller jaxbMarshaller;
+    private final CityGMLVersion version;
+    private final TransformerChainFactory transformerChainFactory;
+    private final boolean useSequentialWriting;
+    private final EventDispatcher eventDispatcher;
 
-	private volatile boolean headerWritten = false;
-	private Metadata metadata;
+    private volatile boolean headerWritten = false;
+    private Metadata metadata;
 
-	private SequentialWriter<SAXEventBuffer> sequentialWriter;
+    private SequentialWriter<SAXEventBuffer> sequentialWriter;
 
-	CityGMLWriter(SAXWriter saxWriter, CityGMLVersion version, TransformerChainFactory transformerChainFactory, boolean useSequentialWriting, Object eventChannel) {
-		this.saxWriter = saxWriter;
-		this.version = version;
-		this.transformerChainFactory = transformerChainFactory;
-		this.useSequentialWriting = useSequentialWriting;
+    CityGMLWriter(SAXWriter saxWriter, CityGMLVersion version, TransformerChainFactory transformerChainFactory, boolean useSequentialWriting, Object eventChannel) {
+        this.saxWriter = saxWriter;
+        this.version = version;
+        this.transformerChainFactory = transformerChainFactory;
+        this.useSequentialWriting = useSequentialWriting;
 
-		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
-		jaxbMarshaller = cityGMLBuilder.createJAXBMarshaller(version);
+        cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
+        jaxbMarshaller = cityGMLBuilder.createJAXBMarshaller(version);
 
-		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+        eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+        eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		writerPool = new SingleWorkerPool<>(
-				"citygml_writer_pool",
-				new XMLWriterWorkerFactory(saxWriter, eventDispatcher),
-				100,
-				false);
+        writerPool = new SingleWorkerPool<>(
+                "citygml_writer_pool",
+                new XMLWriterWorkerFactory(saxWriter, eventDispatcher),
+                100,
+                false);
 
-		writerPool.setEventSource(eventChannel);
-		writerPool.prestartCoreWorkers();
+        writerPool.setEventSource(eventChannel);
+        writerPool.prestartCoreWorkers();
 
-		if (useSequentialWriting)
-			sequentialWriter = new SequentialWriter<>(writerPool);
-	}
+        if (useSequentialWriting)
+            sequentialWriter = new SequentialWriter<>(writerPool);
+    }
 
-	@Override
-	public void useIndentation(boolean useIndentation) {
-		saxWriter.setIndentString(useIndentation ? "  " : "");
-	}
+    @Override
+    public void useIndentation(boolean useIndentation) {
+        saxWriter.setIndentString(useIndentation ? "  " : "");
+    }
 
-	@Override
-	public Metadata getMetadata() {
-		if (metadata == null)
-			metadata = new Metadata();
+    @Override
+    public Metadata getMetadata() {
+        if (metadata == null)
+            metadata = new Metadata();
 
-		return metadata;
-	}
+        return metadata;
+    }
 
-	@Override
-	public void writeHeader() throws FeatureWriteException {
-		headerWritten = true;
-		writeCityModel(WriteMode.HEAD);
-	}
+    @Override
+    public void writeHeader() throws FeatureWriteException {
+        headerWritten = true;
+        writeCityModel(WriteMode.HEAD);
+    }
 
-	private void writeEndDocument() throws FeatureWriteException {
-		if (!headerWritten)
-			writeHeader();
+    private void writeEndDocument() throws FeatureWriteException {
+        if (!headerWritten)
+            writeHeader();
 
-		writeCityModel(WriteMode.TAIL);
-	}
+        writeCityModel(WriteMode.TAIL);
+    }
 
-	@Override
-	public void write(AbstractFeature feature, long sequenceId) throws FeatureWriteException {
-		FeatureProperty<? extends AbstractFeature> member;
+    @Override
+    public void write(AbstractFeature feature, long sequenceId) throws FeatureWriteException {
+        FeatureProperty<? extends AbstractFeature> member;
 
-		// wrap feature with a feature property element
-		if (feature instanceof AbstractCityObject) {
-			member = new CityObjectMember();
-			((CityObjectMember)member).setCityObject((AbstractCityObject)feature);
-		} else if (feature instanceof Appearance) {
-			member = new AppearanceMember();
-			((AppearanceMember)member).setAppearance((Appearance)feature);
-		} else {
-			member = new FeatureMember();
-			((FeatureMember)member).setFeature(feature);
-		}
+        // wrap feature with a feature property element
+        if (feature instanceof AbstractCityObject) {
+            member = new CityObjectMember();
+            ((CityObjectMember) member).setCityObject((AbstractCityObject) feature);
+        } else if (feature instanceof Appearance) {
+            member = new AppearanceMember();
+            ((AppearanceMember) member).setAppearance((Appearance) feature);
+        } else {
+            member = new FeatureMember();
+            ((FeatureMember) member).setFeature(feature);
+        }
 
-		SAXEventBuffer buffer = new SAXEventBuffer();
-		try {
-			JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(member);
-			if (jaxbElement != null) {
-				Marshaller marshaller = cityGMLBuilder.getJAXBContext().createMarshaller();
-				marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+        SAXEventBuffer buffer = new SAXEventBuffer();
+        try {
+            JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(member);
+            if (jaxbElement != null) {
+                Marshaller marshaller = cityGMLBuilder.getJAXBContext().createMarshaller();
+                marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 
-				if (transformerChainFactory == null)
-					marshaller.marshal(jaxbElement, buffer);
-				else {
-					TransformerChain chain = transformerChainFactory.buildChain();
-					chain.tail().setResult(new SAXResult(buffer));
-					chain.head().startDocument();
-					marshaller.marshal(jaxbElement, chain.head());
-					chain.head().endDocument();
-				}
-			}
-		} catch (JAXBException | SAXException | TransformerConfigurationException e) {
-			throw new FeatureWriteException("Failed to write feature with gml:id '" + feature.getId() + "'.", e);
-		}
+                if (transformerChainFactory == null)
+                    marshaller.marshal(jaxbElement, buffer);
+                else {
+                    TransformerChain chain = transformerChainFactory.buildChain();
+                    chain.tail().setResult(new SAXResult(buffer));
+                    chain.head().startDocument();
+                    marshaller.marshal(jaxbElement, chain.head());
+                    chain.head().endDocument();
+                }
+            }
+        } catch (JAXBException | SAXException | TransformerConfigurationException e) {
+            throw new FeatureWriteException("Failed to write feature with gml:id '" + feature.getId() + "'.", e);
+        }
 
-		if (buffer.isEmpty())
-			throw new FeatureWriteException("Failed to write feature with gml:id '" + feature.getId() + "'.");
+        if (buffer.isEmpty())
+            throw new FeatureWriteException("Failed to write feature with gml:id '" + feature.getId() + "'.");
 
-		if (!useSequentialWriting)
-			writerPool.addWork(buffer);
-		else {
-			try {
-				sequentialWriter.write(buffer, sequenceId);
-			} catch (InterruptedException e) {
-				throw new FeatureWriteException("Failed to write feature with gml:id '" + feature.getId() + "'.", e);
-			}
-		}
-	}
+        if (!useSequentialWriting)
+            writerPool.addWork(buffer);
+        else {
+            try {
+                sequentialWriter.write(buffer, sequenceId);
+            } catch (InterruptedException e) {
+                throw new FeatureWriteException("Failed to write feature with gml:id '" + feature.getId() + "'.", e);
+            }
+        }
+    }
 
-	@Override
-	public void updateSequenceId(long sequenceId) throws FeatureWriteException {
-		if (useSequentialWriting) {
-			try {
-				sequentialWriter.updateSequenceId(sequenceId);
-			} catch (InterruptedException e) {
-				throw new FeatureWriteException("Failed to update sequence id.", e);
-			}
-		}
-	}
+    @Override
+    public void updateSequenceId(long sequenceId) throws FeatureWriteException {
+        if (useSequentialWriting) {
+            try {
+                sequentialWriter.updateSequenceId(sequenceId);
+            } catch (InterruptedException e) {
+                throw new FeatureWriteException("Failed to update sequence id.", e);
+            }
+        }
+    }
 
-	@Override
-	public void close() throws FeatureWriteException {
-		try {
-			if (useSequentialWriting && sequentialWriter.isInterrupted())
-				sequentialWriter.writeCache();
+    @Override
+    public void close() throws FeatureWriteException {
+        try {
+            if (useSequentialWriting && sequentialWriter.isInterrupted())
+                sequentialWriter.writeCache();
 
-			writerPool.shutdownAndWait();
-			writeEndDocument();
-			saxWriter.close();
-		} catch (Throwable e) {
-			throw new FeatureWriteException("Failed to close CityGML writer.", e);
-		} finally {
-			if (!writerPool.isTerminated())
-				writerPool.shutdownNow();
+            writerPool.shutdownAndWait();
+            writeEndDocument();
+            saxWriter.close();
+        } catch (Throwable e) {
+            throw new FeatureWriteException("Failed to close CityGML writer.", e);
+        } finally {
+            if (!writerPool.isTerminated())
+                writerPool.shutdownNow();
 
-			eventDispatcher.removeEventHandler(this);
-		}
-	}
-	
-	private void writeCityModel(WriteMode mode) throws FeatureWriteException {
-		try {
-			SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(
-					new QName(version.getCityGMLModule(CityGMLModuleType.CORE).getNamespaceURI(), "CityModel"), 
-					saxWriter, 
-					mode);
+            eventDispatcher.removeEventHandler(this);
+        }
+    }
 
-			CityModel cityModel = new CityModel();
-			if (metadata != null && mode == WriteMode.HEAD) {
-				if (metadata.isSetDatasetName())
-					cityModel.addName(new Code(metadata.getDatasetName()));
+    private void writeCityModel(WriteMode mode) throws FeatureWriteException {
+        try {
+            SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(
+                    new QName(version.getCityGMLModule(CityGMLModuleType.CORE).getNamespaceURI(), "CityModel"),
+                    saxWriter,
+                    mode);
 
-				if (metadata.isSetDatasetDescription())
-					cityModel.setDescription(new StringOrRef(metadata.getDatasetDescription()));
+            CityModel cityModel = new CityModel();
+            if (metadata != null && mode == WriteMode.HEAD) {
+                if (metadata.isSetDatasetName())
+                    cityModel.addName(new Code(metadata.getDatasetName()));
 
-				if (metadata.isSetSpatialExtent() && metadata.getSpatialExtent().isValid()) {
-					BoundingBox extent = metadata.getSpatialExtent();
+                if (metadata.isSetDatasetDescription())
+                    cityModel.setDescription(new StringOrRef(metadata.getDatasetDescription()));
 
-					Envelope envelope = new Envelope();
-					envelope.setLowerCorner(new Point(extent.getLowerCorner().getX(), extent.getLowerCorner().getY(), extent.getLowerCorner().getZ()));
-					envelope.setUpperCorner(new Point(extent.getUpperCorner().getX(), extent.getUpperCorner().getY(), extent.getUpperCorner().getZ()));
-					envelope.setSrsDimension(3);
-					if (extent.isSetSrs())
-						envelope.setSrsName(extent.getSrs().getGMLSrsName());
+                if (metadata.isSetSpatialExtent() && metadata.getSpatialExtent().isValid()) {
+                    BoundingBox extent = metadata.getSpatialExtent();
 
-					cityModel.setBoundedBy(new BoundingShape(envelope));
-				}
-			}
+                    Envelope envelope = new Envelope();
+                    envelope.setLowerCorner(new Point(extent.getLowerCorner().getX(), extent.getLowerCorner().getY(), extent.getLowerCorner().getZ()));
+                    envelope.setUpperCorner(new Point(extent.getUpperCorner().getX(), extent.getUpperCorner().getY(), extent.getUpperCorner().getZ()));
+                    envelope.setSrsDimension(3);
+                    if (extent.isSetSrs())
+                        envelope.setSrsName(extent.getSrs().getGMLSrsName());
 
-			JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(cityModel);
-			if (jaxbElement != null) {
-				Marshaller marshaller = cityGMLBuilder.getJAXBContext().createMarshaller();
+                    cityModel.setBoundedBy(new BoundingShape(envelope));
+                }
+            }
 
-				if (transformerChainFactory == null)
-					marshaller.marshal(jaxbElement, fragmentWriter);
-				else {
-					TransformerChain chain = transformerChainFactory.buildChain();
-					chain.tail().setResult(new SAXResult(fragmentWriter));
-					marshaller.marshal(jaxbElement, chain.head());
-				}
-			}
-		} catch (JAXBException | TransformerConfigurationException e) {
-			throw new FeatureWriteException("Failed to write CityGML document header.", e);
-		}
-	}
+            JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(cityModel);
+            if (jaxbElement != null) {
+                Marshaller marshaller = cityGMLBuilder.getJAXBContext().createMarshaller();
 
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		if (useSequentialWriting)
-			sequentialWriter.interrupt();
-	}
+                if (transformerChainFactory == null)
+                    marshaller.marshal(jaxbElement, fragmentWriter);
+                else {
+                    TransformerChain chain = transformerChainFactory.buildChain();
+                    chain.tail().setResult(new SAXResult(fragmentWriter));
+                    marshaller.marshal(jaxbElement, chain.head());
+                }
+            }
+        } catch (JAXBException | TransformerConfigurationException e) {
+            throw new FeatureWriteException("Failed to write CityGML document header.", e);
+        }
+    }
+
+    @Override
+    public void handleEvent(Event event) throws Exception {
+        if (useSequentialWriting)
+            sequentialWriter.interrupt();
+    }
 }

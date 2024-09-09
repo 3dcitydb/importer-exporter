@@ -28,73 +28,73 @@
 package org.citydb.core.operation.common.xlink;
 
 public class DBXlinkSurfaceGeometry implements DBXlink {
-	private long id;
-	private long parentId;
-	private long rootId;
-	private boolean reverse;
-	private long cityObjectId;
-	private String table;
-	private String fromColumn;
-	private String gmlId;
-	
-	public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId, long cityObjectId, String table, String fromColumn) {
-		this.id = id;
-		this.parentId = parentId;
-		this.rootId = rootId;
-		this.reverse = reverse;
-		this.gmlId = gmlId;
-		this.cityObjectId = cityObjectId;
-		this.table = table;
-		this.fromColumn = fromColumn;
-	}
-	
-	public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId, long cityObjectId) {
-		this(id, parentId, rootId, reverse, gmlId, cityObjectId, null, null);
-	}
-	
-	public DBXlinkSurfaceGeometry(String table, long cityObjectId, String gmlId, String fromColumn) {
-		this(0, 0, 0, false, gmlId, cityObjectId, table, fromColumn);
-	}
-	
-	public long getId() {
-		return id;
-	}
+    private long id;
+    private long parentId;
+    private long rootId;
+    private boolean reverse;
+    private long cityObjectId;
+    private String table;
+    private String fromColumn;
+    private String gmlId;
 
-	public long getParentId() {
-		return parentId;
-	}
+    public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId, long cityObjectId, String table, String fromColumn) {
+        this.id = id;
+        this.parentId = parentId;
+        this.rootId = rootId;
+        this.reverse = reverse;
+        this.gmlId = gmlId;
+        this.cityObjectId = cityObjectId;
+        this.table = table;
+        this.fromColumn = fromColumn;
+    }
 
-	public long getRootId() {
-		return rootId;
-	}
+    public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId, long cityObjectId) {
+        this(id, parentId, rootId, reverse, gmlId, cityObjectId, null, null);
+    }
 
-	public boolean isReverse() {
-		return reverse;
-	}
+    public DBXlinkSurfaceGeometry(String table, long cityObjectId, String gmlId, String fromColumn) {
+        this(0, 0, 0, false, gmlId, cityObjectId, table, fromColumn);
+    }
 
-	public String getGmlId() {
-		return gmlId;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public void setGmlId(String gmlId) {
-		this.gmlId = gmlId;
-	}
+    public long getParentId() {
+        return parentId;
+    }
 
-	public long getCityObjectId() {
-		return cityObjectId;
-	}
+    public long getRootId() {
+        return rootId;
+    }
 
-	public String getTable() {
-		return table;
-	}
+    public boolean isReverse() {
+        return reverse;
+    }
 
-	public String getFromColumn() {
-		return fromColumn;
-	}
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.SURFACE_GEOMETRY;
-	}
+    public void setGmlId(String gmlId) {
+        this.gmlId = gmlId;
+    }
+
+    public long getCityObjectId() {
+        return cityObjectId;
+    }
+
+    public String getTable() {
+        return table;
+    }
+
+    public String getFromColumn() {
+        return fromColumn;
+    }
+
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.SURFACE_GEOMETRY;
+    }
 
 }

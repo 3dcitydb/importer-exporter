@@ -51,237 +51,248 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class ADEObject extends AbstractVisObject {
-	private final Logger log = Logger.getInstance();
-	private final int adeObjectClassId;
+    private final Logger log = Logger.getInstance();
+    private final int adeObjectClassId;
 
-	public ADEObject(Connection connection,
-	                 Query query,
-	                 VisExporterManager visExporterManager,
-	                 net.opengis.kml._2.ObjectFactory kmlFactory,
-	                 AbstractDatabaseAdapter databaseAdapter,
-	                 BlobExportAdapter textureExportAdapter,
-	                 ElevationServiceHandler elevationServiceHandler,
-	                 BalloonTemplateHandler balloonTemplateHandler,
-	                 EventDispatcher eventDispatcher,
-	                 Config config,
-	                 int adeObjectClassId) {
+    public ADEObject(Connection connection,
+                     Query query,
+                     VisExporterManager visExporterManager,
+                     net.opengis.kml._2.ObjectFactory kmlFactory,
+                     AbstractDatabaseAdapter databaseAdapter,
+                     BlobExportAdapter textureExportAdapter,
+                     ElevationServiceHandler elevationServiceHandler,
+                     BalloonTemplateHandler balloonTemplateHandler,
+                     EventDispatcher eventDispatcher,
+                     Config config,
+                     int adeObjectClassId) {
 
-		super(connection,
-				query,
+        super(connection,
+                query,
                 visExporterManager,
-				kmlFactory,
-				databaseAdapter,
-				textureExportAdapter,
-				elevationServiceHandler,
-				balloonTemplateHandler,
-				eventDispatcher,
-				config);
+                kmlFactory,
+                databaseAdapter,
+                textureExportAdapter,
+                elevationServiceHandler,
+                balloonTemplateHandler,
+                eventDispatcher,
+                config);
 
-		this.adeObjectClassId = adeObjectClassId;
-	}
+        this.adeObjectClassId = adeObjectClassId;
+    }
 
-	private ADEPreference getPreference() {
-		return ADEVisExportExtensionManager.getInstance().getPreference(config, adeObjectClassId);
-	}
+    private ADEPreference getPreference() {
+        return ADEVisExportExtensionManager.getInstance().getPreference(config, adeObjectClassId);
+    }
 
-	protected Styles getStyles() {
-		return getPreference().getStyles();
-	}
+    protected Styles getStyles() {
+        return getPreference().getStyles();
+    }
 
-	public PointAndCurve getPointAndCurve() {
-		return getPreference().getPointAndCurve();
-	}
+    public PointAndCurve getPointAndCurve() {
+        return getPreference().getPointAndCurve();
+    }
 
-	public Balloon getBalloonSettings() {
-		return getPreference().getBalloon();
-	}
+    public Balloon getBalloonSettings() {
+        return getPreference().getBalloon();
+    }
 
-	public String getStyleBasisName() {
-		return ADEVisExportExtensionManager.getInstance().getPreference(config, adeObjectClassId).getTarget();
-	}
+    public String getStyleBasisName() {
+        return ADEVisExportExtensionManager.getInstance().getPreference(config, adeObjectClassId).getTarget();
+    }
 
-	public void read(DBSplittingResult work) {
-		PreparedStatement pointAndCurveQueryPs = null;
-		ResultSet pointAndCurveQueryRs = null;
-		boolean hasPointAndCurve = false;
-		PreparedStatement brepIdsQueryPs = null;
-		ResultSet brepIdsQueryRs = null;
-		boolean hasBrep = false;
-		PreparedStatement brepGeometriesQueryPs = null;
-		ResultSet brepGeometriesQueryRs = null;
+    public void read(DBSplittingResult work) {
+        PreparedStatement pointAndCurveQueryPs = null;
+        ResultSet pointAndCurveQueryRs = null;
+        boolean hasPointAndCurve = false;
+        PreparedStatement brepIdsQueryPs = null;
+        ResultSet brepIdsQueryRs = null;
+        boolean hasBrep = false;
+        PreparedStatement brepGeometriesQueryPs = null;
+        ResultSet brepGeometriesQueryRs = null;
 
-		try {
-			ADEVisExportManager adeVisExportManager = visExporterManager.getADEVisExportManager(adeObjectClassId);
-			ADEVisExporter adeVisExporter = adeVisExportManager.getVisExporter(adeObjectClassId);
+        try {
+            ADEVisExportManager adeVisExportManager = visExporterManager.getADEVisExportManager(adeObjectClassId);
+            ADEVisExporter adeVisExporter = adeVisExportManager.getVisExporter(adeObjectClassId);
 
-			int lodToExportFrom = config.getVisExportConfig().getLodToExportFrom();
-			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
-			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
+            int lodToExportFrom = config.getVisExportConfig().getLodToExportFrom();
+            currentLod = lodToExportFrom == 5 ? 4 : lodToExportFrom;
+            int minLod = lodToExportFrom == 5 ? 0 : lodToExportFrom;
 
-			while (currentLod >= minLod) {
-				if (!work.getDisplayForm().isAchievableFromLoD(currentLod)) 
-					break;
+            while (currentLod >= minLod) {
+                if (!work.getDisplayForm().isAchievableFromLoD(currentLod))
+                    break;
 
-				try {
-					String query = adeVisExporter.getSurfaceGeometryQuery(currentLod);
-					if (query != null) {
-						brepIdsQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-						for (int i = 1; i <= getParameterCount(query); i++)
-							brepIdsQueryPs.setLong(i, work.getId());
+                try {
+                    String query = adeVisExporter.getSurfaceGeometryQuery(currentLod);
+                    if (query != null) {
+                        brepIdsQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                        for (int i = 1; i <= getParameterCount(query); i++)
+                            brepIdsQueryPs.setLong(i, work.getId());
 
-						brepIdsQueryRs = brepIdsQueryPs.executeQuery();
+                        brepIdsQueryRs = brepIdsQueryPs.executeQuery();
 
-						if (brepIdsQueryRs.isBeforeFirst()) {
-							hasBrep = true; // result set not empty
-						}
-					}
+                        if (brepIdsQueryRs.isBeforeFirst()) {
+                            hasBrep = true; // result set not empty
+                        }
+                    }
 
-					// check for point or curve
-					query = adeVisExporter.getPointAndCurveQuery(currentLod);
-					if (query != null) {
-						pointAndCurveQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-						for (int i = 1; i <= getParameterCount(query); i++)
-							pointAndCurveQueryPs.setLong(i, work.getId());
+                    // check for point or curve
+                    query = adeVisExporter.getPointAndCurveQuery(currentLod);
+                    if (query != null) {
+                        pointAndCurveQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                        for (int i = 1; i <= getParameterCount(query); i++)
+                            pointAndCurveQueryPs.setLong(i, work.getId());
 
-						pointAndCurveQueryRs = pointAndCurveQueryPs.executeQuery();
-						if (pointAndCurveQueryRs.next())
-							hasPointAndCurve = true;
-					}
-				} catch (Exception e) {
-					log.error("SQL error while querying the highest available LOD.", e);
-				}
+                        pointAndCurveQueryRs = pointAndCurveQueryPs.executeQuery();
+                        if (pointAndCurveQueryRs.next())
+                            hasPointAndCurve = true;
+                    }
+                } catch (Exception e) {
+                    log.error("SQL error while querying the highest available LOD.", e);
+                }
 
-				if (hasBrep || hasPointAndCurve)
-					break;
+                if (hasBrep || hasPointAndCurve)
+                    break;
 
-				currentLod--;
-			}
+                currentLod--;
+            }
 
-			if (!hasBrep && !hasPointAndCurve) {
-				String fromMessage = " from LoD" + lodToExportFrom;
-				if (lodToExportFrom == 5) {
-					if (work.getDisplayForm().getType() == DisplayFormType.COLLADA)
-						fromMessage = ". LoD1 or higher required";
-					else
-						fromMessage = " from any LoD";
-				}
-				log.info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
-			}
-			else { // result not empty
-				visExporterManager.updateFeatureTracker(work);
+            if (!hasBrep && !hasPointAndCurve) {
+                String fromMessage = " from LoD" + lodToExportFrom;
+                if (lodToExportFrom == 5) {
+                    if (work.getDisplayForm().getType() == DisplayFormType.COLLADA)
+                        fromMessage = ". LoD1 or higher required";
+                    else
+                        fromMessage = " from any LoD";
+                }
+                log.info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
+            } else { // result not empty
+                visExporterManager.updateFeatureTracker(work);
 
-				if (hasPointAndCurve) {
-					// export point and curve geometries for all display forms
-					visExporterManager.print(createPlacemarksForPointOrCurve(pointAndCurveQueryRs, work, getPointAndCurve()),
-							work,
-							getBalloonSettings().isBalloonContentInSeparateFile());
-				}
+                if (hasPointAndCurve) {
+                    // export point and curve geometries for all display forms
+                    visExporterManager.print(createPlacemarksForPointOrCurve(pointAndCurveQueryRs, work, getPointAndCurve()),
+                            work,
+                            getBalloonSettings().isBalloonContentInSeparateFile());
+                }
 
-				if (hasBrep) {
-					String query;
-					if (work.getDisplayForm().getType() == DisplayFormType.FOOTPRINT || work.getDisplayForm().getType() == DisplayFormType.EXTRUDED) {
-						query = adeVisExporter.getSurfaceGeometryQuery(currentLod);
-					} else {
-						query = adeVisExporter.getSurfaceGeometryRefIdsQuery(currentLod);
-					}
-					brepGeometriesQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-					for (int i = 1; i <= getParameterCount(query); i++)
-						brepGeometriesQueryPs.setLong(i, work.getId());
-					brepGeometriesQueryRs = brepGeometriesQueryPs.executeQuery();
+                if (hasBrep) {
+                    String query;
+                    if (work.getDisplayForm().getType() == DisplayFormType.FOOTPRINT || work.getDisplayForm().getType() == DisplayFormType.EXTRUDED) {
+                        query = adeVisExporter.getSurfaceGeometryQuery(currentLod);
+                    } else {
+                        query = adeVisExporter.getSurfaceGeometryRefIdsQuery(currentLod);
+                    }
+                    brepGeometriesQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                    for (int i = 1; i <= getParameterCount(query); i++)
+                        brepGeometriesQueryPs.setLong(i, work.getId());
+                    brepGeometriesQueryRs = brepGeometriesQueryPs.executeQuery();
 
-					switch (work.getDisplayForm().getType()) {
-						case FOOTPRINT:
-							visExporterManager.print(createPlacemarksForFootprint(brepGeometriesQueryRs, work),
-									work,
-									getBalloonSettings().isBalloonContentInSeparateFile());
-							break;
+                    switch (work.getDisplayForm().getType()) {
+                        case FOOTPRINT:
+                            visExporterManager.print(createPlacemarksForFootprint(brepGeometriesQueryRs, work),
+                                    work,
+                                    getBalloonSettings().isBalloonContentInSeparateFile());
+                            break;
 
-						case EXTRUDED:
-							PreparedStatement psQuery = null;
-							ResultSet rs = null;
+                        case EXTRUDED:
+                            PreparedStatement psQuery = null;
+                            ResultSet rs = null;
 
-							try {
-								query = queries.getExtrusionHeight();
-								psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-								for (int i = 1; i <= getParameterCount(query); i++)
-									psQuery.setLong(i, work.getId());
+                            try {
+                                query = queries.getExtrusionHeight();
+                                psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                                for (int i = 1; i <= getParameterCount(query); i++)
+                                    psQuery.setLong(i, work.getId());
 
-								rs = psQuery.executeQuery();
-								rs.next();
+                                rs = psQuery.executeQuery();
+                                rs.next();
 
-								double measuredHeight = rs.getDouble("envelope_measured_height");
-								visExporterManager.print(createPlacemarksForExtruded(brepGeometriesQueryRs, work, measuredHeight, false),
-										work, getBalloonSettings().isBalloonContentInSeparateFile());
-								break;
-							} finally {
-								try { if (psQuery != null) psQuery.close(); } catch (SQLException e) {}
-							}
+                                double measuredHeight = rs.getDouble("envelope_measured_height");
+                                visExporterManager.print(createPlacemarksForExtruded(brepGeometriesQueryRs, work, measuredHeight, false),
+                                        work, getBalloonSettings().isBalloonContentInSeparateFile());
+                                break;
+                            } finally {
+                                try {
+                                    if (psQuery != null) psQuery.close();
+                                } catch (SQLException e) {
+                                }
+                            }
 
-						case GEOMETRY:
-							setGmlId(work.getGmlId());
-							setId(work.getId());
+                        case GEOMETRY:
+                            setGmlId(work.getGmlId());
+                            setId(work.getId());
 
-							visExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
-							if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
-								visExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+                            visExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+                            if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
+                                visExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-							break;
+                            break;
 
-						case COLLADA:
-							ColladaOptions colladaOptions = config.getVisExportConfig().getColladaOptions();
+                        case COLLADA:
+                            ColladaOptions colladaOptions = config.getVisExportConfig().getColladaOptions();
 
-							String currentgmlId = getGmlId();
-							setGmlId(work.getGmlId());
-							setId(work.getId());
-							fillGenericObjectForCollada(brepGeometriesQueryRs, colladaOptions.isGenerateTextureAtlases());
+                            String currentgmlId = getGmlId();
+                            setGmlId(work.getGmlId());
+                            setId(work.getId());
+                            fillGenericObjectForCollada(brepGeometriesQueryRs, colladaOptions.isGenerateTextureAtlases());
 
-							if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
-								log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
+                            if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
+                                log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
-							List<Point3d> anchorCandidates = getOrigins();
-							double zOffset = getZOffsetFromConfigOrDB(work.getId());
-							if (zOffset == Double.MAX_VALUE) {
-								zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
-							}
-							setZOffset(zOffset);
+                            List<Point3d> anchorCandidates = getOrigins();
+                            double zOffset = getZOffsetFromConfigOrDB(work.getId());
+                            if (zOffset == Double.MAX_VALUE) {
+                                zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
+                            }
+                            setZOffset(zOffset);
 
-							setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
-							try {
-								if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
-									visExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
-							} catch (Exception ioe) {
-								log.logStackTrace(ioe);
-							}
+                            setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
+                            try {
+                                if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
+                                    visExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+                            } catch (Exception ioe) {
+                                log.logStackTrace(ioe);
+                            }
 
-							break;
-					}
-				}
-			}
-		} catch (SQLException e) {
-			log.error("SQL error while querying city object " + work.getGmlId() + ".", e);
-		} catch (JAXBException e) {
-			log.error("XML error while working on city object " + work.getGmlId() + ".", e);
-		} catch (ADEVisExportException e) {
-			log.error("ADE VIS export error while working on city object " + work.getGmlId() + ".", e);
-		} finally {
-			if (brepGeometriesQueryPs != null)
-				try { brepGeometriesQueryPs.close(); } catch (SQLException e) {}
-			if (brepGeometriesQueryPs != null)
-				try { brepGeometriesQueryPs.close(); } catch (SQLException e) {}
-			if (pointAndCurveQueryPs != null)
-				try { pointAndCurveQueryPs.close(); } catch (SQLException e) {}
-		}
-	}
+                            break;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.error("SQL error while querying city object " + work.getGmlId() + ".", e);
+        } catch (JAXBException e) {
+            log.error("XML error while working on city object " + work.getGmlId() + ".", e);
+        } catch (ADEVisExportException e) {
+            log.error("ADE VIS export error while working on city object " + work.getGmlId() + ".", e);
+        } finally {
+            if (brepGeometriesQueryPs != null)
+                try {
+                    brepGeometriesQueryPs.close();
+                } catch (SQLException e) {
+                }
+            if (brepGeometriesQueryPs != null)
+                try {
+                    brepGeometriesQueryPs.close();
+                } catch (SQLException e) {
+                }
+            if (pointAndCurveQueryPs != null)
+                try {
+                    pointAndCurveQueryPs.close();
+                } catch (SQLException e) {
+                }
+        }
+    }
 
-	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
-		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOrigin().x,
-				getOrigin().y,
-				getOrigin().z});
-		setLocation(reducePrecisionForXorY(originInWGS84[0]),
-				reducePrecisionForXorY(originInWGS84[1]),
-				reducePrecisionForZ(originInWGS84[2]));
+    public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
+        double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[]{getOrigin().x,
+                getOrigin().y,
+                getOrigin().z});
+        setLocation(reducePrecisionForXorY(originInWGS84[0]),
+                reducePrecisionForXorY(originInWGS84[1]),
+                reducePrecisionForZ(originInWGS84[2]));
 
-		return super.createPlacemarkForColladaModel();
-	}
+        return super.createPlacemarkForColladaModel();
+    }
 
 }

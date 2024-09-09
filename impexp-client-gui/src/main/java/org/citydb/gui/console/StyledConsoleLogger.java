@@ -132,7 +132,8 @@ public class StyledConsoleLogger implements ConsoleLogger {
 
         PrintStream printStream;
         try {
-            printStream = new PrintStream(outputStream, true, encoding.displayName()) {};
+            printStream = new PrintStream(outputStream, true, encoding.displayName()) {
+            };
         } catch (UnsupportedEncodingException e) {
             printStream = new PrintStream(outputStream, true);
         }

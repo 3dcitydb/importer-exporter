@@ -33,5 +33,6 @@ import org.citydb.core.operation.validator.ValidationException;
 
 public interface ValidatorFactory {
     void initializeContext(Config config) throws ValidationException;
+
     Validator createValidator() throws ValidationException;
 }

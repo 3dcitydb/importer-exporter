@@ -30,5 +30,5 @@ package org.citydb.gui.plugin.menu;
 import org.citydb.gui.plugin.GuiExtension;
 
 public interface MenuExtension extends GuiExtension {
-	Menu getMenu();
+    Menu getMenu();
 }

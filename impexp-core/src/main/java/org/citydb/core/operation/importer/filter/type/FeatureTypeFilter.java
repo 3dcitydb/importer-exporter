@@ -36,96 +36,96 @@ import java.util.List;
 import java.util.Set;
 
 public class FeatureTypeFilter {
-	private final SchemaMapping schemaMapping;
-	private final Set<QName> typeNames = new HashSet<>();
-	private final Set<FeatureType> featureTypes = new HashSet<>();
+    private final SchemaMapping schemaMapping;
+    private final Set<QName> typeNames = new HashSet<>();
+    private final Set<FeatureType> featureTypes = new HashSet<>();
 
-	public FeatureTypeFilter(SchemaMapping schemaMapping) {
-		this.schemaMapping = schemaMapping;
-	}
+    public FeatureTypeFilter(SchemaMapping schemaMapping) {
+        this.schemaMapping = schemaMapping;
+    }
 
-	public FeatureTypeFilter(QName typeName, SchemaMapping schemaMapping) {
-		this(schemaMapping);
-		addFeatureType(typeName);
-	}
+    public FeatureTypeFilter(QName typeName, SchemaMapping schemaMapping) {
+        this(schemaMapping);
+        addFeatureType(typeName);
+    }
 
-	public FeatureTypeFilter(List<QName> typeNames, SchemaMapping schemaMapping) {
-		this(schemaMapping);
-		typeNames.forEach(this::addFeatureType);
-	}
-	
-	public FeatureTypeFilter(org.citydb.config.project.query.filter.type.FeatureTypeFilter typeFilter, SchemaMapping schemaMapping) throws FilterException {
-		if (typeFilter == null)
-			throw new FilterException("The feature type filter must not be null.");
+    public FeatureTypeFilter(List<QName> typeNames, SchemaMapping schemaMapping) {
+        this(schemaMapping);
+        typeNames.forEach(this::addFeatureType);
+    }
 
-		this.schemaMapping = schemaMapping;
-		typeFilter.getTypeNames().forEach(this::addFeatureType);
-	}
+    public FeatureTypeFilter(org.citydb.config.project.query.filter.type.FeatureTypeFilter typeFilter, SchemaMapping schemaMapping) throws FilterException {
+        if (typeFilter == null)
+            throw new FilterException("The feature type filter must not be null.");
 
-	public void addFeatureType(QName typeName) {
-		typeNames.add(typeName);
+        this.schemaMapping = schemaMapping;
+        typeFilter.getTypeNames().forEach(this::addFeatureType);
+    }
 
-		FeatureType featureType = schemaMapping.getFeatureType(typeName);
-		if (featureType != null)
-			featureTypes.add(featureType);
-	}
-	
-	public boolean isSatisfiedBy(QName name, boolean allowFlatHierarchies) {
-		if (typeNames.isEmpty() || typeNames.contains(name))
-			return true;
+    public void addFeatureType(QName typeName) {
+        typeNames.add(typeName);
 
-		if (allowFlatHierarchies) {
-			// if flat hierarchies shall be supported, we check whether the
-			// feature to be tested can be represented as nested feature
-			// of at least one of the features given in the filter settings.
-			// if so, the nested feature passes this filter.
-			FeatureType candidate = schemaMapping.getFeatureType(name);
-			if (candidate != null) {
-				Set<FeatureType> visitedFeatures = new HashSet<>();
-				Set<FeatureProperty> visitedProperties = new HashSet<>();
+        FeatureType featureType = schemaMapping.getFeatureType(typeName);
+        if (featureType != null)
+            featureTypes.add(featureType);
+    }
 
-				for (FeatureType parent : featureTypes) {
-					if (isPartOf(parent, candidate, visitedFeatures, visitedProperties)) {
-						typeNames.add(name);
-						return true;
-					}
-				}
-			}
-		}
+    public boolean isSatisfiedBy(QName name, boolean allowFlatHierarchies) {
+        if (typeNames.isEmpty() || typeNames.contains(name))
+            return true;
 
-		return false;
-	}
+        if (allowFlatHierarchies) {
+            // if flat hierarchies shall be supported, we check whether the
+            // feature to be tested can be represented as nested feature
+            // of at least one of the features given in the filter settings.
+            // if so, the nested feature passes this filter.
+            FeatureType candidate = schemaMapping.getFeatureType(name);
+            if (candidate != null) {
+                Set<FeatureType> visitedFeatures = new HashSet<>();
+                Set<FeatureProperty> visitedProperties = new HashSet<>();
 
-	private boolean isPartOf(FeatureType parent, FeatureType candidate, Set<FeatureType> visitedFeatures, Set<FeatureProperty> visitedProperties) {
-		visitedFeatures.add(parent);
+                for (FeatureType parent : featureTypes) {
+                    if (isPartOf(parent, candidate, visitedFeatures, visitedProperties)) {
+                        typeNames.add(name);
+                        return true;
+                    }
+                }
+            }
+        }
 
-		for (AbstractProperty property : parent.listProperties(false, true)) {
-			if (property.getElementType() != PathElementType.FEATURE_PROPERTY)
-				continue;
+        return false;
+    }
 
-			FeatureProperty featureProperty = (FeatureProperty) property;
-			if (!visitedProperties.add(featureProperty))
-				continue;
+    private boolean isPartOf(FeatureType parent, FeatureType candidate, Set<FeatureType> visitedFeatures, Set<FeatureProperty> visitedProperties) {
+        visitedFeatures.add(parent);
 
-			FeatureType target = featureProperty.getType();
+        for (AbstractProperty property : parent.listProperties(false, true)) {
+            if (property.getElementType() != PathElementType.FEATURE_PROPERTY)
+                continue;
 
-			// we do not accept the feature property if it may contain top-level features;
-			// otherwise we would allow any feature to bypass the given filter settings
-			if (target.isAbstract() && target.listSubTypes(true).stream().anyMatch(FeatureType::isTopLevel))
-				continue;
+            FeatureProperty featureProperty = (FeatureProperty) property;
+            if (!visitedProperties.add(featureProperty))
+                continue;
 
-			if (candidate.isEqualToOrSubTypeOf(target))
-				return true;
+            FeatureType target = featureProperty.getType();
 
-			if (visitedFeatures.add(target) && isPartOf(target, candidate, visitedFeatures, visitedProperties))
-				return true;
+            // we do not accept the feature property if it may contain top-level features;
+            // otherwise we would allow any feature to bypass the given filter settings
+            if (target.isAbstract() && target.listSubTypes(true).stream().anyMatch(FeatureType::isTopLevel))
+                continue;
 
-			for (FeatureType subType : target.listSubTypes(true)) {
-				if (visitedFeatures.add(subType) && isPartOf(subType, candidate, visitedFeatures, visitedProperties))
-					return true;
-			}
-		}
+            if (candidate.isEqualToOrSubTypeOf(target))
+                return true;
 
-		return false;
-	}
+            if (visitedFeatures.add(target) && isPartOf(target, candidate, visitedFeatures, visitedProperties))
+                return true;
+
+            for (FeatureType subType : target.listSubTypes(true)) {
+                if (visitedFeatures.add(subType) && isPartOf(subType, candidate, visitedFeatures, visitedProperties))
+                    return true;
+            }
+        }
+
+        return false;
+    }
 }

@@ -35,7 +35,6 @@ import org.citydb.cli.ImpExpException;
 import org.citydb.cli.option.StartupProgressListener;
 import org.citydb.cli.util.CliConstants;
 import org.citydb.config.Config;
-import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.gui.GuiConfig;
 import org.citydb.config.gui.style.Theme;
 import org.citydb.core.database.DatabaseController;
@@ -54,6 +53,7 @@ import org.citydb.gui.operation.visExporter.VisExportPlugin;
 import org.citydb.gui.plugin.GuiExtension;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
+import org.citydb.util.config.ConfigUtil;
 import org.citydb.util.log.Logger;
 import picocli.CommandLine;
 

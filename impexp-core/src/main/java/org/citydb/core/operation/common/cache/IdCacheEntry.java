@@ -30,60 +30,60 @@ package org.citydb.core.operation.common.cache;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class IdCacheEntry {
-	private final long id;
-	private final long rootId;
-	private final boolean reverse;
-	private final String mapping;
-	private final int objectClassId;
-	private final AtomicBoolean isRegistered = new AtomicBoolean(false);
-	private final AtomicBoolean isRequested = new AtomicBoolean(false);
+    private final long id;
+    private final long rootId;
+    private final boolean reverse;
+    private final String mapping;
+    private final int objectClassId;
+    private final AtomicBoolean isRegistered = new AtomicBoolean(false);
+    private final AtomicBoolean isRequested = new AtomicBoolean(false);
 
-	public IdCacheEntry(long id, long rootId, boolean reverse, String mapping, int objectClassId) {
-		this.id = id;
-		this.rootId = rootId;
-		this.reverse = reverse;
-		this.mapping = mapping;
-		this.objectClassId = objectClassId;
-	}
-	
-	public IdCacheEntry(long id, long rootId, boolean reverse, String mapping) {
-		this(id, rootId, reverse, mapping, 0);
-	}
+    public IdCacheEntry(long id, long rootId, boolean reverse, String mapping, int objectClassId) {
+        this.id = id;
+        this.rootId = rootId;
+        this.reverse = reverse;
+        this.mapping = mapping;
+        this.objectClassId = objectClassId;
+    }
 
-	public long getId() {
-		return id;
-	}
+    public IdCacheEntry(long id, long rootId, boolean reverse, String mapping) {
+        this(id, rootId, reverse, mapping, 0);
+    }
 
-	public long getRootId() {
-		return rootId;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public boolean isReverse() {
-		return reverse;
-	}
+    public long getRootId() {
+        return rootId;
+    }
 
-	public String getMapping() {
-		return mapping;
-	}
+    public boolean isReverse() {
+        return reverse;
+    }
 
-	public boolean isRequested() {
-		return isRequested.get();
-	}
-	
-	protected boolean getAndSetRequested(boolean value) {
-		return isRequested.getAndSet(value);
-	}
-	
-	protected boolean isRegistered() {
-		return isRegistered.get();
-	}
-	
-	protected boolean getAndSetRegistered(boolean value) {
-		return isRegistered.getAndSet(value);
-	}
-	
-	public int getObjectClassId() {
-		return objectClassId;
-	}
+    public String getMapping() {
+        return mapping;
+    }
+
+    public boolean isRequested() {
+        return isRequested.get();
+    }
+
+    protected boolean getAndSetRequested(boolean value) {
+        return isRequested.getAndSet(value);
+    }
+
+    protected boolean isRegistered() {
+        return isRegistered.get();
+    }
+
+    protected boolean getAndSetRegistered(boolean value) {
+        return isRegistered.getAndSet(value);
+    }
+
+    public int getObjectClassId() {
+        return objectClassId;
+    }
 
 }

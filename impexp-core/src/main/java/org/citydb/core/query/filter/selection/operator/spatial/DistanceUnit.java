@@ -36,59 +36,59 @@ import javax.measure.MetricPrefix;
 import javax.measure.Unit;
 
 public enum DistanceUnit {
-	METER(SI.METRE, "m", "metre", "meter"),
-	KILOMETER(MetricPrefix.KILO(SI.METRE), "km", "kilometre", "kilometre"),
-	CENTIMETER(MetricPrefix.CENTI(SI.METRE), "cm", "centimetre", "centimeter"),
-	MILLIMETER(MetricPrefix.MILLI(SI.METRE), "mm", "millimetre", "millimeter"),
-	MILE(USCustomary.MILE, "mi", "mile"),
-	NAUTICAL_MILE(USCustomary.NAUTICAL_MILE, "nmi", "nautical mile"),
-	FOOT_SURVEY_US(USCustomary.FOOT_SURVEY, "ft_survey_us", "US survey foot"),
-	FOOT(USCustomary.FOOT, "ft", "foot"),
-	INCH(USCustomary.INCH, "in", "inch"),
-	YARD(USCustomary.YARD, "yd", "yard"),
-	RADIAN(SI.RADIAN, "rad", "radian"),
-	DEGREE(NonSI.DEGREE_ANGLE, "deg", "degree"),
-	DMS(Units.DEGREE_MINUTE_SECOND, "dms");
+    METER(SI.METRE, "m", "metre", "meter"),
+    KILOMETER(MetricPrefix.KILO(SI.METRE), "km", "kilometre", "kilometre"),
+    CENTIMETER(MetricPrefix.CENTI(SI.METRE), "cm", "centimetre", "centimeter"),
+    MILLIMETER(MetricPrefix.MILLI(SI.METRE), "mm", "millimetre", "millimeter"),
+    MILE(USCustomary.MILE, "mi", "mile"),
+    NAUTICAL_MILE(USCustomary.NAUTICAL_MILE, "nmi", "nautical mile"),
+    FOOT_SURVEY_US(USCustomary.FOOT_SURVEY, "ft_survey_us", "US survey foot"),
+    FOOT(USCustomary.FOOT, "ft", "foot"),
+    INCH(USCustomary.INCH, "in", "inch"),
+    YARD(USCustomary.YARD, "yd", "yard"),
+    RADIAN(SI.RADIAN, "rad", "radian"),
+    DEGREE(NonSI.DEGREE_ANGLE, "deg", "degree"),
+    DMS(Units.DEGREE_MINUTE_SECOND, "dms");
 
-	private final Unit<?> unit;
-	private final String[] symbols;
-	
-	DistanceUnit(Unit<?> unit, String... symbols) {
-		this.unit = unit;
-		this.symbols = symbols;
-	}
-	
-	public static DistanceUnit fromSymbol(String symbol) {
-		if (symbol == null || symbol.length() == 0) {
-			return null;
-		}
-		
-		if (symbol.startsWith("#")) {
-			symbol = symbol.substring(1);
-		}
-		
-		for (DistanceUnit unit : DistanceUnit.values()) {
-			for (String tmp : unit.symbols) {
-				if (tmp.equalsIgnoreCase(symbol)) {
-					return unit;
-				}
-			}
-		}
-		
-		return null;
-	}
+    private final Unit<?> unit;
+    private final String[] symbols;
 
-	public Unit<?> toUnit() {
-		return unit;
-	}
-	
-	public String getSymbol() {
-		return symbols[0];
-	}
+    DistanceUnit(Unit<?> unit, String... symbols) {
+        this.unit = unit;
+        this.symbols = symbols;
+    }
 
-	@Override
-	public String toString() {
-		return symbols[0];
-	}
-	
+    public static DistanceUnit fromSymbol(String symbol) {
+        if (symbol == null || symbol.length() == 0) {
+            return null;
+        }
+
+        if (symbol.startsWith("#")) {
+            symbol = symbol.substring(1);
+        }
+
+        for (DistanceUnit unit : DistanceUnit.values()) {
+            for (String tmp : unit.symbols) {
+                if (tmp.equalsIgnoreCase(symbol)) {
+                    return unit;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public Unit<?> toUnit() {
+        return unit;
+    }
+
+    public String getSymbol() {
+        return symbols[0];
+    }
+
+    @Override
+    public String toString() {
+        return symbols[0];
+    }
+
 }

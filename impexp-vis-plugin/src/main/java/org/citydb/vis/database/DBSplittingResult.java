@@ -33,53 +33,53 @@ import org.citydb.vis.util.CityObject4JSON;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 public class DBSplittingResult {
-	private final long id;
-	private final String gmlId;
-	private final int objectClassId;
-	private final CityGMLClass cityGMLClass;
-	private DisplayForm displayForm;
-	private CityObject4JSON json;
+    private final long id;
+    private final String gmlId;
+    private final int objectClassId;
+    private final CityGMLClass cityGMLClass;
+    private DisplayForm displayForm;
+    private CityObject4JSON json;
 
-	public DBSplittingResult(long id, String gmlId, int objectClassId, CityObject4JSON json, DisplayForm displayForm) {
-		this.id = id;
-		this.gmlId = gmlId;
-		this.objectClassId = objectClassId;
-		this.displayForm = displayForm;
-		this.json = json;
-		
-		cityGMLClass = Util.getCityGMLClass(objectClassId);
-	}
+    public DBSplittingResult(long id, String gmlId, int objectClassId, CityObject4JSON json, DisplayForm displayForm) {
+        this.id = id;
+        this.gmlId = gmlId;
+        this.objectClassId = objectClassId;
+        this.displayForm = displayForm;
+        this.json = json;
 
-	public long getId() {
-		return id;
-	}
+        cityGMLClass = Util.getCityGMLClass(objectClassId);
+    }
 
-	public String getGmlId() {
-		return gmlId;
-	}
-	
-	public int getObjectClassId() {
-		return objectClassId;
-	}
-	
-	public CityGMLClass getCityGMLClass() {
-		return cityGMLClass;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public void setDisplayForm(DisplayForm displayForm) {
-		this.displayForm = displayForm;
-	}
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public DisplayForm getDisplayForm() {
-		return displayForm;
-	}
+    public int getObjectClassId() {
+        return objectClassId;
+    }
 
-	public CityObject4JSON getJson() {
-		return json;
-	}
+    public CityGMLClass getCityGMLClass() {
+        return cityGMLClass;
+    }
 
-	public void setJson(CityObject4JSON json) {
-		this.json = json;
-	}
+    public void setDisplayForm(DisplayForm displayForm) {
+        this.displayForm = displayForm;
+    }
+
+    public DisplayForm getDisplayForm() {
+        return displayForm;
+    }
+
+    public CityObject4JSON getJson() {
+        return json;
+    }
+
+    public void setJson(CityObject4JSON json) {
+        this.json = json;
+    }
 
 }

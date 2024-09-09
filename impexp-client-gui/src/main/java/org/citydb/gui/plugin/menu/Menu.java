@@ -30,8 +30,11 @@ package org.citydb.gui.plugin.menu;
 import javax.swing.*;
 
 public abstract class Menu {
-	public abstract String getLocalizedTitle();
-	public abstract JMenu getMenuComponent();
-	public abstract Icon getIcon();
-	public abstract int getMnemonicIndex();
+    public abstract String getLocalizedTitle();
+
+    public abstract JMenu getMenuComponent();
+
+    public abstract Icon getIcon();
+
+    public abstract int getMnemonicIndex();
 }

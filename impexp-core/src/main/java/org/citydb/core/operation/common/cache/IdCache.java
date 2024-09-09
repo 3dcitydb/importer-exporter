@@ -37,150 +37,150 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class IdCache {
-	private final Logger log = Logger.getInstance();
-	
-	private final ConcurrentHashMap<String, IdCacheEntry> map;
-	private final IdCachingModel cacheModel;
-	private final int capacity;
-	private final float drainFactor;
+    private final Logger log = Logger.getInstance();
 
-	private final ReentrantLock mainLock = new ReentrantLock();
-	private final Condition drainingDone = mainLock.newCondition();
+    private final ConcurrentHashMap<String, IdCacheEntry> map;
+    private final IdCachingModel cacheModel;
+    private final int capacity;
+    private final float drainFactor;
 
-	private final AtomicBoolean isDraining = new AtomicBoolean(false);
-	private final AtomicInteger entries = new AtomicInteger(0);
-	private volatile boolean backUp = false;
+    private final ReentrantLock mainLock = new ReentrantLock();
+    private final Condition drainingDone = mainLock.newCondition();
 
-	public IdCache(
-			IdCachingModel cacheModel,
-			int capacity,
-			float drainFactor,
-			int concurrencyLevel) {
-		this.cacheModel = cacheModel;
-		this.capacity = capacity;
-		this.drainFactor = drainFactor;
+    private final AtomicBoolean isDraining = new AtomicBoolean(false);
+    private final AtomicInteger entries = new AtomicInteger(0);
+    private volatile boolean backUp = false;
 
-		map = new ConcurrentHashMap<>(capacity, .75f, concurrencyLevel);
-	}
+    public IdCache(
+            IdCachingModel cacheModel,
+            int capacity,
+            float drainFactor,
+            int concurrencyLevel) {
+        this.cacheModel = cacheModel;
+        this.capacity = capacity;
+        this.drainFactor = drainFactor;
 
-	public void put(String key, long id, long rootId, boolean reverse, String mapping, int objectClassId) {
-		IdCacheEntry entry = lookupMap(key);
+        map = new ConcurrentHashMap<>(capacity, .75f, concurrencyLevel);
+    }
 
-		if (entry == null) {
-			entry = getOrCreate(key, id, rootId, reverse, mapping, objectClassId);
+    public void put(String key, long id, long rootId, boolean reverse, String mapping, int objectClassId) {
+        IdCacheEntry entry = lookupMap(key);
 
-			if (!entry.getAndSetRegistered(true)) {
-				if (entries.incrementAndGet() >= capacity && isDraining.compareAndSet(false, true)) 
-					drainToDB();
-			}
-		}
-	}
+        if (entry == null) {
+            entry = getOrCreate(key, id, rootId, reverse, mapping, objectClassId);
 
-	public boolean lookupAndPut(String key, long id, long rootId, boolean reverse, String mapping, int objectClassId) {
-		boolean lookup = lookupMap(key) != null;
-		if (!lookup && backUp)
-			lookup = lookupDB(key) != null;
+            if (!entry.getAndSetRegistered(true)) {
+                if (entries.incrementAndGet() >= capacity && isDraining.compareAndSet(false, true))
+                    drainToDB();
+            }
+        }
+    }
 
-		if (!lookup) {		
-			IdCacheEntry entry = getOrCreate(key, id, rootId, reverse, mapping, objectClassId);
-			if (!entry.getAndSetRegistered(true)) {
-				if (entries.incrementAndGet() >= capacity && isDraining.compareAndSet(false, true))
-					drainToDB();
-			} else
-				lookup = true;
-		}
+    public boolean lookupAndPut(String key, long id, long rootId, boolean reverse, String mapping, int objectClassId) {
+        boolean lookup = lookupMap(key) != null;
+        if (!lookup && backUp)
+            lookup = lookupDB(key) != null;
 
-		return lookup;
-	}
+        if (!lookup) {
+            IdCacheEntry entry = getOrCreate(key, id, rootId, reverse, mapping, objectClassId);
+            if (!entry.getAndSetRegistered(true)) {
+                if (entries.incrementAndGet() >= capacity && isDraining.compareAndSet(false, true))
+                    drainToDB();
+            } else
+                lookup = true;
+        }
 
-	public boolean lookupAndPut(String key, long id, int objectClassId) {
-		return lookupAndPut(key, id, 0, false, null, objectClassId);
-	}
+        return lookup;
+    }
 
-	public IdCacheEntry get(String key) {
-		IdCacheEntry entry = lookupMap(key);
-		if (entry == null && backUp)
-			entry = lookupDB(key);
+    public boolean lookupAndPut(String key, long id, int objectClassId) {
+        return lookupAndPut(key, id, 0, false, null, objectClassId);
+    }
 
-		return entry;
-	}
+    public IdCacheEntry get(String key) {
+        IdCacheEntry entry = lookupMap(key);
+        if (entry == null && backUp)
+            entry = lookupDB(key);
 
-	public IdCacheEntry getFromMemory(String key) {
-		return lookupMap(key);
-	}
+        return entry;
+    }
 
-	private IdCacheEntry lookupMap(String key) {
-		IdCacheEntry entry = map.get(key);
-		if (entry != null)
-			entry.getAndSetRequested(true);
+    public IdCacheEntry getFromMemory(String key) {
+        return lookupMap(key);
+    }
 
-		return entry;
-	}
+    private IdCacheEntry lookupMap(String key) {
+        IdCacheEntry entry = map.get(key);
+        if (entry != null)
+            entry.getAndSetRequested(true);
 
-	private IdCacheEntry getOrCreate(String key, long id, long rootId, boolean reverse, String mapping, int objectClassId) {
-		IdCacheEntry entry = map.get(key);
-		if (entry == null) {
-			IdCacheEntry newEntry = new IdCacheEntry(id, rootId, reverse, mapping, objectClassId);
-			entry = map.putIfAbsent(key, newEntry);
-			if (entry == null)
-				entry = newEntry;
-		}
+        return entry;
+    }
 
-		return entry;
-	}
+    private IdCacheEntry getOrCreate(String key, long id, long rootId, boolean reverse, String mapping, int objectClassId) {
+        IdCacheEntry entry = map.get(key);
+        if (entry == null) {
+            IdCacheEntry newEntry = new IdCacheEntry(id, rootId, reverse, mapping, objectClassId);
+            entry = map.putIfAbsent(key, newEntry);
+            if (entry == null)
+                entry = newEntry;
+        }
 
-	private void drainToDB() {
-		try {
-			log.debug("Writing entries to " + cacheModel.getType() + " cache.");
-			backUp = true;
-			
-			int drain = Math.round(capacity * drainFactor);
-			try {
-				cacheModel.drainToDB(map, drain);
-				entries.set(map.size());
+        return entry;
+    }
 
-				log.debug("Entries written to " + cacheModel.getType() + " cache.");
+    private void drainToDB() {
+        try {
+            log.debug("Writing entries to " + cacheModel.getType() + " cache.");
+            backUp = true;
 
-			} catch (SQLException e) {
-				log.error("SQL error while writing entries to " + cacheModel.getType() + " cache.", e);
-			}
-		} finally {
-			final ReentrantLock lock = this.mainLock;
-			lock.lock();
+            int drain = Math.round(capacity * drainFactor);
+            try {
+                cacheModel.drainToDB(map, drain);
+                entries.set(map.size());
 
-			try {
-				isDraining.set(false);
-				drainingDone.signalAll();
-			} finally {
-				lock.unlock();
-			}
-		}
-	}
+                log.debug("Entries written to " + cacheModel.getType() + " cache.");
 
-	private IdCacheEntry lookupDB(String key) {
-		if (isDraining.get()) {
-			final ReentrantLock lock = this.mainLock;
-			lock.lock();
-			
-			try {
-				while (isDraining.get())
-					drainingDone.await();
-			} catch (InterruptedException ie) {
-				//
-			} finally {
-				lock.unlock();
-			}
-		}
+            } catch (SQLException e) {
+                log.error("SQL error while writing entries to " + cacheModel.getType() + " cache.", e);
+            }
+        } finally {
+            final ReentrantLock lock = this.mainLock;
+            lock.lock();
 
-		try {			
-			return cacheModel.lookupDB(key);
-		} catch (SQLException e) {
-			log.error("SQL error while querying the " + cacheModel.getType() + " cache.", e);
-			return null;
-		} 
-	}
-	
-	public void shutdown() throws SQLException {
-		cacheModel.close();
-	}
+            try {
+                isDraining.set(false);
+                drainingDone.signalAll();
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+
+    private IdCacheEntry lookupDB(String key) {
+        if (isDraining.get()) {
+            final ReentrantLock lock = this.mainLock;
+            lock.lock();
+
+            try {
+                while (isDraining.get())
+                    drainingDone.await();
+            } catch (InterruptedException ie) {
+                //
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        try {
+            return cacheModel.lookupDB(key);
+        } catch (SQLException e) {
+            log.error("SQL error while querying the " + cacheModel.getType() + " cache.", e);
+            return null;
+        }
+    }
+
+    public void shutdown() throws SQLException {
+        cacheModel.close();
+    }
 }

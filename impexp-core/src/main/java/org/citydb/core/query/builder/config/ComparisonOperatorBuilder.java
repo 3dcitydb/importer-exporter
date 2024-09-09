@@ -46,220 +46,220 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.Instant;
 
 public class ComparisonOperatorBuilder {
-	private final ValueReferenceBuilder valueReferenceBuilder;
-	private final DatatypeFactory datatypeFactory;
+    private final ValueReferenceBuilder valueReferenceBuilder;
+    private final DatatypeFactory datatypeFactory;
 
-	protected ComparisonOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder) {
-		this.valueReferenceBuilder = valueReferenceBuilder;
-		datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
-	}
+    protected ComparisonOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder) {
+        this.valueReferenceBuilder = valueReferenceBuilder;
+        datatypeFactory = ObjectRegistry.getInstance().getDatatypeFactory();
+    }
 
-	protected Predicate buildComparisonOperator(org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator operatorConfig) throws QueryBuildException {
-		if (!operatorConfig.isSetValueReference())
-			throw new QueryBuildException("The comparison operator " + operatorConfig.getOperatorName() + " requires a value reference.");
+    protected Predicate buildComparisonOperator(org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator operatorConfig) throws QueryBuildException {
+        if (!operatorConfig.isSetValueReference())
+            throw new QueryBuildException("The comparison operator " + operatorConfig.getOperatorName() + " requires a value reference.");
 
-		AbstractComparisonOperator operator = null;
+        AbstractComparisonOperator operator = null;
 
-		try {
-			switch (operatorConfig.getOperatorName()) {
-			case EQUAL_TO:
-			case NOT_EQUAL_TO:
-			case GREATER_THAN:
-			case GREATER_THAN_OR_EQUAL_TO:
-			case LESS_THAN:
-			case LESS_THAN_OR_EQUAL_TO:
-				operator = buildBinaryOperator((AbstractBinaryComparisonOperator)operatorConfig);
-				break;
-			case BETWEEN:
-				operator = buildBetweenOperator((org.citydb.config.project.query.filter.selection.comparison.BetweenOperator)operatorConfig);
-				break;
-			case LIKE:
-				operator = buildLikeOperator((org.citydb.config.project.query.filter.selection.comparison.LikeOperator)operatorConfig);
-				break;
-			case NULL:
-				operator = buildNullComparison((org.citydb.config.project.query.filter.selection.comparison.NullOperator)operatorConfig);
-				break;
-			}
-		} catch (FilterException e) {
-			throw new QueryBuildException("Failed to build the comparison operator " + operatorConfig.getOperatorName() + ".", e);
-		}
+        try {
+            switch (operatorConfig.getOperatorName()) {
+                case EQUAL_TO:
+                case NOT_EQUAL_TO:
+                case GREATER_THAN:
+                case GREATER_THAN_OR_EQUAL_TO:
+                case LESS_THAN:
+                case LESS_THAN_OR_EQUAL_TO:
+                    operator = buildBinaryOperator((AbstractBinaryComparisonOperator) operatorConfig);
+                    break;
+                case BETWEEN:
+                    operator = buildBetweenOperator((org.citydb.config.project.query.filter.selection.comparison.BetweenOperator) operatorConfig);
+                    break;
+                case LIKE:
+                    operator = buildLikeOperator((org.citydb.config.project.query.filter.selection.comparison.LikeOperator) operatorConfig);
+                    break;
+                case NULL:
+                    operator = buildNullComparison((org.citydb.config.project.query.filter.selection.comparison.NullOperator) operatorConfig);
+                    break;
+            }
+        } catch (FilterException e) {
+            throw new QueryBuildException("Failed to build the comparison operator " + operatorConfig.getOperatorName() + ".", e);
+        }
 
-		return operator;
-	}
+        return operator;
+    }
 
-	private BinaryComparisonOperator buildBinaryOperator(AbstractBinaryComparisonOperator operatorConfig) throws FilterException, QueryBuildException {
-		if (!operatorConfig.isSetLiteral())
-			throw new QueryBuildException("The binary comparison operator " + operatorConfig.getOperatorName() + " requires a literal value.");
+    private BinaryComparisonOperator buildBinaryOperator(AbstractBinaryComparisonOperator operatorConfig) throws FilterException, QueryBuildException {
+        if (!operatorConfig.isSetLiteral())
+            throw new QueryBuildException("The binary comparison operator " + operatorConfig.getOperatorName() + " requires a literal value.");
 
-		// build the value reference
-		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
-		if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
-			throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a simple thematic attribute.");
+        // build the value reference
+        ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
+        if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
+            throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a simple thematic attribute.");
 
-		// convert literal
-		AbstractLiteral<?> literal = convertToLiteral(operatorConfig.getLiteral(), (SimpleAttribute)valueReference.getTarget());
+        // convert literal
+        AbstractLiteral<?> literal = convertToLiteral(operatorConfig.getLiteral(), (SimpleAttribute) valueReference.getTarget());
 
-		// create equivalent filter operation
-		BinaryComparisonOperator operator = null;
-		switch (operatorConfig.getOperatorName()) {
-		case EQUAL_TO:
-			operator = ComparisonFactory.equalTo(valueReference, literal);
-			break;
-		case NOT_EQUAL_TO:
-			operator = ComparisonFactory.notEqualTo(valueReference, literal);
-			break;
-		case GREATER_THAN:
-			operator = ComparisonFactory.greaterThan(valueReference, literal);
-			break;
-		case GREATER_THAN_OR_EQUAL_TO:
-			operator = ComparisonFactory.greaterThanOrEqualTo(valueReference, literal);
-			break;
-		case LESS_THAN:
-			operator = ComparisonFactory.lessThan(valueReference, literal);
-			break;
-		case LESS_THAN_OR_EQUAL_TO:
-			operator = ComparisonFactory.lessThanOrEqualTo(valueReference, literal);
-			break;
-		default:
-			throw new QueryBuildException("Failed to build the binary comparison operator " + operatorConfig.getOperatorName() + ".");
-		}
+        // create equivalent filter operation
+        BinaryComparisonOperator operator = null;
+        switch (operatorConfig.getOperatorName()) {
+            case EQUAL_TO:
+                operator = ComparisonFactory.equalTo(valueReference, literal);
+                break;
+            case NOT_EQUAL_TO:
+                operator = ComparisonFactory.notEqualTo(valueReference, literal);
+                break;
+            case GREATER_THAN:
+                operator = ComparisonFactory.greaterThan(valueReference, literal);
+                break;
+            case GREATER_THAN_OR_EQUAL_TO:
+                operator = ComparisonFactory.greaterThanOrEqualTo(valueReference, literal);
+                break;
+            case LESS_THAN:
+                operator = ComparisonFactory.lessThan(valueReference, literal);
+                break;
+            case LESS_THAN_OR_EQUAL_TO:
+                operator = ComparisonFactory.lessThanOrEqualTo(valueReference, literal);
+                break;
+            default:
+                throw new QueryBuildException("Failed to build the binary comparison operator " + operatorConfig.getOperatorName() + ".");
+        }
 
-		// finally, set match case
-		operator.setMatchCase(operatorConfig.isMatchCase());
+        // finally, set match case
+        operator.setMatchCase(operatorConfig.isMatchCase());
 
-		return operator;
-	}
+        return operator;
+    }
 
-	private BetweenOperator buildBetweenOperator(org.citydb.config.project.query.filter.selection.comparison.BetweenOperator operatorConfig) throws FilterException, QueryBuildException {
-		if (!operatorConfig.isSetLowerBoundary() || !operatorConfig.isSetUpperBoundary())
-			throw new QueryBuildException("The between operator requires both a lower and upper boundary value.");
+    private BetweenOperator buildBetweenOperator(org.citydb.config.project.query.filter.selection.comparison.BetweenOperator operatorConfig) throws FilterException, QueryBuildException {
+        if (!operatorConfig.isSetLowerBoundary() || !operatorConfig.isSetUpperBoundary())
+            throw new QueryBuildException("The between operator requires both a lower and upper boundary value.");
 
-		// build the value reference
-		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
-		if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
-			throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a simple thematic attribute.");
+        // build the value reference
+        ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
+        if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
+            throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a simple thematic attribute.");
 
-		// convert lower and upper boundary
-		AbstractLiteral<?> lowerBoundary = convertToLiteral(operatorConfig.getLowerBoundary(), (SimpleAttribute)valueReference.getTarget());
-		AbstractLiteral<?> upperBoundary = convertToLiteral(operatorConfig.getUpperBoundary(), (SimpleAttribute)valueReference.getTarget());
+        // convert lower and upper boundary
+        AbstractLiteral<?> lowerBoundary = convertToLiteral(operatorConfig.getLowerBoundary(), (SimpleAttribute) valueReference.getTarget());
+        AbstractLiteral<?> upperBoundary = convertToLiteral(operatorConfig.getUpperBoundary(), (SimpleAttribute) valueReference.getTarget());
 
-		// finally, create equivalent filter operation
-		return ComparisonFactory.between(valueReference, lowerBoundary, upperBoundary);
-	}
+        // finally, create equivalent filter operation
+        return ComparisonFactory.between(valueReference, lowerBoundary, upperBoundary);
+    }
 
-	private LikeOperator buildLikeOperator(org.citydb.config.project.query.filter.selection.comparison.LikeOperator operatorConfig) throws FilterException, QueryBuildException {
-		if (!operatorConfig.isSetLiteral())
-			throw new QueryBuildException("The like operator requires a literal value.");
+    private LikeOperator buildLikeOperator(org.citydb.config.project.query.filter.selection.comparison.LikeOperator operatorConfig) throws FilterException, QueryBuildException {
+        if (!operatorConfig.isSetLiteral())
+            throw new QueryBuildException("The like operator requires a literal value.");
 
-		// build the value reference
-		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
-		if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
-			throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a simple thematic attribute.");
+        // build the value reference
+        ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
+        if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
+            throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a simple thematic attribute.");
 
-		// convert literal
-		AbstractLiteral<?> literal = convertToLiteral(operatorConfig.getLiteral(), (SimpleAttribute)valueReference.getTarget());
+        // convert literal
+        AbstractLiteral<?> literal = convertToLiteral(operatorConfig.getLiteral(), (SimpleAttribute) valueReference.getTarget());
 
-		// check wildcard and escape characters
-		String wildCard = operatorConfig.getWildCard();
-		String singleCharacter = operatorConfig.getSingleCharacter();
-		String escapeCharacter = operatorConfig.getEscapeCharacter();
+        // check wildcard and escape characters
+        String wildCard = operatorConfig.getWildCard();
+        String singleCharacter = operatorConfig.getSingleCharacter();
+        String escapeCharacter = operatorConfig.getEscapeCharacter();
 
-		if (wildCard == null || wildCard.length() > 1)
-			throw new QueryBuildException("Wildcards must be defined by a single character.");
+        if (wildCard == null || wildCard.length() > 1)
+            throw new QueryBuildException("Wildcards must be defined by a single character.");
 
-		if (singleCharacter == null || singleCharacter.length() > 1)
-			throw new QueryBuildException("Wildcards must be defined by a single character.");
+        if (singleCharacter == null || singleCharacter.length() > 1)
+            throw new QueryBuildException("Wildcards must be defined by a single character.");
 
-		if (escapeCharacter == null || escapeCharacter.length() > 1)
-			throw new QueryBuildException("An escape character must be defined by a single character.");
+        if (escapeCharacter == null || escapeCharacter.length() > 1)
+            throw new QueryBuildException("An escape character must be defined by a single character.");
 
-		// finally, create equivalent filter operation
-		LikeOperator operator = ComparisonFactory.like(valueReference, literal);
-		operator.setWildCard(wildCard);
-		operator.setSingleCharacter(singleCharacter);
-		operator.setEscapeCharacter(escapeCharacter);
-		operator.setMatchCase(operatorConfig.isMatchCase());
+        // finally, create equivalent filter operation
+        LikeOperator operator = ComparisonFactory.like(valueReference, literal);
+        operator.setWildCard(wildCard);
+        operator.setSingleCharacter(singleCharacter);
+        operator.setEscapeCharacter(escapeCharacter);
+        operator.setMatchCase(operatorConfig.isMatchCase());
 
-		return operator;
-	}
+        return operator;
+    }
 
-	private NullOperator buildNullComparison(org.citydb.config.project.query.filter.selection.comparison.NullOperator operatorConfig) throws FilterException, QueryBuildException {
-		// build the value reference
-		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
-		if (!(valueReference.getTarget() instanceof AbstractProperty))
-			throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a property.");
+    private NullOperator buildNullComparison(org.citydb.config.project.query.filter.selection.comparison.NullOperator operatorConfig) throws FilterException, QueryBuildException {
+        // build the value reference
+        ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
+        if (!(valueReference.getTarget() instanceof AbstractProperty))
+            throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a property.");
 
-		// finally, create equivalent filter operation
-		return ComparisonFactory.isNull(valueReference);
-	}
+        // finally, create equivalent filter operation
+        return ComparisonFactory.isNull(valueReference);
+    }
 
-	private AbstractLiteral<?> convertToLiteral(String literalValue, SimpleAttribute attribute) throws QueryBuildException {
-		AbstractLiteral<?> literal = null;
+    private AbstractLiteral<?> convertToLiteral(String literalValue, SimpleAttribute attribute) throws QueryBuildException {
+        AbstractLiteral<?> literal = null;
 
-		switch (attribute.getType()) {
-			case STRING:
-				literal = new StringLiteral(literalValue);
-				break;
-			case DOUBLE:
-				try {
-					literal = new DoubleLiteral(Double.parseDouble(literalValue));
-				} catch (NumberFormatException e) {
-					//
-				}
-				break;
-			case INTEGER:
-				try {
-					literal = new IntegerLiteral(Integer.parseInt(literalValue));
-				} catch (NumberFormatException e) {
-					//
-				}
-				break;
-			case BOOLEAN:
-				try {
-					if ("true".equalsIgnoreCase(literalValue))
-						literal = new BooleanLiteral(true);
-					else if ("false".equalsIgnoreCase(literalValue))
-						literal = new BooleanLiteral(false);
-					else {
-						long value = Integer.parseInt(literalValue);
-						literal = new BooleanLiteral(value == 1);
-					}
-				} catch (Exception e) {
-					//
-				}
-				break;
-			case DATE:
-				try {
-					literal = new DateLiteral(DatatypeConverter.parseDateTime(literalValue));
-					((DateLiteral) literal).setXMLLiteral(literalValue);
-				} catch (IllegalArgumentException e) {
-					//
-				}
-				break;
-			case TIMESTAMP:
-				try {
-					XMLGregorianCalendar calendar = datatypeFactory.newXMLGregorianCalendar(literalValue);
-					literal = new TimestampLiteral(toInstant(calendar));
-					((TimestampLiteral) literal).setXMLLiteral(literalValue);
-				} catch (IllegalArgumentException e) {
-					//
-				}
-				break;
-			case CLOB:
-				throw new QueryBuildException("CLOB columns are not supported in comparison operations.");
-		}
+        switch (attribute.getType()) {
+            case STRING:
+                literal = new StringLiteral(literalValue);
+                break;
+            case DOUBLE:
+                try {
+                    literal = new DoubleLiteral(Double.parseDouble(literalValue));
+                } catch (NumberFormatException e) {
+                    //
+                }
+                break;
+            case INTEGER:
+                try {
+                    literal = new IntegerLiteral(Integer.parseInt(literalValue));
+                } catch (NumberFormatException e) {
+                    //
+                }
+                break;
+            case BOOLEAN:
+                try {
+                    if ("true".equalsIgnoreCase(literalValue))
+                        literal = new BooleanLiteral(true);
+                    else if ("false".equalsIgnoreCase(literalValue))
+                        literal = new BooleanLiteral(false);
+                    else {
+                        long value = Integer.parseInt(literalValue);
+                        literal = new BooleanLiteral(value == 1);
+                    }
+                } catch (Exception e) {
+                    //
+                }
+                break;
+            case DATE:
+                try {
+                    literal = new DateLiteral(DatatypeConverter.parseDateTime(literalValue));
+                    ((DateLiteral) literal).setXMLLiteral(literalValue);
+                } catch (IllegalArgumentException e) {
+                    //
+                }
+                break;
+            case TIMESTAMP:
+                try {
+                    XMLGregorianCalendar calendar = datatypeFactory.newXMLGregorianCalendar(literalValue);
+                    literal = new TimestampLiteral(toInstant(calendar));
+                    ((TimestampLiteral) literal).setXMLLiteral(literalValue);
+                } catch (IllegalArgumentException e) {
+                    //
+                }
+                break;
+            case CLOB:
+                throw new QueryBuildException("CLOB columns are not supported in comparison operations.");
+        }
 
-		if (literal == null)
-			throw new QueryBuildException("Failed to map '" + literalValue + "' to a " + attribute.getType().value() + " value.");
+        if (literal == null)
+            throw new QueryBuildException("Failed to map '" + literalValue + "' to a " + attribute.getType().value() + " value.");
 
-		return literal;
-	}
+        return literal;
+    }
 
-	private Instant toInstant(XMLGregorianCalendar calendar) {
-		if (calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
-			calendar.setTimezone(0);
-		}
+    private Instant toInstant(XMLGregorianCalendar calendar) {
+        if (calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
+            calendar.setTimezone(0);
+        }
 
-		return calendar.toGregorianCalendar().toInstant();
-	}
+        return calendar.toGregorianCalendar().toInstant();
+    }
 }

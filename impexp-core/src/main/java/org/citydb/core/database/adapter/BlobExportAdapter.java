@@ -43,92 +43,92 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class BlobExportAdapter {
-	protected final Connection connection;
-	private final BlobType blobType;
-	private final String schema;
-	private final Map<Long, BatchEntry> batches;
+    protected final Connection connection;
+    private final BlobType blobType;
+    private final String schema;
+    private final Map<Long, BatchEntry> batches;
 
-	private PreparedStatement psExport;
-	private PreparedStatement psBulk;
-	private int batchSize;
+    private PreparedStatement psExport;
+    private PreparedStatement psBulk;
+    private int batchSize;
 
-	public BlobExportAdapter(Connection connection, BlobType blobType, String schema) {
-		this.connection = connection;
-		this.blobType = blobType;
-		this.schema = schema;
+    public BlobExportAdapter(Connection connection, BlobType blobType, String schema) {
+        this.connection = connection;
+        this.blobType = blobType;
+        this.schema = schema;
 
-		batches = new HashMap<>();
-		batchSize = ExportBatching.DEFAULT_BATCH_SIZE;
-	}
+        batches = new HashMap<>();
+        batchSize = ExportBatching.DEFAULT_BATCH_SIZE;
+    }
 
-	public BlobExportAdapter withBatchSize(int batchSize) {
-		this.batchSize = batchSize;
-		return this;
-	}
+    public BlobExportAdapter withBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+        return this;
+    }
 
-	public int addBatch(long id, BatchEntry entry) throws IOException, SQLException {
-		batches.put(id, entry);
-		return batches.size() == batchSize ? executeBatch() : 0;
-	}
+    public int addBatch(long id, BatchEntry entry) throws IOException, SQLException {
+        batches.put(id, entry);
+        return batches.size() == batchSize ? executeBatch() : 0;
+    }
 
-	public int executeBatch() throws SQLException, IOException {
-		if (batches.isEmpty())
-			return 0;
+    public int executeBatch() throws SQLException, IOException {
+        if (batches.isEmpty())
+            return 0;
 
-		try {
-			if (psBulk == null) {
-				psBulk = connection.prepareStatement((blobType == BlobType.TEXTURE_IMAGE ?
-						"select id, tex_image_data from " + schema + ".tex_image " :
-						"select id, library_object from " + schema + ".implicit_geometry ") +
-						"where id in (" + String.join(",", Collections.nCopies(batchSize, "?")) + ")");
-			}
+        try {
+            if (psBulk == null) {
+                psBulk = connection.prepareStatement((blobType == BlobType.TEXTURE_IMAGE ?
+                        "select id, tex_image_data from " + schema + ".tex_image " :
+                        "select id, library_object from " + schema + ".implicit_geometry ") +
+                        "where id in (" + String.join(",", Collections.nCopies(batchSize, "?")) + ")");
+            }
 
-			Long[] ids = batches.keySet().toArray(new Long[0]);
-			for (int i = 0; i < batchSize; i++)
-				psBulk.setLong(i + 1, i < ids.length ? ids[i] : 0);
+            Long[] ids = batches.keySet().toArray(new Long[0]);
+            for (int i = 0; i < batchSize; i++)
+                psBulk.setLong(i + 1, i < ids.length ? ids[i] : 0);
 
-			int exported = 0;
-			try (ResultSet rs = psBulk.executeQuery()) {
-				while (rs.next()) {
-					BatchEntry entry = batches.get(rs.getLong(1));
-					if (entry != null
-							&& entry.canWrite.get()
-							&& writeToStream(rs.getBytes(2), entry.streamSupplier.get()))
-						exported++;
-				}
-			}
+            int exported = 0;
+            try (ResultSet rs = psBulk.executeQuery()) {
+                while (rs.next()) {
+                    BatchEntry entry = batches.get(rs.getLong(1));
+                    if (entry != null
+                            && entry.canWrite.get()
+                            && writeToStream(rs.getBytes(2), entry.streamSupplier.get()))
+                        exported++;
+                }
+            }
 
-			return exported;
-		} finally {
-			batches.clear();
-		}
-	}
+            return exported;
+        } finally {
+            batches.clear();
+        }
+    }
 
-	public byte[] getInByteArray(long id) throws SQLException {
-		if (psExport == null) {
-			psExport = connection.prepareStatement((blobType == BlobType.TEXTURE_IMAGE ?
-					"select tex_image_data from " + schema + ".tex_image " :
-					"select library_object from " + schema + ".implicit_geometry ") +
-					"where id = ?");
-		}
+    public byte[] getInByteArray(long id) throws SQLException {
+        if (psExport == null) {
+            psExport = connection.prepareStatement((blobType == BlobType.TEXTURE_IMAGE ?
+                    "select tex_image_data from " + schema + ".tex_image " :
+                    "select library_object from " + schema + ".implicit_geometry ") +
+                    "where id = ?");
+        }
 
-		psExport.setLong(1, id);
-		try (ResultSet rs = psExport.executeQuery()) {
-			return rs.next() ? rs.getBytes(1) : null;
-		}
-	}
+        psExport.setLong(1, id);
+        try (ResultSet rs = psExport.executeQuery()) {
+            return rs.next() ? rs.getBytes(1) : null;
+        }
+    }
 
-	public boolean writeToFile(long id, String fileName) throws SQLException, IOException {
+    public boolean writeToFile(long id, String fileName) throws SQLException, IOException {
         return writeToStream(getInByteArray(id), Files.newOutputStream(Paths.get(fileName)));
-	}
+    }
 
-	public boolean writeToStream(long id, OutputStream stream) throws SQLException, IOException {
-	    return writeToStream(getInByteArray(id), stream);
-	}
+    public boolean writeToStream(long id, OutputStream stream) throws SQLException, IOException {
+        return writeToStream(getInByteArray(id), stream);
+    }
 
-	private boolean writeToStream(byte[] buffer, OutputStream stream) throws IOException {
-	    if (buffer != null && buffer.length != 0) {
-	        try (OutputStream out = stream) {
+    private boolean writeToStream(byte[] buffer, OutputStream stream) throws IOException {
+        if (buffer != null && buffer.length != 0) {
+            try (OutputStream out = stream) {
                 out.write(buffer);
                 return true;
             }
@@ -136,26 +136,26 @@ public class BlobExportAdapter {
             return false;
     }
 
-	public void close() throws SQLException {
-		if (psExport != null)
-			psExport.close();
+    public void close() throws SQLException {
+        if (psExport != null)
+            psExport.close();
 
-		if (psBulk != null)
-			psBulk.close();
-	}
+        if (psBulk != null)
+            psBulk.close();
+    }
 
-	@FunctionalInterface
-	public interface OutputStreamSupplier {
-		OutputStream get() throws IOException;
-	}
+    @FunctionalInterface
+    public interface OutputStreamSupplier {
+        OutputStream get() throws IOException;
+    }
 
-	public static class BatchEntry {
-		private final OutputStreamSupplier streamSupplier;
-		private final Supplier<Boolean> canWrite;
+    public static class BatchEntry {
+        private final OutputStreamSupplier streamSupplier;
+        private final Supplier<Boolean> canWrite;
 
-		public BatchEntry(OutputStreamSupplier streamSupplier, Supplier<Boolean> canWrite) {
-			this.streamSupplier = streamSupplier;
-			this.canWrite = canWrite;
-		}
-	}
+        public BatchEntry(OutputStreamSupplier streamSupplier, Supplier<Boolean> canWrite) {
+            this.streamSupplier = streamSupplier;
+            this.canWrite = canWrite;
+        }
+    }
 }

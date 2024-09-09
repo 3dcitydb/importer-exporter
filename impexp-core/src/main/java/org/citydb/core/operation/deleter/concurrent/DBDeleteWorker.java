@@ -50,158 +50,158 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHandler {
-	private final ReentrantLock mainLock = new ReentrantLock();
-	private final Logger log = Logger.getInstance();
+    private final ReentrantLock mainLock = new ReentrantLock();
+    private final Logger log = Logger.getInstance();
 
-	private final PreparedStatement stmt;
-	private final AbstractDatabaseAdapter databaseAdapter;
-	private final DeleteLogger deleteLogger;
-	private final InternalConfig internalConfig;
-	private final EventDispatcher eventDispatcher;
-	private final DeleteMode mode;
+    private final PreparedStatement stmt;
+    private final AbstractDatabaseAdapter databaseAdapter;
+    private final DeleteLogger deleteLogger;
+    private final InternalConfig internalConfig;
+    private final EventDispatcher eventDispatcher;
+    private final DeleteMode mode;
 
-	private volatile boolean shouldRun = true;
-	private volatile boolean shouldWork = true;
-	private int idType;
+    private volatile boolean shouldRun = true;
+    private volatile boolean shouldWork = true;
+    private int idType;
 
-	public DBDeleteWorker(
-			Connection connection,
-			AbstractDatabaseAdapter databaseAdapter,
-			DeleteLogger deleteLogger,
-			InternalConfig internalConfig,
-			Config config,
-			EventDispatcher eventDispatcher) throws SQLException {
-		this.databaseAdapter = databaseAdapter;
-		this.deleteLogger = deleteLogger;
-		this.internalConfig = internalConfig;
-		this.eventDispatcher = eventDispatcher;
+    public DBDeleteWorker(
+            Connection connection,
+            AbstractDatabaseAdapter databaseAdapter,
+            DeleteLogger deleteLogger,
+            InternalConfig internalConfig,
+            Config config,
+            EventDispatcher eventDispatcher) throws SQLException {
+        this.databaseAdapter = databaseAdapter;
+        this.deleteLogger = deleteLogger;
+        this.internalConfig = internalConfig;
+        this.eventDispatcher = eventDispatcher;
 
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+        eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		mode = config.getDeleteConfig().getMode();
-		if (mode == DeleteMode.TERMINATE) {
-			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
-			if (internalConfig.getReasonForUpdate() != null) {
-				update.append(", reason_for_update = '").append(internalConfig.getReasonForUpdate()).append("'");
-			}
+        mode = config.getDeleteConfig().getMode();
+        if (mode == DeleteMode.TERMINATE) {
+            StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
+            if (internalConfig.getReasonForUpdate() != null) {
+                update.append(", reason_for_update = '").append(internalConfig.getReasonForUpdate()).append("'");
+            }
 
-			if (internalConfig.getLineage() != null) {
-				update.append(", lineage = '").append(internalConfig.getLineage()).append("' ");
-			}
+            if (internalConfig.getLineage() != null) {
+                update.append(", lineage = '").append(internalConfig.getLineage()).append("' ");
+            }
 
-			update.append("where id = ?");
+            update.append("where id = ?");
 
-			stmt = connection.prepareStatement(update.toString());
-		} else {
-			idType = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 2, 0) < 0 ?
-					Types.INTEGER :
-					Types.BIGINT;
+            stmt = connection.prepareStatement(update.toString());
+        } else {
+            idType = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 2, 0) < 0 ?
+                    Types.INTEGER :
+                    Types.BIGINT;
 
-			stmt = connection.prepareCall("{? = call "
-					+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
-					+ "(?)}");
-			((CallableStatement) stmt).registerOutParameter(1, idType);
-		}
-	}
+            stmt = connection.prepareCall("{? = call "
+                    + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
+                    + "(?)}");
+            ((CallableStatement) stmt).registerOutParameter(1, idType);
+        }
+    }
 
-	@Override
-	public void interrupt() {
-		shouldRun = false;
-	}
+    @Override
+    public void interrupt() {
+        shouldRun = false;
+    }
 
-	@Override
-	public void run() {
-		try {
-			if (firstWork != null) {
-				doWork(firstWork);
-				firstWork = null;
-			}
+    @Override
+    public void run() {
+        try {
+            if (firstWork != null) {
+                doWork(firstWork);
+                firstWork = null;
+            }
 
-			while (shouldRun) {
-				try {
-					DBSplittingResult work = workQueue.take();
-					doWork(work);
-				} catch (InterruptedException ie) {
-					// re-check state
-				}
-			}
-		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (SQLException e) {
-				log.logStackTrace(e);
-			}
+            while (shouldRun) {
+                try {
+                    DBSplittingResult work = workQueue.take();
+                    doWork(work);
+                } catch (InterruptedException ie) {
+                    // re-check state
+                }
+            }
+        } finally {
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch (SQLException e) {
+                log.logStackTrace(e);
+            }
 
-			eventDispatcher.removeEventHandler(this);
-		}
-	}
+            eventDispatcher.removeEventHandler(this);
+        }
+    }
 
-	private void doWork(DBSplittingResult work) {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+    private void doWork(DBSplittingResult work) {
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			if (!shouldWork)
-				return;
+        try {
+            if (!shouldWork)
+                return;
 
-			long objectId = work.getId();
-			long deletedObjectId;
+            long objectId = work.getId();
+            long deletedObjectId;
 
-			if (mode == DeleteMode.TERMINATE) {
-				OffsetDateTime now = OffsetDateTime.now();
+            if (mode == DeleteMode.TERMINATE) {
+                OffsetDateTime now = OffsetDateTime.now();
 
-				OffsetDateTime terminationDate = internalConfig.getTerminationDate() != null ?
-						internalConfig.getTerminationDate() :
-						now;
+                OffsetDateTime terminationDate = internalConfig.getTerminationDate() != null ?
+                        internalConfig.getTerminationDate() :
+                        now;
 
-				String updatingPerson = internalConfig.getUpdatingPersonMode() == UpdatingPersonMode.USER ?
-						internalConfig.getUpdatingPerson() :
-						databaseAdapter.getConnectionDetails().getUser();
+                String updatingPerson = internalConfig.getUpdatingPersonMode() == UpdatingPersonMode.USER ?
+                        internalConfig.getUpdatingPerson() :
+                        databaseAdapter.getConnectionDetails().getUser();
 
-				stmt.setObject(1, terminationDate);
-				stmt.setObject(2, now);
-				stmt.setString(3, updatingPerson);
-				stmt.setLong(4, objectId);
+                stmt.setObject(1, terminationDate);
+                stmt.setObject(2, now);
+                stmt.setString(3, updatingPerson);
+                stmt.setLong(4, objectId);
 
-				stmt.executeUpdate();
-				deletedObjectId = objectId;
-			} else {
-				stmt.setObject(2, objectId, idType);
-				stmt.executeUpdate();
-				deletedObjectId = idType == Types.INTEGER ?
-						((CallableStatement) stmt).getInt(1) :
-						((CallableStatement) stmt).getLong(1);
-			}
+                stmt.executeUpdate();
+                deletedObjectId = objectId;
+            } else {
+                stmt.setObject(2, objectId, idType);
+                stmt.executeUpdate();
+                deletedObjectId = idType == Types.INTEGER ?
+                        ((CallableStatement) stmt).getInt(1) :
+                        ((CallableStatement) stmt).getLong(1);
+            }
 
-			if (deletedObjectId == objectId) {
-				log.debug(work.getObjectType() + " (ID = " + objectId + ") " + (mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
-				if (deleteLogger != null) {
-					deleteLogger.write(work.getObjectType().getPath(), objectId, work.getGmlId());
-				}
-			} else {
-				log.debug(work.getObjectType() + " (ID = " + objectId + ") is already deleted.");
-			}
+            if (deletedObjectId == objectId) {
+                log.debug(work.getObjectType() + " (ID = " + objectId + ") " + (mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
+                if (deleteLogger != null) {
+                    deleteLogger.write(work.getObjectType().getPath(), objectId, work.getGmlId());
+                }
+            } else {
+                log.debug(work.getObjectType() + " (ID = " + objectId + ") is already deleted.");
+            }
 
-			Map<Integer, Long> objectCounter = Collections.singletonMap(work.getObjectType().getObjectClassId(), 1L);
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel));
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1L));
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
-		} catch (SQLException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to " + mode.value() + " " + work.getObjectType() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel));
-		} catch (IOException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the delete log.", LogLevel.ERROR, e, eventChannel));
-		} catch (Throwable e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during " + mode.value() + ".", LogLevel.ERROR, e, eventChannel));
-		} finally {
-			lock.unlock();
-		}
-	}
+            Map<Integer, Long> objectCounter = Collections.singletonMap(work.getObjectType().getObjectClassId(), 1L);
+            eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel));
+            eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1L));
+            eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1));
+        } catch (SQLException e) {
+            eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to " + mode.value() + " " + work.getObjectType() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel));
+        } catch (IOException e) {
+            eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the delete log.", LogLevel.ERROR, e, eventChannel));
+        } catch (Throwable e) {
+            eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during " + mode.value() + ".", LogLevel.ERROR, e, eventChannel));
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		if (event.getChannel() == eventChannel) {
-			shouldWork = false;
-		}
-	}
+    @Override
+    public void handleEvent(Event event) throws Exception {
+        if (event.getChannel() == eventChannel) {
+            shouldWork = false;
+        }
+    }
 }

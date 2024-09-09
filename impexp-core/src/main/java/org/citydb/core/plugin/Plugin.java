@@ -30,32 +30,32 @@ package org.citydb.core.plugin;
 import org.citydb.core.plugin.metadata.PluginMetadata;
 
 public abstract class Plugin {
-	private boolean enabled = true;
-	private PluginMetadata metadata;
+    private boolean enabled = true;
+    private PluginMetadata metadata;
 
-	public final boolean isEnabled() {
-		return enabled;
-	}
+    public final boolean isEnabled() {
+        return enabled;
+    }
 
-	final void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
+    final void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
-	public final PluginMetadata getMetadata() {
-		return metadata;
-	}
+    public final PluginMetadata getMetadata() {
+        return metadata;
+    }
 
-	final void setMetadata(PluginMetadata metadata) {
-		this.metadata = metadata;
-	}
+    final void setMetadata(PluginMetadata metadata) {
+        this.metadata = metadata;
+    }
 
-	final void validate() throws PluginException {
-		if (metadata == null) {
-			throw new PluginException("The plugin lacks mandatory metadata.");
-		}
+    final void validate() throws PluginException {
+        if (metadata == null) {
+            throw new PluginException("The plugin lacks mandatory metadata.");
+        }
 
-		if (metadata.getName() == null || metadata.getName().trim().isEmpty()) {
-			metadata.setName(getClass().getSimpleName());
-		}
-	}
+        if (metadata.getName() == null || metadata.getName().trim().isEmpty()) {
+            metadata.setName(getClass().getSimpleName());
+        }
+    }
 }

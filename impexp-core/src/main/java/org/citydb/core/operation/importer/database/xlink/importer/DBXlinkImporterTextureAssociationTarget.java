@@ -34,44 +34,44 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBXlinkImporterTextureAssociationTarget implements DBXlinkImporter {
-	private final DBXlinkImporterManager xlinkImporterManager;
-	private PreparedStatement psXlink;
-	private int batchCounter;
+    private final DBXlinkImporterManager xlinkImporterManager;
+    private PreparedStatement psXlink;
+    private int batchCounter;
 
-	public DBXlinkImporterTextureAssociationTarget(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
-		this.xlinkImporterManager = xlinkImporterManager;
+    public DBXlinkImporterTextureAssociationTarget(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+        this.xlinkImporterManager = xlinkImporterManager;
 
-		psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (SURFACE_DATA_ID, SURFACE_GEOMETRY_ID, GMLID) values " +
-			"(?, ?, ?)");
-	}
+        psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() +
+                " (SURFACE_DATA_ID, SURFACE_GEOMETRY_ID, GMLID) values " +
+                "(?, ?, ?)");
+    }
 
-	public boolean insert(DBXlinkTextureAssociationTarget xlinkEntry) throws SQLException {
-		psXlink.setLong(1, xlinkEntry.getSurfaceDataId());
-		psXlink.setLong(2, xlinkEntry.getSurfaceGeometryId());
-		psXlink.setString(3, xlinkEntry.getGmlId());
+    public boolean insert(DBXlinkTextureAssociationTarget xlinkEntry) throws SQLException {
+        psXlink.setLong(1, xlinkEntry.getSurfaceDataId());
+        psXlink.setLong(2, xlinkEntry.getSurfaceGeometryId());
+        psXlink.setString(3, xlinkEntry.getGmlId());
 
-		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
-			executeBatch();
+        psXlink.addBatch();
+        if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
+            executeBatch();
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psXlink.executeBatch();
-		batchCounter = 0;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psXlink.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psXlink.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        psXlink.close();
+    }
 
-	@Override
-	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.TEXTUREASSOCIATION_TARGET;
-	}
+    @Override
+    public DBXlinkImporterEnum getDBXlinkImporterType() {
+        return DBXlinkImporterEnum.TEXTUREASSOCIATION_TARGET;
+    }
 
 }

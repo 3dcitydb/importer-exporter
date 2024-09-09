@@ -386,8 +386,8 @@ public class Importer implements EventHandler {
         while (shouldRun && fileCounter < files.size()) {
             // check whether we reached the counter limit
             if (filter.isSetCounterFilter() && !filter.getCounterFilter().isCountSatisfied()) {
-            	break;
-			}
+                break;
+            }
 
             InternalConfig internalConfig = new InternalConfig();
 
@@ -395,7 +395,7 @@ public class Importer implements EventHandler {
                 internalConfig.setInputFile(file);
                 Path contentFile = file.getType() != FileType.ARCHIVE ?
                         file.getFile() :
-						Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
+                        Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
                 eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString()));
                 eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.cityObj.msg")));
@@ -413,16 +413,16 @@ public class Importer implements EventHandler {
                 // set gml:id codespace starting from version 3.1
                 if (databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0) {
                     if (config.getImportConfig().getResourceId().isSetNoneCodeSpaceMode()) {
-                    	internalConfig.setCurrentGmlIdCodespace(null);
-					} else if (config.getImportConfig().getResourceId().isSetRelativeCodeSpaceMode()) {
-                    	internalConfig.setCurrentGmlIdCodespace(file.getFile().getFileName().toString());
-					} else if (config.getImportConfig().getResourceId().isSetAbsoluteCodeSpaceMode()) {
-                    	internalConfig.setCurrentGmlIdCodespace(file.getFile().toString());
-					} else if (config.getImportConfig().getResourceId().isSetUserCodeSpaceMode()) {
+                        internalConfig.setCurrentGmlIdCodespace(null);
+                    } else if (config.getImportConfig().getResourceId().isSetRelativeCodeSpaceMode()) {
+                        internalConfig.setCurrentGmlIdCodespace(file.getFile().getFileName().toString());
+                    } else if (config.getImportConfig().getResourceId().isSetAbsoluteCodeSpaceMode()) {
+                        internalConfig.setCurrentGmlIdCodespace(file.getFile().toString());
+                    } else if (config.getImportConfig().getResourceId().isSetUserCodeSpaceMode()) {
                         String codespace = config.getImportConfig().getResourceId().getCodeSpace();
                         if (codespace != null && !codespace.isEmpty()) {
-                        	internalConfig.setCurrentGmlIdCodespace(codespace);
-						}
+                            internalConfig.setCurrentGmlIdCodespace(codespace);
+                        }
                     }
                 }
 
@@ -521,8 +521,8 @@ public class Importer implements EventHandler {
 
                     // show XML validation errors
                     if (reader.getValidationErrors() > 0) {
-                    	log.warn(reader.getValidationErrors() + " error(s) encountered while validating the document.");
-					}
+                        log.warn(reader.getValidationErrors() + " error(s) encountered while validating the document.");
+                    }
                 } catch (FeatureReadException e) {
                     throw new CityGMLImportException("Failed to read input file.", e);
                 }
@@ -591,16 +591,16 @@ public class Importer implements EventHandler {
                 throw new CityGMLImportException("Failed to process import file.", e);
             } finally {
                 if (dbWorkerPool != null && !dbWorkerPool.isTerminated()) {
-                	dbWorkerPool.shutdownNow();
-				}
+                    dbWorkerPool.shutdownNow();
+                }
 
                 if (xlinkResolverPool != null && !xlinkResolverPool.isTerminated()) {
                     xlinkResolverPool.shutdownNow();
-				}
+                }
 
                 if (xlinkPool != null && !xlinkPool.isTerminated()) {
-                	xlinkPool.shutdownNow();
-				}
+                    xlinkPool.shutdownNow();
+                }
 
                 try {
                     eventDispatcher.flushEvents();
@@ -636,12 +636,12 @@ public class Importer implements EventHandler {
                     || config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate()) {
                 try {
                     if (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivateActivate()) {
-                    	manageIndexes(true, true);
-					}
+                        manageIndexes(true, true);
+                    }
 
                     if (config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate()) {
-                    	manageIndexes(true, false);
-					}
+                        manageIndexes(true, false);
+                    }
                 } catch (SQLException e) {
                     log.warn("Failed to activate indexes.", e);
                 }
@@ -692,11 +692,11 @@ public class Importer implements EventHandler {
         }
     }
 
-	private void setException(String message, Throwable cause) {
-		if (exception == null) {
-			exception = new CityGMLImportException(message, cause);
-		}
-	}
+    private void setException(String message, Throwable cause) {
+        if (exception == null) {
+            exception = new CityGMLImportException(message, cause);
+        }
+    }
 
     @Override
     public void handleEvent(Event e) throws Exception {

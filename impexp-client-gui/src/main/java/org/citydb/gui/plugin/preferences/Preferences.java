@@ -28,5 +28,5 @@
 package org.citydb.gui.plugin.preferences;
 
 public interface Preferences {
-	PreferencesEntry getPreferencesEntry();
+    PreferencesEntry getPreferencesEntry();
 }

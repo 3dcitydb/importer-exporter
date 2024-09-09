@@ -32,47 +32,47 @@ import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 
 public class PostGISAdapter extends AbstractDatabaseAdapter {
 
-	public PostGISAdapter() {
-		geometryAdapter = new GeometryConverterAdapter(this);
-		utilAdapter = new UtilAdapter(this);
-		workspaceAdapter = new WorkspaceManagerAdapter(this);
-		schemaAdapter = new SchemaManagerAdapter(this);
-		sqlAdapter = new SQLAdapter(this);
-	}
-	
-	@Override
-	public DatabaseType getDatabaseType() {
-		return DatabaseType.POSTGIS;
-	}
+    public PostGISAdapter() {
+        geometryAdapter = new GeometryConverterAdapter(this);
+        utilAdapter = new UtilAdapter(this);
+        workspaceAdapter = new WorkspaceManagerAdapter(this);
+        schemaAdapter = new SchemaManagerAdapter(this);
+        sqlAdapter = new SQLAdapter(this);
+    }
 
-	@Override
-	public boolean hasVersioningSupport() {
-		return false;
-	}
-	
-	@Override
-	public boolean hasTableStatsSupport() {
-		return true;
-	}
+    @Override
+    public DatabaseType getDatabaseType() {
+        return DatabaseType.POSTGIS;
+    }
 
-	@Override
-	public int getDefaultPort() {
-		return 5432;
-	}
+    @Override
+    public boolean hasVersioningSupport() {
+        return false;
+    }
 
-	@Override
-	public String getConnectionFactoryClassName() {
-		return "org.postgresql.Driver";
-	}
+    @Override
+    public boolean hasTableStatsSupport() {
+        return true;
+    }
 
-	@Override
-	public String getJDBCUrl(String server, int port, String database) {
-		return "jdbc:postgresql://" + server + ":" + port + "/" + database + "?defaultRowFetchSize=10000&reWriteBatchedInserts=true";
-	}
+    @Override
+    public int getDefaultPort() {
+        return 5432;
+    }
 
-	@Override
-	public int getMaxBatchSize() {
-		return 65535;
-	}
-	
+    @Override
+    public String getConnectionFactoryClassName() {
+        return "org.postgresql.Driver";
+    }
+
+    @Override
+    public String getJDBCUrl(String server, int port, String database) {
+        return "jdbc:postgresql://" + server + ":" + port + "/" + database + "?defaultRowFetchSize=10000&reWriteBatchedInserts=true";
+    }
+
+    @Override
+    public int getMaxBatchSize() {
+        return 65535;
+    }
+
 }

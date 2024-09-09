@@ -44,172 +44,175 @@ import java.text.ParseException;
 import java.util.Locale;
 
 public class AppearancePanel extends InternalPreferencesComponent {
-	private TitledPanel exportPanel;
-	private TitledPanel pathPanel;
+    private TitledPanel exportPanel;
+    private TitledPanel pathPanel;
 
-	private JCheckBox exportAppearances;
-	private JCheckBox overwriteCheck;
-	private JCheckBox noTexturesCheck;
-	private JCheckBox generateUniqueCheck;
-	private JLabel pathLabel;
-	private JTextField pathText;
-	private JButton browseButton;
-	private JCheckBox useBuckets;
-	private JFormattedTextField noOfBuckets;
-	
-	public AppearancePanel(Config config) {
-		super(config);
-		initGui();
-	}
+    private JCheckBox exportAppearances;
+    private JCheckBox overwriteCheck;
+    private JCheckBox noTexturesCheck;
+    private JCheckBox generateUniqueCheck;
+    private JLabel pathLabel;
+    private JTextField pathText;
+    private JButton browseButton;
+    private JCheckBox useBuckets;
+    private JFormattedTextField noOfBuckets;
 
-	@Override
-	public boolean isModified() {
-		ExportAppearance appearances = config.getExportConfig().getAppearances();
+    public AppearancePanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-		try { noOfBuckets.commitEdit(); } catch (ParseException ignored) { }
+    @Override
+    public boolean isModified() {
+        ExportAppearance appearances = config.getExportConfig().getAppearances();
 
-		if (!pathText.getText().equals(appearances.getTexturePath().getPath())) return true;
-		if (exportAppearances.isSelected() != appearances.isSetExportAppearance()) return true;
-		if (noTexturesCheck.isSelected() == appearances.isSetExportTextureFiles()) return true;
-		if (overwriteCheck.isSelected() != appearances.isSetOverwriteTextureFiles()) return true;
-		if (generateUniqueCheck.isSelected() != appearances.isSetUniqueTextureFileNames()) return true;
-		if (useBuckets.isSelected() != appearances.getTexturePath().isUseBuckets()) return true;
-		if (((Number)noOfBuckets.getValue()).intValue() != appearances.getTexturePath().getNoOfBuckets()) return true;
+        try {
+            noOfBuckets.commitEdit();
+        } catch (ParseException ignored) {
+        }
 
-		return false;
-	}
+        if (!pathText.getText().equals(appearances.getTexturePath().getPath())) return true;
+        if (exportAppearances.isSelected() != appearances.isSetExportAppearance()) return true;
+        if (noTexturesCheck.isSelected() == appearances.isSetExportTextureFiles()) return true;
+        if (overwriteCheck.isSelected() != appearances.isSetOverwriteTextureFiles()) return true;
+        if (generateUniqueCheck.isSelected() != appearances.isSetUniqueTextureFileNames()) return true;
+        if (useBuckets.isSelected() != appearances.getTexturePath().isUseBuckets()) return true;
+        if (((Number) noOfBuckets.getValue()).intValue() != appearances.getTexturePath().getNoOfBuckets()) return true;
 
-	private void initGui() {
-		overwriteCheck = new JCheckBox();
-		noTexturesCheck = new JCheckBox();
-		generateUniqueCheck = new JCheckBox();
-		exportAppearances = new JCheckBox();
+        return false;
+    }
 
-		ButtonGroup group = new ButtonGroup();
-		group.add(overwriteCheck);
-		group.add(noTexturesCheck);
+    private void initGui() {
+        overwriteCheck = new JCheckBox();
+        noTexturesCheck = new JCheckBox();
+        generateUniqueCheck = new JCheckBox();
+        exportAppearances = new JCheckBox();
 
-		pathLabel = new JLabel();
-		pathText = new JTextField();
-		browseButton = new JButton();
+        ButtonGroup group = new ButtonGroup();
+        group.add(overwriteCheck);
+        group.add(noTexturesCheck);
 
-		useBuckets = new JCheckBox();
-		NumberFormatter bucketsFormat = new NumberFormatter(new DecimalFormat("#"));
-		bucketsFormat.setMinimum(99999999);
-		bucketsFormat.setMinimum(0);
-		noOfBuckets = new JFormattedTextField(bucketsFormat);
+        pathLabel = new JLabel();
+        pathText = new JTextField();
+        browseButton = new JButton();
 
-		PopupMenuDecorator.getInstance().decorate(pathText, noOfBuckets);
-		
-		browseButton.addActionListener(e -> {
-			String path = browseFile(Language.I18N.getString("pref.export.appearance.label.absPath"), pathText.getText());
-			if (!path.isEmpty())
-				pathText.setText(path);
-		});
+        useBuckets = new JCheckBox();
+        NumberFormatter bucketsFormat = new NumberFormatter(new DecimalFormat("#"));
+        bucketsFormat.setMinimum(99999999);
+        bucketsFormat.setMinimum(0);
+        noOfBuckets = new JFormattedTextField(bucketsFormat);
 
-		setLayout(new GridBagLayout());
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(overwriteCheck, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				content.add(generateUniqueCheck, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-				content.add(noTexturesCheck, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			}
+        PopupMenuDecorator.getInstance().decorate(pathText, noOfBuckets);
 
-			exportPanel = new TitledPanel()
-					.withToggleButton(exportAppearances)
-					.build(content);
-		}
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(pathLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
-				content.add(pathText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
-				content.add(browseButton, GuiUtil.setConstraints(2, 0, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
+        browseButton.addActionListener(e -> {
+            String path = browseFile(Language.I18N.getString("pref.export.appearance.label.absPath"), pathText.getText());
+            if (!path.isEmpty())
+                pathText.setText(path);
+        });
 
-				Box box = Box.createHorizontalBox();
-				box.add(useBuckets);
-				box.add(Box.createHorizontalStrut(10));
-				box.add(noOfBuckets);
-				content.add(box, GuiUtil.setConstraints(0, 1, 2, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
-			}
+        setLayout(new GridBagLayout());
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(overwriteCheck, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(generateUniqueCheck, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+                content.add(noTexturesCheck, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            }
 
-			pathPanel = new TitledPanel().build(content);
-		}
+            exportPanel = new TitledPanel()
+                    .withToggleButton(exportAppearances)
+                    .build(content);
+        }
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(pathLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+                content.add(pathText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+                content.add(browseButton, GuiUtil.setConstraints(2, 0, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
 
-		add(exportPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(pathPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                Box box = Box.createHorizontalBox();
+                box.add(useBuckets);
+                box.add(Box.createHorizontalStrut(10));
+                box.add(noOfBuckets);
+                content.add(box, GuiUtil.setConstraints(0, 1, 2, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
+            }
 
-		exportAppearances.addActionListener(e -> setEnabledTextureExport());
-		useBuckets.addActionListener(e -> noOfBuckets.setEnabled(useBuckets.isSelected()));
-	}
+            pathPanel = new TitledPanel().build(content);
+        }
 
-	private void setEnabledTextureExport() {
-		overwriteCheck.setEnabled(exportAppearances.isSelected());
-		noTexturesCheck.setEnabled(exportAppearances.isSelected());
-		generateUniqueCheck.setEnabled(exportAppearances.isSelected());
-		pathLabel.setEnabled(exportAppearances.isSelected());
-		pathText.setEnabled(exportAppearances.isSelected());
-		browseButton.setEnabled(exportAppearances.isSelected());
-		useBuckets.setEnabled(exportAppearances.isSelected());
-		noOfBuckets.setEnabled(exportAppearances.isSelected() && useBuckets.isSelected());
-	}
+        add(exportPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        add(pathPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-	@Override
-	public void switchLocale(Locale locale) {
-		exportPanel.setTitle(Language.I18N.getString("pref.export.appearance.border.export"));
-		pathPanel.setTitle(Language.I18N.getString("pref.export.appearance.border.path"));
-		overwriteCheck.setText(Language.I18N.getString("pref.export.appearance.label.overwriteTextures"));
-		generateUniqueCheck.setText(Language.I18N.getString("pref.export.appearance.label.uniqueTextures"));
-		noTexturesCheck.setText(Language.I18N.getString("pref.export.appearance.label.noTextures"));
-		pathLabel.setText(Language.I18N.getString("pref.export.appearance.label.path"));
-		browseButton.setText(Language.I18N.getString("common.button.browse"));
-		useBuckets.setText(Language.I18N.getString("pref.export.appearance.label.useBuckets"));
-	}
+        exportAppearances.addActionListener(e -> setEnabledTextureExport());
+        useBuckets.addActionListener(e -> noOfBuckets.setEnabled(useBuckets.isSelected()));
+    }
 
-	@Override
-	public void loadSettings() {
-		ExportAppearance appearances = config.getExportConfig().getAppearances();
+    private void setEnabledTextureExport() {
+        overwriteCheck.setEnabled(exportAppearances.isSelected());
+        noTexturesCheck.setEnabled(exportAppearances.isSelected());
+        generateUniqueCheck.setEnabled(exportAppearances.isSelected());
+        pathLabel.setEnabled(exportAppearances.isSelected());
+        pathText.setEnabled(exportAppearances.isSelected());
+        browseButton.setEnabled(exportAppearances.isSelected());
+        useBuckets.setEnabled(exportAppearances.isSelected());
+        noOfBuckets.setEnabled(exportAppearances.isSelected() && useBuckets.isSelected());
+    }
 
-		exportAppearances.setSelected(appearances.isSetExportAppearance());
-		noTexturesCheck.setSelected(!appearances.isSetExportTextureFiles());
-		overwriteCheck.setSelected(appearances.isSetOverwriteTextureFiles());
-		generateUniqueCheck.setSelected(appearances.isSetUniqueTextureFileNames());
-		pathText.setText(appearances.getTexturePath().getPath());
-		useBuckets.setSelected(appearances.getTexturePath().isUseBuckets());
-		noOfBuckets.setValue(appearances.getTexturePath().getNoOfBuckets());
-		
-		setEnabledTextureExport();
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        exportPanel.setTitle(Language.I18N.getString("pref.export.appearance.border.export"));
+        pathPanel.setTitle(Language.I18N.getString("pref.export.appearance.border.path"));
+        overwriteCheck.setText(Language.I18N.getString("pref.export.appearance.label.overwriteTextures"));
+        generateUniqueCheck.setText(Language.I18N.getString("pref.export.appearance.label.uniqueTextures"));
+        noTexturesCheck.setText(Language.I18N.getString("pref.export.appearance.label.noTextures"));
+        pathLabel.setText(Language.I18N.getString("pref.export.appearance.label.path"));
+        browseButton.setText(Language.I18N.getString("common.button.browse"));
+        useBuckets.setText(Language.I18N.getString("pref.export.appearance.label.useBuckets"));
+    }
 
-	@Override
-	public void setSettings() {
-		ExportAppearance appearances = config.getExportConfig().getAppearances();
+    @Override
+    public void loadSettings() {
+        ExportAppearance appearances = config.getExportConfig().getAppearances();
 
-		appearances.setExportAppearances(exportAppearances.isSelected());
-		appearances.setExportTextureFiles(!noTexturesCheck.isSelected());
-		appearances.setOverwriteTextureFiles(overwriteCheck.isSelected());
-		appearances.setUniqueTextureFileNames(generateUniqueCheck.isSelected());
-		appearances.getTexturePath().setPath(pathText.getText());
-		appearances.getTexturePath().setUseBuckets(useBuckets.isSelected());
-		appearances.getTexturePath().setNoOfBuckets(((Number)noOfBuckets.getValue()).intValue());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.export.appearance");
-	}
+        exportAppearances.setSelected(appearances.isSetExportAppearance());
+        noTexturesCheck.setSelected(!appearances.isSetExportTextureFiles());
+        overwriteCheck.setSelected(appearances.isSetOverwriteTextureFiles());
+        generateUniqueCheck.setSelected(appearances.isSetUniqueTextureFileNames());
+        pathText.setText(appearances.getTexturePath().getPath());
+        useBuckets.setSelected(appearances.getTexturePath().isUseBuckets());
+        noOfBuckets.setValue(appearances.getTexturePath().getNoOfBuckets());
 
-	private String browseFile(String title, String oldDir) {
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle(title);
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		chooser.setCurrentDirectory(new File(oldDir));
+        setEnabledTextureExport();
+    }
 
-		int result = chooser.showSaveDialog(getTopLevelAncestor());
-		if (result == JFileChooser.CANCEL_OPTION) return "";
-		return chooser.getSelectedFile().toString();
-	}
+    @Override
+    public void setSettings() {
+        ExportAppearance appearances = config.getExportConfig().getAppearances();
+
+        appearances.setExportAppearances(exportAppearances.isSelected());
+        appearances.setExportTextureFiles(!noTexturesCheck.isSelected());
+        appearances.setOverwriteTextureFiles(overwriteCheck.isSelected());
+        appearances.setUniqueTextureFileNames(generateUniqueCheck.isSelected());
+        appearances.getTexturePath().setPath(pathText.getText());
+        appearances.getTexturePath().setUseBuckets(useBuckets.isSelected());
+        appearances.getTexturePath().setNoOfBuckets(((Number) noOfBuckets.getValue()).intValue());
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.export.appearance");
+    }
+
+    private String browseFile(String title, String oldDir) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setCurrentDirectory(new File(oldDir));
+
+        int result = chooser.showSaveDialog(getTopLevelAncestor());
+        if (result == JFileChooser.CANCEL_OPTION) return "";
+        return chooser.getSelectedFile().toString();
+    }
 }

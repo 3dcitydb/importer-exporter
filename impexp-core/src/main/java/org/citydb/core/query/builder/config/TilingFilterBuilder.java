@@ -39,51 +39,51 @@ import org.citydb.core.query.filter.tiling.Tiling;
 import java.sql.SQLException;
 
 public class TilingFilterBuilder {
-	private final AbstractDatabaseAdapter databaseAdapter;
+    private final AbstractDatabaseAdapter databaseAdapter;
 
-	protected TilingFilterBuilder(AbstractDatabaseAdapter databaseAdapter) {
-		this.databaseAdapter = databaseAdapter;
-	}
+    protected TilingFilterBuilder(AbstractDatabaseAdapter databaseAdapter) {
+        this.databaseAdapter = databaseAdapter;
+    }
 
-	protected Tiling buildTilingFilter(org.citydb.config.project.query.filter.tiling.AbstractTiling tilingConfig) throws QueryBuildException {
-		try {
-			// adapt tiling settings in case of VIS exports
-			if (tilingConfig instanceof VisTiling) {
-				VisTiling visTilingConfig = (VisTiling) tilingConfig;
+    protected Tiling buildTilingFilter(org.citydb.config.project.query.filter.tiling.AbstractTiling tilingConfig) throws QueryBuildException {
+        try {
+            // adapt tiling settings in case of VIS exports
+            if (tilingConfig instanceof VisTiling) {
+                VisTiling visTilingConfig = (VisTiling) tilingConfig;
 
-				// calculate tile size if required
-				if (visTilingConfig.getMode() == VisTilingMode.AUTOMATIC) {
-					BoundingBox extent = visTilingConfig.getExtent();
-					double autoTileSideLength = visTilingConfig.getTilingOptions().getAutoTileSideLength();
+                // calculate tile size if required
+                if (visTilingConfig.getMode() == VisTilingMode.AUTOMATIC) {
+                    BoundingBox extent = visTilingConfig.getExtent();
+                    double autoTileSideLength = visTilingConfig.getTilingOptions().getAutoTileSideLength();
 
-					// transform extent into the database srs if required
-					DatabaseSrs dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
-					DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();			
-					if (extentSrs.getSrid() != dbSrs.getSrid()) {
-						try {
-							extent = databaseAdapter.getUtil().transform2D(extent, extent.getSrs(), dbSrs);
-						} catch (SQLException e) {
-							throw new QueryBuildException("Failed to automatically calculate tile size.", e);
-						}
-					}
+                    // transform extent into the database srs if required
+                    DatabaseSrs dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
+                    DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
+                    if (extentSrs.getSrid() != dbSrs.getSrid()) {
+                        try {
+                            extent = databaseAdapter.getUtil().transform2D(extent, extent.getSrs(), dbSrs);
+                        } catch (SQLException e) {
+                            throw new QueryBuildException("Failed to automatically calculate tile size.", e);
+                        }
+                    }
 
-					tilingConfig.setRows((int)((extent.getUpperCorner().getY() - extent.getLowerCorner().getY()) / autoTileSideLength) + 1);
-					tilingConfig.setColumns((int)((extent.getUpperCorner().getX() - extent.getLowerCorner().getX()) / autoTileSideLength) + 1);
-				} 
+                    tilingConfig.setRows((int) ((extent.getUpperCorner().getY() - extent.getLowerCorner().getY()) / autoTileSideLength) + 1);
+                    tilingConfig.setColumns((int) ((extent.getUpperCorner().getX() - extent.getLowerCorner().getX()) / autoTileSideLength) + 1);
+                }
 
-				// internally map no tiling to manual tiling mode
-				else if (visTilingConfig.getMode() == VisTilingMode.NO_TILING) {
-					tilingConfig.setRows(1);
-					tilingConfig.setColumns(1);
-				}
-			}
+                // internally map no tiling to manual tiling mode
+                else if (visTilingConfig.getMode() == VisTilingMode.NO_TILING) {
+                    tilingConfig.setRows(1);
+                    tilingConfig.setColumns(1);
+                }
+            }
 
-			Tiling tiling = new Tiling(tilingConfig.getExtent(), tilingConfig.getRows(), tilingConfig.getColumns());
-			tiling.setTilingOptions(tilingConfig.getTilingOptions());
+            Tiling tiling = new Tiling(tilingConfig.getExtent(), tilingConfig.getRows(), tilingConfig.getColumns());
+            tiling.setTilingOptions(tilingConfig.getTilingOptions());
 
-			return tiling;
-		} catch (FilterException e) {
-			throw new QueryBuildException("Failed to build the tiling filter.", e);
-		}
-	}
+            return tiling;
+        } catch (FilterException e) {
+            throw new QueryBuildException("Failed to build the tiling filter.", e);
+        }
+    }
 }

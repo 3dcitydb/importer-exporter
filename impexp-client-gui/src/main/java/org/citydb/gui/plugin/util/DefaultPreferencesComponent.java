@@ -32,10 +32,15 @@ import org.citydb.gui.plugin.preferences.PreferencesComponent;
 import java.util.Locale;
 
 public abstract class DefaultPreferencesComponent extends PreferencesComponent {
-	public abstract String getLocalizedTitle();
-	public abstract boolean isModified();
-	public abstract void switchLocale(Locale locale);
-	public abstract void loadSettings();
-	public abstract void setSettings();
-	public abstract void resetSettings();
+    public abstract String getLocalizedTitle();
+
+    public abstract boolean isModified();
+
+    public abstract void switchLocale(Locale locale);
+
+    public abstract void loadSettings();
+
+    public abstract void setSettings();
+
+    public abstract void resetSettings();
 }

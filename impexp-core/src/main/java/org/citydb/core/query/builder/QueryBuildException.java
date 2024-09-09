@@ -28,22 +28,22 @@
 package org.citydb.core.query.builder;
 
 public class QueryBuildException extends Exception {
-	private static final long serialVersionUID = -3716015045363231263L;
-	
-	public QueryBuildException() {
-		super();
-	}
-	
-	public QueryBuildException(String message) {
-		super(message);
-	}
-	
-	public QueryBuildException(Throwable cause) {
-		super(cause);
-	}
-	
-	public QueryBuildException(String message, Throwable cause) {
-		super(message, cause);
-	}
-	
+    private static final long serialVersionUID = -3716015045363231263L;
+
+    public QueryBuildException() {
+        super();
+    }
+
+    public QueryBuildException(String message) {
+        super(message);
+    }
+
+    public QueryBuildException(Throwable cause) {
+        super(cause);
+    }
+
+    public QueryBuildException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

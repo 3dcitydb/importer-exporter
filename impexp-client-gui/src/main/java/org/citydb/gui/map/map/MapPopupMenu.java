@@ -53,152 +53,152 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public class MapPopupMenu extends JPopupMenu {
-	private final Map mapViewer;
-	private final JXMapViewer map;
-	private final EventDispatcher eventDispatcher;
+    private final Map mapViewer;
+    private final JXMapViewer map;
+    private final EventDispatcher eventDispatcher;
 
-	private JMenuItem zoomIn;
-	private JMenuItem zoomOut;
-	private JMenuItem centerMap;
-	private JMenuItem mapBounds;
-	private JMenuItem geocode;
+    private JMenuItem zoomIn;
+    private JMenuItem zoomOut;
+    private JMenuItem centerMap;
+    private JMenuItem mapBounds;
+    private JMenuItem geocode;
 
-	private Point mousePosition;
+    private Point mousePosition;
 
-	public MapPopupMenu(Map mapViewer) {
-		this.mapViewer = mapViewer;
-		this.map = mapViewer.getMapKit().getMainMap();
-		
-		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		init();
-	}
+    public MapPopupMenu(Map mapViewer) {
+        this.mapViewer = mapViewer;
+        this.map = mapViewer.getMapKit().getMainMap();
 
-	private void init() { 
-		zoomIn = new JMenuItem("Zoom in");
-		zoomOut = new JMenuItem("Zoom out");
-		centerMap = new JMenuItem("Center map here");
-		mapBounds = new JMenuItem("Get map bounds");
-		geocode = new JMenuItem("Lookup address");
+        eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+        init();
+    }
 
-		zoomIn.addActionListener(e -> {
-			map.setCenterPosition(map.convertPointToGeoPosition(mousePosition));
-			map.setZoom(map.getZoom() - 1);
-		});
+    private void init() {
+        zoomIn = new JMenuItem("Zoom in");
+        zoomOut = new JMenuItem("Zoom out");
+        centerMap = new JMenuItem("Center map here");
+        mapBounds = new JMenuItem("Get map bounds");
+        geocode = new JMenuItem("Lookup address");
 
-		zoomOut.addActionListener(e -> {
-			map.setCenterPosition(map.convertPointToGeoPosition(mousePosition));
-			map.setZoom(map.getZoom() + 1);
-		});
+        zoomIn.addActionListener(e -> {
+            map.setCenterPosition(map.convertPointToGeoPosition(mousePosition));
+            map.setZoom(map.getZoom() - 1);
+        });
 
-		centerMap.addActionListener(e -> map.setCenterPosition(map.convertPointToGeoPosition(mousePosition)));
+        zoomOut.addActionListener(e -> {
+            map.setCenterPosition(map.convertPointToGeoPosition(mousePosition));
+            map.setZoom(map.getZoom() + 1);
+        });
 
-		mapBounds.addActionListener(e -> {
-			Rectangle view = map.getViewportBounds();
-			TileFactory fac = map.getTileFactory();
-			int zoom = map.getZoom();
+        centerMap.addActionListener(e -> map.setCenterPosition(map.convertPointToGeoPosition(mousePosition)));
 
-			final GeoPosition[] bounds = new GeoPosition[2];
-			bounds[0] = fac.pixelToGeo(new Point2D.Double(view.getMinX(), view.getMaxY()), zoom);
-			bounds[1] = fac.pixelToGeo(new Point2D.Double(view.getMaxX(), view.getMinY()), zoom);
+        mapBounds.addActionListener(e -> {
+            Rectangle view = map.getViewportBounds();
+            TileFactory fac = map.getTileFactory();
+            int zoom = map.getZoom();
 
-			eventDispatcher.triggerEvent(new MapBoundsSelectionEvent(bounds));
-		});
+            final GeoPosition[] bounds = new GeoPosition[2];
+            bounds[0] = fac.pixelToGeo(new Point2D.Double(view.getMinX(), view.getMaxY()), zoom);
+            bounds[1] = fac.pixelToGeo(new Point2D.Double(view.getMaxX(), view.getMinY()), zoom);
 
-		geocode.addActionListener(e -> {
-			eventDispatcher.triggerEvent(new ReverseGeocoderEvent(
-					ReverseGeocoderEvent.ReverseGeocoderStatus.SEARCHING));
-			final GeoPosition position = map.convertPointToGeoPosition(mousePosition);
+            eventDispatcher.triggerEvent(new MapBoundsSelectionEvent(bounds));
+        });
 
-			new SwingWorker<GeocoderResult, Void>() {
-				protected GeocoderResult doInBackground() throws Exception {
-					return Geocoder.getInstance().lookupAddress(position, map.getZoom());
-				}
+        geocode.addActionListener(e -> {
+            eventDispatcher.triggerEvent(new ReverseGeocoderEvent(
+                    ReverseGeocoderEvent.ReverseGeocoderStatus.SEARCHING));
+            final GeoPosition position = map.convertPointToGeoPosition(mousePosition);
 
-				protected void done() {
-					try {
-						GeocoderResult result = get();
+            new SwingWorker<GeocoderResult, Void>() {
+                protected GeocoderResult doInBackground() throws Exception {
+                    return Geocoder.getInstance().lookupAddress(position, map.getZoom());
+                }
 
-						if (result.isSetLocations()) {
-							int i;
-							for (i = 0; i < result.getLocations().size(); ++i) {
-								Location location = result.getLocations().get(i);
+                protected void done() {
+                    try {
+                        GeocoderResult result = get();
 
-								if (Geocoder.getInstance().getGeocodingServiceName() == GeocodingServiceName.GOOGLE_GEOCODING_API) {
-									List<?> types = location.getAttribute("types", List.class);
-									if (types != null && types.contains("postal_code"))
-										continue;
-								}
+                        if (result.isSetLocations()) {
+                            int i;
+                            for (i = 0; i < result.getLocations().size(); ++i) {
+                                Location location = result.getLocations().get(i);
 
-								Point2D southWest = map.convertGeoPositionToPoint(location.getViewPort().getSouthWest());
-								Rectangle2D sizeOnScreen = new Rectangle.Double(southWest.getX(), southWest.getY(), 0, 0);
-								sizeOnScreen.add(map.convertGeoPositionToPoint(location.getViewPort().getNorthEast()));
+                                if (Geocoder.getInstance().getGeocodingServiceName() == GeocodingServiceName.GOOGLE_GEOCODING_API) {
+                                    List<?> types = location.getAttribute("types", List.class);
+                                    if (types != null && types.contains("postal_code"))
+                                        continue;
+                                }
 
-								if (sizeOnScreen.getHeight() * sizeOnScreen.getWidth() >= 500)
-									break;
-							}
+                                Point2D southWest = map.convertGeoPositionToPoint(location.getViewPort().getSouthWest());
+                                Rectangle2D sizeOnScreen = new Rectangle.Double(southWest.getX(), southWest.getY(), 0, 0);
+                                sizeOnScreen.add(map.convertGeoPositionToPoint(location.getViewPort().getNorthEast()));
 
-							if (i == result.getLocations().size())
-								--i;
+                                if (sizeOnScreen.getHeight() * sizeOnScreen.getWidth() >= 500)
+                                    break;
+                            }
 
-							final Location location = result.getLocations().get(i);
-							Set<GeoPosition> set = new HashSet<>(2);
-							set.add(location.getPosition());
-							set.add(position);
-							map.calculateZoomFrom(set);
+                            if (i == result.getLocations().size())
+                                --i;
 
-							WaypointType type = location.getLocationType() == LocationType.PRECISE ?
-									WaypointType.PRECISE : WaypointType.APPROXIMATE;
+                            final Location location = result.getLocations().get(i);
+                            Set<GeoPosition> set = new HashSet<>(2);
+                            set.add(location.getPosition());
+                            set.add(position);
+                            map.calculateZoomFrom(set);
 
-							mapViewer.getWaypointPainter().showWaypoints(
-									new DefaultWaypoint(position, WaypointType.REVERSE),
-									new DefaultWaypoint(location.getPosition(), type));
-							map.repaint();
+                            WaypointType type = location.getLocationType() == LocationType.PRECISE ?
+                                    WaypointType.PRECISE : WaypointType.APPROXIMATE;
 
-							eventDispatcher.triggerEvent(new ReverseGeocoderEvent(location));
-						} else {
-							mapViewer.getWaypointPainter().clearWaypoints();
-							map.repaint();
+                            mapViewer.getWaypointPainter().showWaypoints(
+                                    new DefaultWaypoint(position, WaypointType.REVERSE),
+                                    new DefaultWaypoint(location.getPosition(), type));
+                            map.repaint();
 
-							eventDispatcher.triggerEvent(new ReverseGeocoderEvent(
-									ReverseGeocoderEvent.ReverseGeocoderStatus.NO_RESULT));
-						}
-					} catch (InterruptedException | ExecutionException e) {
-						mapViewer.getWaypointPainter().clearWaypoints();
-						map.repaint();
+                            eventDispatcher.triggerEvent(new ReverseGeocoderEvent(location));
+                        } else {
+                            mapViewer.getWaypointPainter().clearWaypoints();
+                            map.repaint();
 
-						GeocodingServiceException exception;
-						if (e.getCause() instanceof GeocodingServiceException)
-							exception = (GeocodingServiceException) e.getCause();
-						else {
-							exception = new GeocodingServiceException("An error occured while calling the geocoding service.");
-							exception.addMessage("Caused by: " + e.getMessage());
-						}
+                            eventDispatcher.triggerEvent(new ReverseGeocoderEvent(
+                                    ReverseGeocoderEvent.ReverseGeocoderStatus.NO_RESULT));
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        mapViewer.getWaypointPainter().clearWaypoints();
+                        map.repaint();
 
-						eventDispatcher.triggerEvent(new ReverseGeocoderEvent(exception));
-					}
-				}
-			}.execute();
-		});
+                        GeocodingServiceException exception;
+                        if (e.getCause() instanceof GeocodingServiceException)
+                            exception = (GeocodingServiceException) e.getCause();
+                        else {
+                            exception = new GeocodingServiceException("An error occured while calling the geocoding service.");
+                            exception.addMessage("Caused by: " + e.getMessage());
+                        }
 
-		add(zoomIn);
-		add(zoomOut);
-		add(centerMap);
-		addSeparator();
-		add(mapBounds);
-		addSeparator();
-		add(geocode);
-	}
+                        eventDispatcher.triggerEvent(new ReverseGeocoderEvent(exception));
+                    }
+                }
+            }.execute();
+        });
 
-	public void setMousePosition(Point mousePosition) {
-		this.mousePosition = mousePosition;
-	}
+        add(zoomIn);
+        add(zoomOut);
+        add(centerMap);
+        addSeparator();
+        add(mapBounds);
+        addSeparator();
+        add(geocode);
+    }
 
-	protected void switchLocale() {
-		zoomIn.setText(Language.I18N.getString("map.popup.zoomIn"));
-		zoomOut.setText(Language.I18N.getString("map.popup.zoomOut"));
-		centerMap.setText(Language.I18N.getString("map.popup.centerMap"));
-		mapBounds.setText(Language.I18N.getString("map.popup.mapBounds"));
-		geocode.setText(Language.I18N.getString("map.popup.geocode"));
-	}
+    public void setMousePosition(Point mousePosition) {
+        this.mousePosition = mousePosition;
+    }
+
+    protected void switchLocale() {
+        zoomIn.setText(Language.I18N.getString("map.popup.zoomIn"));
+        zoomOut.setText(Language.I18N.getString("map.popup.zoomOut"));
+        centerMap.setText(Language.I18N.getString("map.popup.centerMap"));
+        mapBounds.setText(Language.I18N.getString("map.popup.mapBounds"));
+        geocode.setText(Language.I18N.getString("map.popup.geocode"));
+    }
 
 }

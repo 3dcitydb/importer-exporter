@@ -28,6 +28,6 @@
 package org.citydb.core.operation.exporter.database.xlink;
 
 public enum DBXlinkExporterEnum {
-	TEXTURE_IMAGE,
-	LIBRARY_OBJECT
+    TEXTURE_IMAGE,
+    LIBRARY_OBJECT
 }

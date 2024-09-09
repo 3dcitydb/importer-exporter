@@ -32,9 +32,9 @@ import org.citydb.core.query.filter.selection.operator.Operator;
 
 public abstract class AbstractLogicalOperator implements Operator {
 
-	@Override
-	public PredicateName getPredicateName() {
-		return PredicateName.LOGICAL_OPERATOR;
-	}
-	
+    @Override
+    public PredicateName getPredicateName() {
+        return PredicateName.LOGICAL_OPERATOR;
+    }
+
 }

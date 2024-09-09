@@ -28,6 +28,6 @@
 package org.citydb.util.event.global;
 
 public enum ProgressBarEventType {
-	INIT,
-	UPDATE
+    INIT,
+    UPDATE
 }

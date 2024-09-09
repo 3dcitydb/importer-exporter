@@ -33,39 +33,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class View {
-	private List<ViewListener> viewListeners;
+    private List<ViewListener> viewListeners;
 
-	public abstract String getLocalizedTitle();
-	public abstract Component getViewComponent();
-	public abstract String getToolTip();
-	public abstract Icon getIcon();
+    public abstract String getLocalizedTitle();
 
-	public final void addViewListener(ViewListener listener) {
-		if (viewListeners == null)
-			viewListeners = new ArrayList<>();
+    public abstract Component getViewComponent();
 
-		viewListeners.add(listener);
-	}
+    public abstract String getToolTip();
 
-	public final boolean removeViewListener(ViewListener listener) {
-		return viewListeners != null && viewListeners.remove(listener);
-	}
+    public abstract Icon getIcon();
 
-	public final void fireViewEvent(final ViewEvent e) {
-		if (viewListeners != null) {
-			for (final ViewListener listener : viewListeners) {
-				SwingUtilities.invokeLater(() -> {
-					switch (e.getViewState()) {
-					case VIEW_ACTIVATED:
-						listener.viewActivated(e);
-						break;
-					case VIEW_DEACTIVATED:
-						listener.viewDeactivated(e);
-						break;
-					}
-				});
-			}
-		}
-	}
+    public final void addViewListener(ViewListener listener) {
+        if (viewListeners == null)
+            viewListeners = new ArrayList<>();
+
+        viewListeners.add(listener);
+    }
+
+    public final boolean removeViewListener(ViewListener listener) {
+        return viewListeners != null && viewListeners.remove(listener);
+    }
+
+    public final void fireViewEvent(final ViewEvent e) {
+        if (viewListeners != null) {
+            for (final ViewListener listener : viewListeners) {
+                SwingUtilities.invokeLater(() -> {
+                    switch (e.getViewState()) {
+                        case VIEW_ACTIVATED:
+                            listener.viewActivated(e);
+                            break;
+                        case VIEW_DEACTIVATED:
+                            listener.viewDeactivated(e);
+                            break;
+                    }
+                });
+            }
+        }
+    }
 
 }

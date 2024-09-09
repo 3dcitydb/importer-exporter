@@ -34,7 +34,10 @@ import java.util.Locale;
 
 public abstract class FilterView<T> extends View {
     public abstract void switchLocale(Locale locale);
+
     public abstract void setEnabled(boolean enabled);
+
     public abstract void loadSettings(T config);
+
     public abstract T toSettings();
 }

@@ -30,17 +30,17 @@ package org.citydb.core.query.filter.selection.operator.id;
 import org.citydb.core.query.filter.selection.operator.OperatorName;
 
 public enum IdOperationName implements OperatorName {
-	RESOURCE_ID("gml:id"),
-	DATABASE_ID("cityobject.id");
-	
-	final String symbol;
-	
-	IdOperationName(String symbol) {
-		this.symbol = symbol;
-	}
-	
-	@Override
-	public String getSymbol() {
-		return symbol;
-	}
+    RESOURCE_ID("gml:id"),
+    DATABASE_ID("cityobject.id");
+
+    final String symbol;
+
+    IdOperationName(String symbol) {
+        this.symbol = symbol;
+    }
+
+    @Override
+    public String getSymbol() {
+        return symbol;
+    }
 }

@@ -32,30 +32,30 @@ import org.citydb.core.query.filter.selection.operator.OperatorName;
 import java.util.EnumSet;
 
 public enum SpatialOperatorName implements OperatorName {
-	EQUALS("Equals"),
-	DISJOINT("Disjoint"),
-	TOUCHES("Touches"),
-	WITHIN("Within"),
-	OVERLAPS("Overlaps"),
-	INTERSECTS("Intersects"),
-	CONTAINS("Contains"),
-	BBOX("BBOX"),
-	DWITHIN("DWithin"),
-	BEYOND("Beyond");
-	
-	public static final EnumSet<SpatialOperatorName> BINARY_SPATIAL_OPERATORS = EnumSet.of(
-			BBOX, EQUALS, DISJOINT, TOUCHES, WITHIN, OVERLAPS, INTERSECTS, CONTAINS);
+    EQUALS("Equals"),
+    DISJOINT("Disjoint"),
+    TOUCHES("Touches"),
+    WITHIN("Within"),
+    OVERLAPS("Overlaps"),
+    INTERSECTS("Intersects"),
+    CONTAINS("Contains"),
+    BBOX("BBOX"),
+    DWITHIN("DWithin"),
+    BEYOND("Beyond");
 
-	public static final EnumSet<SpatialOperatorName> DISTANCE_OPERATORS = EnumSet.of(DWITHIN, BEYOND);
-	
-	final String symbol;
-	
-	SpatialOperatorName(String symbol) {
-		this.symbol = symbol;
-	}
-	
-	@Override
-	public String getSymbol() {
-		return symbol;
-	}
+    public static final EnumSet<SpatialOperatorName> BINARY_SPATIAL_OPERATORS = EnumSet.of(
+            BBOX, EQUALS, DISJOINT, TOUCHES, WITHIN, OVERLAPS, INTERSECTS, CONTAINS);
+
+    public static final EnumSet<SpatialOperatorName> DISTANCE_OPERATORS = EnumSet.of(DWITHIN, BEYOND);
+
+    final String symbol;
+
+    SpatialOperatorName(String symbol) {
+        this.symbol = symbol;
+    }
+
+    @Override
+    public String getSymbol() {
+        return symbol;
+    }
 }

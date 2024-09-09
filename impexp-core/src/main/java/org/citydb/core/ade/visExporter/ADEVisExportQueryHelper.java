@@ -31,22 +31,39 @@ import org.citydb.config.project.visExporter.DisplayForm;
 import org.citydb.config.project.visExporter.Lod0FootprintMode;
 
 public interface ADEVisExportQueryHelper {
-	String getImplicitGeometryNullColumns();
-	String getBuildingPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId);
-	String getBuildingPartQuery(int lodToExportFrom, Lod0FootprintMode lod0FootprintMode, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId);
-	String getBridgePartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId);
-	String getBridgePartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId);
-	String getTunnelPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId);
-	String getTunnelPartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId);
-	String getCityObjectGroupFootprint(int objectClassId);
-	String getSolitaryVegetationObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
-	String getPlantCoverQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
-	String getGenericCityObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
-	String getGenericCityObjectPointAndCurveQuery(int lodToExportFrom, int objectClassId);
-	String getCityFurnitureQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
-	String getWaterBodyQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
-	String getLandUseQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
-	String getTransportationQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
-	String getTransportationPointAndCurveQuery(int lodToExportFrom, int objectClassId);
-	String getReliefQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+    String getImplicitGeometryNullColumns();
+
+    String getBuildingPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId);
+
+    String getBuildingPartQuery(int lodToExportFrom, Lod0FootprintMode lod0FootprintMode, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId);
+
+    String getBridgePartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId);
+
+    String getBridgePartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId);
+
+    String getTunnelPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId);
+
+    String getTunnelPartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId);
+
+    String getCityObjectGroupFootprint(int objectClassId);
+
+    String getSolitaryVegetationObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+
+    String getPlantCoverQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+
+    String getGenericCityObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+
+    String getGenericCityObjectPointAndCurveQuery(int lodToExportFrom, int objectClassId);
+
+    String getCityFurnitureQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+
+    String getWaterBodyQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+
+    String getLandUseQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+
+    String getTransportationQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+
+    String getTransportationPointAndCurveQuery(int lodToExportFrom, int objectClassId);
+
+    String getReliefQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
 }

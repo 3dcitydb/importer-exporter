@@ -43,190 +43,191 @@ import java.io.File;
 import java.util.Locale;
 
 public class PathPanel extends InternalPreferencesComponent {
-	private TitledPanel importPanel;
-	private JRadioButton importPathRadioLast;
-	private JRadioButton importPathRadioDef;
-	private JTextField importPathText;
-	private JButton importPathButton;
-	private TitledPanel exportPanel;
-	private JRadioButton exportPathRadioLast;
-	private JRadioButton exportPathRadioDef;
-	private JTextField exportPathText;
-	private JButton exportPathButton;
-	
-	public PathPanel(Config config) {
-		super(config);
-		initGui();
-	}
+    private TitledPanel importPanel;
+    private JRadioButton importPathRadioLast;
+    private JRadioButton importPathRadioDef;
+    private JTextField importPathText;
+    private JButton importPathButton;
+    private TitledPanel exportPanel;
+    private JRadioButton exportPathRadioLast;
+    private JRadioButton exportPathRadioDef;
+    private JTextField exportPathText;
+    private JButton exportPathButton;
 
-	@Override
-	public boolean isModified() {
-		Path importPath = config.getImportConfig().getPath();
-		Path exportPath = config.getExportConfig().getPath();;
-		
-		if (importPathRadioLast.isSelected() != importPath.isSetLastUsedMode()) return true;
-		if (importPathRadioDef.isSelected() != importPath.isSetStandardMode()) return true;
-		if (exportPathRadioLast.isSelected() != exportPath.isSetLastUsedMode()) return true;
-		if (exportPathRadioDef.isSelected() != exportPath.isSetStandardMode()) return true;
-		if (!importPathText.getText().equals(importPath.getStandardPath())) return true;
-		if (!exportPathText.getText().equals(exportPath.getStandardPath())) return true;
-		return false;
-	}
+    public PathPanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-	private void initGui() {
-		importPathRadioLast = new JRadioButton();
-		importPathRadioDef = new JRadioButton();
-		ButtonGroup importPathRadio = new ButtonGroup();
-		importPathRadio.add(importPathRadioLast);
-		importPathRadio.add(importPathRadioDef);
-		
-		importPathText = new JTextField();
-		importPathButton = new JButton();
-		
-		exportPathRadioLast = new JRadioButton();
-		exportPathRadioDef = new JRadioButton();
-		ButtonGroup exportPathRadio = new ButtonGroup();
-		exportPathRadio.add(exportPathRadioLast);
-		exportPathRadio.add(exportPathRadioDef);
-		
-		exportPathText = new JTextField();
-		exportPathButton = new JButton();
+    @Override
+    public boolean isModified() {
+        Path importPath = config.getImportConfig().getPath();
+        Path exportPath = config.getExportConfig().getPath();
+        ;
 
-		PopupMenuDecorator.getInstance().decorate(importPathText, exportPathText);
+        if (importPathRadioLast.isSelected() != importPath.isSetLastUsedMode()) return true;
+        if (importPathRadioDef.isSelected() != importPath.isSetStandardMode()) return true;
+        if (exportPathRadioLast.isSelected() != exportPath.isSetLastUsedMode()) return true;
+        if (exportPathRadioDef.isSelected() != exportPath.isSetStandardMode()) return true;
+        if (!importPathText.getText().equals(importPath.getStandardPath())) return true;
+        if (!exportPathText.getText().equals(exportPath.getStandardPath())) return true;
+        return false;
+    }
 
-		setLayout(new GridBagLayout());
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(importPathRadioLast, GuiUtil.setConstraints(0, 0, 3, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
-				content.add(importPathRadioDef, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
-				content.add(importPathText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
-				content.add(importPathButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
-			}
+    private void initGui() {
+        importPathRadioLast = new JRadioButton();
+        importPathRadioDef = new JRadioButton();
+        ButtonGroup importPathRadio = new ButtonGroup();
+        importPathRadio.add(importPathRadioLast);
+        importPathRadio.add(importPathRadioDef);
 
-			importPanel = new TitledPanel().build(content);
-		}
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(exportPathRadioLast, GuiUtil.setConstraints(0, 0, 3, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
-				content.add(exportPathRadioDef, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
-				content.add(exportPathText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
-				content.add(exportPathButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
-			}
+        importPathText = new JTextField();
+        importPathButton = new JButton();
 
-			exportPanel = new TitledPanel().build(content);
-		}
+        exportPathRadioLast = new JRadioButton();
+        exportPathRadioDef = new JRadioButton();
+        ButtonGroup exportPathRadio = new ButtonGroup();
+        exportPathRadio.add(exportPathRadioLast);
+        exportPathRadio.add(exportPathRadioDef);
 
-		add(importPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(exportPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        exportPathText = new JTextField();
+        exportPathButton = new JButton();
 
-		importPathButton.addActionListener(e -> {
-			String sImp = browseFile(Language.I18N.getString("pref.general.path.label.importDefaultPath"), importPathText.getText());
-			if (!sImp.isEmpty())
-				importPathText.setText(sImp);
-		});
+        PopupMenuDecorator.getInstance().decorate(importPathText, exportPathText);
 
-		exportPathButton.addActionListener(e -> {
-			String sExp = browseFile(Language.I18N.getString("pref.general.path.label.exportDefaultPath"), exportPathText.getText());
-			if (!sExp.isEmpty())
-				exportPathText.setText(sExp);
-		});
-		
-		ActionListener importListener = e -> setEnabledImportPath();
-		ActionListener exportListener = e -> setEnabledExportPath();
-		
-		importPathRadioLast.addActionListener(importListener);
-		importPathRadioDef.addActionListener(importListener);
-		
-		exportPathRadioLast.addActionListener(exportListener);
-		exportPathRadioDef.addActionListener(exportListener);
-	}
-	
-	private void setEnabledImportPath() {
-		importPathText.setEnabled(importPathRadioDef.isSelected());
-		importPathButton.setEnabled(importPathRadioDef.isSelected());
-	}
-	
-	private void setEnabledExportPath() {
-		exportPathText.setEnabled(exportPathRadioDef.isSelected());
-		exportPathButton.setEnabled(exportPathRadioDef.isSelected());
-	}
+        setLayout(new GridBagLayout());
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(importPathRadioLast, GuiUtil.setConstraints(0, 0, 3, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+                content.add(importPathRadioDef, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+                content.add(importPathText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+                content.add(importPathButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+            }
 
-	@Override
-	public void switchLocale(Locale locale) {
-		importPanel.setTitle(Language.I18N.getString("pref.general.path.border.importPath"));
-		importPathRadioLast.setText(Language.I18N.getString("pref.general.path.label.importLastUsedPath"));
-		importPathRadioDef.setText(Language.I18N.getString("pref.general.path.label.importDefaultPath"));
-		importPathButton.setText(Language.I18N.getString("common.button.browse"));
-		exportPanel.setTitle(Language.I18N.getString("pref.general.path.border.exportPath"));
-		exportPathRadioLast.setText(Language.I18N.getString("pref.general.path.label.exportLastUsedPath"));
-		exportPathRadioDef.setText(Language.I18N.getString("pref.general.path.label.exportDefaultPath"));
-		exportPathButton.setText(Language.I18N.getString("common.button.browse"));
-	}
+            importPanel = new TitledPanel().build(content);
+        }
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(exportPathRadioLast, GuiUtil.setConstraints(0, 0, 3, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+                content.add(exportPathRadioDef, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+                content.add(exportPathText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+                content.add(exportPathButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+            }
 
-	@Override
-	public void loadSettings() {
-		Path path = config.getImportConfig().getPath();
+            exportPanel = new TitledPanel().build(content);
+        }
 
-		if (path.isSetLastUsedMode()) {
-			importPathRadioLast.setSelected(true);
-		} else {
-			importPathRadioDef.setSelected(true);
-		}
+        add(importPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        add(exportPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		importPathText.setText(path.getStandardPath());
+        importPathButton.addActionListener(e -> {
+            String sImp = browseFile(Language.I18N.getString("pref.general.path.label.importDefaultPath"), importPathText.getText());
+            if (!sImp.isEmpty())
+                importPathText.setText(sImp);
+        });
 
-		path = config.getExportConfig().getPath();
-		if (path.isSetLastUsedMode()) {
-			exportPathRadioLast.setSelected(true);
-		} else {
-			exportPathRadioDef.setSelected(true);
-		}
+        exportPathButton.addActionListener(e -> {
+            String sExp = browseFile(Language.I18N.getString("pref.general.path.label.exportDefaultPath"), exportPathText.getText());
+            if (!sExp.isEmpty())
+                exportPathText.setText(sExp);
+        });
 
-		exportPathText.setText(path.getStandardPath());
+        ActionListener importListener = e -> setEnabledImportPath();
+        ActionListener exportListener = e -> setEnabledExportPath();
 
-		setEnabledImportPath();
-		setEnabledExportPath();
-	}
+        importPathRadioLast.addActionListener(importListener);
+        importPathRadioDef.addActionListener(importListener);
 
-	@Override
-	public void setSettings() {
-		Path path = config.getImportConfig().getPath();
-		
-		if (importPathRadioDef.isSelected()) {
-			path.setPathMode(PathMode.STANDARD);
-		} else {
-			path.setPathMode(PathMode.LASTUSED);
-		}
+        exportPathRadioLast.addActionListener(exportListener);
+        exportPathRadioDef.addActionListener(exportListener);
+    }
 
-		path.setStandardPath(importPathText.getText());
-		path = config.getExportConfig().getPath();
-		
-		if (exportPathRadioDef.isSelected()) {
-			path.setPathMode(PathMode.STANDARD);
-		} else {
-			path.setPathMode(PathMode.LASTUSED);
-		}
+    private void setEnabledImportPath() {
+        importPathText.setEnabled(importPathRadioDef.isSelected());
+        importPathButton.setEnabled(importPathRadioDef.isSelected());
+    }
 
-		path.setStandardPath(exportPathText.getText());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.general.path");
-	}
+    private void setEnabledExportPath() {
+        exportPathText.setEnabled(exportPathRadioDef.isSelected());
+        exportPathButton.setEnabled(exportPathRadioDef.isSelected());
+    }
 
-	private String browseFile(String title, String oldDir) {
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle(title);
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		chooser.setCurrentDirectory(new File(oldDir));
+    @Override
+    public void switchLocale(Locale locale) {
+        importPanel.setTitle(Language.I18N.getString("pref.general.path.border.importPath"));
+        importPathRadioLast.setText(Language.I18N.getString("pref.general.path.label.importLastUsedPath"));
+        importPathRadioDef.setText(Language.I18N.getString("pref.general.path.label.importDefaultPath"));
+        importPathButton.setText(Language.I18N.getString("common.button.browse"));
+        exportPanel.setTitle(Language.I18N.getString("pref.general.path.border.exportPath"));
+        exportPathRadioLast.setText(Language.I18N.getString("pref.general.path.label.exportLastUsedPath"));
+        exportPathRadioDef.setText(Language.I18N.getString("pref.general.path.label.exportDefaultPath"));
+        exportPathButton.setText(Language.I18N.getString("common.button.browse"));
+    }
 
-		int result = chooser.showSaveDialog(getTopLevelAncestor());
-		if (result == JFileChooser.CANCEL_OPTION) return "";
-		return chooser.getSelectedFile().toString();
-	}
+    @Override
+    public void loadSettings() {
+        Path path = config.getImportConfig().getPath();
+
+        if (path.isSetLastUsedMode()) {
+            importPathRadioLast.setSelected(true);
+        } else {
+            importPathRadioDef.setSelected(true);
+        }
+
+        importPathText.setText(path.getStandardPath());
+
+        path = config.getExportConfig().getPath();
+        if (path.isSetLastUsedMode()) {
+            exportPathRadioLast.setSelected(true);
+        } else {
+            exportPathRadioDef.setSelected(true);
+        }
+
+        exportPathText.setText(path.getStandardPath());
+
+        setEnabledImportPath();
+        setEnabledExportPath();
+    }
+
+    @Override
+    public void setSettings() {
+        Path path = config.getImportConfig().getPath();
+
+        if (importPathRadioDef.isSelected()) {
+            path.setPathMode(PathMode.STANDARD);
+        } else {
+            path.setPathMode(PathMode.LASTUSED);
+        }
+
+        path.setStandardPath(importPathText.getText());
+        path = config.getExportConfig().getPath();
+
+        if (exportPathRadioDef.isSelected()) {
+            path.setPathMode(PathMode.STANDARD);
+        } else {
+            path.setPathMode(PathMode.LASTUSED);
+        }
+
+        path.setStandardPath(exportPathText.getText());
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.general.path");
+    }
+
+    private String browseFile(String title, String oldDir) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setCurrentDirectory(new File(oldDir));
+
+        int result = chooser.showSaveDialog(getTopLevelAncestor());
+        if (result == JFileChooser.CANCEL_OPTION) return "";
+        return chooser.getSelectedFile().toString();
+    }
 }

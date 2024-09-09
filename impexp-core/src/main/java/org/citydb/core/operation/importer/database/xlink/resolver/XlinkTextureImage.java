@@ -41,45 +41,45 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class XlinkTextureImage implements DBXlinkResolver {
-	private final Logger log = Logger.getInstance();
-	private final DBXlinkResolverManager manager;
-	private final BlobImportAdapter textureImportAdapter;
-	private final CounterEvent counter;
+    private final Logger log = Logger.getInstance();
+    private final DBXlinkResolverManager manager;
+    private final BlobImportAdapter textureImportAdapter;
+    private final CounterEvent counter;
 
-	public XlinkTextureImage(Connection connection, DBXlinkResolverManager manager) throws SQLException {
-		this.manager = manager;
-		
-		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1);
-		textureImportAdapter = manager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
-				connection, BlobType.TEXTURE_IMAGE);
-	}
+    public XlinkTextureImage(Connection connection, DBXlinkResolverManager manager) throws SQLException {
+        this.manager = manager;
 
-	public boolean insert(DBXlinkTextureFile xlink) throws SQLException {
-		manager.propagateEvent(counter);
-		String fileURI = xlink.getFileURI();
-		
-		try (InputStream stream = new BufferedInputStream(manager.openStream(fileURI))) {
-			textureImportAdapter.insert(xlink.getId(), stream);
-			return true;
-		} catch (IOException e) {
-			log.error("Failed to read texture file '" + fileURI + "'.", e);
-			return false;
-		}
-	}
+        counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1);
+        textureImportAdapter = manager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
+                connection, BlobType.TEXTURE_IMAGE);
+    }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		// we do not have any action here
-	}
+    public boolean insert(DBXlinkTextureFile xlink) throws SQLException {
+        manager.propagateEvent(counter);
+        String fileURI = xlink.getFileURI();
 
-	@Override
-	public void close() throws SQLException {
-		textureImportAdapter.close();
-	}
+        try (InputStream stream = new BufferedInputStream(manager.openStream(fileURI))) {
+            textureImportAdapter.insert(xlink.getId(), stream);
+            return true;
+        } catch (IOException e) {
+            log.error("Failed to read texture file '" + fileURI + "'.", e);
+            return false;
+        }
+    }
 
-	@Override
-	public DBXlinkResolverEnum getDBXlinkResolverType() {
-		return DBXlinkResolverEnum.TEXTURE_IMAGE;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        // we do not have any action here
+    }
+
+    @Override
+    public void close() throws SQLException {
+        textureImportAdapter.close();
+    }
+
+    @Override
+    public DBXlinkResolverEnum getDBXlinkResolverType() {
+        return DBXlinkResolverEnum.TEXTURE_IMAGE;
+    }
 
 }

@@ -30,199 +30,199 @@ package org.citydb.core.database.schema.path;
 import org.citydb.core.database.schema.mapping.*;
 
 public class SchemaPath {
-	private int size;
-	private FeatureTypeNode head;
-	private AbstractNode<? extends AbstractPathElement> tail;
+    private int size;
+    private FeatureTypeNode head;
+    private AbstractNode<? extends AbstractPathElement> tail;
 
-	public SchemaPath() {
+    public SchemaPath() {
 
-	}
+    }
 
-	public SchemaPath(FeatureType featureType) {
-		setFirstNode(featureType);		
-	}
+    public SchemaPath(FeatureType featureType) {
+        setFirstNode(featureType);
+    }
 
-	public FeatureTypeNode getFirstNode() {
-		return head;
-	}
+    public FeatureTypeNode getFirstNode() {
+        return head;
+    }
 
-	public SchemaPath setFirstNode(FeatureType featureType) {
-		tail = head = new FeatureTypeNode(featureType);
-		size = 1;
+    public SchemaPath setFirstNode(FeatureType featureType) {
+        tail = head = new FeatureTypeNode(featureType);
+        size = 1;
 
-		return this;
-	}
+        return this;
+    }
 
-	public AbstractNode<? extends AbstractPathElement> getLastNode() {
-		return tail;
-	}
+    public AbstractNode<? extends AbstractPathElement> getLastNode() {
+        return tail;
+    }
 
-	public boolean removeLastPathElement() {
-		if (head == null)
-			return false;
+    public boolean removeLastPathElement() {
+        if (head == null)
+            return false;
 
-		tail = tail.parent;
-		if (tail == null)
-			head = null;
-		else {
-			if (tail.child != null
-					&& tail.child.getPathElement().getElementType() == PathElementType.SIMPLE_ATTRIBUTE
-					&& tail.child.getPathElement().getPath().equals(".")) {
-				tail = tail.parent;
-				size--;
-			}
-			
-			tail.child = null;
-		}
+        tail = tail.parent;
+        if (tail == null)
+            head = null;
+        else {
+            if (tail.child != null
+                    && tail.child.getPathElement().getElementType() == PathElementType.SIMPLE_ATTRIBUTE
+                    && tail.child.getPathElement().getPath().equals(".")) {
+                tail = tail.parent;
+                size--;
+            }
 
-		size--;
-		return true;
-	}
+            tail.child = null;
+        }
 
-	public SchemaPath appendChild(AbstractPathElement pathElement) throws InvalidSchemaPathException {
-		if (head == null) {
-			if (pathElement.getElementType() != PathElementType.FEATURE_TYPE)
-				throw new InvalidSchemaPathException("Only FeatureType objects are allowed as head of a schema path.");
+        size--;
+        return true;
+    }
 
-			setFirstNode((FeatureType)pathElement);
-			return this;
-		} else {
-			AbstractNode<? extends AbstractPathElement> node = null;
+    public SchemaPath appendChild(AbstractPathElement pathElement) throws InvalidSchemaPathException {
+        if (head == null) {
+            if (pathElement.getElementType() != PathElementType.FEATURE_TYPE)
+                throw new InvalidSchemaPathException("Only FeatureType objects are allowed as head of a schema path.");
 
-			switch (pathElement.getElementType()) {
-			case FEATURE_TYPE:
-				node = new FeatureTypeNode((FeatureType)pathElement);
-				break;
-			case FEATURE_PROPERTY:
-				node = new FeaturePropertyNode((FeatureProperty)pathElement);
-				break;
-			case GEOMETRY_PROPERTY:
-				node = new GeometryPropertyNode((GeometryProperty)pathElement);
-				break;
-			case SIMPLE_ATTRIBUTE:
-				node = new SimpleAttributeNode((SimpleAttribute)pathElement);
-				break;
-			case COMPLEX_ATTRIBUTE:
-				node = new ComplexAttributeNode((ComplexAttribute)pathElement);
-				break;
-			case OBJECT_TYPE:
-				node = new ObjectTypeNode((ObjectType)pathElement);
-				break;
-			case OBJECT_PROPERTY:
-				node = new ObjectPropertyNode((ObjectProperty)pathElement);
-				break;
-			case COMPLEX_TYPE:
-				node = new ComplexTypeNode((ComplexType)pathElement);
-				break;
-			case COMPLEX_PROPERTY:
-				node = new ComplexPropertyNode((ComplexProperty)pathElement);
-				break;
-			case IMPLICIT_GEOMETRY_PROPERTY:
-				node = new ImplicitGeometryPropertyNode((ImplicitGeometryProperty)pathElement);
-				break;
-			}
+            setFirstNode((FeatureType) pathElement);
+            return this;
+        } else {
+            AbstractNode<? extends AbstractPathElement> node = null;
 
-			tail.setChild(node);		
-			tail = node;
-			size++;
+            switch (pathElement.getElementType()) {
+                case FEATURE_TYPE:
+                    node = new FeatureTypeNode((FeatureType) pathElement);
+                    break;
+                case FEATURE_PROPERTY:
+                    node = new FeaturePropertyNode((FeatureProperty) pathElement);
+                    break;
+                case GEOMETRY_PROPERTY:
+                    node = new GeometryPropertyNode((GeometryProperty) pathElement);
+                    break;
+                case SIMPLE_ATTRIBUTE:
+                    node = new SimpleAttributeNode((SimpleAttribute) pathElement);
+                    break;
+                case COMPLEX_ATTRIBUTE:
+                    node = new ComplexAttributeNode((ComplexAttribute) pathElement);
+                    break;
+                case OBJECT_TYPE:
+                    node = new ObjectTypeNode((ObjectType) pathElement);
+                    break;
+                case OBJECT_PROPERTY:
+                    node = new ObjectPropertyNode((ObjectProperty) pathElement);
+                    break;
+                case COMPLEX_TYPE:
+                    node = new ComplexTypeNode((ComplexType) pathElement);
+                    break;
+                case COMPLEX_PROPERTY:
+                    node = new ComplexPropertyNode((ComplexProperty) pathElement);
+                    break;
+                case IMPLICIT_GEOMETRY_PROPERTY:
+                    node = new ImplicitGeometryPropertyNode((ImplicitGeometryProperty) pathElement);
+                    break;
+            }
 
-			return this;
-		}
-	}
+            tail.setChild(node);
+            tail = node;
+            size++;
 
-	public boolean isValidChild(AbstractPathElement pathElement) {
-		return tail != null && tail.isValidChild(pathElement);
-	}
+            return this;
+        }
+    }
 
-	public SchemaPath setPredicate(AbstractNodePredicate predicate) throws InvalidSchemaPathException {
-		if (tail == null)
-			throw new InvalidSchemaPathException("The schema path does not contain an element node.");
+    public boolean isValidChild(AbstractPathElement pathElement) {
+        return tail != null && tail.isValidChild(pathElement);
+    }
 
-		tail.setPredicate(predicate);
-		return this;
-	}
+    public SchemaPath setPredicate(AbstractNodePredicate predicate) throws InvalidSchemaPathException {
+        if (tail == null)
+            throw new InvalidSchemaPathException("The schema path does not contain an element node.");
 
-	public boolean isValidPredicate(AbstractNodePredicate predicate) {
-		return tail != null && tail.isValidPredicate(predicate);
-	}
+        tail.setPredicate(predicate);
+        return this;
+    }
 
-	public int size() {
-		return size;
-	}
-	
-	public boolean contains(SchemaPath other, boolean includePredicates) {
-		if (other.size > size)
-			return false;
-		
-		AbstractNode<?> thisNode = head;
-		AbstractNode<?> otherNode = other.head;
-		
-		while (otherNode != null) {
-			if (!thisNode.isEqualTo(otherNode, includePredicates))
-				return false;
-			
-			thisNode = thisNode.child;
-			otherNode = otherNode.child;
-		}
-		
-		return true;
-	}
-	
-	public SchemaPath copy() {
-		SchemaPath copy = new SchemaPath();
-		copy.head = new FeatureTypeNode(head);
-		copy.size = size;
+    public boolean isValidPredicate(AbstractNodePredicate predicate) {
+        return tail != null && tail.isValidPredicate(predicate);
+    }
 
-		AbstractNode<?> current = copy.head;
-		AbstractNode<?> node = head;
-		
-		while ((node = node.child) != null) {
-			AbstractNode<?> tmp = node.copy();
-			current.child = tmp;
-			tmp.parent = current;
-			current = tmp;
-		}
-		
-		copy.tail = current;
-		return copy;
-	}
+    public int size() {
+        return size;
+    }
 
-	public String toXPath(boolean includeHead, boolean removeAttributePrefixes) {
-		StringBuilder builder = new StringBuilder();
+    public boolean contains(SchemaPath other, boolean includePredicates) {
+        if (other.size > size)
+            return false;
 
-		AbstractNode<? extends AbstractPathElement> node = includeHead ? head : head.child;
-		if (node == null)
-			return "";
+        AbstractNode<?> thisNode = head;
+        AbstractNode<?> otherNode = other.head;
 
-		boolean first = true;
-		do {
-			if (node.getPathElement().getElementType() == PathElementType.SIMPLE_ATTRIBUTE
-					&& node.getPathElement().getPath().equals("."))
-				continue;
+        while (otherNode != null) {
+            if (!thisNode.isEqualTo(otherNode, includePredicates))
+                return false;
 
-			if (!first)
-				builder.append("/");
-			else
-				first = false;
+            thisNode = thisNode.child;
+            otherNode = otherNode.child;
+        }
 
-			switch (node.getPathElement().getElementType()) {
-			case SIMPLE_ATTRIBUTE:
-				builder.append(((SimpleAttributeNode)node).toString(removeAttributePrefixes));
-				break;
-			default:
-				builder.append(node);
-			}
+        return true;
+    }
 
-			if (node.isSetPredicate())
-				builder.append("[").append(node.predicate.toString(removeAttributePrefixes)).append("]");
+    public SchemaPath copy() {
+        SchemaPath copy = new SchemaPath();
+        copy.head = new FeatureTypeNode(head);
+        copy.size = size;
 
-		} while ((node = node.child) != null);
+        AbstractNode<?> current = copy.head;
+        AbstractNode<?> node = head;
 
-		return builder.toString();
-	}
+        while ((node = node.child) != null) {
+            AbstractNode<?> tmp = node.copy();
+            current.child = tmp;
+            tmp.parent = current;
+            current = tmp;
+        }
 
-	public String toXPath() {
-		return toXPath(false, false);
-	}
+        copy.tail = current;
+        return copy;
+    }
+
+    public String toXPath(boolean includeHead, boolean removeAttributePrefixes) {
+        StringBuilder builder = new StringBuilder();
+
+        AbstractNode<? extends AbstractPathElement> node = includeHead ? head : head.child;
+        if (node == null)
+            return "";
+
+        boolean first = true;
+        do {
+            if (node.getPathElement().getElementType() == PathElementType.SIMPLE_ATTRIBUTE
+                    && node.getPathElement().getPath().equals("."))
+                continue;
+
+            if (!first)
+                builder.append("/");
+            else
+                first = false;
+
+            switch (node.getPathElement().getElementType()) {
+                case SIMPLE_ATTRIBUTE:
+                    builder.append(((SimpleAttributeNode) node).toString(removeAttributePrefixes));
+                    break;
+                default:
+                    builder.append(node);
+            }
+
+            if (node.isSetPredicate())
+                builder.append("[").append(node.predicate.toString(removeAttributePrefixes)).append("]");
+
+        } while ((node = node.child) != null);
+
+        return builder.toString();
+    }
+
+    public String toXPath() {
+        return toXPath(false, false);
+    }
 
 }

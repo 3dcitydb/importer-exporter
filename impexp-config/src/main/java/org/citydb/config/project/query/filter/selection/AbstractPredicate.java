@@ -46,5 +46,6 @@ import javax.xml.bind.annotation.XmlType;
 })
 public abstract class AbstractPredicate {
     public abstract void reset();
+
     public abstract PredicateName getPredicateName();
 }

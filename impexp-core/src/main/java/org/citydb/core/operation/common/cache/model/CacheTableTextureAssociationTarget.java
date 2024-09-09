@@ -34,33 +34,33 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class CacheTableTextureAssociationTarget extends AbstractCacheTableModel {
-	public static CacheTableTextureAssociationTarget instance = null;
-	
-	public synchronized static CacheTableTextureAssociationTarget getInstance() {
-		if (instance == null)
-			instance = new CacheTableTextureAssociationTarget();
-		
-		return instance;
-	}
+    public static CacheTableTextureAssociationTarget instance = null;
 
-	@Override
-	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		try (Statement stmt = conn.createStatement()) {
-			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
-		}
-	}
+    public synchronized static CacheTableTextureAssociationTarget getInstance() {
+        if (instance == null)
+            instance = new CacheTableTextureAssociationTarget();
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.TEXTUREASSOCIATION_TARGET;
-	}
-	
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"SURFACE_DATA_ID " + sqlAdapter.getBigInt() + ", " +
-				"SURFACE_GEOMETRY_ID " + sqlAdapter.getBigInt() + ", " +
-				"GMLID " + sqlAdapter.getCharacterVarying(256) +
-				")";
-	}
+        return instance;
+    }
+
+    @Override
+    public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
+        }
+    }
+
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.TEXTUREASSOCIATION_TARGET;
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "SURFACE_DATA_ID " + sqlAdapter.getBigInt() + ", " +
+                "SURFACE_GEOMETRY_ID " + sqlAdapter.getBigInt() + ", " +
+                "GMLID " + sqlAdapter.getCharacterVarying(256) +
+                ")";
+    }
 }

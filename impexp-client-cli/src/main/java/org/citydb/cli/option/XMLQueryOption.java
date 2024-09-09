@@ -28,10 +28,10 @@
 
 package org.citydb.cli.option;
 
-import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.project.query.QueryConfig;
-import org.citydb.config.util.ConfigConstants;
 import org.citydb.config.project.query.QueryWrapper;
+import org.citydb.config.util.ConfigConstants;
+import org.citydb.util.config.ConfigUtil;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.citygml.CityGMLVersion;

@@ -47,84 +47,95 @@ import java.sql.SQLException;
 
 public class CityObjectGroup extends AbstractVisObject {
 
-	public static final String STYLE_BASIS_NAME = "Group";
+    public static final String STYLE_BASIS_NAME = "Group";
 
-	public CityObjectGroup(Connection connection,
-			Query query,
-			VisExporterManager visExporterManager,
-			net.opengis.kml._2.ObjectFactory kmlFactory,
-			AbstractDatabaseAdapter databaseAdapter,
-			BlobExportAdapter textureExportAdapter,
-			ElevationServiceHandler elevationServiceHandler,
-			BalloonTemplateHandler balloonTemplateHandler,
-			EventDispatcher eventDispatcher,
-			Config config) {
+    public CityObjectGroup(Connection connection,
+                           Query query,
+                           VisExporterManager visExporterManager,
+                           net.opengis.kml._2.ObjectFactory kmlFactory,
+                           AbstractDatabaseAdapter databaseAdapter,
+                           BlobExportAdapter textureExportAdapter,
+                           ElevationServiceHandler elevationServiceHandler,
+                           BalloonTemplateHandler balloonTemplateHandler,
+                           EventDispatcher eventDispatcher,
+                           Config config) {
 
-		super(connection,
-				query,
+        super(connection,
+                query,
                 visExporterManager,
-				kmlFactory,
-				databaseAdapter,
-				textureExportAdapter,
-				elevationServiceHandler,
-				balloonTemplateHandler,
-				eventDispatcher,
-				config);
-	}
+                kmlFactory,
+                databaseAdapter,
+                textureExportAdapter,
+                elevationServiceHandler,
+                balloonTemplateHandler,
+                eventDispatcher,
+                config);
+    }
 
-	protected Styles getStyles() {
-		return config.getVisExportConfig().getCityObjectGroupStyles();
-	}
+    protected Styles getStyles() {
+        return config.getVisExportConfig().getCityObjectGroupStyles();
+    }
 
-	public ColladaOptions getColladaOptions() {
-		return null; // no COLLADA display form for CityObjectGroups
-	}
+    public ColladaOptions getColladaOptions() {
+        return null; // no COLLADA display form for CityObjectGroups
+    }
 
-	public Balloon getBalloonSettings() {
-		return config.getVisExportConfig().getCityObjectGroupBalloon();
-	}
+    public Balloon getBalloonSettings() {
+        return config.getVisExportConfig().getCityObjectGroupBalloon();
+    }
 
-	public String getStyleBasisName() {
-		return STYLE_BASIS_NAME;
-	}
+    public String getStyleBasisName() {
+        return STYLE_BASIS_NAME;
+    }
 
-	public void read(DBSplittingResult work) {
-		PreparedStatement psQuery = null;
-		ResultSet rs = null;
+    public void read(DBSplittingResult work) {
+        PreparedStatement psQuery = null;
+        ResultSet rs = null;
 
-		try {
-			String query = queries.getCityObjectGroupFootprint(work.getObjectClassId());
-			psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			for (int i = 1; i <= getParameterCount(query); i++)
-				psQuery.setLong(i, work.getId());
+        try {
+            String query = queries.getCityObjectGroupFootprint(work.getObjectClassId());
+            psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            for (int i = 1; i <= getParameterCount(query); i++)
+                psQuery.setLong(i, work.getId());
 
-			rs = psQuery.executeQuery();
-			if (!rs.isBeforeFirst()) {
-				try { rs.close(); } catch (SQLException sqle) {} 
-				try { psQuery.close(); } catch (SQLException sqle) {}
-				rs = null;
-			}
+            rs = psQuery.executeQuery();
+            if (!rs.isBeforeFirst()) {
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {
+                }
+                try {
+                    psQuery.close();
+                } catch (SQLException sqle) {
+                }
+                rs = null;
+            }
 
-			if (rs == null) { // result empty, give up
-				Logger.getInstance().info("Could not display CityObjectGroup " + work.getGmlId());
-			}
-			else { // result not empty
-				// hard-coded for groups
-				visExporterManager.updateFeatureTracker(work);
-				visExporterManager.print(createPlacemarksForFootprint(rs, work),
-						work,
-						getBalloonSettings().isBalloonContentInSeparateFile());				
-			}
-		} catch (SQLException sqlEx) {
-			Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-		} catch (JAXBException jaxbEx) {
-			Logger.getInstance().error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
-		} finally {
-			if (rs != null)
-				try { rs.close(); } catch (SQLException e) {}
-			if (psQuery != null)
-				try { psQuery.close(); } catch (SQLException e) {}
-		}
-	}
+            if (rs == null) { // result empty, give up
+                Logger.getInstance().info("Could not display CityObjectGroup " + work.getGmlId());
+            } else { // result not empty
+                // hard-coded for groups
+                visExporterManager.updateFeatureTracker(work);
+                visExporterManager.print(createPlacemarksForFootprint(rs, work),
+                        work,
+                        getBalloonSettings().isBalloonContentInSeparateFile());
+            }
+        } catch (SQLException sqlEx) {
+            Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        } catch (JAXBException jaxbEx) {
+            Logger.getInstance().error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
+        } finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                }
+            if (psQuery != null)
+                try {
+                    psQuery.close();
+                } catch (SQLException e) {
+                }
+        }
+    }
 
 }

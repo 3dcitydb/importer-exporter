@@ -35,571 +35,571 @@ import java.util.*;
 
 @XmlRootElement
 @XmlType(name = "schemaMapping", propOrder = {
-		"metadata",
-		"schemas",
-		"attributeTypes",
-		"complexTypes",
-		"objectTypes",
-		"featureTypes",
-		"propertyInjections"
+        "metadata",
+        "schemas",
+        "attributeTypes",
+        "complexTypes",
+        "objectTypes",
+        "featureTypes",
+        "propertyInjections"
 })
 public class SchemaMapping {
-	protected Metadata metadata;
-	@XmlElementWrapper(name="applicationSchemas", required = true)
-	@XmlElement(name="schema", required = true)
-	protected List<AppSchema> schemas;
-	@XmlElementWrapper(name="attributeTypes")
-	@XmlElement(name="attributeType")
-	protected List<ComplexAttributeType> attributeTypes;
-	@XmlElementWrapper(name="complexTypes")
-	@XmlElement(name="complexType")
-	protected List<ComplexType> complexTypes;
-	@XmlElementWrapper(name="objectTypes")
-	@XmlElement(name="objectType")
-	protected List<ObjectType> objectTypes;
-	@XmlElementWrapper(name="featureTypes")
-	@XmlElement(name="featureType")
-	protected List<FeatureType> featureTypes;
-	@XmlElementWrapper(name="propertyInjections")
-	@XmlElement(name="propertyInjection")
-	protected List<PropertyInjection> propertyInjections;
+    protected Metadata metadata;
+    @XmlElementWrapper(name = "applicationSchemas", required = true)
+    @XmlElement(name = "schema", required = true)
+    protected List<AppSchema> schemas;
+    @XmlElementWrapper(name = "attributeTypes")
+    @XmlElement(name = "attributeType")
+    protected List<ComplexAttributeType> attributeTypes;
+    @XmlElementWrapper(name = "complexTypes")
+    @XmlElement(name = "complexType")
+    protected List<ComplexType> complexTypes;
+    @XmlElementWrapper(name = "objectTypes")
+    @XmlElement(name = "objectType")
+    protected List<ObjectType> objectTypes;
+    @XmlElementWrapper(name = "featureTypes")
+    @XmlElement(name = "featureType")
+    protected List<FeatureType> featureTypes;
+    @XmlElementWrapper(name = "propertyInjections")
+    @XmlElement(name = "propertyInjection")
+    protected List<PropertyInjection> propertyInjections;
 
-	@XmlTransient
-	protected HashMap<String, AppSchema> uriToSchemaMap;
-	@XmlTransient
-	protected boolean isMerged;
+    @XmlTransient
+    protected HashMap<String, AppSchema> uriToSchemaMap;
+    @XmlTransient
+    protected boolean isMerged;
 
-	public SchemaMapping() {
-		uriToSchemaMap = new HashMap<>();
-		schemas = new ArrayList<>();
-		attributeTypes = new ArrayList<>();
-		complexTypes = new ArrayList<>();
-		objectTypes = new ArrayList<>();
-		featureTypes = new ArrayList<>();
-		propertyInjections = new ArrayList<>();
-	}
-	
-	public boolean isMerged() {
-		return isMerged;
-	}
+    public SchemaMapping() {
+        uriToSchemaMap = new HashMap<>();
+        schemas = new ArrayList<>();
+        attributeTypes = new ArrayList<>();
+        complexTypes = new ArrayList<>();
+        objectTypes = new ArrayList<>();
+        featureTypes = new ArrayList<>();
+        propertyInjections = new ArrayList<>();
+    }
 
-	public Metadata getMetadata() {
-		return metadata;
-	}
-	
-	public boolean isSetMetadata() {
-		return metadata != null;
-	}
+    public boolean isMerged() {
+        return isMerged;
+    }
 
-	public void setMetadata(Metadata metadata) {
-		this.metadata = metadata;
-	}
+    public Metadata getMetadata() {
+        return metadata;
+    }
 
-	public List<AppSchema> getSchemas() {
-		return new ArrayList<>(schemas);
-	}
+    public boolean isSetMetadata() {
+        return metadata != null;
+    }
 
-	public AppSchema getSchema(String namespaceURI) {
-		return uriToSchemaMap.get(namespaceURI);
-	}
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
+    }
 
-	protected AppSchema getSchemaById(String id) {
-		for (AppSchema schema : schemas) {
-			if (schema.getId().equals(id))
-				return schema;
-		}
+    public List<AppSchema> getSchemas() {
+        return new ArrayList<>(schemas);
+    }
 
-		return null;
-	}
+    public AppSchema getSchema(String namespaceURI) {
+        return uriToSchemaMap.get(namespaceURI);
+    }
 
-	public boolean isSetSchemas() {
-		return schemas != null && !schemas.isEmpty();
-	}
+    protected AppSchema getSchemaById(String id) {
+        for (AppSchema schema : schemas) {
+            if (schema.getId().equals(id))
+                return schema;
+        }
 
-	public void addSchema(AppSchema schema) throws SchemaMappingException {
-		if (schema != null && !schemas.contains(schema)) {
-			schema.validate(this, this);
-			schemas.add(schema);
-			
-			for (Namespace namespace : schema.namespaces)
-				uriToSchemaMap.put(namespace.getURI(), schema);	
-		}
-	}
+        return null;
+    }
 
-	public List<ComplexAttributeType> getComplexAttributeTypes() {
-		return new ArrayList<>(attributeTypes);
-	}
+    public boolean isSetSchemas() {
+        return schemas != null && !schemas.isEmpty();
+    }
 
-	protected ComplexAttributeType getComplexAttributeTypeById(String id) {
-		for (ComplexAttributeType attributeType : attributeTypes) {
-			if (attributeType.getId().equals(id))
-				return attributeType;
-		}
+    public void addSchema(AppSchema schema) throws SchemaMappingException {
+        if (schema != null && !schemas.contains(schema)) {
+            schema.validate(this, this);
+            schemas.add(schema);
 
-		return null;
-	}
+            for (Namespace namespace : schema.namespaces)
+                uriToSchemaMap.put(namespace.getURI(), schema);
+        }
+    }
 
-	public boolean isSetComplexAttributeTypes() {
-		return attributeTypes != null && !attributeTypes.isEmpty();
-	}
+    public List<ComplexAttributeType> getComplexAttributeTypes() {
+        return new ArrayList<>(attributeTypes);
+    }
 
-	public void addComplexAttributeType(ComplexAttributeType attributeType) throws SchemaMappingException {
-		if (attributeType != null && !attributeTypes.contains(attributeType)) {
-			attributeType.validate(this, this);
-			attributeTypes.add(attributeType);
-			registerProperties(attributeType.attributes);
-		}
-	}
+    protected ComplexAttributeType getComplexAttributeTypeById(String id) {
+        for (ComplexAttributeType attributeType : attributeTypes) {
+            if (attributeType.getId().equals(id))
+                return attributeType;
+        }
 
-	public List<ComplexType> getComplexTypes() {
-		return new ArrayList<>(complexTypes);
-	}
+        return null;
+    }
 
-	public ComplexType getComplexType(String name, String namespaceURI) {
-		AppSchema schema = getSchema(namespaceURI);		
-		if (schema != null) {
-			for (ComplexType complexType : schema.complexTypes) {
-				if (complexType.getPath().equals(name))
-					return complexType;
-			}
-		}
+    public boolean isSetComplexAttributeTypes() {
+        return attributeTypes != null && !attributeTypes.isEmpty();
+    }
 
-		return null;
-	}
+    public void addComplexAttributeType(ComplexAttributeType attributeType) throws SchemaMappingException {
+        if (attributeType != null && !attributeTypes.contains(attributeType)) {
+            attributeType.validate(this, this);
+            attributeTypes.add(attributeType);
+            registerProperties(attributeType.attributes);
+        }
+    }
 
-	public ComplexType getComplexType(QName name) {
-		return getComplexType(name.getLocalPart(), name.getNamespaceURI());
-	}
+    public List<ComplexType> getComplexTypes() {
+        return new ArrayList<>(complexTypes);
+    }
 
-	protected ComplexType getComplexTypeById(String id) {
-		for (ComplexType complexType : complexTypes) {
-			if (complexType.getId().equals(id))
-				return complexType;
-		}
+    public ComplexType getComplexType(String name, String namespaceURI) {
+        AppSchema schema = getSchema(namespaceURI);
+        if (schema != null) {
+            for (ComplexType complexType : schema.complexTypes) {
+                if (complexType.getPath().equals(name))
+                    return complexType;
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	public boolean isSetComplexTypes() {
-		return complexTypes != null && !complexTypes.isEmpty();
-	}
+    public ComplexType getComplexType(QName name) {
+        return getComplexType(name.getLocalPart(), name.getNamespaceURI());
+    }
 
-	public void addComplexType(ComplexType complexType) throws SchemaMappingException {
-		if (complexType != null && !complexTypes.contains(complexType)) {
-			complexType.validate(this, this);
-			complexTypes.add(complexType);
-			registerType(complexType);
-		}
-	}
+    protected ComplexType getComplexTypeById(String id) {
+        for (ComplexType complexType : complexTypes) {
+            if (complexType.getId().equals(id))
+                return complexType;
+        }
 
-	public List<ObjectType> getObjectTypes() {
-		return new ArrayList<>(objectTypes);
-	}
+        return null;
+    }
 
-	public Set<ObjectType> listObjectTypesByTable(String tableName, boolean skipAbstractTypes) {
-		Set<ObjectType> result = new HashSet<>();
-		for (ObjectType objectType : objectTypes) {
-			if (objectType.getTable().equalsIgnoreCase(tableName)) {
-				if (!objectType.isAbstract() || !skipAbstractTypes)
-					result.add(objectType);
+    public boolean isSetComplexTypes() {
+        return complexTypes != null && !complexTypes.isEmpty();
+    }
 
-				result.addAll(objectType.listSubTypes(skipAbstractTypes));
-			}
-		}
+    public void addComplexType(ComplexType complexType) throws SchemaMappingException {
+        if (complexType != null && !complexTypes.contains(complexType)) {
+            complexType.validate(this, this);
+            complexTypes.add(complexType);
+            registerType(complexType);
+        }
+    }
 
-		return result;
-	}
+    public List<ObjectType> getObjectTypes() {
+        return new ArrayList<>(objectTypes);
+    }
 
-	public ObjectType getObjectType(String name, String namespaceURI) {
-		AppSchema schema = getSchema(namespaceURI);		
-		if (schema != null) {
-			for (ObjectType objectType : schema.objectTypes) {
-				if (objectType.getPath().equals(name))
-					return objectType;
-			}
-		}
+    public Set<ObjectType> listObjectTypesByTable(String tableName, boolean skipAbstractTypes) {
+        Set<ObjectType> result = new HashSet<>();
+        for (ObjectType objectType : objectTypes) {
+            if (objectType.getTable().equalsIgnoreCase(tableName)) {
+                if (!objectType.isAbstract() || !skipAbstractTypes)
+                    result.add(objectType);
 
-		return null;
-	}
+                result.addAll(objectType.listSubTypes(skipAbstractTypes));
+            }
+        }
 
-	public ObjectType getObjectType(QName name) {
-		return getObjectType(name.getLocalPart(), name.getNamespaceURI());
-	}
-	
-	public ObjectType getObjectType(int objectClassId) {
-		for (ObjectType objectType : objectTypes) {
-			if (objectType.getObjectClassId() == objectClassId)
-				return objectType;
-		}
-		
-		return null;
-	}
+        return result;
+    }
 
-	protected ObjectType getObjectTypeById(String id) {
-		for (ObjectType objectType : objectTypes) {
-			if (objectType.getId().equals(id))
-				return objectType;
-		}
+    public ObjectType getObjectType(String name, String namespaceURI) {
+        AppSchema schema = getSchema(namespaceURI);
+        if (schema != null) {
+            for (ObjectType objectType : schema.objectTypes) {
+                if (objectType.getPath().equals(name))
+                    return objectType;
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	public boolean isSetObjectTypes() {
-		return objectTypes != null && !objectTypes.isEmpty();
-	}
+    public ObjectType getObjectType(QName name) {
+        return getObjectType(name.getLocalPart(), name.getNamespaceURI());
+    }
 
-	public void addObjectType(ObjectType objectType) throws SchemaMappingException {
-		if (objectType != null && !objectTypes.contains(objectType)) {
-			objectType.validate(this, this);
+    public ObjectType getObjectType(int objectClassId) {
+        for (ObjectType objectType : objectTypes) {
+            if (objectType.getObjectClassId() == objectClassId)
+                return objectType;
+        }
 
-			AbstractObjectType<?> other = checkUniqueObjectClassId(objectType);
-			if (other != null)
-				throw new SchemaMappingException("The value " + objectType.objectClassId + " of the attribute 'objectClassId' is assigned to both '" + objectType.id + "' and '" + other.id + "'.");
+        return null;
+    }
 
-			objectTypes.add(objectType);
-			registerType(objectType);
-		}
-	}	
+    protected ObjectType getObjectTypeById(String id) {
+        for (ObjectType objectType : objectTypes) {
+            if (objectType.getId().equals(id))
+                return objectType;
+        }
 
-	public List<FeatureType> getFeatureTypes() {
-		return new ArrayList<>(featureTypes);
-	}
-	
-	public List<FeatureType> listTopLevelFeatureTypes(boolean onlyQueryable) {
-		List<FeatureType> result = new ArrayList<FeatureType>();
-		for (FeatureType featureType : featureTypes) {
-			if (!featureType.isTopLevel())
-				continue;
+        return null;
+    }
 
-			if (!onlyQueryable || featureType.isQueryable())
-				result.add(featureType);
-		}
+    public boolean isSetObjectTypes() {
+        return objectTypes != null && !objectTypes.isEmpty();
+    }
 
-		return result;
-	}
+    public void addObjectType(ObjectType objectType) throws SchemaMappingException {
+        if (objectType != null && !objectTypes.contains(objectType)) {
+            objectType.validate(this, this);
 
-	public Set<FeatureType> listFeatureTypesByTable(String tableName, boolean skipAbstractTypes) {
-		Set<FeatureType> result = new HashSet<>();
-		for (FeatureType featureType : featureTypes) {
-			if (featureType.getTable().equalsIgnoreCase(tableName)) {
-				if (!featureType.isAbstract() || !skipAbstractTypes)
-					result.add(featureType);
-				
-				result.addAll(featureType.listSubTypes(skipAbstractTypes));
-			}
-		}
+            AbstractObjectType<?> other = checkUniqueObjectClassId(objectType);
+            if (other != null)
+                throw new SchemaMappingException("The value " + objectType.objectClassId + " of the attribute 'objectClassId' is assigned to both '" + objectType.id + "' and '" + other.id + "'.");
 
-		if (result.isEmpty()) {
-			for (PropertyInjection propertyInjection : propertyInjections) {
-				if (propertyInjection.getTable().equalsIgnoreCase(tableName)) {
-				    Set<FeatureType> baseTypes = new HashSet<>();
-				    for (InjectedProperty property : propertyInjection.properties)
-				        baseTypes.add(property.getBase());
+            objectTypes.add(objectType);
+            registerType(objectType);
+        }
+    }
 
-					for (FeatureType featureType : baseTypes) {
+    public List<FeatureType> getFeatureTypes() {
+        return new ArrayList<>(featureTypes);
+    }
+
+    public List<FeatureType> listTopLevelFeatureTypes(boolean onlyQueryable) {
+        List<FeatureType> result = new ArrayList<FeatureType>();
+        for (FeatureType featureType : featureTypes) {
+            if (!featureType.isTopLevel())
+                continue;
+
+            if (!onlyQueryable || featureType.isQueryable())
+                result.add(featureType);
+        }
+
+        return result;
+    }
+
+    public Set<FeatureType> listFeatureTypesByTable(String tableName, boolean skipAbstractTypes) {
+        Set<FeatureType> result = new HashSet<>();
+        for (FeatureType featureType : featureTypes) {
+            if (featureType.getTable().equalsIgnoreCase(tableName)) {
+                if (!featureType.isAbstract() || !skipAbstractTypes)
+                    result.add(featureType);
+
+                result.addAll(featureType.listSubTypes(skipAbstractTypes));
+            }
+        }
+
+        if (result.isEmpty()) {
+            for (PropertyInjection propertyInjection : propertyInjections) {
+                if (propertyInjection.getTable().equalsIgnoreCase(tableName)) {
+                    Set<FeatureType> baseTypes = new HashSet<>();
+                    for (InjectedProperty property : propertyInjection.properties)
+                        baseTypes.add(property.getBase());
+
+                    for (FeatureType featureType : baseTypes) {
                         if (!featureType.isAbstract() || !skipAbstractTypes)
                             result.add(featureType);
 
                         result.addAll(featureType.listSubTypes(skipAbstractTypes));
                     }
-				}
-			}
-		}
+                }
+            }
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	public FeatureType getFeatureType(String name, String namespaceURI) {
-		AppSchema schema = getSchema(namespaceURI);		
-		if (schema != null) {
-			for (FeatureType featureType : schema.featureTypes) {
-				if (featureType.getPath().equals(name))
-					return featureType;
-			}
-		}
+    public FeatureType getFeatureType(String name, String namespaceURI) {
+        AppSchema schema = getSchema(namespaceURI);
+        if (schema != null) {
+            for (FeatureType featureType : schema.featureTypes) {
+                if (featureType.getPath().equals(name))
+                    return featureType;
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	public FeatureType getFeatureType(QName name) {
-		return name != null ? getFeatureType(name.getLocalPart(), name.getNamespaceURI()) : null;
-	}
-	
-	public FeatureType getFeatureType(int objectClassId) {
-		for (FeatureType featureType : featureTypes) {
-			if (featureType.getObjectClassId() == objectClassId)
-				return featureType;
-		}
-		
-		return null;
-	}
+    public FeatureType getFeatureType(QName name) {
+        return name != null ? getFeatureType(name.getLocalPart(), name.getNamespaceURI()) : null;
+    }
 
-	protected FeatureType getFeatureTypeById(String id) {
-		for (FeatureType featureType : featureTypes) {
-			if (featureType.getId().equals(id))
-				return featureType;
-		}
+    public FeatureType getFeatureType(int objectClassId) {
+        for (FeatureType featureType : featureTypes) {
+            if (featureType.getObjectClassId() == objectClassId)
+                return featureType;
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	public FeatureType getCommonSuperType(Collection<FeatureType> featureTypes) {
-		if (featureTypes != null && !featureTypes.isEmpty()) {
-			if (featureTypes.size() == 1)
-				return featureTypes.iterator().next();
+    protected FeatureType getFeatureTypeById(String id) {
+        for (FeatureType featureType : featureTypes) {
+            if (featureType.getId().equals(id))
+                return featureType;
+        }
 
-			Iterator<FeatureType> iter = featureTypes.iterator();
-			List<FeatureType> candidates = iter.next().listSuperTypes(true);
-			while (iter.hasNext())
-				candidates.retainAll(iter.next().listSuperTypes(true));
+        return null;
+    }
 
-			return !candidates.isEmpty() ? candidates.get(0) : null;
-		}
+    public FeatureType getCommonSuperType(Collection<FeatureType> featureTypes) {
+        if (featureTypes != null && !featureTypes.isEmpty()) {
+            if (featureTypes.size() == 1)
+                return featureTypes.iterator().next();
 
-		return null;
-	}
+            Iterator<FeatureType> iter = featureTypes.iterator();
+            List<FeatureType> candidates = iter.next().listSuperTypes(true);
+            while (iter.hasNext())
+                candidates.retainAll(iter.next().listSuperTypes(true));
 
-	public boolean isSetFeatureTypes() {
-		return featureTypes != null && !featureTypes.isEmpty();
-	}
+            return !candidates.isEmpty() ? candidates.get(0) : null;
+        }
 
-	public void addFeatureType(FeatureType featureType) throws SchemaMappingException {
-		if (featureType != null && !featureTypes.contains(featureType)) {
-			featureType.validate(this, this);
+        return null;
+    }
 
-			AbstractObjectType<?> other = checkUniqueObjectClassId(featureType);
-			if (other != null)
-				throw new SchemaMappingException("The value " + featureType.objectClassId + " of the attribute 'objectClassId' is assigned to both '" + featureType.id + "' and '" + other.id + "'.");
+    public boolean isSetFeatureTypes() {
+        return featureTypes != null && !featureTypes.isEmpty();
+    }
 
-			featureTypes.add(featureType);
-			registerType(featureType);
-		}
-	}	
+    public void addFeatureType(FeatureType featureType) throws SchemaMappingException {
+        if (featureType != null && !featureTypes.contains(featureType)) {
+            featureType.validate(this, this);
 
-	public AbstractObjectType<?> getAbstractObjectType(String name, String namespaceURI) {
-		AbstractObjectType<?> type = getFeatureType(name, namespaceURI);
-		if (type == null)
-			type = getObjectType(name, namespaceURI);
+            AbstractObjectType<?> other = checkUniqueObjectClassId(featureType);
+            if (other != null)
+                throw new SchemaMappingException("The value " + featureType.objectClassId + " of the attribute 'objectClassId' is assigned to both '" + featureType.id + "' and '" + other.id + "'.");
 
-		return type;
-	}
+            featureTypes.add(featureType);
+            registerType(featureType);
+        }
+    }
 
-	public AbstractObjectType<?> getAbstractObjectType(QName name) {
-		return getAbstractObjectType(name.getLocalPart(), name.getNamespaceURI());
-	}
-	
-	public AbstractObjectType<?> getAbstractObjectType(int objectClassId) {
-		AbstractObjectType<?> type = getFeatureType(objectClassId);
-		if (type == null)
-			type = getObjectType(objectClassId);
+    public AbstractObjectType<?> getAbstractObjectType(String name, String namespaceURI) {
+        AbstractObjectType<?> type = getFeatureType(name, namespaceURI);
+        if (type == null)
+            type = getObjectType(name, namespaceURI);
 
-		return type;
-	}
+        return type;
+    }
 
-	public List<AbstractObjectType<?>> getAbstractObjectTypes() {
-		List<AbstractObjectType<?>> types = new ArrayList<>(featureTypes);
-		types.addAll(objectTypes);
+    public AbstractObjectType<?> getAbstractObjectType(QName name) {
+        return getAbstractObjectType(name.getLocalPart(), name.getNamespaceURI());
+    }
 
-		return types;
-	}
+    public AbstractObjectType<?> getAbstractObjectType(int objectClassId) {
+        AbstractObjectType<?> type = getFeatureType(objectClassId);
+        if (type == null)
+            type = getObjectType(objectClassId);
 
-	public Set<? extends AbstractObjectType<?>> listAbstractObjectTypesByTable(String tableName, boolean skipAbstractTypes) {
-		Set<? extends AbstractObjectType<?>> types = listFeatureTypesByTable(tableName, skipAbstractTypes);
-		if (types.isEmpty())
-			types = listObjectTypesByTable(tableName, skipAbstractTypes);
+        return type;
+    }
 
-		return types;
-	}
+    public List<AbstractObjectType<?>> getAbstractObjectTypes() {
+        List<AbstractObjectType<?>> types = new ArrayList<>(featureTypes);
+        types.addAll(objectTypes);
 
-	public List<AbstractType<?>> getAbstractTypes() {
-		List<AbstractType<?>> types = new ArrayList<>(featureTypes);
-		types.addAll(objectTypes);
-		types.addAll(complexTypes);
-		
-		return types;
-	}
+        return types;
+    }
 
-	public List<PropertyInjection> getPropertyInjections() {
-		return new ArrayList<>(propertyInjections);
-	}
+    public Set<? extends AbstractObjectType<?>> listAbstractObjectTypesByTable(String tableName, boolean skipAbstractTypes) {
+        Set<? extends AbstractObjectType<?>> types = listFeatureTypesByTable(tableName, skipAbstractTypes);
+        if (types.isEmpty())
+            types = listObjectTypesByTable(tableName, skipAbstractTypes);
 
-	public boolean isSetPropertyInjections() {
-		return propertyInjections != null && !propertyInjections.isEmpty();
-	}
-	
-	public void addPropertyInjection(PropertyInjection propertyInjection) throws SchemaMappingException {
-		if (propertyInjection != null && !propertyInjections.contains(propertyInjection)) {
-			propertyInjection.validate(this, this);
-			propertyInjections.add(propertyInjection);
-			registerPropertyInjection(propertyInjection);
-		}
-	}
+        return types;
+    }
 
-	public Map<String, String> getNamespaceContext(CityGMLVersion version) {
-		Map<String, String> context = new HashMap<>();
+    public List<AbstractType<?>> getAbstractTypes() {
+        List<AbstractType<?>> types = new ArrayList<>(featureTypes);
+        types.addAll(objectTypes);
+        types.addAll(complexTypes);
 
-		// register app schema namespaces
-		for (AppSchema schema : schemas) {
-			for (Namespace namespace : schema.namespaces) {
-				if (namespace.isSetContext() && namespace.getContext().getCityGMLVersion() == version)
-					context.put(schema.getXMLPrefix(), namespace.getURI());
-			}	
-		}
+        return types;
+    }
 
-		return context;
-	}
+    public List<PropertyInjection> getPropertyInjections() {
+        return new ArrayList<>(propertyInjections);
+    }
 
-	public Map<String, String> getNamespaceContext() {
-		return getNamespaceContext(CityGMLVersion.v2_0_0);
-	}
-	
-	private AbstractObjectType<?> checkUniqueObjectClassId(AbstractObjectType<?> type) {
-		if (type.objectClassId == null)
-			return null;
-		
-		for (FeatureType featureType : featureTypes) {
-			if (featureType != type 
-					&& featureType.objectClassId != null
-					&& featureType.objectClassId.intValue() == type.objectClassId.intValue())
-				return featureType;
-		}
-		
-		for (ObjectType objectType : objectTypes) {
-			if (objectType != type 
-					&& objectType.objectClassId != null
-					&& objectType.objectClassId.intValue() == type.objectClassId.intValue())
-				return objectType;
-		}
-		
-		return null;
-	}
-	
-	private void registerType(AbstractType<?> type) throws SchemaMappingException {
-		if (type.schema != null && type.schema.schemaMapping == this)
-			addSchema(type.schema);
-		
-		if (type.isSetExtension() 
-				&& type.getExtension().isSetBase() 
-				&& type.getExtension().getBase().schemaMapping == this) {
-			AbstractType<?> superType = type.getExtension().getBase();
-			switch (superType.getElementType()) {
-			case FEATURE_TYPE:
-				addFeatureType((FeatureType)superType);
-				break;
-			case OBJECT_TYPE:
-				addObjectType((ObjectType)superType);
-				break;
-			default:
-				// nothing to do
-			}
-		}
-		
-		registerProperties(type.properties);
-	}
-	
-	private void registerPropertyInjection(PropertyInjection propertyInjection) throws SchemaMappingException {
-		if (propertyInjection.defaultBase != null && propertyInjection.defaultBase.schemaMapping == this)
-			addFeatureType(propertyInjection.defaultBase);
-		
-		registerInjectedProperties(propertyInjection.properties);
-	}
-	
-	private void registerProperties(List<? extends AbstractProperty> properties) throws SchemaMappingException {
-		for (AbstractProperty property : properties)
-			registerAbstractProperty(property);
-	}
-	
-	private void registerInjectedProperties(List<InjectedProperty> properties) throws SchemaMappingException {
-		for (InjectedProperty property : properties) {
-			if (property.isSetBase() && property.getBase().schemaMapping == this)
-				addFeatureType(property.getBase());
-			
-			if (property instanceof AbstractProperty)
-				registerAbstractProperty((AbstractProperty)property);
-		}
-	}
-	
-	private void registerAbstractProperty(AbstractProperty property) throws SchemaMappingException {
-		if (property.schema != null && property.schema.schemaMapping == this)
-			addSchema(property.schema);
-		
-		switch (property.getElementType()) {
-		case COMPLEX_ATTRIBUTE:
-			ComplexAttribute complexAttribute = (ComplexAttribute)property;
-			if (complexAttribute.refType != null && complexAttribute.refType.schemaMapping == this)
-				addComplexAttributeType(complexAttribute.refType);
-			break;
-		case COMPLEX_PROPERTY:
-			ComplexProperty complexProperty = (ComplexProperty)property;
-			if (complexProperty.refType != null && complexProperty.refType.schemaMapping == this)
-				addComplexType(complexProperty.refType);
-			break;
-		case OBJECT_PROPERTY:
-			ObjectType objectType = ((ObjectProperty)property).getType();
-			if (objectType.schemaMapping == this)
-				addObjectType(objectType);
-			break;
-		case FEATURE_PROPERTY:
-			FeatureType featureType = ((FeatureProperty)property).getType();
-			if (featureType.schemaMapping == this)
-				addFeatureType(featureType);
-			break;
-		default:
-			// nothing to do
-		}
-	}
-	
-	public void merge(SchemaMapping other) throws SchemaMappingException {
-		isMerged = true;
-		
-		// remove metadata
-		metadata = null;
-		
-		for (AppSchema schema : other.schemas)
-			addSchema(schema);
-		
-		for (ComplexAttributeType attributeType : other.attributeTypes)
-			addComplexAttributeType(attributeType);
-		
-		for (ComplexType complexType : other.complexTypes)
-			addComplexType(complexType);
-		
-		for (ObjectType objectType : other.objectTypes)
-			addObjectType(objectType);
+    public boolean isSetPropertyInjections() {
+        return propertyInjections != null && !propertyInjections.isEmpty();
+    }
 
-		for (FeatureType featureType : other.featureTypes)
-			addFeatureType(featureType);
-		
-		for (PropertyInjection propertyInjection : other.propertyInjections)
-			addPropertyInjection(propertyInjection);
-	}
+    public void addPropertyInjection(PropertyInjection propertyInjection) throws SchemaMappingException {
+        if (propertyInjection != null && !propertyInjections.contains(propertyInjection)) {
+            propertyInjection.validate(this, this);
+            propertyInjections.add(propertyInjection);
+            registerPropertyInjection(propertyInjection);
+        }
+    }
 
-	public void validate() throws SchemaMappingException {
-		if (isSetMetadata())
-			metadata.validate(this, this);
-		
-		for (AppSchema schema : schemas) {
-			schema.validate(this, this);
-			for (Namespace namespace : schema.namespaces)
-				uriToSchemaMap.put(namespace.getURI(), schema);
-		}
+    public Map<String, String> getNamespaceContext(CityGMLVersion version) {
+        Map<String, String> context = new HashMap<>();
 
-		for (ComplexAttributeType attributeType : attributeTypes)
-			attributeType.validate(this, this);
+        // register app schema namespaces
+        for (AppSchema schema : schemas) {
+            for (Namespace namespace : schema.namespaces) {
+                if (namespace.isSetContext() && namespace.getContext().getCityGMLVersion() == version)
+                    context.put(schema.getXMLPrefix(), namespace.getURI());
+            }
+        }
 
-		for (ComplexType complexType : complexTypes)
-			complexType.validate(this, this);
-		
-		for (AbstractObjectType<?> type : getAbstractObjectTypes()) {
-			type.validate(this, this);
-			
-			AbstractObjectType<?> other = checkUniqueObjectClassId(type);
-			if (other != null)
-				throw new SchemaMappingException("The value " + type.objectClassId + " of the attribute 'objectClassId' is assigned to both '" + type.id + "' and '" + other.id + "'.");
-		}
+        return context;
+    }
 
-		for (PropertyInjection propertyInjection : propertyInjections)
-			propertyInjection.validate(this, this);
-	}
+    public Map<String, String> getNamespaceContext() {
+        return getNamespaceContext(CityGMLVersion.v2_0_0);
+    }
+
+    private AbstractObjectType<?> checkUniqueObjectClassId(AbstractObjectType<?> type) {
+        if (type.objectClassId == null)
+            return null;
+
+        for (FeatureType featureType : featureTypes) {
+            if (featureType != type
+                    && featureType.objectClassId != null
+                    && featureType.objectClassId.intValue() == type.objectClassId.intValue())
+                return featureType;
+        }
+
+        for (ObjectType objectType : objectTypes) {
+            if (objectType != type
+                    && objectType.objectClassId != null
+                    && objectType.objectClassId.intValue() == type.objectClassId.intValue())
+                return objectType;
+        }
+
+        return null;
+    }
+
+    private void registerType(AbstractType<?> type) throws SchemaMappingException {
+        if (type.schema != null && type.schema.schemaMapping == this)
+            addSchema(type.schema);
+
+        if (type.isSetExtension()
+                && type.getExtension().isSetBase()
+                && type.getExtension().getBase().schemaMapping == this) {
+            AbstractType<?> superType = type.getExtension().getBase();
+            switch (superType.getElementType()) {
+                case FEATURE_TYPE:
+                    addFeatureType((FeatureType) superType);
+                    break;
+                case OBJECT_TYPE:
+                    addObjectType((ObjectType) superType);
+                    break;
+                default:
+                    // nothing to do
+            }
+        }
+
+        registerProperties(type.properties);
+    }
+
+    private void registerPropertyInjection(PropertyInjection propertyInjection) throws SchemaMappingException {
+        if (propertyInjection.defaultBase != null && propertyInjection.defaultBase.schemaMapping == this)
+            addFeatureType(propertyInjection.defaultBase);
+
+        registerInjectedProperties(propertyInjection.properties);
+    }
+
+    private void registerProperties(List<? extends AbstractProperty> properties) throws SchemaMappingException {
+        for (AbstractProperty property : properties)
+            registerAbstractProperty(property);
+    }
+
+    private void registerInjectedProperties(List<InjectedProperty> properties) throws SchemaMappingException {
+        for (InjectedProperty property : properties) {
+            if (property.isSetBase() && property.getBase().schemaMapping == this)
+                addFeatureType(property.getBase());
+
+            if (property instanceof AbstractProperty)
+                registerAbstractProperty((AbstractProperty) property);
+        }
+    }
+
+    private void registerAbstractProperty(AbstractProperty property) throws SchemaMappingException {
+        if (property.schema != null && property.schema.schemaMapping == this)
+            addSchema(property.schema);
+
+        switch (property.getElementType()) {
+            case COMPLEX_ATTRIBUTE:
+                ComplexAttribute complexAttribute = (ComplexAttribute) property;
+                if (complexAttribute.refType != null && complexAttribute.refType.schemaMapping == this)
+                    addComplexAttributeType(complexAttribute.refType);
+                break;
+            case COMPLEX_PROPERTY:
+                ComplexProperty complexProperty = (ComplexProperty) property;
+                if (complexProperty.refType != null && complexProperty.refType.schemaMapping == this)
+                    addComplexType(complexProperty.refType);
+                break;
+            case OBJECT_PROPERTY:
+                ObjectType objectType = ((ObjectProperty) property).getType();
+                if (objectType.schemaMapping == this)
+                    addObjectType(objectType);
+                break;
+            case FEATURE_PROPERTY:
+                FeatureType featureType = ((FeatureProperty) property).getType();
+                if (featureType.schemaMapping == this)
+                    addFeatureType(featureType);
+                break;
+            default:
+                // nothing to do
+        }
+    }
+
+    public void merge(SchemaMapping other) throws SchemaMappingException {
+        isMerged = true;
+
+        // remove metadata
+        metadata = null;
+
+        for (AppSchema schema : other.schemas)
+            addSchema(schema);
+
+        for (ComplexAttributeType attributeType : other.attributeTypes)
+            addComplexAttributeType(attributeType);
+
+        for (ComplexType complexType : other.complexTypes)
+            addComplexType(complexType);
+
+        for (ObjectType objectType : other.objectTypes)
+            addObjectType(objectType);
+
+        for (FeatureType featureType : other.featureTypes)
+            addFeatureType(featureType);
+
+        for (PropertyInjection propertyInjection : other.propertyInjections)
+            addPropertyInjection(propertyInjection);
+    }
+
+    public void validate() throws SchemaMappingException {
+        if (isSetMetadata())
+            metadata.validate(this, this);
+
+        for (AppSchema schema : schemas) {
+            schema.validate(this, this);
+            for (Namespace namespace : schema.namespaces)
+                uriToSchemaMap.put(namespace.getURI(), schema);
+        }
+
+        for (ComplexAttributeType attributeType : attributeTypes)
+            attributeType.validate(this, this);
+
+        for (ComplexType complexType : complexTypes)
+            complexType.validate(this, this);
+
+        for (AbstractObjectType<?> type : getAbstractObjectTypes()) {
+            type.validate(this, this);
+
+            AbstractObjectType<?> other = checkUniqueObjectClassId(type);
+            if (other != null)
+                throw new SchemaMappingException("The value " + type.objectClassId + " of the attribute 'objectClassId' is assigned to both '" + type.id + "' and '" + other.id + "'.");
+        }
+
+        for (PropertyInjection propertyInjection : propertyInjections)
+            propertyInjection.validate(this, this);
+    }
 
 }

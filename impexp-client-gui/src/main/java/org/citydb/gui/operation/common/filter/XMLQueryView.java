@@ -31,7 +31,6 @@ package org.citydb.gui.operation.common.filter;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.github.vertical_blank.sqlformatter.SqlFormatter;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
@@ -39,6 +38,7 @@ import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.query.QueryConfig;
+import org.citydb.config.project.query.QueryWrapper;
 import org.citydb.config.project.query.filter.appearance.AppearanceFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
@@ -55,7 +55,6 @@ import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.util.ConfigConstants;
-import org.citydb.config.project.query.QueryWrapper;
 import org.citydb.core.database.DatabaseController;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 import org.citydb.core.database.schema.mapping.FeatureType;
@@ -75,6 +74,7 @@ import org.citydb.gui.plugin.view.ViewController;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.RSyntaxTextAreaHelper;
 import org.citydb.sqlbuilder.select.Select;
+import org.citydb.util.config.ConfigUtil;
 import org.citydb.util.log.Logger;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
@@ -397,7 +397,7 @@ public class XMLQueryView extends FilterView<QueryConfig> {
             if (object instanceof QueryWrapper)
                 query = ((QueryWrapper) object).getQueryConfig();
         } catch (Exception e) {
-           //
+            //
         }
 
         if (query == null) {

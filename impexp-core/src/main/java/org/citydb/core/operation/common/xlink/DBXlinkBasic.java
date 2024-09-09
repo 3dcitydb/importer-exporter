@@ -28,86 +28,86 @@
 package org.citydb.core.operation.common.xlink;
 
 public class DBXlinkBasic implements DBXlink {
-	private long id;
-	private String table;
-	private String fromColumn;
-	private String toColumn;
-	private String gmlId;
-	
-	public DBXlinkBasic(long id, String table, String fromColumn, String toColumn, String gmlId) {
-		this.id = id;
-		this.table = table;
-		this.fromColumn = fromColumn;
-		this.toColumn = toColumn;
-		this.gmlId = gmlId;
-	}
+    private long id;
+    private String table;
+    private String fromColumn;
+    private String toColumn;
+    private String gmlId;
 
-	public DBXlinkBasic(String table, long id, String gmlId, String fromColumn) {
-		this(id, table, fromColumn, null, gmlId);
-	}
+    public DBXlinkBasic(long id, String table, String fromColumn, String toColumn, String gmlId) {
+        this.id = id;
+        this.table = table;
+        this.fromColumn = fromColumn;
+        this.toColumn = toColumn;
+        this.gmlId = gmlId;
+    }
 
-	public DBXlinkBasic(String table, String gmlId, long id, String toColumn) {
-		this(id, table, null, toColumn, gmlId);
-	}
-	
-	public DBXlinkBasic(String table, long id, String fromColumn, String gmlId, String toColumn) {
-		this(id, table, fromColumn, toColumn, gmlId);
-	}
-	
-	public long getId() {
-		return id;
-	}
+    public DBXlinkBasic(String table, long id, String gmlId, String fromColumn) {
+        this(id, table, fromColumn, null, gmlId);
+    }
 
-	public void setId(long id) {
-		this.id = id;
-	}
+    public DBXlinkBasic(String table, String gmlId, long id, String toColumn) {
+        this(id, table, null, toColumn, gmlId);
+    }
 
-	public String getTable() {
-		return table;
-	}
+    public DBXlinkBasic(String table, long id, String fromColumn, String gmlId, String toColumn) {
+        this(id, table, fromColumn, toColumn, gmlId);
+    }
 
-	public void setTable(String table) {
-		this.table = table;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public String getGmlId() {
-		return gmlId;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public void setGmlId(String gmlId) {
-		this.gmlId = gmlId;
-	}
+    public String getTable() {
+        return table;
+    }
 
-	public String getFromColumn() {
-		return fromColumn;
-	}
+    public void setTable(String table) {
+        this.table = table;
+    }
 
-	public void setFromColumn(String fromColumn) {
-		this.fromColumn = fromColumn;
-	}
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public String getToColumn() {
-		return toColumn;
-	}
+    public void setGmlId(String gmlId) {
+        this.gmlId = gmlId;
+    }
 
-	public void setToColumn(String toColumn) {
-		this.toColumn = toColumn;
-	}
+    public String getFromColumn() {
+        return fromColumn;
+    }
 
-	public boolean isForward() {
-		return fromColumn != null && toColumn == null;
-	}
+    public void setFromColumn(String fromColumn) {
+        this.fromColumn = fromColumn;
+    }
 
-	public boolean isReverse() {
-		return fromColumn == null && toColumn != null;
-	}
+    public String getToColumn() {
+        return toColumn;
+    }
 
-	public boolean isBidirectional() {
-		return fromColumn != null && toColumn != null;
-	}
+    public void setToColumn(String toColumn) {
+        this.toColumn = toColumn;
+    }
 
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.BASIC;
-	}
+    public boolean isForward() {
+        return fromColumn != null && toColumn == null;
+    }
+
+    public boolean isReverse() {
+        return fromColumn == null && toColumn != null;
+    }
+
+    public boolean isBidirectional() {
+        return fromColumn != null && toColumn != null;
+    }
+
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.BASIC;
+    }
 }

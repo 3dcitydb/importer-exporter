@@ -36,9 +36,9 @@ import org.citydb.core.query.Query;
 
 public class FeatureWriterFactoryBuilder {
 
-	public static FeatureWriterFactory buildFactory(OutputFormat outputFormat, Query query, SchemaMapping schemaMapping, Object eventChannel, Config config) throws FeatureWriteException {
-		return outputFormat == OutputFormat.CITYJSON ?
-				new CityJSONWriterFactory(query, eventChannel, config) :
-				new CityGMLWriterFactory(query, schemaMapping, eventChannel, config);
-	}
+    public static FeatureWriterFactory buildFactory(OutputFormat outputFormat, Query query, SchemaMapping schemaMapping, Object eventChannel, Config config) throws FeatureWriteException {
+        return outputFormat == OutputFormat.CITYJSON ?
+                new CityJSONWriterFactory(query, eventChannel, config) :
+                new CityGMLWriterFactory(query, schemaMapping, eventChannel, config);
+    }
 }

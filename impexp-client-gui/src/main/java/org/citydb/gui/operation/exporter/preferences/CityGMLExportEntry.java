@@ -33,13 +33,13 @@ import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 
 public class CityGMLExportEntry extends DefaultPreferencesEntry {
 
-	public CityGMLExportEntry() {
-		super(EmptyPreferencesComponent.getInstance());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.export");
-	}
+    public CityGMLExportEntry() {
+        super(EmptyPreferencesComponent.getInstance());
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.export");
+    }
 
 }

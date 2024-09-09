@@ -52,149 +52,149 @@ import java.util.List;
 import java.util.Map;
 
 public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
-	private final DBCityObject cityObjectExporter;
-	private final DBReliefComponent componentExporter;
+    private final DBCityObject cityObjectExporter;
+    private final DBReliefComponent componentExporter;
 
-	private final String reliefModule;
-	private final LodFilter lodFilter;
-	private final boolean hasObjectClassIdColumn;
-	private final boolean useXLink;
+    private final String reliefModule;
+    private final LodFilter lodFilter;
+    private final boolean hasObjectClassIdColumn;
+    private final boolean useXLink;
 
-	private final List<Table> reliefADEHookTables;
-	private final List<Table> componentADEHookTables;
+    private final List<Table> reliefADEHookTables;
+    private final List<Table> componentADEHookTables;
 
-	public DBReliefFeature(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
-		super(ReliefFeature.class, connection, exporter);
+    public DBReliefFeature(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
+        super(ReliefFeature.class, connection, exporter);
 
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		componentExporter = exporter.getExporter(DBReliefComponent.class);
+        cityObjectExporter = exporter.getExporter(DBCityObject.class);
+        componentExporter = exporter.getExporter(DBReliefComponent.class);
 
-		CombinedProjectionFilter componentProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_COMPONENT.getName());
-		reliefModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.RELIEF).getNamespaceURI();
-		lodFilter = exporter.getLodFilter();
-		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
-		useXLink = exporter.getInternalConfig().isExportFeatureReferences();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+        CombinedProjectionFilter componentProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_COMPONENT.getName());
+        reliefModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.RELIEF).getNamespaceURI();
+        lodFilter = exporter.getLodFilter();
+        hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+        useXLink = exporter.getInternalConfig().isExportFeatureReferences();
+        String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		table = new Table(TableEnum.RELIEF_FEATURE.getName(), schema);
-		Table reliefComponent = new Table(TableEnum.RELIEF_COMPONENT.getName(), schema);
-		Table reliefFeatToRelComp = new Table(TableEnum.RELIEF_FEAT_TO_REL_COMP.getName(), schema);
-		Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
+        table = new Table(TableEnum.RELIEF_FEATURE.getName(), schema);
+        Table reliefComponent = new Table(TableEnum.RELIEF_COMPONENT.getName(), schema);
+        Table reliefFeatToRelComp = new Table(TableEnum.RELIEF_FEAT_TO_REL_COMP.getName(), schema);
+        Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
 
-		select = new Select().addProjection(table.getColumn("id"), table.getColumn("lod"));
-		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
-		select.addJoin(JoinFactory.inner(reliefFeatToRelComp, "relief_feature_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
-				.addJoin(JoinFactory.inner(reliefComponent, "id", ComparisonName.EQUAL_TO, reliefFeatToRelComp.getColumn("relief_component_id")));
-		componentExporter.addProjection(select, reliefComponent, componentProjectionFilter, "rc")
-				.addProjection(cityObject.getColumn("gmlid", "rcgmlid"))
-				.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, reliefComponent.getColumn("id")));
-		componentADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, reliefComponent);
-		reliefADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_FEATURE, table);
-	}
+        select = new Select().addProjection(table.getColumn("id"), table.getColumn("lod"));
+        if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
+        select.addJoin(JoinFactory.inner(reliefFeatToRelComp, "relief_feature_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
+                .addJoin(JoinFactory.inner(reliefComponent, "id", ComparisonName.EQUAL_TO, reliefFeatToRelComp.getColumn("relief_component_id")));
+        componentExporter.addProjection(select, reliefComponent, componentProjectionFilter, "rc")
+                .addProjection(cityObject.getColumn("gmlid", "rcgmlid"))
+                .addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, reliefComponent.getColumn("id")));
+        componentADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, reliefComponent);
+        reliefADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_FEATURE, table);
+    }
 
-	@Override
-	protected Collection<ReliefFeature> doExport(long id, ReliefFeature root, FeatureType rootType, PreparedStatement ps) throws CityGMLExportException, SQLException {
-		ps.setLong(1, id);
+    @Override
+    protected Collection<ReliefFeature> doExport(long id, ReliefFeature root, FeatureType rootType, PreparedStatement ps) throws CityGMLExportException, SQLException {
+        ps.setLong(1, id);
 
-		try (ResultSet rs = ps.executeQuery()) {
-			long currentReliefFeatureId = 0;
-			ReliefFeature reliefFeature = null;
-			ProjectionFilter projectionFilter = null;
-			Map<Long, ReliefFeature> reliefFeatures = new HashMap<>();
+        try (ResultSet rs = ps.executeQuery()) {
+            long currentReliefFeatureId = 0;
+            ReliefFeature reliefFeature = null;
+            ProjectionFilter projectionFilter = null;
+            Map<Long, ReliefFeature> reliefFeatures = new HashMap<>();
 
-			while (rs.next()) {	
-				long reliefFeatureId = rs.getLong("id");
+            while (rs.next()) {
+                long reliefFeatureId = rs.getLong("id");
 
-				if (reliefFeatureId != currentReliefFeatureId || reliefFeature == null) {
-					currentReliefFeatureId = reliefFeatureId;
+                if (reliefFeatureId != currentReliefFeatureId || reliefFeature == null) {
+                    currentReliefFeatureId = reliefFeatureId;
 
-					reliefFeature = reliefFeatures.get(reliefFeatureId);
-					if (reliefFeature == null) {
-						FeatureType featureType;
-						if (reliefFeatureId == id & root != null) {
-							reliefFeature = root;
-							featureType = rootType;
-						} else {
-							if (hasObjectClassIdColumn) {
-								// create relief feature object
-								int objectClassId = rs.getInt("objectclass_id");
-								reliefFeature = exporter.createObject(objectClassId, ReliefFeature.class);
-								if (reliefFeature == null) {
-									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, reliefFeatureId) + " as relief feature object.");
-									continue;
-								}
+                    reliefFeature = reliefFeatures.get(reliefFeatureId);
+                    if (reliefFeature == null) {
+                        FeatureType featureType;
+                        if (reliefFeatureId == id & root != null) {
+                            reliefFeature = root;
+                            featureType = rootType;
+                        } else {
+                            if (hasObjectClassIdColumn) {
+                                // create relief feature object
+                                int objectClassId = rs.getInt("objectclass_id");
+                                reliefFeature = exporter.createObject(objectClassId, ReliefFeature.class);
+                                if (reliefFeature == null) {
+                                    exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, reliefFeatureId) + " as relief feature object.");
+                                    continue;
+                                }
 
-								featureType = exporter.getFeatureType(objectClassId);
-							} else {
-								reliefFeature = new ReliefFeature();
-								featureType = exporter.getFeatureType(reliefFeature);
-							}
-						}
+                                featureType = exporter.getFeatureType(objectClassId);
+                            } else {
+                                reliefFeature = new ReliefFeature();
+                                featureType = exporter.getFeatureType(reliefFeature);
+                            }
+                        }
 
-						// get projection filter
-						projectionFilter = exporter.getProjectionFilter(featureType);
+                        // get projection filter
+                        projectionFilter = exporter.getProjectionFilter(featureType);
 
-						// export city object information
-						cityObjectExporter.addBatch(reliefFeature, reliefFeatureId, featureType, projectionFilter);
+                        // export city object information
+                        cityObjectExporter.addBatch(reliefFeature, reliefFeatureId, featureType, projectionFilter);
 
-						int lod = rs.getInt("lod");
-						if (!lodFilter.isEnabled(lod))
-							continue;
+                        int lod = rs.getInt("lod");
+                        if (!lodFilter.isEnabled(lod))
+                            continue;
 
-						reliefFeature.setLod(lod);
-						
-						// delegate export of generic ADE properties
-						if (reliefADEHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(reliefADEHookTables, rs);
-							if (adeHookTables != null)
-								exporter.delegateToADEExporter(adeHookTables, reliefFeature, reliefFeatureId, featureType, projectionFilter);
-						}
+                        reliefFeature.setLod(lod);
 
-						reliefFeature.setLocalProperty("projection", projectionFilter);
-						reliefFeatures.put(reliefFeatureId, reliefFeature);
-					} else
-						projectionFilter = (ProjectionFilter)reliefFeature.getLocalProperty("projection");
-				}
+                        // delegate export of generic ADE properties
+                        if (reliefADEHookTables != null) {
+                            List<String> adeHookTables = retrieveADEHookTables(reliefADEHookTables, rs);
+                            if (adeHookTables != null)
+                                exporter.delegateToADEExporter(adeHookTables, reliefFeature, reliefFeatureId, featureType, projectionFilter);
+                        }
 
-				if (!projectionFilter.containsProperty("reliefComponent", reliefModule))
-					continue;
+                        reliefFeature.setLocalProperty("projection", projectionFilter);
+                        reliefFeatures.put(reliefFeatureId, reliefFeature);
+                    } else
+                        projectionFilter = (ProjectionFilter) reliefFeature.getLocalProperty("projection");
+                }
 
-				long componentId = rs.getLong("rcid");
-				if (rs.wasNull())
-					continue;
+                if (!projectionFilter.containsProperty("reliefComponent", reliefModule))
+                    continue;
 
-				int objectClassId = rs.getInt("rcobjectclass_id");
+                long componentId = rs.getLong("rcid");
+                if (rs.wasNull())
+                    continue;
 
-				// check whether we need an XLink
-				String gmlId = rs.getString("rcgmlid");
-				boolean generateNewGmlId = false;
-				if (!rs.wasNull()) {
-					if (exporter.lookupAndPutObjectId(gmlId, componentId, objectClassId)) {
-						if (useXLink) {
-							ReliefComponentProperty property = new ReliefComponentProperty();
-							property.setHref("#" + gmlId);
-							reliefFeature.addReliefComponent(property);
-							continue;
-						} else
-							generateNewGmlId = true;
-					}
-				}
+                int objectClassId = rs.getInt("rcobjectclass_id");
 
-				// create new relief component object
-				FeatureType featureType = exporter.getFeatureType(objectClassId);
-				AbstractReliefComponent component = componentExporter.doExport(componentId, featureType, "rc", componentADEHookTables, rs);
-				if (component == null) {
-					exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, componentId) + " as relief component object.");
-					continue;
-				}
+                // check whether we need an XLink
+                String gmlId = rs.getString("rcgmlid");
+                boolean generateNewGmlId = false;
+                if (!rs.wasNull()) {
+                    if (exporter.lookupAndPutObjectId(gmlId, componentId, objectClassId)) {
+                        if (useXLink) {
+                            ReliefComponentProperty property = new ReliefComponentProperty();
+                            property.setHref("#" + gmlId);
+                            reliefFeature.addReliefComponent(property);
+                            continue;
+                        } else
+                            generateNewGmlId = true;
+                    }
+                }
 
-				if (generateNewGmlId)
-					component.setId(exporter.generateFeatureGmlId(component, gmlId));
+                // create new relief component object
+                FeatureType featureType = exporter.getFeatureType(objectClassId);
+                AbstractReliefComponent component = componentExporter.doExport(componentId, featureType, "rc", componentADEHookTables, rs);
+                if (component == null) {
+                    exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, componentId) + " as relief component object.");
+                    continue;
+                }
 
-				reliefFeature.addReliefComponent(new ReliefComponentProperty(component));
-			}
+                if (generateNewGmlId)
+                    component.setId(exporter.generateFeatureGmlId(component, gmlId));
 
-			return reliefFeatures.values();
-		}
-	}
+                reliefFeature.addReliefComponent(new ReliefComponentProperty(component));
+            }
+
+            return reliefFeatures.values();
+        }
+    }
 }

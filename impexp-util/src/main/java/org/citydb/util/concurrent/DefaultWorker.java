@@ -30,46 +30,47 @@ package org.citydb.util.concurrent;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class DefaultWorker<T> extends Worker<T> {
-	private final ReentrantLock mainLock = new ReentrantLock();
-	private volatile boolean shouldRun = true;
+    private final ReentrantLock mainLock = new ReentrantLock();
+    private volatile boolean shouldRun = true;
 
-	@Override
-	public void interrupt() {
-		shouldRun = false;
-	}
+    @Override
+    public void interrupt() {
+        shouldRun = false;
+    }
 
-	@Override
-	public void run() {
-		try {
-			if (firstWork != null) {
-				lockAndDoWork(firstWork);
-				firstWork = null;
-			}
+    @Override
+    public void run() {
+        try {
+            if (firstWork != null) {
+                lockAndDoWork(firstWork);
+                firstWork = null;
+            }
 
-			while (shouldRun) {
-				try {
-					T work = workQueue.take();
-					lockAndDoWork(work);					
-				} catch (InterruptedException ie) {
-					// re-check state
-				}
-			}
-		} finally {
-			shutdown();
-		}
-	}
-	
-	private void lockAndDoWork(T work) {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-		
-		try {
-			doWork(work);
-		} finally {
-			lock.unlock();
-		}
-	}
+            while (shouldRun) {
+                try {
+                    T work = workQueue.take();
+                    lockAndDoWork(work);
+                } catch (InterruptedException ie) {
+                    // re-check state
+                }
+            }
+        } finally {
+            shutdown();
+        }
+    }
 
-	public abstract void doWork(T work);
-	public abstract void shutdown();
+    private void lockAndDoWork(T work) {
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
+
+        try {
+            doWork(work);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public abstract void doWork(T work);
+
+    public abstract void shutdown();
 }

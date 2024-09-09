@@ -30,5 +30,5 @@ package org.citydb.gui.components.bbox;
 import org.citydb.config.geometry.BoundingBox;
 
 public interface BoundingBoxListener {
-	public void setBoundingBox(BoundingBox boundingBox);
+    public void setBoundingBox(BoundingBox boundingBox);
 }

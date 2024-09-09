@@ -28,31 +28,31 @@
 package org.citydb.core.operation.common.cache.model;
 
 public enum CacheTableModel {
-	// provide a unique id for the tmp table
-	// that does not extend 6 chars!
-	OBJECT_GMLID("OID"),
-	GEOMETRY_GMLID("GID"),
-	SURFACE_GEOMETRY("SG"),
-	SOLID_GEOMETRY("SOG"),
-	BASIC("BA"),
-	LINEAR_RING("LR"),
-	TEXTURE_COORD_LIST("TC"),
-	TEXTUREPARAM("TP"),
-	TEXTUREASSOCIATION("TA"),
-	TEXTUREASSOCIATION_TARGET("TAT"),
-	TEXTURE_FILE_ID("TID"),
-	TEXTURE_FILE("TF"),
-	SURFACE_DATA_TO_TEX_IMAGE("STT"),
-	LIBRARY_OBJECT("LO"),
-	DEPRECATED_MATERIAL("DP"),
-	GROUP_TO_CITYOBJECT("GTC"),
-	GLOBAL_APPEARANCE("GA"),
-	ID_LIST("IDL"),
-	DUPLICATE_LIST("DUL");
+    // provide a unique id for the tmp table
+    // that does not extend 6 chars!
+    OBJECT_GMLID("OID"),
+    GEOMETRY_GMLID("GID"),
+    SURFACE_GEOMETRY("SG"),
+    SOLID_GEOMETRY("SOG"),
+    BASIC("BA"),
+    LINEAR_RING("LR"),
+    TEXTURE_COORD_LIST("TC"),
+    TEXTUREPARAM("TP"),
+    TEXTUREASSOCIATION("TA"),
+    TEXTUREASSOCIATION_TARGET("TAT"),
+    TEXTURE_FILE_ID("TID"),
+    TEXTURE_FILE("TF"),
+    SURFACE_DATA_TO_TEX_IMAGE("STT"),
+    LIBRARY_OBJECT("LO"),
+    DEPRECATED_MATERIAL("DP"),
+    GROUP_TO_CITYOBJECT("GTC"),
+    GLOBAL_APPEARANCE("GA"),
+    ID_LIST("IDL"),
+    DUPLICATE_LIST("DUL");
 
-	private final String value;
+    private final String value;
 
-	CacheTableModel(String v) {
+    CacheTableModel(String v) {
         value = v;
     }
 

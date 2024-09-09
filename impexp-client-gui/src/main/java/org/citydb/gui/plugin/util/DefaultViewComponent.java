@@ -33,6 +33,8 @@ import java.util.Locale;
 
 public abstract class DefaultViewComponent extends JPanel {
     public abstract void switchLocale(Locale locale);
+
     public abstract void loadSettings();
+
     public abstract void setSettings();
 }

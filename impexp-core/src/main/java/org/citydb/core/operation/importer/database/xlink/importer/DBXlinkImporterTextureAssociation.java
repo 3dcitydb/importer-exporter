@@ -34,44 +34,44 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBXlinkImporterTextureAssociation implements DBXlinkImporter {
-	private final DBXlinkImporterManager xlinkImporterManager;
-	private PreparedStatement psXlink;
-	private int batchCounter;
+    private final DBXlinkImporterManager xlinkImporterManager;
+    private PreparedStatement psXlink;
+    private int batchCounter;
 
-	public DBXlinkImporterTextureAssociation(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
-		this.xlinkImporterManager = xlinkImporterManager;
+    public DBXlinkImporterTextureAssociation(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+        this.xlinkImporterManager = xlinkImporterManager;
 
-		psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (ID, GMLID, TARGET_URI) values " +
-			"(?, ?, ?)");
-	}
+        psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() +
+                " (ID, GMLID, TARGET_URI) values " +
+                "(?, ?, ?)");
+    }
 
-	public boolean insert(DBXlinkTextureAssociation xlinkEntry) throws SQLException {
-		psXlink.setLong(1, xlinkEntry.getId());
-		psXlink.setString(2, xlinkEntry.getGmlId());
-		psXlink.setString(3, xlinkEntry.getTargetURI());
+    public boolean insert(DBXlinkTextureAssociation xlinkEntry) throws SQLException {
+        psXlink.setLong(1, xlinkEntry.getId());
+        psXlink.setString(2, xlinkEntry.getGmlId());
+        psXlink.setString(3, xlinkEntry.getTargetURI());
 
-		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
-			executeBatch();
+        psXlink.addBatch();
+        if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
+            executeBatch();
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psXlink.executeBatch();
-		batchCounter = 0;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psXlink.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psXlink.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        psXlink.close();
+    }
 
-	@Override
-	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.XLINK_TEXTUREASSOCIATION;
-	}
+    @Override
+    public DBXlinkImporterEnum getDBXlinkImporterType() {
+        return DBXlinkImporterEnum.XLINK_TEXTUREASSOCIATION;
+    }
 
 }

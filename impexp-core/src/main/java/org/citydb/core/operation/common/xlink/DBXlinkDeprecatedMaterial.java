@@ -28,43 +28,43 @@
 package org.citydb.core.operation.common.xlink;
 
 public class DBXlinkDeprecatedMaterial implements DBXlink {
-	private long id;
-	private String gmlId;
-	private long surfaceGeometryId;
+    private long id;
+    private String gmlId;
+    private long surfaceGeometryId;
 
-	public DBXlinkDeprecatedMaterial(long id, String gmlId, long surfaceGeometryId) {
-		this.id = id;
-		this.gmlId = gmlId;
-		this.surfaceGeometryId = surfaceGeometryId;
-	}
+    public DBXlinkDeprecatedMaterial(long id, String gmlId, long surfaceGeometryId) {
+        this.id = id;
+        this.gmlId = gmlId;
+        this.surfaceGeometryId = surfaceGeometryId;
+    }
 
-	public long getId() {
-		return id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public void setId(long id) {
-		this.id = id;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public String getGmlId() {
-		return gmlId;
-	}
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public void setGmlId(String gmlId) {
-		this.gmlId = gmlId;
-	}
+    public void setGmlId(String gmlId) {
+        this.gmlId = gmlId;
+    }
 
-	public long getSurfaceGeometryId() {
-		return surfaceGeometryId;
-	}
+    public long getSurfaceGeometryId() {
+        return surfaceGeometryId;
+    }
 
-	public void setSurfaceGeometryId(long surfaceGeometryId) {
-		this.surfaceGeometryId = surfaceGeometryId;
-	}
+    public void setSurfaceGeometryId(long surfaceGeometryId) {
+        this.surfaceGeometryId = surfaceGeometryId;
+    }
 
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.DEPRECATED_MATERIAL;
-	}
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.DEPRECATED_MATERIAL;
+    }
 
 }

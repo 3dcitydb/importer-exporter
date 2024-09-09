@@ -33,15 +33,15 @@ import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 import java.util.function.Supplier;
 
 public class EmptyPanel extends DefaultPreferencesEntry {
-	private final Supplier<String> stringSupplier;
+    private final Supplier<String> stringSupplier;
 
-	public EmptyPanel(Supplier<String> stringSupplier) {
-		super(EmptyPreferencesComponent.getInstance());
-		this.stringSupplier = stringSupplier;
-	}
+    public EmptyPanel(Supplier<String> stringSupplier) {
+        super(EmptyPreferencesComponent.getInstance());
+        this.stringSupplier = stringSupplier;
+    }
 
-	@Override
-	public String getLocalizedTitle() {
-		return stringSupplier.get();
-	}
+    @Override
+    public String getLocalizedTitle() {
+        return stringSupplier.get();
+    }
 }

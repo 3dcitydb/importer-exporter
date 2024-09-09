@@ -30,47 +30,47 @@ package org.citydb.core.operation.exporter.database.content;
 import org.citydb.core.database.schema.mapping.AbstractObjectType;
 
 public class DBSplittingResult {
-	private final long id;
-	private final AbstractObjectType<?> objectType;
-	private final Object envelope;
-	private final long sequenceId;
+    private final long id;
+    private final AbstractObjectType<?> objectType;
+    private final Object envelope;
+    private final long sequenceId;
 
-	public DBSplittingResult(long id, AbstractObjectType<?> objectType, Object envelope, long sequenceId) {
-		this.id = id;
-		this.objectType = objectType;
-		this.envelope = envelope;
-		this.sequenceId = sequenceId;
-	}
+    public DBSplittingResult(long id, AbstractObjectType<?> objectType, Object envelope, long sequenceId) {
+        this.id = id;
+        this.objectType = objectType;
+        this.envelope = envelope;
+        this.sequenceId = sequenceId;
+    }
 
-	public DBSplittingResult(long id, AbstractObjectType<?> objectType, Object envelope) {
-		this(id, objectType, envelope, -1);
-	}
+    public DBSplittingResult(long id, AbstractObjectType<?> objectType, Object envelope) {
+        this(id, objectType, envelope, -1);
+    }
 
-	public DBSplittingResult(long id, AbstractObjectType<?> objectType, long sequenceId) {
-		this(id, objectType, null, sequenceId);
-	}
+    public DBSplittingResult(long id, AbstractObjectType<?> objectType, long sequenceId) {
+        this(id, objectType, null, sequenceId);
+    }
 
-	public DBSplittingResult(long id, AbstractObjectType<?> objectType) {
-		this(id, objectType, null, -1);
-	}
+    public DBSplittingResult(long id, AbstractObjectType<?> objectType) {
+        this(id, objectType, null, -1);
+    }
 
-	public DBSplittingResult(DBSplittingResult other, long sequenceId) {
-		this(other.id, other.objectType, other.envelope, sequenceId);
-	}
+    public DBSplittingResult(DBSplittingResult other, long sequenceId) {
+        this(other.id, other.objectType, other.envelope, sequenceId);
+    }
 
-	public long getId() {
-		return id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public AbstractObjectType<?> getObjectType() {
-		return objectType;
-	}
+    public AbstractObjectType<?> getObjectType() {
+        return objectType;
+    }
 
-	public Object getEnvelope() {
-		return envelope;
-	}
+    public Object getEnvelope() {
+        return envelope;
+    }
 
-	public long getSequenceId() {
-		return sequenceId;
-	}
+    public long getSequenceId() {
+        return sequenceId;
+    }
 }

@@ -33,100 +33,100 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class VertexInfo {
-	private BigInteger vertexId;
-	private double x;
-	private double y;
-	private double z;
-	private HashMap<Long, TexCoords> texCoords;
-	private VertexInfo nextVertexInfo = null;
+    private BigInteger vertexId;
+    private double x;
+    private double y;
+    private double z;
+    private HashMap<Long, TexCoords> texCoords;
+    private VertexInfo nextVertexInfo = null;
 
-	protected VertexInfo (BigInteger vertexId, double x, double y, double z) {
-		setVertexId(vertexId);
-		setX(x);
-		setY(y);
-		setZ(z);
-	}
+    protected VertexInfo(BigInteger vertexId, double x, double y, double z) {
+        setVertexId(vertexId);
+        setX(x);
+        setY(y);
+        setZ(z);
+    }
 
-	protected VertexInfo (BigInteger vertexId) {
-		setVertexId(vertexId);
-	}
+    protected VertexInfo(BigInteger vertexId) {
+        setVertexId(vertexId);
+    }
 
-	protected void addTexCoords (long surfaceId, TexCoords texCoordsForThisSurface) {
-		if (texCoordsForThisSurface == null) {
-			return;
-		}
-		if (texCoords == null) {
-			texCoords = new HashMap<Long, TexCoords>();
-		}
-		texCoords.put(surfaceId, texCoordsForThisSurface);
-	}
+    protected void addTexCoords(long surfaceId, TexCoords texCoordsForThisSurface) {
+        if (texCoordsForThisSurface == null) {
+            return;
+        }
+        if (texCoords == null) {
+            texCoords = new HashMap<Long, TexCoords>();
+        }
+        texCoords.put(surfaceId, texCoordsForThisSurface);
+    }
 
-	protected TexCoords getTexCoords (long surfaceId) {
-		TexCoords value = null;
-		if (texCoords != null) {
-			value = texCoords.get(surfaceId);
-		}
-		return value;
-	}
+    protected TexCoords getTexCoords(long surfaceId) {
+        TexCoords value = null;
+        if (texCoords != null) {
+            value = texCoords.get(surfaceId);
+        }
+        return value;
+    }
 
-	protected HashMap<Long, TexCoords> getAllTexCoords () {
-		return texCoords;
-	}
+    protected HashMap<Long, TexCoords> getAllTexCoords() {
+        return texCoords;
+    }
 
-	protected void addTexCoordsFrom (VertexInfo anotherVertexInfo) {
-		if (anotherVertexInfo.texCoords == null) {
-			return;
-		}
-		if (texCoords == null) {
-			texCoords = new HashMap<Long, TexCoords>();
-		}
-		Set<Long> keySet = anotherVertexInfo.texCoords.keySet();
-		Iterator<Long> iterator = keySet.iterator();
-		while (iterator.hasNext()) {
-			Long surfaceId = iterator.next();
-			texCoords.put(surfaceId, anotherVertexInfo.getTexCoords(surfaceId));
-		}
-	}
-	
+    protected void addTexCoordsFrom(VertexInfo anotherVertexInfo) {
+        if (anotherVertexInfo.texCoords == null) {
+            return;
+        }
+        if (texCoords == null) {
+            texCoords = new HashMap<Long, TexCoords>();
+        }
+        Set<Long> keySet = anotherVertexInfo.texCoords.keySet();
+        Iterator<Long> iterator = keySet.iterator();
+        while (iterator.hasNext()) {
+            Long surfaceId = iterator.next();
+            texCoords.put(surfaceId, anotherVertexInfo.getTexCoords(surfaceId));
+        }
+    }
 
-	protected void setVertexId(BigInteger vertexId) {
-		this.vertexId = vertexId;
-	}
 
-	protected BigInteger getVertexId() {
-		return vertexId;
-	}
+    protected void setVertexId(BigInteger vertexId) {
+        this.vertexId = vertexId;
+    }
 
-	protected void setX(double x) {
-		this.x = x;
-	}
+    protected BigInteger getVertexId() {
+        return vertexId;
+    }
 
-	protected double getX() {
-		return x;
-	}
+    protected void setX(double x) {
+        this.x = x;
+    }
 
-	protected void setY(double y) {
-		this.y = y;
-	}
+    protected double getX() {
+        return x;
+    }
 
-	protected double getY() {
-		return y;
-	}
+    protected void setY(double y) {
+        this.y = y;
+    }
 
-	protected void setZ(double z) {
-		this.z = z;
-	}
+    protected double getY() {
+        return y;
+    }
 
-	protected double getZ() {
-		return z;
-	}
+    protected void setZ(double z) {
+        this.z = z;
+    }
 
-	protected void setNextVertexInfo(VertexInfo nextVertexInfo) {
-		this.nextVertexInfo = nextVertexInfo;
-	}
+    protected double getZ() {
+        return z;
+    }
 
-	protected VertexInfo getNextVertexInfo() {
-		return nextVertexInfo;
-	}
+    protected void setNextVertexInfo(VertexInfo nextVertexInfo) {
+        this.nextVertexInfo = nextVertexInfo;
+    }
+
+    protected VertexInfo getNextVertexInfo() {
+        return nextVertexInfo;
+    }
 
 }

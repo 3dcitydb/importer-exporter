@@ -51,119 +51,119 @@ import java.util.Collection;
 import java.util.List;
 
 public class DBAddress extends AbstractFeatureExporter<Address> {
-	private final AddressExportFactory factory;
-	private final GMLConverter gmlConverter;
-	private final List<Table> adeHookTables;
+    private final AddressExportFactory factory;
+    private final GMLConverter gmlConverter;
+    private final List<Table> adeHookTables;
 
-	public DBAddress(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
-		super(Address.class, connection, exporter);
+    public DBAddress(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
+        super(Address.class, connection, exporter);
 
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-		table = new Table(TableEnum.ADDRESS.getName(), schema);
-		select = addProjection(new Select(), table, "");
-		adeHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, table);
+        String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+        table = new Table(TableEnum.ADDRESS.getName(), schema);
+        select = addProjection(new Select(), table, "");
+        adeHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, table);
 
-		factory = new AddressExportFactory(exporter.getInternalConfig().getOutputFormat(), exporter.getExportConfig());
-		gmlConverter = exporter.getGMLConverter();
-	}
+        factory = new AddressExportFactory(exporter.getInternalConfig().getOutputFormat(), exporter.getExportConfig());
+        gmlConverter = exporter.getGMLConverter();
+    }
 
-	protected Select addProjection(Select select, Table table, String prefix) {
-		select.addProjection(table.getColumn("id", prefix + "id"), table.getColumn("street", prefix + "street"),
-				table.getColumn("house_number", prefix + "house_number"), table.getColumn("po_box", prefix + "po_box"),
-				table.getColumn("zip_code", prefix + "zip_code"), table.getColumn("city", prefix + "city"),
-				table.getColumn("state", prefix + "state"), table.getColumn("country", prefix + "country"),
-				table.getColumn("xal_source", prefix + "xal_source"),
-				exporter.getGeometryColumn(table.getColumn("multi_point"), prefix + "multi_point"));
+    protected Select addProjection(Select select, Table table, String prefix) {
+        select.addProjection(table.getColumn("id", prefix + "id"), table.getColumn("street", prefix + "street"),
+                table.getColumn("house_number", prefix + "house_number"), table.getColumn("po_box", prefix + "po_box"),
+                table.getColumn("zip_code", prefix + "zip_code"), table.getColumn("city", prefix + "city"),
+                table.getColumn("state", prefix + "state"), table.getColumn("country", prefix + "country"),
+                table.getColumn("xal_source", prefix + "xal_source"),
+                exporter.getGeometryColumn(table.getColumn("multi_point"), prefix + "multi_point"));
 
-		return select;
-	}
+        return select;
+    }
 
-	@Override
-	protected Collection<Address> doExport(long id, Address root, FeatureType rootType, PreparedStatement ps) throws CityGMLExportException, SQLException {
-		ps.setLong(1, id);
+    @Override
+    protected Collection<Address> doExport(long id, Address root, FeatureType rootType, PreparedStatement ps) throws CityGMLExportException, SQLException {
+        ps.setLong(1, id);
 
-		try (ResultSet rs = ps.executeQuery()) {
-			List<Address> addresses = new ArrayList<>();
+        try (ResultSet rs = ps.executeQuery()) {
+            List<Address> addresses = new ArrayList<>();
 
-			while (rs.next()) {
-				long addressId = rs.getLong("id");
+            while (rs.next()) {
+                long addressId = rs.getLong("id");
 
-				Address address;
-				if (addressId == id && root != null)
-					address = root;
-				else
-					address = new Address();
-				
-				AddressProperty addressProperty = doExport(addressId, address, "", adeHookTables, rs);
-				if (addressProperty != null)
-					addresses.add(address);
-			}
+                Address address;
+                if (addressId == id && root != null)
+                    address = root;
+                else
+                    address = new Address();
 
-			return addresses;
-		}
-	}
+                AddressProperty addressProperty = doExport(addressId, address, "", adeHookTables, rs);
+                if (addressProperty != null)
+                    addresses.add(address);
+            }
 
-	protected AddressProperty doExport(long addressId, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
-		return doExport(addressId, null, prefix, adeHookTables, rs);
-	}
+            return addresses;
+        }
+    }
 
-	private AddressProperty doExport(long addressId, Address address, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
-		AddressObject addressObject = factory.newAddressObject();
+    protected AddressProperty doExport(long addressId, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
+        return doExport(addressId, null, prefix, adeHookTables, rs);
+    }
 
-		// note: we do not export gml:ids for address objects
-		// otherwise we would have to check for xlink references
+    private AddressProperty doExport(long addressId, Address address, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
+        AddressObject addressObject = factory.newAddressObject();
 
-		fillAddressObject(addressObject, factory.getPrimaryMode(), prefix, rs);
-		if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
-			fillAddressObject(addressObject, factory.getFallbackMode(), prefix, rs);
+        // note: we do not export gml:ids for address objects
+        // otherwise we would have to check for xlink references
 
-		AddressProperty addressProperty = null;
-		if (addressObject.canCreate()) {
-			// multiPointGeometry
-			Object multiPointObj = rs.getObject(prefix + "multi_point");
-			if (!rs.wasNull()) {
-				GeometryObject multiPoint = exporter.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
-				MultiPointProperty multiPointProperty = gmlConverter.getMultiPointProperty(multiPoint, false);
-				if (multiPointProperty != null)
-					addressObject.setMultiPointProperty(multiPointProperty);
-			}
+        fillAddressObject(addressObject, factory.getPrimaryMode(), prefix, rs);
+        if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
+            fillAddressObject(addressObject, factory.getFallbackMode(), prefix, rs);
 
-			// create xAL address
-			if (address == null)
-				addressProperty = factory.create(addressObject);
-			else
-				addressProperty = factory.create(addressObject, address);
+        AddressProperty addressProperty = null;
+        if (addressObject.canCreate()) {
+            // multiPointGeometry
+            Object multiPointObj = rs.getObject(prefix + "multi_point");
+            if (!rs.wasNull()) {
+                GeometryObject multiPoint = exporter.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
+                MultiPointProperty multiPointProperty = gmlConverter.getMultiPointProperty(multiPoint, false);
+                if (multiPointProperty != null)
+                    addressObject.setMultiPointProperty(multiPointProperty);
+            }
 
-			// delegate export of generic ADE properties
-			if (adeHookTables != null) {
-				List<String> tableNames = retrieveADEHookTables(adeHookTables, rs);
-				if (tableNames != null) {
-					FeatureType featureType = exporter.getFeatureType(Address.class);
-					exporter.delegateToADEExporter(tableNames, address, addressId, featureType, exporter.getProjectionFilter(featureType));
-				}
-			}
-		}
+            // create xAL address
+            if (address == null)
+                addressProperty = factory.create(addressObject);
+            else
+                addressProperty = factory.create(addressObject, address);
 
-		return addressProperty;
-	}
+            // delegate export of generic ADE properties
+            if (adeHookTables != null) {
+                List<String> tableNames = retrieveADEHookTables(adeHookTables, rs);
+                if (tableNames != null) {
+                    FeatureType featureType = exporter.getFeatureType(Address.class);
+                    exporter.delegateToADEExporter(tableNames, address, addressId, featureType, exporter.getProjectionFilter(featureType));
+                }
+            }
+        }
 
-	private void fillAddressObject(AddressObject addressObject, AddressMode mode, String prefix, ResultSet rs) throws SQLException {
-		if (mode == AddressMode.DB) {
-			addressObject.setStreet(rs.getString(prefix + "street"));
-			addressObject.setHouseNumber(rs.getString(prefix + "house_number"));
-			addressObject.setPOBox(rs.getString(prefix + "po_box"));
-			addressObject.setZipCode(rs.getString(prefix + "zip_code"));
-			addressObject.setCity(rs.getString(prefix + "city"));
-			addressObject.setState(rs.getString(prefix + "state"));
-			addressObject.setCountry(rs.getString(prefix + "country"));
-		} else {
-			String xal = rs.getString(prefix + "xal_source");
-			if (!rs.wasNull()) {
-				Object object = exporter.unmarshal(new StringReader(xal));
-				if (object instanceof AddressDetails)
-					addressObject.setAddressDetails((AddressDetails)object);
-			}
-		}
-	}
+        return addressProperty;
+    }
+
+    private void fillAddressObject(AddressObject addressObject, AddressMode mode, String prefix, ResultSet rs) throws SQLException {
+        if (mode == AddressMode.DB) {
+            addressObject.setStreet(rs.getString(prefix + "street"));
+            addressObject.setHouseNumber(rs.getString(prefix + "house_number"));
+            addressObject.setPOBox(rs.getString(prefix + "po_box"));
+            addressObject.setZipCode(rs.getString(prefix + "zip_code"));
+            addressObject.setCity(rs.getString(prefix + "city"));
+            addressObject.setState(rs.getString(prefix + "state"));
+            addressObject.setCountry(rs.getString(prefix + "country"));
+        } else {
+            String xal = rs.getString(prefix + "xal_source");
+            if (!rs.wasNull()) {
+                Object object = exporter.unmarshal(new StringReader(xal));
+                if (object instanceof AddressDetails)
+                    addressObject.setAddressDetails((AddressDetails) object);
+            }
+        }
+    }
 
 }

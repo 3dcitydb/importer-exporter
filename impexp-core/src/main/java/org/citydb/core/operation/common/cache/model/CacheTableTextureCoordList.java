@@ -35,38 +35,38 @@ import java.sql.Statement;
 
 
 public class CacheTableTextureCoordList extends AbstractCacheTableModel {
-	public static CacheTableTextureCoordList instance = null;
-	
-	public synchronized static CacheTableTextureCoordList getInstance() {
-		if (instance == null)
-			instance = new CacheTableTextureCoordList();
-		
-		return instance;
-	}
+    public static CacheTableTextureCoordList instance = null;
 
-	@Override
-	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		try (Statement stmt = conn.createStatement()) {
-			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (ID) " + properties);
-			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (GMLID) " + properties);
-			stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (TARGET_ID) " + properties);
-		}
-	}
+    public synchronized static CacheTableTextureCoordList getInstance() {
+        if (instance == null)
+            instance = new CacheTableTextureCoordList();
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.TEXTURE_COORD_LIST;
-	}
-	
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"ID " + sqlAdapter.getBigInt() + ", " +
-				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"TEXPARAM_GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"TEXTURE_COORDINATES " + sqlAdapter.getPolygon2D() + ", " +
-				"TARGET_ID " + sqlAdapter.getBigInt() +
-				")";
-	}
+        return instance;
+    }
+
+    @Override
+    public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (ID) " + properties);
+            stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (GMLID) " + properties);
+            stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (TARGET_ID) " + properties);
+        }
+    }
+
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.TEXTURE_COORD_LIST;
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "ID " + sqlAdapter.getBigInt() + ", " +
+                "GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+                "TEXPARAM_GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+                "TEXTURE_COORDINATES " + sqlAdapter.getPolygon2D() + ", " +
+                "TARGET_ID " + sqlAdapter.getBigInt() +
+                ")";
+    }
 
 }

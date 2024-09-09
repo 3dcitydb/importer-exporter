@@ -35,52 +35,52 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class DBXlinkImporterBasic implements DBXlinkImporter {
-	private final DBXlinkImporterManager xlinkImporterManager;
-	private PreparedStatement psXlink;	
-	private int batchCounter;
+    private final DBXlinkImporterManager xlinkImporterManager;
+    private PreparedStatement psXlink;
+    private int batchCounter;
 
-	public DBXlinkImporterBasic(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
-		this.xlinkImporterManager = xlinkImporterManager;
+    public DBXlinkImporterBasic(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+        this.xlinkImporterManager = xlinkImporterManager;
 
-		psXlink = tempTable.getConnection().prepareStatement(new StringBuilder()
-		.append("insert into ").append(tempTable.getTableName())
-		.append(" (ID, TABLE_NAME, FROM_COLUMN, TO_COLUMN, GMLID) values ")
-		.append("(?, ?, ?, ?, ?)").toString());
-	}
+        psXlink = tempTable.getConnection().prepareStatement(new StringBuilder()
+                .append("insert into ").append(tempTable.getTableName())
+                .append(" (ID, TABLE_NAME, FROM_COLUMN, TO_COLUMN, GMLID) values ")
+                .append("(?, ?, ?, ?, ?)").toString());
+    }
 
-	public boolean insert(DBXlinkBasic xlinkEntry) throws SQLException {
-		psXlink.setLong(1, xlinkEntry.getId());
-		psXlink.setString(2, xlinkEntry.getTable());
-		psXlink.setString(3, xlinkEntry.getFromColumn());
-		
-		if (xlinkEntry.getToColumn() != null)
-			psXlink.setString(4, xlinkEntry.getToColumn());
-		else
-			psXlink.setNull(4, Types.VARCHAR);
-		
-		psXlink.setString(5, xlinkEntry.getGmlId());
+    public boolean insert(DBXlinkBasic xlinkEntry) throws SQLException {
+        psXlink.setLong(1, xlinkEntry.getId());
+        psXlink.setString(2, xlinkEntry.getTable());
+        psXlink.setString(3, xlinkEntry.getFromColumn());
 
-		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
-			executeBatch();
+        if (xlinkEntry.getToColumn() != null)
+            psXlink.setString(4, xlinkEntry.getToColumn());
+        else
+            psXlink.setNull(4, Types.VARCHAR);
 
-		return true;
-	}
+        psXlink.setString(5, xlinkEntry.getGmlId());
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psXlink.executeBatch();
-		batchCounter = 0;
-	}
+        psXlink.addBatch();
+        if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
+            executeBatch();
 
-	@Override
-	public void close() throws SQLException {
-		psXlink.close();
-	}
+        return true;
+    }
 
-	@Override
-	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.XLINK_BASIC;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psXlink.executeBatch();
+        batchCounter = 0;
+    }
+
+    @Override
+    public void close() throws SQLException {
+        psXlink.close();
+    }
+
+    @Override
+    public DBXlinkImporterEnum getDBXlinkImporterType() {
+        return DBXlinkImporterEnum.XLINK_BASIC;
+    }
 
 }

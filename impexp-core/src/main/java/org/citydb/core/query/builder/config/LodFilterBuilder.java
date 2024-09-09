@@ -34,40 +34,40 @@ import org.citydb.core.query.filter.lod.LodFilterMode;
 
 public class LodFilterBuilder {
 
-	public LodFilterBuilder() {
+    public LodFilterBuilder() {
 
-	}
+    }
 
-	public LodFilter buildLodFilter(org.citydb.config.project.query.filter.lod.LodFilter lodFilterConfig) throws QueryBuildException {
-		if (!lodFilterConfig.isSetAnyLod())
-			throw new QueryBuildException("No LoD level provided for LoD filter.");
+    public LodFilter buildLodFilter(org.citydb.config.project.query.filter.lod.LodFilter lodFilterConfig) throws QueryBuildException {
+        if (!lodFilterConfig.isSetAnyLod())
+            throw new QueryBuildException("No LoD level provided for LoD filter.");
 
-		LodFilter lodFilter = new LodFilter(LodFilterMode.OR);
+        LodFilter lodFilter = new LodFilter(LodFilterMode.OR);
 
-		switch (lodFilterConfig.getMode()) {
-			case OR:
-				lodFilter.setFilterMode(LodFilterMode.OR);
-				break;
-			case AND:
-				lodFilter.setFilterMode(LodFilterMode.AND);
-				break;
-			case MINIMUM:
-				lodFilter.setFilterMode(LodFilterMode.MINIMUM);
-				break;
-			case MAXIMUM:
-				lodFilter.setFilterMode(LodFilterMode.MAXIMUM);
-				break;
-		}
+        switch (lodFilterConfig.getMode()) {
+            case OR:
+                lodFilter.setFilterMode(LodFilterMode.OR);
+                break;
+            case AND:
+                lodFilter.setFilterMode(LodFilterMode.AND);
+                break;
+            case MINIMUM:
+                lodFilter.setFilterMode(LodFilterMode.MINIMUM);
+                break;
+            case MAXIMUM:
+                lodFilter.setFilterMode(LodFilterMode.MAXIMUM);
+                break;
+        }
 
-		for (int lod = 0; lod < 5; lod++)
-			lodFilter.setEnabled(lod, lodFilterConfig.isSetLod(lod));
-		
-		if (lodFilterConfig.getSearchMode() == LodSearchMode.DEPTH && lodFilterConfig.isSetSearchDepth())
-			lodFilter.setSearchDepth(lodFilterConfig.getSearchDepth());
-		else 
-			lodFilter.setSearchDepth(Integer.MAX_VALUE);
-		
-		return lodFilter;
-	}
+        for (int lod = 0; lod < 5; lod++)
+            lodFilter.setEnabled(lod, lodFilterConfig.isSetLod(lod));
+
+        if (lodFilterConfig.getSearchMode() == LodSearchMode.DEPTH && lodFilterConfig.isSetSearchDepth())
+            lodFilter.setSearchDepth(lodFilterConfig.getSearchDepth());
+        else
+            lodFilter.setSearchDepth(Integer.MAX_VALUE);
+
+        return lodFilter;
+    }
 
 }

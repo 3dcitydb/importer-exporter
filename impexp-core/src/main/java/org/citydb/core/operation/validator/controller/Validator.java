@@ -52,165 +52,165 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Validator implements EventHandler {
-	private final Logger log = Logger.getInstance();
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
-	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
-	private final Object eventChannel = new Object();
+    private final Logger log = Logger.getInstance();
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
+    private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+    private final Object eventChannel = new Object();
 
-	private volatile boolean shouldRun = true;
-	private boolean logTotalProcessingTime = true;
-	private DirectoryScanner directoryScanner;
-	private ValidationException exception;
-	private int invalidFiles;
+    private volatile boolean shouldRun = true;
+    private boolean logTotalProcessingTime = true;
+    private DirectoryScanner directoryScanner;
+    private ValidationException exception;
+    private int invalidFiles;
 
-	public Validator() {
-		config = ObjectRegistry.getInstance().getConfig();
-		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-	}
+    public Validator() {
+        config = ObjectRegistry.getInstance().getConfig();
+        eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+    }
 
-	public Validator logTotalProcessingTime(boolean logTotalProcessingTime) {
-		this.logTotalProcessingTime = logTotalProcessingTime;
-		return this;
-	}
+    public Validator logTotalProcessingTime(boolean logTotalProcessingTime) {
+        this.logTotalProcessingTime = logTotalProcessingTime;
+        return this;
+    }
 
-	public Object getEventChannel() {
-		return eventChannel;
-	}
+    public Object getEventChannel() {
+        return eventChannel;
+    }
 
-	public boolean doValidate(List<Path> inputFiles) throws ValidationException {
-		if (inputFiles == null || inputFiles.isEmpty()) {
-			throw new ValidationException("No input file(s) provided.");
-		}
+    public boolean doValidate(List<Path> inputFiles) throws ValidationException {
+        if (inputFiles == null || inputFiles.isEmpty()) {
+            throw new ValidationException("No input file(s) provided.");
+        }
 
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+        eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		long start = System.currentTimeMillis();
-		boolean success;
-		try {
-			success = process(inputFiles);
-		} catch (ValidationException e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new ValidationException("An unexpected error occurred.", e);
-		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
+        long start = System.currentTimeMillis();
+        boolean success;
+        try {
+            success = process(inputFiles);
+        } catch (ValidationException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new ValidationException("An unexpected error occurred.", e);
+        } finally {
+            try {
+                eventDispatcher.flushEvents();
+            } catch (InterruptedException e) {
+                //
+            }
 
-			eventDispatcher.removeEventHandler(this);
-		}
+            eventDispatcher.removeEventHandler(this);
+        }
 
-		if (logTotalProcessingTime && success) {
-			log.info("Total validation time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-		}
+        if (logTotalProcessingTime && success) {
+            log.info("Total validation time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+        }
 
-		return success;
-	}
+        return success;
+    }
 
-	private boolean process(List<Path> inputFiles) throws ValidationException {
-		invalidFiles = 0;
+    private boolean process(List<Path> inputFiles) throws ValidationException {
+        invalidFiles = 0;
 
-		// build list of files to be validated
-		List<InputFile> files;
-		try {
-			log.info("Creating list of files to be validated...");
-			directoryScanner = new DirectoryScanner(true);
-			files = directoryScanner.listFiles(inputFiles);
-			if (files.isEmpty()) {
-				log.warn("Failed to find files at the specified locations.");
-				return false;
-			}
-		} catch (TikaException | IOException e) {
-			throw new ValidationException("Fatal error while searching for files.", e);
-		}
+        // build list of files to be validated
+        List<InputFile> files;
+        try {
+            log.info("Creating list of files to be validated...");
+            directoryScanner = new DirectoryScanner(true);
+            files = directoryScanner.listFiles(inputFiles);
+            if (files.isEmpty()) {
+                log.warn("Failed to find files at the specified locations.");
+                return false;
+            }
+        } catch (TikaException | IOException e) {
+            throw new ValidationException("Fatal error while searching for files.", e);
+        }
 
-		if (!shouldRun)
-			return false;
+        if (!shouldRun)
+            return false;
 
-		int fileCounter = 0;
-		int remainingFiles = files.size();
-		log.info("List of files to be validated successfully created.");
-		log.info(remainingFiles + " file(s) will be validated.");
+        int fileCounter = 0;
+        int remainingFiles = files.size();
+        log.info("List of files to be validated successfully created.");
+        log.info(remainingFiles + " file(s) will be validated.");
 
-		// create reader factory builder
-		ValidatorFactoryBuilder builder = new ValidatorFactoryBuilder();
+        // create reader factory builder
+        ValidatorFactoryBuilder builder = new ValidatorFactoryBuilder();
 
-		while (shouldRun && fileCounter < files.size()) {
-			try (InputFile file = files.get(fileCounter++)) {
-				Path contentFile = file.getType() != FileType.ARCHIVE ?
-						file.getFile() :
-						Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
+        while (shouldRun && fileCounter < files.size()) {
+            try (InputFile file = files.get(fileCounter++)) {
+                Path contentFile = file.getType() != FileType.ARCHIVE ?
+                        file.getFile() :
+                        Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
-				eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString()));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.validate.msg")));
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles));
+                eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString()));
+                eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.validate.msg")));
+                eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles));
 
-				ValidatorFactory validatorFactory;
-				try {
-					validatorFactory = builder.buildFactory(file, config);
-				} catch (ValidationException e) {
-					throw new ValidationException("Failed to validate input file '" + contentFile + "'.", e);
-				}
+                ValidatorFactory validatorFactory;
+                try {
+                    validatorFactory = builder.buildFactory(file, config);
+                } catch (ValidationException e) {
+                    throw new ValidationException("Failed to validate input file '" + contentFile + "'.", e);
+                }
 
-				log.info("Validating file: " + contentFile);
+                log.info("Validating file: " + contentFile);
 
-				try (org.citydb.core.operation.validator.reader.Validator validator = validatorFactory.createValidator()) {
-					validator.validate(file);
+                try (org.citydb.core.operation.validator.reader.Validator validator = validatorFactory.createValidator()) {
+                    validator.validate(file);
 
-					if (shouldRun) {
-						if (validator.getValidationErrors() == 0) {
-							log.info("The file is valid.");
-						} else {
-							log.warn("The file is invalid. Found " + validator.getValidationErrors() + " error(s).");
-							invalidFiles++;
-						}
-					}
-				}
+                    if (shouldRun) {
+                        if (validator.getValidationErrors() == 0) {
+                            log.info("The file is valid.");
+                        } else {
+                            log.warn("The file is invalid. Found " + validator.getValidationErrors() + " error(s).");
+                            invalidFiles++;
+                        }
+                    }
+                }
 
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.finish.msg")));
-			} catch (IOException e) {
-				throw new ValidationException("Failed to validate input file.", e);
-			}
-		}
+                eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.finish.msg")));
+            } catch (IOException e) {
+                throw new ValidationException("Failed to validate input file.", e);
+            }
+        }
 
-		if (shouldRun && files.size() > 1) {
-			if (invalidFiles == 0) {
-				log.info("All files were successfully validated.");
-			} else {
-				log.warn("Validation failed for " + invalidFiles + " out of " + files.size() + " input file(s).");
-			}
-		}
-		
-		if (exception != null) {
-			throw exception;
-		}
+        if (shouldRun && files.size() > 1) {
+            if (invalidFiles == 0) {
+                log.info("All files were successfully validated.");
+            } else {
+                log.warn("Validation failed for " + invalidFiles + " out of " + files.size() + " input file(s).");
+            }
+        }
 
-		return shouldRun;
-	}
+        if (exception != null) {
+            throw exception;
+        }
 
-	public int getNumberOfInvalidFiles() {
-		return invalidFiles;
-	}
+        return shouldRun;
+    }
 
-	@Override
-	public void handleEvent(Event e) throws Exception {
-		if (isInterrupted.compareAndSet(false, true)) {
-			shouldRun = false;
-			InterruptEvent event = (InterruptEvent) e;
+    public int getNumberOfInvalidFiles() {
+        return invalidFiles;
+    }
 
-			if (event.getChannel() == eventChannel) {
-				log.log(event.getLogLevelType(), event.getLogMessage());
-				if (event.getCause() != null) {
-					exception = new ValidationException("Aborting validation due to errors.", event.getCause());
-				}
-			}
+    @Override
+    public void handleEvent(Event e) throws Exception {
+        if (isInterrupted.compareAndSet(false, true)) {
+            shouldRun = false;
+            InterruptEvent event = (InterruptEvent) e;
 
-			if (directoryScanner != null) {
-				directoryScanner.cancel();
-			}
-		}
-	}
+            if (event.getChannel() == eventChannel) {
+                log.log(event.getLogLevelType(), event.getLogMessage());
+                if (event.getCause() != null) {
+                    exception = new ValidationException("Aborting validation due to errors.", event.getCause());
+                }
+            }
+
+            if (directoryScanner != null) {
+                directoryScanner.cancel();
+            }
+        }
+    }
 }

@@ -39,44 +39,44 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ADEVisExportExtensionManager {
-	private static ADEVisExportExtensionManager instance;
+    private static ADEVisExportExtensionManager instance;
 
-	public static synchronized ADEVisExportExtensionManager getInstance() {
-		if (instance == null)
-			instance = new ADEVisExportExtensionManager();
+    public static synchronized ADEVisExportExtensionManager getInstance() {
+        if (instance == null)
+            instance = new ADEVisExportExtensionManager();
 
-		return instance;
-	}
+        return instance;
+    }
 
-	public ADEVisExportExtension getADEVisExportExtension(ADEExtension extension) {
-		if (extension != null && extension.isEnabled() && extension instanceof ADEVisExportExtension)
-			return ((ADEVisExportExtension) extension);
+    public ADEVisExportExtension getADEVisExportExtension(ADEExtension extension) {
+        if (extension != null && extension.isEnabled() && extension instanceof ADEVisExportExtension)
+            return ((ADEVisExportExtension) extension);
 
-		return null;
-	}
+        return null;
+    }
 
-	public List<ADEExtension> getUnsupportedADEExtensions() {
-		return ADEExtensionManager.getInstance().getEnabledExtensions()
-				.stream().filter(ade -> getADEVisExportExtension(ade) == null)
-				.collect(Collectors.toList());
-	}
+    public List<ADEExtension> getUnsupportedADEExtensions() {
+        return ADEExtensionManager.getInstance().getEnabledExtensions()
+                .stream().filter(ade -> getADEVisExportExtension(ade) == null)
+                .collect(Collectors.toList());
+    }
 
-	public ADEPreference getPreference(Config config, FeatureType featureType) {
-		return getPreference(config, featureType.getObjectClassId(), featureType.toString());
-	}
+    public ADEPreference getPreference(Config config, FeatureType featureType) {
+        return getPreference(config, featureType.getObjectClassId(), featureType.toString());
+    }
 
-	public ADEPreference getPreference(Config config, int objectClassId) {
-		return getPreference(config, objectClassId, ObjectRegistry.getInstance().getSchemaMapping().getFeatureType(objectClassId).toString());
-	}
+    public ADEPreference getPreference(Config config, int objectClassId) {
+        return getPreference(config, objectClassId, ObjectRegistry.getInstance().getSchemaMapping().getFeatureType(objectClassId).toString());
+    }
 
-	private ADEPreference getPreference(Config config, int objectClassId, String target) {
-		ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId);
-		if (adeExtension != null) {
-			return config.getVisExportConfig().getADEPreferences()
-					.computeIfAbsent(adeExtension.getId(), v -> new ADEPreferences(adeExtension.getId()))
-					.getPreferences()
-					.computeIfAbsent(target, v -> new ADEPreference(target));
-		} else
-			return new ADEPreference(target);
-	}
+    private ADEPreference getPreference(Config config, int objectClassId, String target) {
+        ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId);
+        if (adeExtension != null) {
+            return config.getVisExportConfig().getADEPreferences()
+                    .computeIfAbsent(adeExtension.getId(), v -> new ADEPreferences(adeExtension.getId()))
+                    .getPreferences()
+                    .computeIfAbsent(target, v -> new ADEPreference(target));
+        } else
+            return new ADEPreference(target);
+    }
 }

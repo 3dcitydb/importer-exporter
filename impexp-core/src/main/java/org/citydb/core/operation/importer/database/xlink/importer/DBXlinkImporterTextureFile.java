@@ -34,43 +34,43 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBXlinkImporterTextureFile implements DBXlinkImporter {
-	private final DBXlinkImporterManager xlinkImporterManager;
-	private PreparedStatement psXlink;
-	private int batchCounter;
+    private final DBXlinkImporterManager xlinkImporterManager;
+    private PreparedStatement psXlink;
+    private int batchCounter;
 
-	public DBXlinkImporterTextureFile(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
-		this.xlinkImporterManager = xlinkImporterManager;
+    public DBXlinkImporterTextureFile(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+        this.xlinkImporterManager = xlinkImporterManager;
 
-		psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (ID, FILE_URI) values " +
-			"(?, ?)");
-	}
+        psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() +
+                " (ID, FILE_URI) values " +
+                "(?, ?)");
+    }
 
-	public boolean insert(DBXlinkTextureFile xlinkEntry) throws SQLException {
-		psXlink.setLong(1, xlinkEntry.getId());
-		psXlink.setString(2, xlinkEntry.getFileURI());
+    public boolean insert(DBXlinkTextureFile xlinkEntry) throws SQLException {
+        psXlink.setLong(1, xlinkEntry.getId());
+        psXlink.setString(2, xlinkEntry.getFileURI());
 
-		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
-			executeBatch();
+        psXlink.addBatch();
+        if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
+            executeBatch();
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psXlink.executeBatch();
-		batchCounter = 0;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psXlink.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psXlink.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        psXlink.close();
+    }
 
-	@Override
-	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.TEXTURE_FILE;
-	}
+    @Override
+    public DBXlinkImporterEnum getDBXlinkImporterType() {
+        return DBXlinkImporterEnum.TEXTURE_FILE;
+    }
 
 }

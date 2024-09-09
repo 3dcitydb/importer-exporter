@@ -28,6 +28,7 @@
 package org.citydb.core.database.schema.mapping;
 
 public interface Joinable {
-	public boolean isSetJoin();
-	public AbstractJoin getJoin();
+    public boolean isSetJoin();
+
+    public AbstractJoin getJoin();
 }

@@ -37,22 +37,22 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class ProjectSchemaWriter extends SchemaOutputResolver {
-	private final Path targetDir;
+    private final Path targetDir;
 
-	public ProjectSchemaWriter(File path) {
-		this.targetDir = path.toPath();
-	}
+    public ProjectSchemaWriter(File path) {
+        this.targetDir = path.toPath();
+    }
 
-	@Override
-	public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
-		Path file = namespaceUri.equals("http://www.3dcitydb.org/importer-exporter/config") ?
-				targetDir.resolve("config.xsd") :
-				targetDir.resolve("plugin_" + suggestedFileName);
+    @Override
+    public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
+        Path file = namespaceUri.equals("http://www.3dcitydb.org/importer-exporter/config") ?
+                targetDir.resolve("config.xsd") :
+                targetDir.resolve("plugin_" + suggestedFileName);
 
-		StreamResult res = new StreamResult(file.toFile());
-		res.setSystemId(URLDecoder.decode(file.toUri().toURL().toString(), StandardCharsets.UTF_8.name()));
+        StreamResult res = new StreamResult(file.toFile());
+        res.setSystemId(URLDecoder.decode(file.toUri().toURL().toString(), StandardCharsets.UTF_8.name()));
 
-		return res;
-	}
+        return res;
+    }
 
 }

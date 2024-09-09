@@ -43,59 +43,59 @@ import org.citydb.gui.plugin.view.ViewExtension;
 import java.util.Locale;
 
 public class PreferencesPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
-	private final ImpExpGui mainView;
-	private PreferencesView view;
-	private GeneralPreferences preferences;
+    private final ImpExpGui mainView;
+    private PreferencesView view;
+    private GeneralPreferences preferences;
 
-	public PreferencesPlugin(ImpExpGui mainView) {
-		this.mainView = mainView;
-	}
-		
-	@Override
-	public void initGuiExtension(ViewController viewController, Locale locale) {
-		Config config = ObjectRegistry.getInstance().getConfig();
-		view = new PreferencesView(mainView, config);
-		preferences = ((PreferencesPanel) view.getViewComponent()).getGeneralPreferences();
-		loadSettings();
-	}
+    public PreferencesPlugin(ImpExpGui mainView) {
+        this.mainView = mainView;
+    }
 
-	@Override
-	public void shutdownGui() {
-		setSettings();
-	}
+    @Override
+    public void initGuiExtension(ViewController viewController, Locale locale) {
+        Config config = ObjectRegistry.getInstance().getConfig();
+        view = new PreferencesView(mainView, config);
+        preferences = ((PreferencesPanel) view.getViewComponent()).getGeneralPreferences();
+        loadSettings();
+    }
 
-	@Override
-	public void switchLocale(Locale locale) {
-		view.switchLocale();
-		preferences.switchLocale(locale);
-	}
+    @Override
+    public void shutdownGui() {
+        setSettings();
+    }
 
-	@Override
-	public Preferences getPreferences() {
-		return preferences;
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        view.switchLocale();
+        preferences.switchLocale(locale);
+    }
 
-	@Override
-	public View getView() {
-		return view;
-	}
-	
-	@Override
-	public void loadSettings() {
-		preferences.loadSettings();
-	}
+    @Override
+    public Preferences getPreferences() {
+        return preferences;
+    }
 
-	@Override
-	public void setSettings() {
-		preferences.setSettings();
-	}
-	
-	public void setLoggingSettings() {
-		preferences.setLogginSettings();
-	}
-	
-	public boolean requestChange() {
-		return view.requestChange();
-	}
-	
+    @Override
+    public View getView() {
+        return view;
+    }
+
+    @Override
+    public void loadSettings() {
+        preferences.loadSettings();
+    }
+
+    @Override
+    public void setSettings() {
+        preferences.setSettings();
+    }
+
+    public void setLoggingSettings() {
+        preferences.setLogginSettings();
+    }
+
+    public boolean requestChange() {
+        return view.requestChange();
+    }
+
 }

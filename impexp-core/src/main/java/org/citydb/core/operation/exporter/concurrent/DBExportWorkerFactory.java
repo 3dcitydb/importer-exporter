@@ -51,61 +51,61 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
-	private final Logger log = Logger.getInstance();
+    private final Logger log = Logger.getInstance();
 
-	private final SchemaMapping schemaMapping;
-	private final CityGMLBuilder cityGMLBuilder;
-	private final FeatureWriter featureWriter;
-	private final WorkerPool<DBXlink> xlinkExporterPool;
-	private final IdCacheManager idCacheManager;
-	private final CacheTableManager cacheTableManager;
-	private final Query query;
-	private final AffineTransformer affineTransformer;
-	private final InternalConfig internalConfig;
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
+    private final SchemaMapping schemaMapping;
+    private final CityGMLBuilder cityGMLBuilder;
+    private final FeatureWriter featureWriter;
+    private final WorkerPool<DBXlink> xlinkExporterPool;
+    private final IdCacheManager idCacheManager;
+    private final CacheTableManager cacheTableManager;
+    private final Query query;
+    private final AffineTransformer affineTransformer;
+    private final InternalConfig internalConfig;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
 
-	public DBExportWorkerFactory(SchemaMapping schemaMapping,
-			CityGMLBuilder cityGMLBuilder,
-			FeatureWriter featureWriter,
-			WorkerPool<DBXlink> xlinkExporterPool,
-			IdCacheManager idCacheManager,
-			CacheTableManager cacheTableManager,
-			Query query,
-			AffineTransformer affineTransformer,
-			InternalConfig internalConfig,
-			Config config,
-			EventDispatcher eventDispatcher) {
-		this.schemaMapping = schemaMapping;
-		this.cityGMLBuilder = cityGMLBuilder;
-		this.featureWriter = featureWriter;
-		this.xlinkExporterPool = xlinkExporterPool;
-		this.idCacheManager = idCacheManager;
-		this.cacheTableManager = cacheTableManager;
-		this.query = query;
-		this.affineTransformer = affineTransformer;
-		this.internalConfig = internalConfig;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public DBExportWorkerFactory(SchemaMapping schemaMapping,
+                                 CityGMLBuilder cityGMLBuilder,
+                                 FeatureWriter featureWriter,
+                                 WorkerPool<DBXlink> xlinkExporterPool,
+                                 IdCacheManager idCacheManager,
+                                 CacheTableManager cacheTableManager,
+                                 Query query,
+                                 AffineTransformer affineTransformer,
+                                 InternalConfig internalConfig,
+                                 Config config,
+                                 EventDispatcher eventDispatcher) {
+        this.schemaMapping = schemaMapping;
+        this.cityGMLBuilder = cityGMLBuilder;
+        this.featureWriter = featureWriter;
+        this.xlinkExporterPool = xlinkExporterPool;
+        this.idCacheManager = idCacheManager;
+        this.cacheTableManager = cacheTableManager;
+        this.query = query;
+        this.affineTransformer = affineTransformer;
+        this.internalConfig = internalConfig;
+        this.config = config;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public Worker<DBSplittingResult> createWorker() {
-		DBExportWorker dbWorker = null;
+    @Override
+    public Worker<DBSplittingResult> createWorker() {
+        DBExportWorker dbWorker = null;
 
-		try {
-			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-			Connection connection = DatabaseConnectionPool.getInstance().getConnection();
-			connection.setAutoCommit(false);
+        try {
+            AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+            Connection connection = DatabaseConnectionPool.getInstance().getConnection();
+            connection.setAutoCommit(false);
 
-			dbWorker = new DBExportWorker(connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
-					xlinkExporterPool, idCacheManager, cacheTableManager, query, affineTransformer, internalConfig,
-					config, eventDispatcher);
-		} catch (CityGMLExportException | SQLException e) {
-			log.error("Failed to create export worker.", e);
-		}
+            dbWorker = new DBExportWorker(connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
+                    xlinkExporterPool, idCacheManager, cacheTableManager, query, affineTransformer, internalConfig,
+                    config, eventDispatcher);
+        } catch (CityGMLExportException | SQLException e) {
+            log.error("Failed to create export worker.", e);
+        }
 
-		return dbWorker;
-	}
+        return dbWorker;
+    }
 
 }

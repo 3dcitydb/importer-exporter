@@ -44,78 +44,78 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
-	private final Logger log = Logger.getInstance();
-	private final OutputFile outputFile;
-	private final BlobExportAdapter blobExporter;
+    private final Logger log = Logger.getInstance();
+    private final OutputFile outputFile;
+    private final BlobExportAdapter blobExporter;
 
-	private boolean isFolderCreated;
+    private boolean isFolderCreated;
 
-	public DBXlinkExporterLibraryObject(Connection connection, DBXlinkExporterManager exporterManager) {
-		outputFile = exporterManager.getInternalConfig().getOutputFile();
-		blobExporter = exporterManager.getDatabaseAdapter().getSQLAdapter()
-				.getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT)
-				.withBatchSize(exporterManager.getBlobBatchSize());
-	}
+    public DBXlinkExporterLibraryObject(Connection connection, DBXlinkExporterManager exporterManager) {
+        outputFile = exporterManager.getInternalConfig().getOutputFile();
+        blobExporter = exporterManager.getDatabaseAdapter().getSQLAdapter()
+                .getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT)
+                .withBatchSize(exporterManager.getBlobBatchSize());
+    }
 
-	public boolean export(DBXlinkLibraryObject xlink) throws SQLException {
-		String fileURI = xlink.getFileURI();
+    public boolean export(DBXlinkLibraryObject xlink) throws SQLException {
+        String fileURI = xlink.getFileURI();
 
-		if (fileURI == null || fileURI.isEmpty()) {
-			log.error("Database error while exporting a library object: Attribute REFERENCE_TO_LIBRARY is empty.");
-			return false;
-		}
+        if (fileURI == null || fileURI.isEmpty()) {
+            log.error("Database error while exporting a library object: Attribute REFERENCE_TO_LIBRARY is empty.");
+            return false;
+        }
 
-		Path file ;
-		try {
-			if (outputFile.getType() != FileType.ARCHIVE)
-				file = Paths.get(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI));
-			else
-				file = null;
-		} catch (InvalidPathException e) {
-			log.error("Failed to export a library object: '" + fileURI + "' is invalid.");
-			return false;
-		}
+        Path file;
+        try {
+            if (outputFile.getType() != FileType.ARCHIVE)
+                file = Paths.get(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI));
+            else
+                file = null;
+        } catch (InvalidPathException e) {
+            log.error("Failed to export a library object: '" + fileURI + "' is invalid.");
+            return false;
+        }
 
-		if (!isFolderCreated) {
-			try {
-				isFolderCreated = true;
-				if (file != null)
-					Files.createDirectories(file.getParent());
-				else
-					outputFile.createDirectories(CoreConstants.LIBRARY_OBJECTS_DIR);
-			} catch (IOException e) {
-				throw new SQLException("Failed to create folder for library objects.");
-			}
-		}
+        if (!isFolderCreated) {
+            try {
+                isFolderCreated = true;
+                if (file != null)
+                    Files.createDirectories(file.getParent());
+                else
+                    outputFile.createDirectories(CoreConstants.LIBRARY_OBJECTS_DIR);
+            } catch (IOException e) {
+                throw new SQLException("Failed to create folder for library objects.");
+            }
+        }
 
-		try {
-			blobExporter.addBatch(xlink.getId(), new BlobExportAdapter.BatchEntry(
-					() -> file != null ?
-							Files.newOutputStream(file) :
-							outputFile.newOutputStream(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI)),
-					() -> file == null || !Files.exists(file)));
+        try {
+            blobExporter.addBatch(xlink.getId(), new BlobExportAdapter.BatchEntry(
+                    () -> file != null ?
+                            Files.newOutputStream(file) :
+                            outputFile.newOutputStream(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI)),
+                    () -> file == null || !Files.exists(file)));
 
-			return true;
-		} catch (IOException e) {
-			log.error("Failed to batch export library objects.", e);
-			return false;
-		}
-	}
+            return true;
+        } catch (IOException e) {
+            log.error("Failed to batch export library objects.", e);
+            return false;
+        }
+    }
 
-	@Override
-	public void close() throws SQLException {
-		try {
-			blobExporter.executeBatch();
-		} catch (IOException e) {
-			log.error("Failed to batch export library objects.", e);
-		}
+    @Override
+    public void close() throws SQLException {
+        try {
+            blobExporter.executeBatch();
+        } catch (IOException e) {
+            log.error("Failed to batch export library objects.", e);
+        }
 
-		blobExporter.close();
-	}
+        blobExporter.close();
+    }
 
-	@Override
-	public DBXlinkExporterEnum getDBXlinkExporterType() {
-		return DBXlinkExporterEnum.LIBRARY_OBJECT;
-	}
+    @Override
+    public DBXlinkExporterEnum getDBXlinkExporterType() {
+        return DBXlinkExporterEnum.LIBRARY_OBJECT;
+    }
 
 }

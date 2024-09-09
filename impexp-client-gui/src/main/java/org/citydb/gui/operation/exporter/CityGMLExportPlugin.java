@@ -41,48 +41,48 @@ import org.citydb.gui.plugin.view.ViewExtension;
 import java.util.Locale;
 
 public class CityGMLExportPlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
-	private CityGMLExportView view;
-	private CityGMLExportPreferences preferences;
+    private CityGMLExportView view;
+    private CityGMLExportPreferences preferences;
 
-	@Override
-	public void initGuiExtension(ViewController viewController, Locale locale) {
-		Config config = ObjectRegistry.getInstance().getConfig();
-		view = new CityGMLExportView(viewController, config);
-		preferences = new CityGMLExportPreferences(config);
-		loadSettings();
-	}
+    @Override
+    public void initGuiExtension(ViewController viewController, Locale locale) {
+        Config config = ObjectRegistry.getInstance().getConfig();
+        view = new CityGMLExportView(viewController, config);
+        preferences = new CityGMLExportPreferences(config);
+        loadSettings();
+    }
 
-	@Override
-	public void shutdownGui() {
-		setSettings();
-	}
+    @Override
+    public void shutdownGui() {
+        setSettings();
+    }
 
-	@Override
-	public void switchLocale(Locale locale) {
-		view.switchLocale(locale);
-		preferences.switchLocale(locale);
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        view.switchLocale(locale);
+        preferences.switchLocale(locale);
+    }
 
-	@Override
-	public Preferences getPreferences() {
-		return preferences;
-	}
+    @Override
+    public Preferences getPreferences() {
+        return preferences;
+    }
 
-	@Override
-	public View getView() {
-		return view;
-	}
+    @Override
+    public View getView() {
+        return view;
+    }
 
-	@Override
-	public void loadSettings() {
-		view.loadSettings();
-		preferences.loadSettings();
-	}
+    @Override
+    public void loadSettings() {
+        view.loadSettings();
+        preferences.loadSettings();
+    }
 
-	@Override
-	public void setSettings() {
-		view.setSettings();
-		preferences.setSettings();
-	}
-	
+    @Override
+    public void setSettings() {
+        view.setSettings();
+        preferences.setSettings();
+    }
+
 }

@@ -66,7 +66,7 @@ public class CityJSONReader implements FeatureReader, EventHandler {
         this.config = config;
 
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-        eventDispatcher.addEventHandler(EventType.INTERRUPT,this);
+        eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
     }
 
     @Override

@@ -34,43 +34,43 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBXlinkImporterSurfaceDataToTexImage implements DBXlinkImporter {
-	private final DBXlinkImporterManager xlinkImporterManager;
-	private PreparedStatement psXlink;
-	private int batchCounter;
+    private final DBXlinkImporterManager xlinkImporterManager;
+    private PreparedStatement psXlink;
+    private int batchCounter;
 
-	public DBXlinkImporterSurfaceDataToTexImage(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
-		this.xlinkImporterManager = xlinkImporterManager;
+    public DBXlinkImporterSurfaceDataToTexImage(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+        this.xlinkImporterManager = xlinkImporterManager;
 
-		psXlink = tempTable.getConnection().prepareStatement(new StringBuilder()
-		.append("insert into ").append(tempTable.getTableName())
-		.append(" (FROM_ID, TO_ID) values (?, ?)").toString());
-	}
+        psXlink = tempTable.getConnection().prepareStatement(new StringBuilder()
+                .append("insert into ").append(tempTable.getTableName())
+                .append(" (FROM_ID, TO_ID) values (?, ?)").toString());
+    }
 
-	public boolean insert(DBXlinkSurfaceDataToTexImage xlinkEntry) throws SQLException {
-		psXlink.setLong(1, xlinkEntry.getFromId());
-		psXlink.setLong(2, xlinkEntry.getToId());
+    public boolean insert(DBXlinkSurfaceDataToTexImage xlinkEntry) throws SQLException {
+        psXlink.setLong(1, xlinkEntry.getFromId());
+        psXlink.setLong(2, xlinkEntry.getToId());
 
-		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
-			executeBatch();
+        psXlink.addBatch();
+        if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
+            executeBatch();
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psXlink.executeBatch();
-		batchCounter = 0;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psXlink.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psXlink.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        psXlink.close();
+    }
 
-	@Override
-	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.SURFACE_DATA_TO_TEX_IMAGE;
-	}
+    @Override
+    public DBXlinkImporterEnum getDBXlinkImporterType() {
+        return DBXlinkImporterEnum.SURFACE_DATA_TO_TEX_IMAGE;
+    }
 
 }

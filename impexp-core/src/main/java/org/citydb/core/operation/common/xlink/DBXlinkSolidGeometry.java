@@ -28,31 +28,31 @@
 package org.citydb.core.operation.common.xlink;
 
 public class DBXlinkSolidGeometry implements DBXlink {
-	private long id;
+    private long id;
 
-	public DBXlinkSolidGeometry(long id) {
-		this.id = id;
-	}
+    public DBXlinkSolidGeometry(long id) {
+        this.id = id;
+    }
 
-	public long getId() {
-		return id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public void setId(long id) {
-		this.id = id;
-	}
-	
-	public String getGmlId() {
-		// no need for gml:ids
-		return null;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public void setGmlId(String gmlId) {
-		// no need for gml:ids
-	}
+    public String getGmlId() {
+        // no need for gml:ids
+        return null;
+    }
 
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.SOLID_GEOMETRY;
-	}
+    public void setGmlId(String gmlId) {
+        // no need for gml:ids
+    }
+
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.SOLID_GEOMETRY;
+    }
 }

@@ -28,8 +28,8 @@
 
 @javax.xml.bind.annotation.XmlAccessorType(javax.xml.bind.annotation.XmlAccessType.FIELD)
 @javax.xml.bind.annotation.XmlSchema(namespace = ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI,
-		xmlns = {@javax.xml.bind.annotation.XmlNs(prefix = "", namespaceURI = ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI)},
-		elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+        xmlns = {@javax.xml.bind.annotation.XmlNs(prefix = "", namespaceURI = ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI)},
+        elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.citydb.config;
 
 import org.citydb.config.util.ConfigConstants;

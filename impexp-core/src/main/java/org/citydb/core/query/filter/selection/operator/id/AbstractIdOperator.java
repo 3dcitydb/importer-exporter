@@ -32,11 +32,11 @@ import org.citydb.core.query.filter.selection.operator.Operator;
 
 public abstract class AbstractIdOperator implements Operator {
 
-	@Override
-	public PredicateName getPredicateName() {
-		return PredicateName.ID_OPERATOR;
-	}
-	
-	@Override
-	public abstract IdOperationName getOperatorName();
+    @Override
+    public PredicateName getPredicateName() {
+        return PredicateName.ID_OPERATOR;
+    }
+
+    @Override
+    public abstract IdOperationName getOperatorName();
 }

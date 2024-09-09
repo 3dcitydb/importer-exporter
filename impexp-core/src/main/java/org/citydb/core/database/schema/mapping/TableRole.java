@@ -35,11 +35,11 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "tableRole")
 public enum TableRole {
 
-	@XmlEnumValue("parent")
+    @XmlEnumValue("parent")
     PARENT("parent"),
-	@XmlEnumValue("child")
+    @XmlEnumValue("child")
     CHILD("child");
-    
+
     private final String value;
 
     TableRole(String value) {
@@ -50,19 +50,19 @@ public enum TableRole {
         return value;
     }
 
-	public static TableRole fromValue(String v) {
-        for (TableRole c: TableRole.values()) {
+    public static TableRole fromValue(String v) {
+        for (TableRole c : TableRole.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
         }
         throw new IllegalArgumentException(v);
     }
-	
-	@Override
-	public String toString() {
-		return value;
-	}
+
+    @Override
+    public String toString() {
+        return value;
+    }
 
 
 }

@@ -34,31 +34,31 @@ import org.citydb.gui.plugin.util.DefaultPreferences;
 import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
 
 public class CityGMLExportPreferences extends DefaultPreferences {
-	
-	public CityGMLExportPreferences(Config config) {
-		super(new CityGMLExportEntry());
-		
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourceIdPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new TilingOptionsPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(
-				() -> config.getExportConfig().getAffineTransformation(),
-				config)));
 
-		DefaultPreferencesEntry cityGMLOptions = new CityGMLOptionsPanel();
-		rootEntry.addChildEntry(cityGMLOptions);
-		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new CityGMLGeneralPanel(config)));
-		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
-		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XLinkPanel(config)));
-		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new NamespacesPanel(config)));
-		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(
-				() -> config.getExportConfig().getCityGMLOptions().getXSLTransformation(),
-				config)));
+    public CityGMLExportPreferences(Config config) {
+        super(new CityGMLExportEntry());
 
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
-	}
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourceIdPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new TilingOptionsPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(
+                () -> config.getExportConfig().getAffineTransformation(),
+                config)));
+
+        DefaultPreferencesEntry cityGMLOptions = new CityGMLOptionsPanel();
+        rootEntry.addChildEntry(cityGMLOptions);
+        cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new CityGMLGeneralPanel(config)));
+        cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
+        cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XLinkPanel(config)));
+        cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new NamespacesPanel(config)));
+        cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(
+                () -> config.getExportConfig().getCityGMLOptions().getXSLTransformation(),
+                config)));
+
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
+    }
 
 }

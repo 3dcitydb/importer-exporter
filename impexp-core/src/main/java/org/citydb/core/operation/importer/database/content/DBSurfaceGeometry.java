@@ -39,8 +39,8 @@ import org.citydb.core.operation.common.xlink.DBXlinkSolidGeometry;
 import org.citydb.core.operation.common.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.core.operation.importer.CityGMLImportException;
 import org.citydb.core.operation.importer.util.GeometryConverter;
-import org.citydb.core.operation.importer.util.LocalAppearanceHandler;
 import org.citydb.core.operation.importer.util.GeometryValidator;
+import org.citydb.core.operation.importer.util.LocalAppearanceHandler;
 import org.citydb.core.util.CoreConstants;
 import org.citydb.util.log.Logger;
 import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
@@ -70,15 +70,15 @@ public class DBSurfaceGeometry implements DBImporter {
     private final GeometryConverter geometryConverter;
     private final DBAppearance appearanceImporter;
     private final IdManager ids;
-	private final LocalAppearanceHandler localAppearanceHandler;
-	private final GeometryValidator geometryValidator;
+    private final LocalAppearanceHandler localAppearanceHandler;
+    private final GeometryValidator geometryValidator;
 
-	private final boolean replaceGmlId;
-	private final boolean importAppearance;
-	private final int nullGeometryType;
-	private final String nullGeometryTypeName;
+    private final boolean replaceGmlId;
+    private final boolean importAppearance;
+    private final int nullGeometryType;
+    private final String nullGeometryTypeName;
 
-	private int dbSrid;
+    private int dbSrid;
     private boolean applyTransformation;
     private int isXlinkValue;
     private boolean isImplicit;
@@ -277,7 +277,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
                     double[][] coordinates = new double[pointList.size()][];
                     for (int i = 0; i < pointList.size(); i++)
-						coordinates[i] = pointList.get(i).stream().mapToDouble(Double::doubleValue).toArray();
+                        coordinates[i] = pointList.get(i).stream().mapToDouble(Double::doubleValue).toArray();
 
                     GeometryObject geometryObject = GeometryObject.createPolygon(coordinates, 3, dbSrid);
                     Object object = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometryObject, batchConn);
@@ -318,99 +318,99 @@ public class DBSurfaceGeometry implements DBImporter {
             }
         }
 
-		// texturedSurface
-		// this is a CityGML class, not a GML class.
-		else if (geometry instanceof _TexturedSurface) {
-			_TexturedSurface texturedSurface = (_TexturedSurface) geometry;
-			AbstractSurface surface;
+        // texturedSurface
+        // this is a CityGML class, not a GML class.
+        else if (geometry instanceof _TexturedSurface) {
+            _TexturedSurface texturedSurface = (_TexturedSurface) geometry;
+            AbstractSurface surface;
 
-			boolean negativeOrientation = false;
-			if (texturedSurface.isSetOrientation() && texturedSurface.getOrientation() == Sign.MINUS) {
-				reverse = !reverse;
-				negativeOrientation = true;
-			}
+            boolean negativeOrientation = false;
+            if (texturedSurface.isSetOrientation() && texturedSurface.getOrientation() == Sign.MINUS) {
+                reverse = !reverse;
+                negativeOrientation = true;
+            }
 
-			String targetURI;
+            String targetURI;
 
-			if (texturedSurface.isSetBaseSurface()) {
-				SurfaceProperty property = texturedSurface.getBaseSurface();
-				if (property.isSetSurface()) {
-					surface = property.getSurface();
-					if (!surface.isSetId())
-						surface.setId(importer.generateNewGmlId());
+            if (texturedSurface.isSetBaseSurface()) {
+                SurfaceProperty property = texturedSurface.getBaseSurface();
+                if (property.isSetSurface()) {
+                    surface = property.getSurface();
+                    if (!surface.isSetId())
+                        surface.setId(importer.generateNewGmlId());
 
-					// appearance and mapping target
-					targetURI = surface.getId();
+                    // appearance and mapping target
+                    targetURI = surface.getId();
 
-					// do mapping
-					if (origGmlId != null && !isCopy)
-						importer.putGeometryId(origGmlId, -1, -1, negativeOrientation, targetURI);
+                    // do mapping
+                    if (origGmlId != null && !isCopy)
+                        importer.putGeometryId(origGmlId, -1, -1, negativeOrientation, targetURI);
 
-					if (surface instanceof Polygon) {
-						// make sure all exterior and interior rings do have a gml:id to assign texture coordinates
-						Polygon polygon = (Polygon) surface;
+                    if (surface instanceof Polygon) {
+                        // make sure all exterior and interior rings do have a gml:id to assign texture coordinates
+                        Polygon polygon = (Polygon) surface;
 
-						if (polygon.isSetExterior()) {
-							LinearRing exteriorRing = (LinearRing) polygon.getExterior().getRing();
-							if (exteriorRing != null && !exteriorRing.isSetId())
-								exteriorRing.setId(targetURI);
-						}
+                        if (polygon.isSetExterior()) {
+                            LinearRing exteriorRing = (LinearRing) polygon.getExterior().getRing();
+                            if (exteriorRing != null && !exteriorRing.isSetId())
+                                exteriorRing.setId(targetURI);
+                        }
 
-						if (polygon.isSetInterior()) {
-							for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
-								LinearRing interiorRing = (LinearRing) abstractRingProperty.getRing();
-								if (!interiorRing.isSetId())
-									interiorRing.setId(importer.generateNewGmlId());
-							}
-						}
-					}
+                        if (polygon.isSetInterior()) {
+                            for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
+                                LinearRing interiorRing = (LinearRing) abstractRingProperty.getRing();
+                                if (!interiorRing.isSetId())
+                                    interiorRing.setId(importer.generateNewGmlId());
+                            }
+                        }
+                    }
 
-					doImport(surface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-				} else {
-					String href = property.getHref();
-					if (href != null && href.length() != 0) {
-						importer.propagateXlink(new DBXlinkSurfaceGeometry(id, parentId, rootId, reverse, href, cityObjectId));
-						targetURI = href.replaceAll("^#", "");
+                    doImport(surface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
+                } else {
+                    String href = property.getHref();
+                    if (href != null && href.length() != 0) {
+                        importer.propagateXlink(new DBXlinkSurfaceGeometry(id, parentId, rootId, reverse, href, cityObjectId));
+                        targetURI = href.replaceAll("^#", "");
 
-						// do mapping
-						if (origGmlId != null && !isCopy)
-							importer.putGeometryId(origGmlId, -1, -1, negativeOrientation, targetURI);
+                        // do mapping
+                        if (origGmlId != null && !isCopy)
+                            importer.putGeometryId(origGmlId, -1, -1, negativeOrientation, targetURI);
 
-						// well, regarding appearances we cannot work on remote geometries so far...
-						importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
-								": Texture information for referenced geometry objects are not supported.");
-					}
+                        // well, regarding appearances we cannot work on remote geometries so far...
+                        importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
+                                ": Texture information for referenced geometry objects are not supported.");
+                    }
 
-					return 0;
-				}
-			} else {
-				importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
-						": The textured surface lacks a base surface.");
-				return 0;
-			}
+                    return 0;
+                }
+            } else {
+                importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
+                        ": The textured surface lacks a base surface.");
+                return 0;
+            }
 
-			if (importAppearance && !isCopy && texturedSurface.isSetAppearance()) {
-				for (_AppearanceProperty property : texturedSurface.getAppearance()) {
-					if (property.isSetAppearance()) {
-						_AbstractAppearance appearance = property.getAppearance();
+            if (importAppearance && !isCopy && texturedSurface.isSetAppearance()) {
+                for (_AppearanceProperty property : texturedSurface.getAppearance()) {
+                    if (property.isSetAppearance()) {
+                        _AbstractAppearance appearance = property.getAppearance();
 
-						// we can only assign textures to polygons
-						if (appearance instanceof _SimpleTexture && !(surface instanceof Polygon)) {
-							importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
-									": Texture coordinates are only supported for base surfaces of type gml:Polygon.");
-							continue;
-						}
+                        // we can only assign textures to polygons
+                        if (appearance instanceof _SimpleTexture && !(surface instanceof Polygon)) {
+                            importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
+                                    ": Texture coordinates are only supported for base surfaces of type gml:Polygon.");
+                            continue;
+                        }
 
-						boolean isFront = !(property.isSetOrientation() && property.getOrientation() == Sign.MINUS);
-						appearanceImporter.importTexturedSurface(appearance, surface, cityObjectId, isFront, targetURI);
-					} else {
-						String href = property.getHref();
-						if (href != null && href.length() != 0)
-							appearanceImporter.importTexturedSurfaceXlink(href, id, cityObjectId);
-					}
-				}
-			}
-		}
+                        boolean isFront = !(property.isSetOrientation() && property.getOrientation() == Sign.MINUS);
+                        appearanceImporter.importTexturedSurface(appearance, surface, cityObjectId, isFront, targetURI);
+                    } else {
+                        String href = property.getHref();
+                        if (href != null && href.length() != 0)
+                            appearanceImporter.importTexturedSurfaceXlink(href, id, cityObjectId);
+                    }
+                }
+            }
+        }
 
         // ok, handle complexes, composites and aggregates
         // orientableSurface
@@ -435,8 +435,8 @@ public class DBSurfaceGeometry implements DBImporter {
                     // mapping target
                     mapping = surface.getId();
 
-					doImport(surface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-				} else {
+                    doImport(surface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
+                } else {
                     String href = property.getHref();
                     if (href != null && href.length() != 0) {
                         importer.propagateXlink(new DBXlinkSurfaceGeometry(id, parentId, rootId, reverse, href, cityObjectId));
@@ -448,9 +448,9 @@ public class DBSurfaceGeometry implements DBImporter {
                 if (origGmlId != null && !isCopy)
                     importer.putGeometryId(origGmlId, -1, -1, negativeOrientation, mapping);
             } else {
-				importer.logOrThrowErrorMessage(importer.getObjectSignature(orientableSurface, origGmlId) +
-						": The orientable surface lacks a base surface.");
-			}
+                importer.logOrThrowErrorMessage(importer.getObjectSignature(orientableSurface, origGmlId) +
+                        ": The orientable surface lacks a base surface.");
+            }
         }
 
         // compositeSurface
@@ -492,7 +492,7 @@ public class DBSurfaceGeometry implements DBImporter {
             if (compositeSurface.isSetSurfaceMember()) {
                 for (SurfaceProperty property : compositeSurface.getSurfaceMember()) {
                     if (property.isSetSurface()) {
-						doImport(property.getSurface(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
+                        doImport(property.getSurface(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                     } else {
                         String href = property.getHref();
                         if (href != null && href.length() != 0)
@@ -550,71 +550,71 @@ public class DBSurfaceGeometry implements DBImporter {
             }
         }
 
-		// Surface
-		else if (geometry instanceof Surface) {
-			Surface surface = (Surface) geometry;
+        // Surface
+        else if (geometry instanceof Surface) {
+            Surface surface = (Surface) geometry;
 
-			if (origGmlId != null && !isCopy)
-				importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
+            if (origGmlId != null && !isCopy)
+                importer.putGeometryId(origGmlId, id, rootId, reverse, gmlId);
 
-			int nrOfPatches = surface.isSetPatches() && surface.getPatches().isSetSurfacePatch() ?
-					surface.getPatches().getSurfacePatch().size() : 0;
+            int nrOfPatches = surface.isSetPatches() && surface.getPatches().isSetSurfacePatch() ?
+                    surface.getPatches().getSurfacePatch().size() : 0;
 
-			// add a composite surface as root unless there is only one surface patch
-			if (nrOfPatches != 1) {
-				psGeomElem.setLong(1, id);
-				psGeomElem.setString(2, gmlId);
-				psGeomElem.setLong(4, rootId);
-				psGeomElem.setInt(5, 0);
-				psGeomElem.setInt(6, 1);
-				psGeomElem.setInt(7, 0);
-				psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
-				psGeomElem.setInt(9, reverse ? 1 : 0);
-				psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
-				psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
-				psGeomElem.setNull(12, nullGeometryType, nullGeometryTypeName);
+            // add a composite surface as root unless there is only one surface patch
+            if (nrOfPatches != 1) {
+                psGeomElem.setLong(1, id);
+                psGeomElem.setString(2, gmlId);
+                psGeomElem.setLong(4, rootId);
+                psGeomElem.setInt(5, 0);
+                psGeomElem.setInt(6, 1);
+                psGeomElem.setInt(7, 0);
+                psGeomElem.setInt(8, isXlink ? isXlinkValue : 0);
+                psGeomElem.setInt(9, reverse ? 1 : 0);
+                psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
+                psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
+                psGeomElem.setNull(12, nullGeometryType, nullGeometryTypeName);
 
-				if (parentId != 0)
-					psGeomElem.setLong(3, parentId);
-				else
-					psGeomElem.setNull(3, Types.NULL);
+                if (parentId != 0)
+                    psGeomElem.setLong(3, parentId);
+                else
+                    psGeomElem.setNull(3, Types.NULL);
 
-				if (cityObjectId != 0)
-					psGeomElem.setLong(13, cityObjectId);
-				else
-					psGeomElem.setNull(13, Types.NULL);
+                if (cityObjectId != 0)
+                    psGeomElem.setLong(13, cityObjectId);
+                else
+                    psGeomElem.setNull(13, Types.NULL);
 
-				addBatch();
+                addBatch();
 
-				// set parentId
-				parentId = id;
-			}
+                // set parentId
+                parentId = id;
+            }
 
-			// import surface patches
-			if (nrOfPatches > 0) {
-				for (AbstractSurfacePatch patch : surface.getPatches().getSurfacePatch()) {
-					Polygon polygon = new Polygon();
-					if (nrOfPatches == 1)
-						polygon.setId(gmlId);
+            // import surface patches
+            if (nrOfPatches > 0) {
+                for (AbstractSurfacePatch patch : surface.getPatches().getSurfacePatch()) {
+                    Polygon polygon = new Polygon();
+                    if (nrOfPatches == 1)
+                        polygon.setId(gmlId);
 
-					if (patch instanceof Rectangle) {
-						Rectangle rectangle = (Rectangle) patch;
-						polygon = new Polygon();
-						polygon.setExterior(rectangle.getExterior());
-					} else if (patch instanceof Triangle) {
-						Triangle triangle = (Triangle) patch;
-						polygon = new Polygon();
-						polygon.setExterior(triangle.getExterior());
-					} else if (patch instanceof PolygonPatch) {
-						PolygonPatch polygonPatch = (PolygonPatch) patch;
-						polygon.setExterior(polygonPatch.getExterior());
-						polygon.setInterior(polygonPatch.getInterior());
-					}
+                    if (patch instanceof Rectangle) {
+                        Rectangle rectangle = (Rectangle) patch;
+                        polygon = new Polygon();
+                        polygon.setExterior(rectangle.getExterior());
+                    } else if (patch instanceof Triangle) {
+                        Triangle triangle = (Triangle) patch;
+                        polygon = new Polygon();
+                        polygon.setExterior(triangle.getExterior());
+                    } else if (patch instanceof PolygonPatch) {
+                        PolygonPatch polygonPatch = (PolygonPatch) patch;
+                        polygon.setExterior(polygonPatch.getExterior());
+                        polygon.setInterior(polygonPatch.getInterior());
+                    }
 
-					doImport(polygon, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-				}
-			}
-		}
+                    doImport(polygon, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
+                }
+            }
+        }
 
         // Solid
         else if (geometry instanceof Solid) {
@@ -712,8 +712,8 @@ public class DBSurfaceGeometry implements DBImporter {
             if (id == rootId) {
                 GeometryObject geometryObject = geometryConverter.getCompositeSolid(compositeSolid);
                 if (geometryObject != null) {
-					object = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometryObject, batchConn);
-				} else {
+                    object = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometryObject, batchConn);
+                } else {
                     // we cannot build the solid geometry in main memory
                     // possibly the solid references surfaces from another feature per xlink
                     // so, remember its id to build the solid geometry later
@@ -843,7 +843,7 @@ public class DBSurfaceGeometry implements DBImporter {
             if (multiSurface.isSetSurfaceMember()) {
                 for (SurfaceProperty property : multiSurface.getSurfaceMember()) {
                     if (property.isSetSurface()) {
-						doImport(property.getSurface(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
+                        doImport(property.getSurface(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                     } else {
                         String href = property.getHref();
                         if (href != null && href.length() != 0)
@@ -857,7 +857,7 @@ public class DBSurfaceGeometry implements DBImporter {
                 SurfaceArrayProperty property = multiSurface.getSurfaceMembers();
                 if (property.isSetSurface()) {
                     for (AbstractSurface abstractSurface : property.getSurface())
-						doImport(abstractSurface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
+                        doImport(abstractSurface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
                 }
             }
         }
@@ -962,8 +962,8 @@ public class DBSurfaceGeometry implements DBImporter {
 
         @Override
         public void visit(AbstractGeometry geometry) {
-        	if (!(geometry instanceof OrientableSurface))
-        		count++;
+            if (!(geometry instanceof OrientableSurface))
+                count++;
         }
 
         @Override

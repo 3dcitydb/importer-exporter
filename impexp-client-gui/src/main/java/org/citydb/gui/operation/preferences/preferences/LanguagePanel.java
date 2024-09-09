@@ -41,80 +41,80 @@ import java.awt.*;
 import java.util.Locale;
 
 public class LanguagePanel extends InternalPreferencesComponent {
-	private final ImpExpGui mainView;
-	private JRadioButton importLanguageRadioDe;
-	private JRadioButton importLanguageRadioEn;
-	private TitledPanel language;
+    private final ImpExpGui mainView;
+    private JRadioButton importLanguageRadioDe;
+    private JRadioButton importLanguageRadioEn;
+    private TitledPanel language;
 
-	public LanguagePanel(ImpExpGui mainView, Config config) {
-		super(config);
-		this.mainView = mainView;
-		initGui();
-	}
-	
-	@Override
-	public boolean isModified() {
-		LanguageType language = config.getGlobalConfig().getLanguage();
-		if (importLanguageRadioDe.isSelected() && !(language == LanguageType.DE)) return true;
-		if (importLanguageRadioEn.isSelected() && !(language == LanguageType.EN)) return true;
-		return false;
-	}
-	
-	private void initGui() {
-		importLanguageRadioDe = new JRadioButton();
-		importLanguageRadioEn = new JRadioButton();
-		ButtonGroup importLanguageRadio = new ButtonGroup();
-		importLanguageRadio.add(importLanguageRadioDe);
-		importLanguageRadio.add(importLanguageRadioEn);
+    public LanguagePanel(ImpExpGui mainView, Config config) {
+        super(config);
+        this.mainView = mainView;
+        initGui();
+    }
 
-		setLayout(new GridBagLayout());
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(importLanguageRadioDe, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				content.add(importLanguageRadioEn, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			}
+    @Override
+    public boolean isModified() {
+        LanguageType language = config.getGlobalConfig().getLanguage();
+        if (importLanguageRadioDe.isSelected() && !(language == LanguageType.DE)) return true;
+        if (importLanguageRadioEn.isSelected() && !(language == LanguageType.EN)) return true;
+        return false;
+    }
 
-			language = new TitledPanel().build(content);
-		}
+    private void initGui() {
+        importLanguageRadioDe = new JRadioButton();
+        importLanguageRadioEn = new JRadioButton();
+        ButtonGroup importLanguageRadio = new ButtonGroup();
+        importLanguageRadio.add(importLanguageRadioDe);
+        importLanguageRadio.add(importLanguageRadioEn);
 
-		add(language, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-	}
-	
-	@Override
-	public void switchLocale(Locale locale) {
-		language.setTitle(Language.I18N.getString("pref.general.language.border.selection"));
-		importLanguageRadioDe.setText(Language.I18N.getString("pref.general.language.label.de"));
-		importLanguageRadioEn.setText(Language.I18N.getString("pref.general.language.label.en"));
-	}
-	
-	@Override
-	public void loadSettings() {		
-		LanguageType language = config.getGlobalConfig().getLanguage();
+        setLayout(new GridBagLayout());
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(importLanguageRadioDe, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(importLanguageRadioEn, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            }
 
-		if (language == LanguageType.DE) {
-			importLanguageRadioDe.setSelected(true);
-		} else if (language == LanguageType.EN) {
-			importLanguageRadioEn.setSelected(true);
-		}
-	}
-	
-	@Override
-	public void setSettings() {
-		GlobalConfig globalConfig = config.getGlobalConfig();
+            language = new TitledPanel().build(content);
+        }
 
-		if (importLanguageRadioDe.isSelected()) {
-			globalConfig.setLanguage(LanguageType.DE);
-		} else if (importLanguageRadioEn.isSelected()) {
-			globalConfig.setLanguage(LanguageType.EN);
-		}
+        add(language, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+    }
 
-		mainView.switchLocale();
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.general.language");
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        language.setTitle(Language.I18N.getString("pref.general.language.border.selection"));
+        importLanguageRadioDe.setText(Language.I18N.getString("pref.general.language.label.de"));
+        importLanguageRadioEn.setText(Language.I18N.getString("pref.general.language.label.en"));
+    }
+
+    @Override
+    public void loadSettings() {
+        LanguageType language = config.getGlobalConfig().getLanguage();
+
+        if (language == LanguageType.DE) {
+            importLanguageRadioDe.setSelected(true);
+        } else if (language == LanguageType.EN) {
+            importLanguageRadioEn.setSelected(true);
+        }
+    }
+
+    @Override
+    public void setSettings() {
+        GlobalConfig globalConfig = config.getGlobalConfig();
+
+        if (importLanguageRadioDe.isSelected()) {
+            globalConfig.setLanguage(LanguageType.DE);
+        } else if (importLanguageRadioEn.isSelected()) {
+            globalConfig.setLanguage(LanguageType.EN);
+        }
+
+        mainView.switchLocale();
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.general.language");
+    }
 }

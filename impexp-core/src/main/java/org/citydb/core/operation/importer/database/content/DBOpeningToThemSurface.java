@@ -36,41 +36,41 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBOpeningToThemSurface implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psOpeningToThemSurface;
-	private int batchCounter;
+    private PreparedStatement psOpeningToThemSurface;
+    private int batchCounter;
 
-	public DBOpeningToThemSurface(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
-		this.importer = importer;
+    public DBOpeningToThemSurface(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String stmt = "insert into " + schema + ".opening_to_them_surface (opening_id, thematic_surface_id) values " +
-				"(?, ?)";
-		psOpeningToThemSurface = batchConn.prepareStatement(stmt);
-	}
+        String stmt = "insert into " + schema + ".opening_to_them_surface (opening_id, thematic_surface_id) values " +
+                "(?, ?)";
+        psOpeningToThemSurface = batchConn.prepareStatement(stmt);
+    }
 
-	protected void doImport(long openingId, long thematicSurfaceId) throws CityGMLImportException, SQLException {
-		psOpeningToThemSurface.setLong(1, openingId);
-		psOpeningToThemSurface.setLong(2, thematicSurfaceId);
+    protected void doImport(long openingId, long thematicSurfaceId) throws CityGMLImportException, SQLException {
+        psOpeningToThemSurface.setLong(1, openingId);
+        psOpeningToThemSurface.setLong(2, thematicSurfaceId);
 
-		psOpeningToThemSurface.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.OPENING_TO_THEM_SURFACE);
-	}
+        psOpeningToThemSurface.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.OPENING_TO_THEM_SURFACE);
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psOpeningToThemSurface.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psOpeningToThemSurface.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psOpeningToThemSurface.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psOpeningToThemSurface.close();
+    }
 
 }

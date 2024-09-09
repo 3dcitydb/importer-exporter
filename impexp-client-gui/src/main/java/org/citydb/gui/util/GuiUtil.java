@@ -37,100 +37,100 @@ import java.awt.*;
 
 public class GuiUtil {
 
-	public static GridBagConstraints setConstraints(int gridx, int gridy, double weightx, double weighty, int fill,
-			int insetTop, int insetLeft, int insetBottom, int insetRight) {
-		GridBagConstraints constraint = new GridBagConstraints();
-		constraint.gridx = gridx;
-		constraint.gridy = gridy;
-		constraint.weightx = weightx;
-		constraint.weighty = weighty;
-		constraint.fill = fill;
-		constraint.insets = new Insets(insetTop, insetLeft, insetBottom, insetRight);
-		return constraint;
-	}
+    public static GridBagConstraints setConstraints(int gridx, int gridy, double weightx, double weighty, int fill,
+                                                    int insetTop, int insetLeft, int insetBottom, int insetRight) {
+        GridBagConstraints constraint = new GridBagConstraints();
+        constraint.gridx = gridx;
+        constraint.gridy = gridy;
+        constraint.weightx = weightx;
+        constraint.weighty = weighty;
+        constraint.fill = fill;
+        constraint.insets = new Insets(insetTop, insetLeft, insetBottom, insetRight);
+        return constraint;
+    }
 
-	public static GridBagConstraints setConstraints(int gridx, int gridy, double weightx, double weighty, int anchor, int fill,
-			int insetTop, int insetLeft, int insetBottom, int insetRight) {
-		GridBagConstraints constraint = setConstraints(gridx, gridy, weightx, weighty, fill,
-				insetTop, insetLeft, insetBottom, insetRight);
-		constraint.anchor = anchor;
-		return constraint;
-	}
+    public static GridBagConstraints setConstraints(int gridx, int gridy, double weightx, double weighty, int anchor, int fill,
+                                                    int insetTop, int insetLeft, int insetBottom, int insetRight) {
+        GridBagConstraints constraint = setConstraints(gridx, gridy, weightx, weighty, fill,
+                insetTop, insetLeft, insetBottom, insetRight);
+        constraint.anchor = anchor;
+        return constraint;
+    }
 
-	public static GridBagConstraints setConstraints(int gridx, int gridy, int gridwidth, int gridheight, 
-			double weightx, double weighty, int fill,
-			int insetTop, int insetLeft, int insetBottom, int insetRight) {
-		GridBagConstraints constraint = setConstraints(gridx, gridy, weightx, weighty, fill,
-				insetTop, insetLeft, insetBottom, insetRight);
-		constraint.gridwidth = gridwidth;
-		constraint.gridheight = gridheight;
-		return constraint;
-	}
+    public static GridBagConstraints setConstraints(int gridx, int gridy, int gridwidth, int gridheight,
+                                                    double weightx, double weighty, int fill,
+                                                    int insetTop, int insetLeft, int insetBottom, int insetRight) {
+        GridBagConstraints constraint = setConstraints(gridx, gridy, weightx, weighty, fill,
+                insetTop, insetLeft, insetBottom, insetRight);
+        constraint.gridwidth = gridwidth;
+        constraint.gridheight = gridheight;
+        return constraint;
+    }
 
-	public static GridBagConstraints setConstraints(int gridx, int gridy, int gridwidth, int gridheight,
-			double weightx, double weighty, int anchor, int fill,
-			int insetTop, int insetLeft, int insetBottom, int insetRight) {
-		GridBagConstraints constraint = setConstraints(gridx, gridy, gridwidth, gridheight, weightx, weighty, fill,
-				insetTop, insetLeft, insetBottom, insetRight);
-		constraint.anchor = anchor;
-		return constraint;
-	}
+    public static GridBagConstraints setConstraints(int gridx, int gridy, int gridwidth, int gridheight,
+                                                    double weightx, double weighty, int anchor, int fill,
+                                                    int insetTop, int insetLeft, int insetBottom, int insetRight) {
+        GridBagConstraints constraint = setConstraints(gridx, gridy, gridwidth, gridheight, weightx, weighty, fill,
+                insetTop, insetLeft, insetBottom, insetRight);
+        constraint.anchor = anchor;
+        return constraint;
+    }
 
-	public static String getLaf(Theme theme) {
-		return theme == Theme.DARK ? FlatDarkLaf.class.getName() : FlatLightLaf.class.getName();
-	}
+    public static String getLaf(Theme theme) {
+        return theme == Theme.DARK ? FlatDarkLaf.class.getName() : FlatLightLaf.class.getName();
+    }
 
-	public static void setMnemonic(JMenuItem item, String label, int index) {
-		try {
-			char mnemonic = label.charAt(index);
-			item.setMnemonic(mnemonic);
-			item.setDisplayedMnemonicIndex(index);
-		}  catch (IndexOutOfBoundsException e) {
-			//
-		}
-	}
+    public static void setMnemonic(JMenuItem item, String label, int index) {
+        try {
+            char mnemonic = label.charAt(index);
+            item.setMnemonic(mnemonic);
+            item.setDisplayedMnemonicIndex(index);
+        } catch (IndexOutOfBoundsException e) {
+            //
+        }
+    }
 
-	public static void setMnemonic(JMenuItem item, String labelKey, String indexKey) {		
-		try {
-			setMnemonic(item, Language.I18N.getString(labelKey), Integer.parseInt(Language.I18N.getString(indexKey)));
-		} catch (NumberFormatException e) {
-			//
-		}
-	}
+    public static void setMnemonic(JMenuItem item, String labelKey, String indexKey) {
+        try {
+            setMnemonic(item, Language.I18N.getString(labelKey), Integer.parseInt(Language.I18N.getString(indexKey)));
+        } catch (NumberFormatException e) {
+            //
+        }
+    }
 
-	public static Color hexToColor(String hex) {
-		if (hex != null && hex.matches("^#[0-9a-fA-F]{6,8}")) {
-			hex = hex.replace("#", "");
-			int r, g, b, a = 255;
+    public static Color hexToColor(String hex) {
+        if (hex != null && hex.matches("^#[0-9a-fA-F]{6,8}")) {
+            hex = hex.replace("#", "");
+            int r, g, b, a = 255;
 
-			switch (hex.length()) {
-				case 8:
-					a = Integer.valueOf(hex.substring(0, 2), 16);
-					hex = hex.substring(2);
-				case 6:
-					r = Integer.valueOf(hex.substring(0, 2), 16);
-					g = Integer.valueOf(hex.substring(2, 4), 16);
-					b = Integer.valueOf(hex.substring(4, 6), 16);
-					return new Color(r, g, b, a);
-			}
-		}
+            switch (hex.length()) {
+                case 8:
+                    a = Integer.valueOf(hex.substring(0, 2), 16);
+                    hex = hex.substring(2);
+                case 6:
+                    r = Integer.valueOf(hex.substring(0, 2), 16);
+                    g = Integer.valueOf(hex.substring(2, 4), 16);
+                    b = Integer.valueOf(hex.substring(4, 6), 16);
+                    return new Color(r, g, b, a);
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	public static String colorToHex(Color color) {
-		return color != null ? "#" + Integer.toHexString(color.getRGB()) : null;
-	}
+    public static String colorToHex(Color color) {
+        return color != null ? "#" + Integer.toHexString(color.getRGB()) : null;
+    }
 
-	public static int getTextOffset(JCheckBox checkBox) {
-		return new JCheckBox().getPreferredSize().width +
-				checkBox.getIconTextGap() -
-				checkBox.getMargin().right;
-	}
+    public static int getTextOffset(JCheckBox checkBox) {
+        return new JCheckBox().getPreferredSize().width +
+                checkBox.getIconTextGap() -
+                checkBox.getMargin().right;
+    }
 
-	public static int getTextOffset(JRadioButton radioButton) {
-		return new JRadioButton().getPreferredSize().width +
-				radioButton.getIconTextGap() -
-				radioButton.getMargin().right;
-	}
+    public static int getTextOffset(JRadioButton radioButton) {
+        return new JRadioButton().getPreferredSize().width +
+                radioButton.getIconTextGap() -
+                radioButton.getMargin().right;
+    }
 }

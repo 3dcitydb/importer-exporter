@@ -43,69 +43,69 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ExportCounter {
-	private final SchemaMapping schemaMapping;
-	private final Map<Integer, Long> objectCounter;
-	private final Map<GMLClass, Long> geometryCounter;
-	private final CounterWalker counterWalker;
-	
-	public ExportCounter(SchemaMapping schemaMapping) {
-		this.schemaMapping = schemaMapping;
-		objectCounter = new HashMap<>();
-		geometryCounter = new HashMap<>();
-		counterWalker = new CounterWalker();
-	}
+    private final SchemaMapping schemaMapping;
+    private final Map<Integer, Long> objectCounter;
+    private final Map<GMLClass, Long> geometryCounter;
+    private final CounterWalker counterWalker;
 
-	public void updateExportCounter(AbstractGML object) {
-		object.accept(counterWalker);
-	}
+    public ExportCounter(SchemaMapping schemaMapping) {
+        this.schemaMapping = schemaMapping;
+        objectCounter = new HashMap<>();
+        geometryCounter = new HashMap<>();
+        counterWalker = new CounterWalker();
+    }
 
-	private void updateObjectCounter(int objectClassId) {
-		Long counter = objectCounter.get(objectClassId);
-		if (counter == null)
-			objectCounter.put(objectClassId, 1L);
-		else
-			objectCounter.put(objectClassId, counter + 1);		
-	}
+    public void updateExportCounter(AbstractGML object) {
+        object.accept(counterWalker);
+    }
 
-	private void updateGeometryCounter(GMLClass type) {
-		Long counter = geometryCounter.get(type);
-		if (counter == null)
-			geometryCounter.put(type, 1L);
-		else
-			geometryCounter.put(type, counter + 1);
-	}
+    private void updateObjectCounter(int objectClassId) {
+        Long counter = objectCounter.get(objectClassId);
+        if (counter == null)
+            objectCounter.put(objectClassId, 1L);
+        else
+            objectCounter.put(objectClassId, counter + 1);
+    }
 
-	public Map<Integer, Long> getAndResetObjectCounter() {
-		Map<Integer, Long> tmp = new HashMap<>(objectCounter);
-		objectCounter.clear();
-		return tmp;
-	}
+    private void updateGeometryCounter(GMLClass type) {
+        Long counter = geometryCounter.get(type);
+        if (counter == null)
+            geometryCounter.put(type, 1L);
+        else
+            geometryCounter.put(type, counter + 1);
+    }
 
-	public Map<GMLClass, Long> getAndResetGeometryCounter() {
-		Map<GMLClass, Long> tmp = new HashMap<>(geometryCounter);
-		geometryCounter.clear();
-		return tmp;
-	}
+    public Map<Integer, Long> getAndResetObjectCounter() {
+        Map<Integer, Long> tmp = new HashMap<>(objectCounter);
+        objectCounter.clear();
+        return tmp;
+    }
 
-	private final class CounterWalker extends GMLWalker {
-		public void visit(AbstractGML object) {
-			AbstractObjectType<?> type = schemaMapping.getAbstractObjectType(Util.getObjectClassId(object.getClass()));
-			if (type != null)
-				updateObjectCounter(type.getObjectClassId());
-			else if (object instanceof ImplicitGeometry)
-				updateObjectCounter(MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID);
-		}
+    public Map<GMLClass, Long> getAndResetGeometryCounter() {
+        Map<GMLClass, Long> tmp = new HashMap<>(geometryCounter);
+        geometryCounter.clear();
+        return tmp;
+    }
 
-		public void visit(AbstractSurfaceData surfaceData) {
-			// do not count surface data
-		}
+    private final class CounterWalker extends GMLWalker {
+        public void visit(AbstractGML object) {
+            AbstractObjectType<?> type = schemaMapping.getAbstractObjectType(Util.getObjectClassId(object.getClass()));
+            if (type != null)
+                updateObjectCounter(type.getObjectClassId());
+            else if (object instanceof ImplicitGeometry)
+                updateObjectCounter(MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID);
+        }
 
-		public void visit(Address address) {
-			// do not count addresses
-		}
+        public void visit(AbstractSurfaceData surfaceData) {
+            // do not count surface data
+        }
 
-		public void visit(AbstractGeometry geometry) {
-			updateGeometryCounter(geometry.getGMLClass());
-		}
-	}
+        public void visit(Address address) {
+            // do not count addresses
+        }
+
+        public void visit(AbstractGeometry geometry) {
+            updateGeometryCounter(geometry.getGMLClass());
+        }
+    }
 }

@@ -31,17 +31,17 @@ import org.citydb.core.database.schema.mapping.ObjectType;
 
 public final class ObjectTypeNode extends AbstractTypeNode<ObjectType> {
 
-	ObjectTypeNode(ObjectType objectType) {
-		super(objectType);
-	}
-	
-	ObjectTypeNode(ObjectTypeNode other) {
-		super(other);
-	}
+    ObjectTypeNode(ObjectType objectType) {
+        super(objectType);
+    }
 
-	@Override
-	protected ObjectTypeNode copy() {
-		return new ObjectTypeNode(this);
-	}
+    ObjectTypeNode(ObjectTypeNode other) {
+        super(other);
+    }
+
+    @Override
+    protected ObjectTypeNode copy() {
+        return new ObjectTypeNode(this);
+    }
 
 }

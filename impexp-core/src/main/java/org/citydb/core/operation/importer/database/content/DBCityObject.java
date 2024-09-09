@@ -68,328 +68,328 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 public class DBCityObject implements DBImporter {
-	private final Connection batchConn;
-	private final CityGMLImportManager importer;
+    private final Connection batchConn;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psCityObject;
-	private DBCityObjectGenericAttrib genericAttributeImporter;
-	private DBExternalReference externalReferenceImporter;
-	private LocalGeometryXlinkResolver resolver;
-	private AttributeValueJoiner valueJoiner;
-	private int batchCounter;
+    private PreparedStatement psCityObject;
+    private DBCityObjectGenericAttrib genericAttributeImporter;
+    private DBExternalReference externalReferenceImporter;
+    private LocalGeometryXlinkResolver resolver;
+    private AttributeValueJoiner valueJoiner;
+    private int batchCounter;
 
-	private String importFileName;
-	private int dbSrid;
-	private boolean replaceGmlId;
-	private boolean rememberGmlId;
-	private boolean importAppearance;
-	private boolean affineTransformation;
+    private String importFileName;
+    private int dbSrid;
+    private boolean replaceGmlId;
+    private boolean rememberGmlId;
+    private boolean importAppearance;
+    private boolean affineTransformation;
 
-	private boolean importCityDBMetadata;
-	private String updatingPerson;
-	private String reasonForUpdate;
-	private String lineage;
-	private CreationDateMode creationDateMode;
-	private TerminationDateMode terminationDateMode;
-	private BoundingBoxOptions bboxOptions;
+    private boolean importCityDBMetadata;
+    private String updatingPerson;
+    private String reasonForUpdate;
+    private String lineage;
+    private CreationDateMode creationDateMode;
+    private TerminationDateMode terminationDateMode;
+    private BoundingBoxOptions bboxOptions;
 
-	public DBCityObject(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
-		this.batchConn = batchConn;	
-		this.importer = importer;
+    public DBCityObject(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
+        this.batchConn = batchConn;
+        this.importer = importer;
 
-		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
-		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		importAppearance = config.getImportConfig().getAppearances().isSetImportAppearance();
-		creationDateMode = config.getImportConfig().getContinuation().getCreationDateMode();
-		terminationDateMode = config.getImportConfig().getContinuation().getTerminationDateMode();
+        affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
+        dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
+        importAppearance = config.getImportConfig().getAppearances().isSetImportAppearance();
+        creationDateMode = config.getImportConfig().getContinuation().getCreationDateMode();
+        terminationDateMode = config.getImportConfig().getContinuation().getTerminationDateMode();
 
-		importCityDBMetadata = config.getImportConfig().getContinuation().isImportCityDBMetadata();
-		reasonForUpdate = importer.getInternalConfig().getReasonForUpdate();
-		lineage = importer.getInternalConfig().getLineage();
-		updatingPerson = importer.getInternalConfig().getUpdatingPersonMode() == UpdatingPersonMode.USER ?
-				importer.getInternalConfig().getUpdatingPerson() :
-				importer.getDatabaseAdapter().getConnectionDetails().getUser();
+        importCityDBMetadata = config.getImportConfig().getContinuation().isImportCityDBMetadata();
+        reasonForUpdate = importer.getInternalConfig().getReasonForUpdate();
+        lineage = importer.getInternalConfig().getLineage();
+        updatingPerson = importer.getInternalConfig().getUpdatingPersonMode() == UpdatingPersonMode.USER ?
+                importer.getInternalConfig().getUpdatingPerson() :
+                importer.getDatabaseAdapter().getConnectionDetails().getUser();
 
-		String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
-		if (gmlIdCodespace != null)
-			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
+        String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
+        if (gmlIdCodespace != null)
+            gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 
-		replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
-		rememberGmlId = config.getImportConfig().getResourceId().isSetKeepIdAsExternalReference();
-		if (replaceGmlId && rememberGmlId && importer.getInternalConfig().getInputFile() != null)
-			importFileName = importer.getInternalConfig().getInputFile().getFile().toString();
+        replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
+        rememberGmlId = config.getImportConfig().getResourceId().isSetKeepIdAsExternalReference();
+        if (replaceGmlId && rememberGmlId && importer.getInternalConfig().getInputFile() != null)
+            importFileName = importer.getInternalConfig().getInputFile().getFile().toString();
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-		bboxOptions = BoundingBoxOptions.defaults()
-				.useExistingEnvelopes(true)
-				.assignResultToFeatures(true);
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        bboxOptions = BoundingBoxOptions.defaults()
+                .useExistingEnvelopes(true)
+                .assignResultToFeatures(true);
 
-		String stmt = "insert into " + schema + ".cityobject (id, objectclass_id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
-				"name, name_codespace, description, envelope, creation_date, termination_date, relative_to_terrain, relative_to_water, " +
-				"last_modification_date, updating_person, reason_for_update, lineage) values " +
-				"(?, ?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-		psCityObject = batchConn.prepareStatement(stmt);
+        String stmt = "insert into " + schema + ".cityobject (id, objectclass_id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
+                "name, name_codespace, description, envelope, creation_date, termination_date, relative_to_terrain, relative_to_water, " +
+                "last_modification_date, updating_person, reason_for_update, lineage) values " +
+                "(?, ?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        psCityObject = batchConn.prepareStatement(stmt);
 
-		genericAttributeImporter = importer.getImporter(DBCityObjectGenericAttrib.class);
-		externalReferenceImporter = importer.getImporter(DBExternalReference.class);
-		resolver = new LocalGeometryXlinkResolver(importer);
-		valueJoiner = importer.getAttributeValueJoiner();
-	}
+        genericAttributeImporter = importer.getImporter(DBCityObjectGenericAttrib.class);
+        externalReferenceImporter = importer.getImporter(DBExternalReference.class);
+        resolver = new LocalGeometryXlinkResolver(importer);
+        valueJoiner = importer.getAttributeValueJoiner();
+    }
 
-	protected long doImport(AbstractGML object) throws CityGMLImportException, SQLException {
-		AbstractObjectType<?> objectType = importer.getAbstractObjectType(object);
-		if (objectType == null)
-			throw new SQLException("Failed to retrieve object type.");
+    protected long doImport(AbstractGML object) throws CityGMLImportException, SQLException {
+        AbstractObjectType<?> objectType = importer.getAbstractObjectType(object);
+        if (objectType == null)
+            throw new SQLException("Failed to retrieve object type.");
 
-		long objectId = doImport(object, objectType);
+        long objectId = doImport(object, objectType);
 
-		// ADE-specific extensions
-		if (importer.hasADESupport())
-			importer.delegateToADEImporter(object, objectId, objectType);
-		
-		return objectId;
-	}
+        // ADE-specific extensions
+        if (importer.hasADESupport())
+            importer.delegateToADEImporter(object, objectId, objectType);
 
-	protected long doImport(AbstractGML object, AbstractObjectType<?> objectType) throws CityGMLImportException, SQLException {
-		boolean isFeature = object instanceof AbstractFeature;
-		boolean isCityObject = object instanceof AbstractCityObject;
-		boolean isGlobal = !object.isSetParent();
-		ZonedDateTime now = ZonedDateTime.now();
+        return objectId;
+    }
 
-		// primary id
-		long objectId = importer.getNextSequenceValue(SequenceEnum.CITYOBJECT_ID_SEQ.getName());
-		psCityObject.setLong(1, objectId);
+    protected long doImport(AbstractGML object, AbstractObjectType<?> objectType) throws CityGMLImportException, SQLException {
+        boolean isFeature = object instanceof AbstractFeature;
+        boolean isCityObject = object instanceof AbstractCityObject;
+        boolean isGlobal = !object.isSetParent();
+        ZonedDateTime now = ZonedDateTime.now();
 
-		// object class id
-		psCityObject.setInt(2, objectType.getObjectClassId());
+        // primary id
+        long objectId = importer.getNextSequenceValue(SequenceEnum.CITYOBJECT_ID_SEQ.getName());
+        psCityObject.setLong(1, objectId);
 
-		// gml:id
-		String origGmlId = object.isSetId() && !object.getId().isEmpty() ? object.getId() : null;
-		if (origGmlId != null)
-			object.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
+        // object class id
+        psCityObject.setInt(2, objectType.getObjectClassId());
 
-		if (replaceGmlId) {
-			String gmlId = importer.generateNewGmlId();
+        // gml:id
+        String origGmlId = object.isSetId() && !object.getId().isEmpty() ? object.getId() : null;
+        if (origGmlId != null)
+            object.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 
-			// mapping entry
-			if (origGmlId != null) {
-				importer.putObjectId(origGmlId, objectId, gmlId, objectType.getObjectClassId());
+        if (replaceGmlId) {
+            String gmlId = importer.generateNewGmlId();
 
-				if (rememberGmlId && isCityObject) {	
-					ExternalReference externalReference = new ExternalReference();
-					externalReference.setInformationSystem(importFileName);
+            // mapping entry
+            if (origGmlId != null) {
+                importer.putObjectId(origGmlId, objectId, gmlId, objectType.getObjectClassId());
 
-					ExternalObject externalObject = new ExternalObject();
-					externalObject.setName(origGmlId);
+                if (rememberGmlId && isCityObject) {
+                    ExternalReference externalReference = new ExternalReference();
+                    externalReference.setInformationSystem(importFileName);
 
-					externalReference.setExternalObject(externalObject);
-					((AbstractCityObject)object).addExternalReference(externalReference);
-				}
-			}
+                    ExternalObject externalObject = new ExternalObject();
+                    externalObject.setName(origGmlId);
 
-			object.setId(gmlId);
-		} else {
-			if (origGmlId != null)
-				importer.putObjectId(origGmlId, objectId, objectType.getObjectClassId());
-			else
-				object.setId(importer.generateNewGmlId());
-		}
+                    externalReference.setExternalObject(externalObject);
+                    ((AbstractCityObject) object).addExternalReference(externalReference);
+                }
+            }
 
-		psCityObject.setString(3, object.getId());
+            object.setId(gmlId);
+        } else {
+            if (origGmlId != null)
+                importer.putObjectId(origGmlId, objectId, objectType.getObjectClassId());
+            else
+                object.setId(importer.generateNewGmlId());
+        }
 
-		// gml:name
-		if (object.isSetName()) {
-			valueJoiner.join(object.getName(), Code::getValue, Code::getCodeSpace);
-			psCityObject.setString(4, valueJoiner.result(0));
-			psCityObject.setString(5, valueJoiner.result(1));
-		} else {
-			psCityObject.setNull(4, Types.VARCHAR);
-			psCityObject.setNull(5, Types.VARCHAR);
-		}
+        psCityObject.setString(3, object.getId());
 
-		// gml:description
-		if (object.isSetDescription()) {
-			String description = object.getDescription().getValue();
-			if (description != null)
-				description = description.trim();
+        // gml:name
+        if (object.isSetName()) {
+            valueJoiner.join(object.getName(), Code::getValue, Code::getCodeSpace);
+            psCityObject.setString(4, valueJoiner.result(0));
+            psCityObject.setString(5, valueJoiner.result(1));
+        } else {
+            psCityObject.setNull(4, Types.VARCHAR);
+            psCityObject.setNull(5, Types.VARCHAR);
+        }
 
-			psCityObject.setString(6, description);
-		} else {
-			psCityObject.setNull(6, Types.VARCHAR);
-		}
+        // gml:description
+        if (object.isSetDescription()) {
+            String description = object.getDescription().getValue();
+            if (description != null)
+                description = description.trim();
 
-		// gml:boundedBy
-		BoundingShape boundedBy = null;
-		if (isFeature)
-			boundedBy = ((AbstractFeature)object).calcBoundedBy(bboxOptions);
+            psCityObject.setString(6, description);
+        } else {
+            psCityObject.setNull(6, Types.VARCHAR);
+        }
 
-		if (boundedBy != null && boundedBy.isSetEnvelope()) {
-			BoundingBox bbox = boundedBy.getEnvelope().toBoundingBox();
-			List<Double> points = bbox.toList();
+        // gml:boundedBy
+        BoundingShape boundedBy = null;
+        if (isFeature)
+            boundedBy = ((AbstractFeature) object).calcBoundedBy(bboxOptions);
 
-			if (affineTransformation)
-				importer.getAffineTransformer().transformCoordinates(points);
+        if (boundedBy != null && boundedBy.isSetEnvelope()) {
+            BoundingBox bbox = boundedBy.getEnvelope().toBoundingBox();
+            List<Double> points = bbox.toList();
 
-			double[] coordinates = new double[]{
-					points.get(0), points.get(1), points.get(2),
-					points.get(3), points.get(1), points.get(2),
-					points.get(3), points.get(4), points.get(5),
-					points.get(0), points.get(4), points.get(5),
-					points.get(0), points.get(1), points.get(2)
-			};
+            if (affineTransformation)
+                importer.getAffineTransformer().transformCoordinates(points);
 
-			GeometryObject envelope = GeometryObject.createPolygon(coordinates, 3, dbSrid);
-			psCityObject.setObject(7, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(envelope, batchConn));
-		} else {
-			psCityObject.setNull(7, importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(), 
-					importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
-		}
+            double[] coordinates = new double[]{
+                    points.get(0), points.get(1), points.get(2),
+                    points.get(3), points.get(1), points.get(2),
+                    points.get(3), points.get(4), points.get(5),
+                    points.get(0), points.get(4), points.get(5),
+                    points.get(0), points.get(1), points.get(2)
+            };
 
-		// core:creationDate
-		ZonedDateTime creationDate = null;
-		if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
-			creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
-			if (creationDate != null)
-				creationDate = creationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
-		}
+            GeometryObject envelope = GeometryObject.createPolygon(coordinates, 3, dbSrid);
+            psCityObject.setObject(7, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(envelope, batchConn));
+        } else {
+            psCityObject.setNull(7, importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+                    importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
+        }
 
-		if (creationDate == null)
-			creationDate = now;
+        // core:creationDate
+        ZonedDateTime creationDate = null;
+        if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
+            creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
+            if (creationDate != null)
+                creationDate = creationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
+        }
 
-		psCityObject.setObject(8, creationDate.toOffsetDateTime());
+        if (creationDate == null)
+            creationDate = now;
 
-		// core:terminationDate
-		ZonedDateTime terminationDate = null;
-		if (isCityObject && (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT)) {
-			terminationDate = Util.getTerminationDate((AbstractCityObject) object, terminationDateMode == TerminationDateMode.INHERIT);
-			if (terminationDate != null)
-				terminationDate = terminationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
-		}
+        psCityObject.setObject(8, creationDate.toOffsetDateTime());
 
-		if (terminationDate == null)
-			psCityObject.setNull(9, Types.TIMESTAMP);
-		else
-			psCityObject.setObject(9, terminationDate.toOffsetDateTime());
+        // core:terminationDate
+        ZonedDateTime terminationDate = null;
+        if (isCityObject && (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT)) {
+            terminationDate = Util.getTerminationDate((AbstractCityObject) object, terminationDateMode == TerminationDateMode.INHERIT);
+            if (terminationDate != null)
+                terminationDate = terminationDate.toLocalDate().atStartOfDay(ZoneOffset.UTC);
+        }
 
-		// core:relativeToTerrain
-		if (isCityObject && ((AbstractCityObject)object).isSetRelativeToTerrain())
-			psCityObject.setString(10, ((AbstractCityObject)object).getRelativeToTerrain().getValue());
-		else
-			psCityObject.setNull(10, Types.VARCHAR);
+        if (terminationDate == null)
+            psCityObject.setNull(9, Types.TIMESTAMP);
+        else
+            psCityObject.setObject(9, terminationDate.toOffsetDateTime());
 
-		// core:relativeToWater
-		if (isCityObject && ((AbstractCityObject)object).isSetRelativeToWater())
-			psCityObject.setString(11, ((AbstractCityObject)object).getRelativeToWater().getValue());
-		else
-			psCityObject.setNull(11, Types.VARCHAR);
+        // core:relativeToTerrain
+        if (isCityObject && ((AbstractCityObject) object).isSetRelativeToTerrain())
+            psCityObject.setString(10, ((AbstractCityObject) object).getRelativeToTerrain().getValue());
+        else
+            psCityObject.setNull(10, Types.VARCHAR);
 
-		// 3DCityDB metadata
-		String updatingPerson = this.updatingPerson;
-		String reasonForUpdate = this.reasonForUpdate;
-		String lineage = this.lineage;
+        // core:relativeToWater
+        if (isCityObject && ((AbstractCityObject) object).isSetRelativeToWater())
+            psCityObject.setString(11, ((AbstractCityObject) object).getRelativeToWater().getValue());
+        else
+            psCityObject.setNull(11, Types.VARCHAR);
 
-		if (isCityObject && importCityDBMetadata) {
-			for (ADEComponent adeComponent : ((AbstractCityObject) object).getGenericApplicationPropertyOfCityObject()) {
-				if (adeComponent instanceof UpdatingPersonProperty)
-					updatingPerson = ((UpdatingPersonProperty) adeComponent).getValue();
-				else if (adeComponent instanceof ReasonForUpdateProperty)
-					reasonForUpdate = ((ReasonForUpdateProperty) adeComponent).getValue();
-				else if (adeComponent instanceof LineageProperty)
-					lineage = ((LineageProperty) adeComponent).getValue();
-			}
-		}
+        // 3DCityDB metadata
+        String updatingPerson = this.updatingPerson;
+        String reasonForUpdate = this.reasonForUpdate;
+        String lineage = this.lineage;
 
-		// citydb:lastModificationDate
-		psCityObject.setObject(12, now.toOffsetDateTime());
+        if (isCityObject && importCityDBMetadata) {
+            for (ADEComponent adeComponent : ((AbstractCityObject) object).getGenericApplicationPropertyOfCityObject()) {
+                if (adeComponent instanceof UpdatingPersonProperty)
+                    updatingPerson = ((UpdatingPersonProperty) adeComponent).getValue();
+                else if (adeComponent instanceof ReasonForUpdateProperty)
+                    reasonForUpdate = ((ReasonForUpdateProperty) adeComponent).getValue();
+                else if (adeComponent instanceof LineageProperty)
+                    lineage = ((LineageProperty) adeComponent).getValue();
+            }
+        }
 
-		// citydb:updatingPerson
-		psCityObject.setString(13, updatingPerson);
+        // citydb:lastModificationDate
+        psCityObject.setObject(12, now.toOffsetDateTime());
 
-		// citydb:reasonForUpdate
-		psCityObject.setString(14, reasonForUpdate);
+        // citydb:updatingPerson
+        psCityObject.setString(13, updatingPerson);
 
-		// citydb:lineage
-		psCityObject.setString(15, lineage);
+        // citydb:reasonForUpdate
+        psCityObject.setString(14, reasonForUpdate);
 
-		// resolve local xlinks to geometry objects
-		if (isGlobal) {
-			boolean success = resolver.resolveGeometryXlinks(object);
-			if (!success) {
-				importer.logOrThrowErrorMessage(importer.getObjectSignature(object, origGmlId) +
-						": Skipping import due to circular reference of the following geometry XLinks:\n" +
-						String.join("\n", resolver.getCircularReferences()));
-				return 0;
-			}
-		}
+        // citydb:lineage
+        psCityObject.setString(15, lineage);
 
-		psCityObject.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.CITYOBJECT);
+        // resolve local xlinks to geometry objects
+        if (isGlobal) {
+            boolean success = resolver.resolveGeometryXlinks(object);
+            if (!success) {
+                importer.logOrThrowErrorMessage(importer.getObjectSignature(object, origGmlId) +
+                        ": Skipping import due to circular reference of the following geometry XLinks:\n" +
+                        String.join("\n", resolver.getCircularReferences()));
+                return 0;
+            }
+        }
 
-		// work on city object related information
-		if (isCityObject) {
-			AbstractCityObject cityObject = (AbstractCityObject)object;
+        psCityObject.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.CITYOBJECT);
 
-			// core:_genericAttribute
-			if (cityObject.isSetGenericAttribute()) {
-				for (AbstractGenericAttribute genericAttribute : cityObject.getGenericAttribute())
-					genericAttributeImporter.doImport(genericAttribute, objectId);
-			}
+        // work on city object related information
+        if (isCityObject) {
+            AbstractCityObject cityObject = (AbstractCityObject) object;
 
-			// core:externalReferences
-			if (cityObject.isSetExternalReference()) {
-				for (ExternalReference externalReference : cityObject.getExternalReference())
-					externalReferenceImporter.doImport(externalReference, objectId);
-			}
+            // core:_genericAttribute
+            if (cityObject.isSetGenericAttribute()) {
+                for (AbstractGenericAttribute genericAttribute : cityObject.getGenericAttribute())
+                    genericAttributeImporter.doImport(genericAttribute, objectId);
+            }
 
-			// core:generalizesTo
-			if (cityObject.isSetGeneralizesTo()) {
-				for (GeneralizationRelation generalizesTo : cityObject.getGeneralizesTo()) {
-					if (generalizesTo.isSetCityObject()) {
-						importer.logOrThrowErrorMessage(importer.getObjectSignature(object) +
-								": Failed to correctly process generalizesTo element.");
-					} else {
-						String href = generalizesTo.getHref();
-						if (href != null && href.length() != 0) {
-							importer.propagateXlink(new DBXlinkBasic(
-									TableEnum.GENERALIZATION.getName(),
-									objectId,
-									"CITYOBJECT_ID",
-									href,
-									"GENERALIZES_TO_ID"));
-						}
-					}
-				}
-			}		
+            // core:externalReferences
+            if (cityObject.isSetExternalReference()) {
+                for (ExternalReference externalReference : cityObject.getExternalReference())
+                    externalReferenceImporter.doImport(externalReference, objectId);
+            }
 
-			// handle local appearances
-			if (importAppearance) {
-				LocalAppearanceHandler handler = importer.getLocalAppearanceHandler();
+            // core:generalizesTo
+            if (cityObject.isSetGeneralizesTo()) {
+                for (GeneralizationRelation generalizesTo : cityObject.getGeneralizesTo()) {
+                    if (generalizesTo.isSetCityObject()) {
+                        importer.logOrThrowErrorMessage(importer.getObjectSignature(object) +
+                                ": Failed to correctly process generalizesTo element.");
+                    } else {
+                        String href = generalizesTo.getHref();
+                        if (href != null && href.length() != 0) {
+                            importer.propagateXlink(new DBXlinkBasic(
+                                    TableEnum.GENERALIZATION.getName(),
+                                    objectId,
+                                    "CITYOBJECT_ID",
+                                    href,
+                                    "GENERALIZES_TO_ID"));
+                        }
+                    }
+                }
+            }
 
-				// reset handler for top-level features
-				if (isGlobal)
-					handler.reset();
+            // handle local appearances
+            if (importAppearance) {
+                LocalAppearanceHandler handler = importer.getLocalAppearanceHandler();
 
-				if (cityObject.isSetAppearance())
-					handler.registerAppearances(cityObject, objectId);
-			}
-		}
+                // reset handler for top-level features
+                if (isGlobal)
+                    handler.reset();
 
-		importer.updateObjectCounter(object, objectType, objectId);
-		return objectId;
-	}
+                if (cityObject.isSetAppearance())
+                    handler.registerAppearances(cityObject, objectId);
+            }
+        }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psCityObject.executeBatch();
-			batchCounter = 0;
-		}
-	}
+        importer.updateObjectCounter(object, objectType, objectId);
+        return objectId;
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psCityObject.close();
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psCityObject.executeBatch();
+            batchCounter = 0;
+        }
+    }
+
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psCityObject.close();
+    }
 
 }

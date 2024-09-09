@@ -34,6 +34,8 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 
 public interface FeatureExportExtension extends Extension {
     void beforeExport() throws PluginException;
+
     void afterExport(ExportStatus status);
+
     AbstractFeature postprocess(AbstractFeature feature) throws PluginException;
 }

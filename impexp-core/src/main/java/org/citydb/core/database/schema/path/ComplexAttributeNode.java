@@ -36,46 +36,44 @@ import org.citydb.core.database.schema.path.predicate.logical.BinaryLogicalPredi
 
 public final class ComplexAttributeNode extends AbstractNode<ComplexAttribute> {
 
-	protected ComplexAttributeNode(ComplexAttribute complexAttribute) {
-		super(complexAttribute);
-	}
-	
-	protected ComplexAttributeNode(ComplexAttributeNode other) {
-		super(other);
-	}
-	
-	@Override
-	protected boolean isValidChild(AbstractPathElement candidate) {
-		if (candidate instanceof AbstractAttribute) {
-			for (AbstractAttribute attribute : pathElement.getType().getAttributes())
-				if (attribute == candidate)
-					return true;			
-		}
+    protected ComplexAttributeNode(ComplexAttribute complexAttribute) {
+        super(complexAttribute);
+    }
 
-		return false;
-	}
+    protected ComplexAttributeNode(ComplexAttributeNode other) {
+        super(other);
+    }
 
-	@Override
-	protected boolean isValidPredicate(AbstractNodePredicate candidate) {
-		if (candidate.getPredicateName() == ComparisonPredicateName.EQUAL_TO) {
-			EqualToPredicate predicate = (EqualToPredicate)candidate;
+    @Override
+    protected boolean isValidChild(AbstractPathElement candidate) {
+        if (candidate instanceof AbstractAttribute) {
+            for (AbstractAttribute attribute : pathElement.getType().getAttributes())
+                if (attribute == candidate)
+                    return true;
+        }
 
-			if (pathElement.getType().getAttributes().contains(predicate.getLeftOperand()))				
-				return predicate.getRightOperand().evaluatesToSchemaType(predicate.getLeftOperand().getType());
-		}
-		
-		else {
-			BinaryLogicalPredicate predicate = (BinaryLogicalPredicate)candidate;
-			if (isValidPredicate(predicate.getLeftOperand()))
-				return isValidPredicate(predicate.getRightOperand());			
-		}
+        return false;
+    }
 
-		return false;
-	}
+    @Override
+    protected boolean isValidPredicate(AbstractNodePredicate candidate) {
+        if (candidate.getPredicateName() == ComparisonPredicateName.EQUAL_TO) {
+            EqualToPredicate predicate = (EqualToPredicate) candidate;
 
-	@Override
-	protected ComplexAttributeNode copy() {
-		return new ComplexAttributeNode(this);
-	}
-	
+            if (pathElement.getType().getAttributes().contains(predicate.getLeftOperand()))
+                return predicate.getRightOperand().evaluatesToSchemaType(predicate.getLeftOperand().getType());
+        } else {
+            BinaryLogicalPredicate predicate = (BinaryLogicalPredicate) candidate;
+            if (isValidPredicate(predicate.getLeftOperand()))
+                return isValidPredicate(predicate.getRightOperand());
+        }
+
+        return false;
+    }
+
+    @Override
+    protected ComplexAttributeNode copy() {
+        return new ComplexAttributeNode(this);
+    }
+
 }

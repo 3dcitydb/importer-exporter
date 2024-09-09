@@ -31,29 +31,29 @@ import org.citydb.core.database.schema.mapping.SimpleType;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 
 public class LongLiteral extends AbstractLiteral<Long> {
-	
-	public LongLiteral(long value) {
-		super(value);
-	}
-	
-	@Override
-	public boolean evaluatesToSchemaType(SimpleType schemaType) {
-		switch (schemaType) {
-		case INTEGER:
-			return true;
-		default:
-			return false;
-		}
-	}
 
-	@Override
-	public PlaceHolder<?> convertToSQLPlaceHolder() {
-		return new PlaceHolder<>(value);
-	}
+    public LongLiteral(long value) {
+        super(value);
+    }
 
-	@Override
-	public LiteralType getLiteralType() {
-		return LiteralType.LONG;
-	}
-	
+    @Override
+    public boolean evaluatesToSchemaType(SimpleType schemaType) {
+        switch (schemaType) {
+            case INTEGER:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    @Override
+    public PlaceHolder<?> convertToSQLPlaceHolder() {
+        return new PlaceHolder<>(value);
+    }
+
+    @Override
+    public LiteralType getLiteralType() {
+        return LiteralType.LONG;
+    }
+
 }

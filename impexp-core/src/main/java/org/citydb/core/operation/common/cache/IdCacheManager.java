@@ -32,33 +32,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class IdCacheManager {
-	private final Map<IdCacheType, IdCache> cacheMap;
+    private final Map<IdCacheType, IdCache> cacheMap;
 
-	public IdCacheManager() {
-		cacheMap = new HashMap<>();
-	}
+    public IdCacheManager() {
+        cacheMap = new HashMap<>();
+    }
 
-	public void initCache(
-		IdCacheType cacheType,
-		IdCachingModel model,
-		int cacheSize,
-		float drainFactor,
-		int concurrencyLevel) {
+    public void initCache(
+            IdCacheType cacheType,
+            IdCachingModel model,
+            int cacheSize,
+            float drainFactor,
+            int concurrencyLevel) {
 
-		cacheMap.put(cacheType, new IdCache(
-				model,
-				cacheSize,
-				drainFactor,
-				concurrencyLevel
-		));
-	}
-	
-	public IdCache getCache(IdCacheType cacheType) {
-		return cacheMap.get(cacheType);
-	}
-	
-	public void shutdownAll() throws SQLException {
-		for (IdCache server : cacheMap.values())
-			server.shutdown();
-	}
+        cacheMap.put(cacheType, new IdCache(
+                model,
+                cacheSize,
+                drainFactor,
+                concurrencyLevel
+        ));
+    }
+
+    public IdCache getCache(IdCacheType cacheType) {
+        return cacheMap.get(cacheType);
+    }
+
+    public void shutdownAll() throws SQLException {
+        for (IdCache server : cacheMap.values())
+            server.shutdown();
+    }
 }

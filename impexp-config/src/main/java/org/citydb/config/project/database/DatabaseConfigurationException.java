@@ -28,55 +28,55 @@
 package org.citydb.config.project.database;
 
 public class DatabaseConfigurationException extends Exception {
-	private final ErrorCode errorCode;
+    private final ErrorCode errorCode;
 
-	public enum ErrorCode {
-		MISSING_DB_HOSTNAME,
-		MISSING_DB_USERNAME,
-		MISSING_DB_NAME,
-		MISSING_DB_PORT,
-		EMPTY_DB_SCHEMA,
-		INVALID_DB_WORKSPACE,
-		UNKNOWN
-	}
+    public enum ErrorCode {
+        MISSING_DB_HOSTNAME,
+        MISSING_DB_USERNAME,
+        MISSING_DB_NAME,
+        MISSING_DB_PORT,
+        EMPTY_DB_SCHEMA,
+        INVALID_DB_WORKSPACE,
+        UNKNOWN
+    }
 
-	public DatabaseConfigurationException(ErrorCode errorCode) {
-		super();
-		this.errorCode = errorCode;
-	}
+    public DatabaseConfigurationException(ErrorCode errorCode) {
+        super();
+        this.errorCode = errorCode;
+    }
 
-	public DatabaseConfigurationException(ErrorCode errorCode, String message) {
-		super(message);
-		this.errorCode = errorCode;
-	}
+    public DatabaseConfigurationException(ErrorCode errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+    }
 
-	public DatabaseConfigurationException(ErrorCode errorCode, String message, Throwable cause) {
-		super(message, cause);
-		this.errorCode = errorCode;
-	}
+    public DatabaseConfigurationException(ErrorCode errorCode, String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = errorCode;
+    }
 
-	public DatabaseConfigurationException(ErrorCode errorCode, Throwable cause) {
-		super(cause);
-		this.errorCode = errorCode;
-	}
+    public DatabaseConfigurationException(ErrorCode errorCode, Throwable cause) {
+        super(cause);
+        this.errorCode = errorCode;
+    }
 
-	public DatabaseConfigurationException() {
-		this(ErrorCode.UNKNOWN);
-	}
+    public DatabaseConfigurationException() {
+        this(ErrorCode.UNKNOWN);
+    }
 
-	public DatabaseConfigurationException(String message) {
-		this(ErrorCode.UNKNOWN, message);
-	}
+    public DatabaseConfigurationException(String message) {
+        this(ErrorCode.UNKNOWN, message);
+    }
 
-	public DatabaseConfigurationException(String message, Throwable cause) {
-		this(ErrorCode.UNKNOWN, message, cause);
-	}
+    public DatabaseConfigurationException(String message, Throwable cause) {
+        this(ErrorCode.UNKNOWN, message, cause);
+    }
 
-	public DatabaseConfigurationException(Throwable cause) {
-		this(ErrorCode.UNKNOWN, cause);
-	}
+    public DatabaseConfigurationException(Throwable cause) {
+        this(ErrorCode.UNKNOWN, cause);
+    }
 
-	public ErrorCode getErrorCode() {
-		return errorCode;
-	}
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
 }

@@ -28,7 +28,9 @@
 package org.citydb.core.ade.visExporter;
 
 public interface ADEVisExporter {
-	String getPointAndCurveQuery(int lod);
-	String getSurfaceGeometryQuery(int lod);
-	String getSurfaceGeometryRefIdsQuery(int lod);
+    String getPointAndCurveQuery(int lod);
+
+    String getSurfaceGeometryQuery(int lod);
+
+    String getSurfaceGeometryRefIdsQuery(int lod);
 }

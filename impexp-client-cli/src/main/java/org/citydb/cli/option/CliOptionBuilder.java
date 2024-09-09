@@ -146,7 +146,7 @@ public class CliOptionBuilder {
                     featureTypeFilter.addTypeName(new QName(namespace, parts[1]));
                 } else if (parts.length == 1) {
                     Stream.concat(CityGMLVersion.v2_0_0.getCityGMLModules().stream(),
-                            Modules.getADEModules().stream())
+                                    Modules.getADEModules().stream())
                             .filter(m -> m.hasFeature(parts[0]))
                             .forEach(m -> featureTypeFilter.addTypeName(new QName(m.getNamespaceURI(), parts[0])));
 

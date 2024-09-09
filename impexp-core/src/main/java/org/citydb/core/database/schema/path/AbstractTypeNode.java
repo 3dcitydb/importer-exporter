@@ -34,54 +34,52 @@ import org.citydb.core.database.schema.path.predicate.logical.BinaryLogicalPredi
 
 public abstract class AbstractTypeNode<T extends AbstractType<T>> extends AbstractNode<T> {
 
-	AbstractTypeNode(T objectType) {
-		super(objectType);
-	}
-	
-	AbstractTypeNode(AbstractTypeNode<T> other) {
-		super(other);
-	}
+    AbstractTypeNode(T objectType) {
+        super(objectType);
+    }
 
-	@Override
-	protected boolean isValidChild(AbstractPathElement candidate) {
-		if (candidate instanceof AbstractProperty)			
-			return pathElement.listProperties(false, true).contains(candidate);
+    AbstractTypeNode(AbstractTypeNode<T> other) {
+        super(other);
+    }
 
-		return false;
-	}
+    @Override
+    protected boolean isValidChild(AbstractPathElement candidate) {
+        if (candidate instanceof AbstractProperty)
+            return pathElement.listProperties(false, true).contains(candidate);
 
-	@Override
-	protected boolean isValidPredicate(AbstractNodePredicate candidate) {
-		if (candidate.getPredicateName() == ComparisonPredicateName.EQUAL_TO) {
-			EqualToPredicate predicate = (EqualToPredicate)candidate;
-			boolean found = false;
+        return false;
+    }
 
-			for (AbstractProperty property : pathElement.listProperties(false, true)) {
-				if (predicate.getLeftOperand() == property) {
-					found = true;
-					break;
-				}
+    @Override
+    protected boolean isValidPredicate(AbstractNodePredicate candidate) {
+        if (candidate.getPredicateName() == ComparisonPredicateName.EQUAL_TO) {
+            EqualToPredicate predicate = (EqualToPredicate) candidate;
+            boolean found = false;
 
-				if (predicate.getLeftOperand().getElementType() == PathElementType.SIMPLE_ATTRIBUTE && 
-						property.getElementType() == PathElementType.COMPLEX_ATTRIBUTE &&
-						((SimpleAttribute)predicate.getLeftOperand()).hasParentAttributeType() &&
-						((SimpleAttribute)predicate.getLeftOperand()).getParentAttributeType() == ((ComplexAttribute)property).getType()) {
-					found = true;
-					break;
-				}
-			}
+            for (AbstractProperty property : pathElement.listProperties(false, true)) {
+                if (predicate.getLeftOperand() == property) {
+                    found = true;
+                    break;
+                }
 
-			if (found)				
-				return predicate.getRightOperand().evaluatesToSchemaType(predicate.getLeftOperand().getType());
-		}
+                if (predicate.getLeftOperand().getElementType() == PathElementType.SIMPLE_ATTRIBUTE &&
+                        property.getElementType() == PathElementType.COMPLEX_ATTRIBUTE &&
+                        ((SimpleAttribute) predicate.getLeftOperand()).hasParentAttributeType() &&
+                        ((SimpleAttribute) predicate.getLeftOperand()).getParentAttributeType() == ((ComplexAttribute) property).getType()) {
+                    found = true;
+                    break;
+                }
+            }
 
-		else {
-			BinaryLogicalPredicate predicate = (BinaryLogicalPredicate)candidate;
-			if (isValidPredicate(predicate.getLeftOperand()))
-				return isValidPredicate(predicate.getRightOperand());			
-		}
+            if (found)
+                return predicate.getRightOperand().evaluatesToSchemaType(predicate.getLeftOperand().getType());
+        } else {
+            BinaryLogicalPredicate predicate = (BinaryLogicalPredicate) candidate;
+            if (isValidPredicate(predicate.getLeftOperand()))
+                return isValidPredicate(predicate.getRightOperand());
+        }
 
-		return false;
-	}
+        return false;
+    }
 
 }

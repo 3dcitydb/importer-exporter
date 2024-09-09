@@ -28,9 +28,9 @@
 package org.citydb.util.event.global;
 
 public enum CounterType {
-	TEXTURE_IMAGE,
-	GLOBAL_APPEARANCE,
-	TOPLEVEL_FEATURE,
-	FILE,
-	REMAINING_TILES
+    TEXTURE_IMAGE,
+    GLOBAL_APPEARANCE,
+    TOPLEVEL_FEATURE,
+    FILE,
+    REMAINING_TILES
 }

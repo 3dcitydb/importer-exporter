@@ -28,7 +28,7 @@
 package org.citydb.core.plugin.extension.config;
 
 public enum PluginConfigEvent {
-	RESET_DEFAULT_CONFIG,
-	PRE_SAVE_CONFIG,
-	RESET_GUI_VIEW
+    RESET_DEFAULT_CONFIG,
+    PRE_SAVE_CONFIG,
+    RESET_GUI_VIEW
 }

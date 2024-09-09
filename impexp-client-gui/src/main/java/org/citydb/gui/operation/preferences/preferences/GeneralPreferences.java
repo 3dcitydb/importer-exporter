@@ -33,22 +33,22 @@ import org.citydb.gui.plugin.util.DefaultPreferences;
 import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
 
 public class GeneralPreferences extends DefaultPreferences {
-	private final LoggingPanel loggingPanel;
-	
-	public GeneralPreferences(ImpExpGui mainView, Config config) {
-		super(new GeneralPreferencesEntry());
-		
-		loggingPanel = new LoggingPanel(mainView, config);
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new CachePanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new PathPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ProxyPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new APIKeysPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(loggingPanel));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new LanguagePanel(mainView, config)));
-	}
+    private final LoggingPanel loggingPanel;
 
-	public void setLogginSettings() {
-		loggingPanel.setSettings();
-	}
+    public GeneralPreferences(ImpExpGui mainView, Config config) {
+        super(new GeneralPreferencesEntry());
+
+        loggingPanel = new LoggingPanel(mainView, config);
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new CachePanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new PathPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new ProxyPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new APIKeysPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(loggingPanel));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new LanguagePanel(mainView, config)));
+    }
+
+    public void setLogginSettings() {
+        loggingPanel.setSettings();
+    }
 
 }

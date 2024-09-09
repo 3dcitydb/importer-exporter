@@ -37,64 +37,64 @@ import java.util.Locale;
 
 public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 
-	protected SchemaManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		super(databaseAdapter);
-	}
-	
-	@Override
-	public String getDefaultSchema() {
-		return formatSchema(databaseAdapter.getConnectionDetails().getUser());
-	}
-	
-	@Override
-	public boolean equalsDefaultSchema(String schema) {
-		schema = formatSchema(schema);
-		return schema == null || schema.isEmpty() || getDefaultSchema().equals(schema);
-	}
-	
-	@Override
-	public boolean existsSchema(Connection connection, String schema) {
-		if (schema == null)
-			throw new IllegalArgumentException("Schema name may not be null.");
+    protected SchemaManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
+        super(databaseAdapter);
+    }
 
-		schema = formatSchema(schema);
-		if (schema.isEmpty())
-			schema = getDefaultSchema();
-		
-		try (PreparedStatement stmt = connection.prepareStatement("select count(*) from all_users where username = ?")) {
-			stmt.setString(1, schema);
-			try (ResultSet rs = stmt.executeQuery()) {
-				return rs.next() && rs.getInt(1) > 0;
-			}
-		} catch (SQLException e) {
-			return false;
-		}
-	}
+    @Override
+    public String getDefaultSchema() {
+        return formatSchema(databaseAdapter.getConnectionDetails().getUser());
+    }
 
-	@Override
-	public List<String> fetchSchemasFromDatabase(Connection connection) throws SQLException {
-		try (Statement stmt = connection.createStatement();
-				ResultSet rs = stmt.executeQuery("select username from all_users order by username")) {
-			List<String> schemas = new ArrayList<>();
-			
-			while (rs.next()) {
-				String schema = rs.getString(1);
-				try (Statement check = connection.createStatement();
-						ResultSet checkRs = check.executeQuery("select 1 from " +
-								schema + ".database_srs where rownum = 1")) {
-					if (checkRs.next())
-						schemas.add(schema);
-				} catch (SQLException e) {
-					//
-				}
-			}
+    @Override
+    public boolean equalsDefaultSchema(String schema) {
+        schema = formatSchema(schema);
+        return schema == null || schema.isEmpty() || getDefaultSchema().equals(schema);
+    }
 
-			return schemas;
-		}
-	}
+    @Override
+    public boolean existsSchema(Connection connection, String schema) {
+        if (schema == null)
+            throw new IllegalArgumentException("Schema name may not be null.");
 
-	@Override
-	public String formatSchema(String schema) {
-		return schema != null ? schema.trim().toUpperCase(Locale.ROOT) : null;
-	}
+        schema = formatSchema(schema);
+        if (schema.isEmpty())
+            schema = getDefaultSchema();
+
+        try (PreparedStatement stmt = connection.prepareStatement("select count(*) from all_users where username = ?")) {
+            stmt.setString(1, schema);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public List<String> fetchSchemasFromDatabase(Connection connection) throws SQLException {
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery("select username from all_users order by username")) {
+            List<String> schemas = new ArrayList<>();
+
+            while (rs.next()) {
+                String schema = rs.getString(1);
+                try (Statement check = connection.createStatement();
+                     ResultSet checkRs = check.executeQuery("select 1 from " +
+                             schema + ".database_srs where rownum = 1")) {
+                    if (checkRs.next())
+                        schemas.add(schema);
+                } catch (SQLException e) {
+                    //
+                }
+            }
+
+            return schemas;
+        }
+    }
+
+    @Override
+    public String formatSchema(String schema) {
+        return schema != null ? schema.trim().toUpperCase(Locale.ROOT) : null;
+    }
 }

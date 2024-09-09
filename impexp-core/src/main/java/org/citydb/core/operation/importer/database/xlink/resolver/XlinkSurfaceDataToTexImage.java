@@ -34,43 +34,43 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class XlinkSurfaceDataToTexImage implements DBXlinkResolver {
-	private final DBXlinkResolverManager manager;
-	private final PreparedStatement psUpdate;
+    private final DBXlinkResolverManager manager;
+    private final PreparedStatement psUpdate;
 
-	private int batchCounter;
+    private int batchCounter;
 
-	public XlinkSurfaceDataToTexImage(Connection connection, DBXlinkResolverManager manager) throws SQLException {
-		this.manager = manager;
+    public XlinkSurfaceDataToTexImage(Connection connection, DBXlinkResolverManager manager) throws SQLException {
+        this.manager = manager;
 
-		String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
-		psUpdate = connection.prepareStatement("update " + schema + ".SURFACE_DATA set TEX_IMAGE_ID=? where ID=?");
-	}
+        String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+        psUpdate = connection.prepareStatement("update " + schema + ".SURFACE_DATA set TEX_IMAGE_ID=? where ID=?");
+    }
 
-	public boolean insert(DBXlinkSurfaceDataToTexImage xlink) throws SQLException {
-		psUpdate.setLong(1, xlink.getToId());
-		psUpdate.setLong(2, xlink.getFromId());
+    public boolean insert(DBXlinkSurfaceDataToTexImage xlink) throws SQLException {
+        psUpdate.setLong(1, xlink.getToId());
+        psUpdate.setLong(2, xlink.getFromId());
 
-		psUpdate.addBatch();
-		if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
-			manager.executeBatch(this);
+        psUpdate.addBatch();
+        if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
+            manager.executeBatch(this);
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psUpdate.executeBatch();
-		batchCounter = 0;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psUpdate.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psUpdate.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        psUpdate.close();
+    }
 
-	@Override
-	public DBXlinkResolverEnum getDBXlinkResolverType() {
-		return DBXlinkResolverEnum.SURFACE_DATA_TO_TEX_IMAGE;
-	}
+    @Override
+    public DBXlinkResolverEnum getDBXlinkResolverType() {
+        return DBXlinkResolverEnum.SURFACE_DATA_TO_TEX_IMAGE;
+    }
 
 }

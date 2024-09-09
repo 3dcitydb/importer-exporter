@@ -33,46 +33,46 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class GenericEvent extends Event {
-	private final String id;
-	private final Map<String, Object> properties;
+    private final String id;
+    private final Map<String, Object> properties;
 
-	public GenericEvent(String id, Map<String, Object> properties, Object channel) {
-		super(EventType.GENERIC_EVENT, channel);
-		this.id = id;
-		this.properties = properties != null ?
-				new HashMap<>(properties) :
-				new HashMap<>();
-	}
+    public GenericEvent(String id, Map<String, Object> properties, Object channel) {
+        super(EventType.GENERIC_EVENT, channel);
+        this.id = id;
+        this.properties = properties != null ?
+                new HashMap<>(properties) :
+                new HashMap<>();
+    }
 
-	public GenericEvent(String id, Map<String, Object> properties) {
-		this(id, properties, GLOBAL_CHANNEL);
-	}
+    public GenericEvent(String id, Map<String, Object> properties) {
+        this(id, properties, GLOBAL_CHANNEL);
+    }
 
-	public GenericEvent(String id) {
-		this(id, null, GLOBAL_CHANNEL);
-	}
+    public GenericEvent(String id) {
+        this(id, null, GLOBAL_CHANNEL);
+    }
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public boolean hasProperties() {
-		return !properties.isEmpty();
-	}
-	
-	public boolean isSetProperty(String key) {
-		return properties.containsKey(key);
-	}
+    public boolean hasProperties() {
+        return !properties.isEmpty();
+    }
 
-	public Map<String, Object> getProperties() {
-		return properties;
-	}
+    public boolean isSetProperty(String key) {
+        return properties.containsKey(key);
+    }
 
-	public Object getProperty(String key) {
-		return properties.get(key);
-	}
-	
-	public Object setProperty(String key, Object property) {
-		return properties.put(key, property);
-	}
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public Object getProperty(String key) {
+        return properties.get(key);
+    }
+
+    public Object setProperty(String key, Object property) {
+        return properties.put(key, property);
+    }
 }

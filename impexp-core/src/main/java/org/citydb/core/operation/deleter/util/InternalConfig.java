@@ -33,63 +33,63 @@ import org.citydb.config.project.global.UpdatingPersonMode;
 import java.time.OffsetDateTime;
 
 public class InternalConfig {
-	private UpdatingPersonMode updatingPersonMode;
-	private String updatingPerson;
-	private String reasonForUpdate;
-	private String lineage;
-	private OffsetDateTime terminationDate;
+    private UpdatingPersonMode updatingPersonMode;
+    private String updatingPerson;
+    private String reasonForUpdate;
+    private String lineage;
+    private OffsetDateTime terminationDate;
 
-	public UpdatingPersonMode getUpdatingPersonMode() {
-		return updatingPersonMode != null ? updatingPersonMode : UpdatingPersonMode.DATABASE;
-	}
+    public UpdatingPersonMode getUpdatingPersonMode() {
+        return updatingPersonMode != null ? updatingPersonMode : UpdatingPersonMode.DATABASE;
+    }
 
-	public void setUpdatingPersonMode(UpdatingPersonMode updatingPersonMode) {
-		this.updatingPersonMode = updatingPersonMode;
-	}
+    public void setUpdatingPersonMode(UpdatingPersonMode updatingPersonMode) {
+        this.updatingPersonMode = updatingPersonMode;
+    }
 
-	public String getUpdatingPerson() {
-		return updatingPerson;
-	}
+    public String getUpdatingPerson() {
+        return updatingPerson;
+    }
 
-	public void setUpdatingPerson(String updatingPerson) {
-		if (updatingPerson != null && !updatingPerson.trim().isEmpty()) {
-			this.updatingPerson = updatingPerson.trim();
-		}
-	}
+    public void setUpdatingPerson(String updatingPerson) {
+        if (updatingPerson != null && !updatingPerson.trim().isEmpty()) {
+            this.updatingPerson = updatingPerson.trim();
+        }
+    }
 
-	public String getReasonForUpdate() {
-		return reasonForUpdate;
-	}
+    public String getReasonForUpdate() {
+        return reasonForUpdate;
+    }
 
-	public void setReasonForUpdate(String reasonForUpdate) {
-		if (reasonForUpdate != null && !reasonForUpdate.trim().isEmpty()) {
-			this.reasonForUpdate = reasonForUpdate.trim();
-		}
-	}
+    public void setReasonForUpdate(String reasonForUpdate) {
+        if (reasonForUpdate != null && !reasonForUpdate.trim().isEmpty()) {
+            this.reasonForUpdate = reasonForUpdate.trim();
+        }
+    }
 
-	public String getLineage() {
-		return lineage;
-	}
+    public String getLineage() {
+        return lineage;
+    }
 
-	public void setLineage(String lineage) {
-		if (lineage != null && !lineage.trim().isEmpty()) {
-			this.lineage = lineage.trim();
-		}
-	}
+    public void setLineage(String lineage) {
+        if (lineage != null && !lineage.trim().isEmpty()) {
+            this.lineage = lineage.trim();
+        }
+    }
 
-	public OffsetDateTime getTerminationDate() {
-		return terminationDate;
-	}
+    public OffsetDateTime getTerminationDate() {
+        return terminationDate;
+    }
 
-	public void setTerminationDate(OffsetDateTime terminationDate) {
-		this.terminationDate = terminationDate;
-	}
+    public void setTerminationDate(OffsetDateTime terminationDate) {
+        this.terminationDate = terminationDate;
+    }
 
-	public void setMetadata(Continuation continuation) {
-		setUpdatingPersonMode(continuation.getUpdatingPersonMode());
-		setUpdatingPerson(continuation.getUpdatingPerson());
-		setReasonForUpdate(continuation.getReasonForUpdate());
-		setLineage(continuation.getLineage());
-		setTerminationDate(continuation.getTerminationDate());
-	}
+    public void setMetadata(Continuation continuation) {
+        setUpdatingPersonMode(continuation.getUpdatingPersonMode());
+        setUpdatingPerson(continuation.getUpdatingPerson());
+        setReasonForUpdate(continuation.getReasonForUpdate());
+        setLineage(continuation.getLineage());
+        setTerminationDate(continuation.getTerminationDate());
+    }
 }

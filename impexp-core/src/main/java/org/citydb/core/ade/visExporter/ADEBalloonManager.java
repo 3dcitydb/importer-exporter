@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 public interface ADEBalloonManager {
-	ADEBalloonHandler getBalloonHandler(int objectClassId) throws ADEBalloonException;
-	HashMap<String, Set<String>> getTablesAndColumns();
+    ADEBalloonHandler getBalloonHandler(int objectClassId) throws ADEBalloonException;
+
+    HashMap<String, Set<String>> getTablesAndColumns();
 }

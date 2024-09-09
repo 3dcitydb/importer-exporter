@@ -28,7 +28,7 @@
 package org.citydb.core.query.filter.selection.expression;
 
 public enum ExpressionName {
-	VALUE_REFERENCE,
-	LITERAL,
-	FUNCTION
+    VALUE_REFERENCE,
+    LITERAL,
+    FUNCTION
 }

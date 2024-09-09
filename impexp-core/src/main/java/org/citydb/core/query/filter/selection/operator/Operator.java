@@ -30,5 +30,5 @@ package org.citydb.core.query.filter.selection.operator;
 import org.citydb.core.query.filter.selection.Predicate;
 
 public interface Operator extends Predicate {
-	public OperatorName getOperatorName();
+    public OperatorName getOperatorName();
 }

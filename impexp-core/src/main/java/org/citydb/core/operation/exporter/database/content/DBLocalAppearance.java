@@ -48,100 +48,100 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class DBLocalAppearance extends AbstractAppearanceExporter {
-	private final PreparedStatement psBulk;
-	private final PreparedStatement psSelect;
-	private final Map<Long, AbstractCityObject> batches;
-	private final int batchSize;
+    private final PreparedStatement psBulk;
+    private final PreparedStatement psSelect;
+    private final Map<Long, AbstractCityObject> batches;
+    private final int batchSize;
 
-	private List<PlaceHolder<?>> themes;
+    private List<PlaceHolder<?>> themes;
 
-	public DBLocalAppearance(Connection connection, Query query, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
-		super(Mode.LOCAL, null, exporter, config);
-		batches = new LinkedHashMap<>();
-		batchSize = exporter.getFeatureBatchSize();
+    public DBLocalAppearance(Connection connection, Query query, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+        super(Mode.LOCAL, null, exporter, config);
+        batches = new LinkedHashMap<>();
+        batchSize = exporter.getFeatureBatchSize();
 
-		if (query.isSetAppearanceFilter()) {
-			try {
-				PredicateToken predicate = new AppearanceFilterBuilder(exporter.getDatabaseAdapter()).buildAppearanceFilter(query.getAppearanceFilter(), table.getColumn("theme"));
-				select.addSelection(predicate);
-				themes = new ArrayList<>();
-				predicate.getInvolvedPlaceHolders(themes);
-			} catch (QueryBuildException e) {
-				throw new CityGMLExportException("Failed to build appearance filter.", e);
-			}
-		}
+        if (query.isSetAppearanceFilter()) {
+            try {
+                PredicateToken predicate = new AppearanceFilterBuilder(exporter.getDatabaseAdapter()).buildAppearanceFilter(query.getAppearanceFilter(), table.getColumn("theme"));
+                select.addSelection(predicate);
+                themes = new ArrayList<>();
+                predicate.getInvolvedPlaceHolders(themes);
+            } catch (QueryBuildException e) {
+                throw new CityGMLExportException("Failed to build appearance filter.", e);
+            }
+        }
 
-		String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
-		psBulk = connection.prepareStatement(new Select(select)
-				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders))).toString());
+        String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
+        psBulk = connection.prepareStatement(new Select(select)
+                .addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders))).toString());
 
-		psSelect = connection.prepareStatement(new Select(select)
-				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>())).toString());
-	}
+        psSelect = connection.prepareStatement(new Select(select)
+                .addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>())).toString());
+    }
 
-	protected void addBatch(long appearanceId, AbstractCityObject cityObject) throws CityGMLExportException, SQLException {
-		batches.put(appearanceId, cityObject);
-		if (batches.size() == batchSize)
-			executeBatch();
-	}
+    protected void addBatch(long appearanceId, AbstractCityObject cityObject) throws CityGMLExportException, SQLException {
+        batches.put(appearanceId, cityObject);
+        if (batches.size() == batchSize)
+            executeBatch();
+    }
 
-	protected void executeBatch() throws CityGMLExportException, SQLException {
-		if (batches.isEmpty())
-			return;
+    protected void executeBatch() throws CityGMLExportException, SQLException {
+        if (batches.isEmpty())
+            return;
 
-		try {
-			if (batches.size() == 1) {
-				Map.Entry<Long, AbstractCityObject> entry = batches.entrySet().iterator().next();
-				Appearance appearance = doExport(entry.getKey());
-				if (appearance != null)
-					entry.getValue().addAppearance(new AppearanceProperty(appearance));
-			} else {
-				int i = 1;
-				if (themes != null) {
-					for (PlaceHolder<?> theme : themes)
-						psBulk.setString(i++, (String) theme.getValue());
-				}
+        try {
+            if (batches.size() == 1) {
+                Map.Entry<Long, AbstractCityObject> entry = batches.entrySet().iterator().next();
+                Appearance appearance = doExport(entry.getKey());
+                if (appearance != null)
+                    entry.getValue().addAppearance(new AppearanceProperty(appearance));
+            } else {
+                int i = 1;
+                if (themes != null) {
+                    for (PlaceHolder<?> theme : themes)
+                        psBulk.setString(i++, (String) theme.getValue());
+                }
 
-				Long[] ids = batches.keySet().toArray(new Long[0]);
-				for (int j = 0; j < batchSize; j++)
-					psBulk.setLong(i + j, j < ids.length ? ids[j] : 0);
+                Long[] ids = batches.keySet().toArray(new Long[0]);
+                for (int j = 0; j < batchSize; j++)
+                    psBulk.setLong(i + j, j < ids.length ? ids[j] : 0);
 
-				try (ResultSet rs = psBulk.executeQuery()) {
-					Map<Long, Appearance> appearances = doExport(rs);
-					for (Map.Entry<Long, Appearance> entry : appearances.entrySet()) {
-						AbstractCityObject cityObject = batches.get(entry.getKey());
-						if (cityObject == null) {
-							exporter.logOrThrowErrorMessage("Failed to assign appearance with id " + entry.getKey() + " to a city object.");
-							continue;
-						}
+                try (ResultSet rs = psBulk.executeQuery()) {
+                    Map<Long, Appearance> appearances = doExport(rs);
+                    for (Map.Entry<Long, Appearance> entry : appearances.entrySet()) {
+                        AbstractCityObject cityObject = batches.get(entry.getKey());
+                        if (cityObject == null) {
+                            exporter.logOrThrowErrorMessage("Failed to assign appearance with id " + entry.getKey() + " to a city object.");
+                            continue;
+                        }
 
-						cityObject.addAppearance(new AppearanceProperty(entry.getValue()));
-					}
-				}
-			}
-		} finally {
-			batches.clear();
-		}
-	}
+                        cityObject.addAppearance(new AppearanceProperty(entry.getValue()));
+                    }
+                }
+            }
+        } finally {
+            batches.clear();
+        }
+    }
 
-	protected Appearance doExport(long appearanceId) throws CityGMLExportException, SQLException {
-		int i = 1;
-		if (themes != null) {
-			for (PlaceHolder<?> theme : themes)
-				psSelect.setString(i++, (String) theme.getValue());
-		}
+    protected Appearance doExport(long appearanceId) throws CityGMLExportException, SQLException {
+        int i = 1;
+        if (themes != null) {
+            for (PlaceHolder<?> theme : themes)
+                psSelect.setString(i++, (String) theme.getValue());
+        }
 
-		psSelect.setLong(i, appearanceId);
+        psSelect.setLong(i, appearanceId);
 
-		try (ResultSet rs = psSelect.executeQuery()) {
-			Map<Long, Appearance> appearances = doExport(rs);
-			return !appearances.isEmpty() ? appearances.values().iterator().next() : null;
-		}
-	}
+        try (ResultSet rs = psSelect.executeQuery()) {
+            Map<Long, Appearance> appearances = doExport(rs);
+            return !appearances.isEmpty() ? appearances.values().iterator().next() : null;
+        }
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psBulk.close();
-		psSelect.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        psBulk.close();
+        psSelect.close();
+    }
 }

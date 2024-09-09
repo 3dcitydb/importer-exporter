@@ -35,49 +35,49 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBXlinkImporterTextureCoordList implements DBXlinkImporter {
-	private final DBXlinkImporterManager xlinkImporterManager;
-	
-	private Connection connection;
-	private PreparedStatement psXlink;
-	private int batchCounter;
+    private final DBXlinkImporterManager xlinkImporterManager;
 
-	public DBXlinkImporterTextureCoordList(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
-		this.xlinkImporterManager = xlinkImporterManager;
+    private Connection connection;
+    private PreparedStatement psXlink;
+    private int batchCounter;
 
-		connection = tempTable.getConnection();
-		psXlink = connection.prepareStatement("insert into " + tempTable.getTableName() + 
-			" (ID, GMLID, TEXPARAM_GMLID, TEXTURE_COORDINATES, TARGET_ID) values " +
-			"(?, ?, ?, ?, ?)");
-	}
+    public DBXlinkImporterTextureCoordList(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+        this.xlinkImporterManager = xlinkImporterManager;
 
-	public boolean insert(DBXlinkTextureCoordList xlinkEntry) throws SQLException {
-		psXlink.setLong(1, xlinkEntry.getId());
-		psXlink.setString(2, xlinkEntry.getGmlId());
-		psXlink.setString(3, xlinkEntry.getTexParamGmlId());
-		psXlink.setObject(4, xlinkImporterManager.getCacheAdapter().getGeometryConverter().getDatabaseObject(xlinkEntry.getTextureCoord(), connection));
-		psXlink.setLong(5, xlinkEntry.getTargetId());
+        connection = tempTable.getConnection();
+        psXlink = connection.prepareStatement("insert into " + tempTable.getTableName() +
+                " (ID, GMLID, TEXPARAM_GMLID, TEXTURE_COORDINATES, TARGET_ID) values " +
+                "(?, ?, ?, ?, ?)");
+    }
 
-		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
-			executeBatch();
+    public boolean insert(DBXlinkTextureCoordList xlinkEntry) throws SQLException {
+        psXlink.setLong(1, xlinkEntry.getId());
+        psXlink.setString(2, xlinkEntry.getGmlId());
+        psXlink.setString(3, xlinkEntry.getTexParamGmlId());
+        psXlink.setObject(4, xlinkImporterManager.getCacheAdapter().getGeometryConverter().getDatabaseObject(xlinkEntry.getTextureCoord(), connection));
+        psXlink.setLong(5, xlinkEntry.getTargetId());
 
-		return true;
-	}
+        psXlink.addBatch();
+        if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
+            executeBatch();
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psXlink.executeBatch();
-		batchCounter = 0;
-	}
+        return true;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psXlink.close();
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psXlink.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.XLINK_TEXTURE_COORD_LIST;
-	}
+    @Override
+    public void close() throws SQLException {
+        psXlink.close();
+    }
+
+    @Override
+    public DBXlinkImporterEnum getDBXlinkImporterType() {
+        return DBXlinkImporterEnum.XLINK_TEXTURE_COORD_LIST;
+    }
 
 }

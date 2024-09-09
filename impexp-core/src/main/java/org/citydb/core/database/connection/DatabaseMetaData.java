@@ -36,169 +36,169 @@ import java.util.Collections;
 import java.util.List;
 
 public class DatabaseMetaData {
-	private final Logger log = Logger.getInstance();
-	private final DatabaseConnectionDetails connectionDetails;
+    private final Logger log = Logger.getInstance();
+    private final DatabaseConnectionDetails connectionDetails;
 
-	private DatabaseVersion cityDBVersion;
-	private String databaseProductName;
-	private String databaseProductString;
-	private int databaseMajorVersion;
-	private int databaseMinorVersion;
-	private DatabaseSrs srs = DatabaseSrs.createDefaultSrs();
-	private Versioning versioning = Versioning.OFF;
-	private List<ADEMetadata> ades;
+    private DatabaseVersion cityDBVersion;
+    private String databaseProductName;
+    private String databaseProductString;
+    private int databaseMajorVersion;
+    private int databaseMinorVersion;
+    private DatabaseSrs srs = DatabaseSrs.createDefaultSrs();
+    private Versioning versioning = Versioning.OFF;
+    private List<ADEMetadata> ades;
 
-	public DatabaseMetaData(DatabaseConnectionDetails connectionDetails) {
-		this.connectionDetails = connectionDetails;
-	}
-	
-	public void reset() {
-		databaseProductName = null;
-		databaseProductString = null;
-		databaseMajorVersion = 0;
-		databaseMinorVersion = 0;
-		srs = DatabaseSrs.createDefaultSrs();
-		versioning = Versioning.OFF;
-		ades = null;
-	}
+    public DatabaseMetaData(DatabaseConnectionDetails connectionDetails) {
+        this.connectionDetails = connectionDetails;
+    }
 
-	public DatabaseVersion getCityDBVersion() {
-		return cityDBVersion;
-	}
-	
-	public void setCityDBVersion(DatabaseVersion cityDBVersion) {
-		this.cityDBVersion = cityDBVersion;
-	}
+    public void reset() {
+        databaseProductName = null;
+        databaseProductString = null;
+        databaseMajorVersion = 0;
+        databaseMinorVersion = 0;
+        srs = DatabaseSrs.createDefaultSrs();
+        versioning = Versioning.OFF;
+        ades = null;
+    }
 
-	public String getDatabaseProductName() {
-		return databaseProductName;
-	}
+    public DatabaseVersion getCityDBVersion() {
+        return cityDBVersion;
+    }
 
-	public void setDatabaseProductName(String databaseProductName) {
-		this.databaseProductName = databaseProductName;
-	}
+    public void setCityDBVersion(DatabaseVersion cityDBVersion) {
+        this.cityDBVersion = cityDBVersion;
+    }
 
-	public String getDatabaseProductVersion() {
-		return databaseProductString;
-	}
-	
-	public String getShortDatabaseProductVersion() {
-		return getDatabaseProductVersion().replaceAll("\\n.*", "");
-	}
+    public String getDatabaseProductName() {
+        return databaseProductName;
+    }
 
-	public void setDatabaseProductVersion(String databaseProductString) {
-		this.databaseProductString = databaseProductString;
-	}
+    public void setDatabaseProductName(String databaseProductName) {
+        this.databaseProductName = databaseProductName;
+    }
 
-	public int getDatabaseMajorVersion() {
-		return databaseMajorVersion;
-	}
+    public String getDatabaseProductVersion() {
+        return databaseProductString;
+    }
 
-	public void setDatabaseMajorVersion(int databaseMajorVersion) {
-		this.databaseMajorVersion = databaseMajorVersion;
-	}
+    public String getShortDatabaseProductVersion() {
+        return getDatabaseProductVersion().replaceAll("\\n.*", "");
+    }
 
-	public int getDatabaseMinorVersion() {
-		return databaseMinorVersion;
-	}
+    public void setDatabaseProductVersion(String databaseProductString) {
+        this.databaseProductString = databaseProductString;
+    }
 
-	public void setDatabaseMinorVersion(int databaseMinorVersion) {
-		this.databaseMinorVersion = databaseMinorVersion;
-	}
+    public int getDatabaseMajorVersion() {
+        return databaseMajorVersion;
+    }
 
-	public String getDatabaseProductString() {
-		return databaseProductString;
-	}
+    public void setDatabaseMajorVersion(int databaseMajorVersion) {
+        this.databaseMajorVersion = databaseMajorVersion;
+    }
 
-	public void setDatabaseProductString(String databaseProductString) {
-		this.databaseProductString = databaseProductString;
-	}
+    public int getDatabaseMinorVersion() {
+        return databaseMinorVersion;
+    }
 
-	public DatabaseSrs getReferenceSystem() {
-		return srs;
-	}
+    public void setDatabaseMinorVersion(int databaseMinorVersion) {
+        this.databaseMinorVersion = databaseMinorVersion;
+    }
 
-	public void setReferenceSystem(DatabaseSrs srs) {
-		this.srs = srs;
-	}
+    public String getDatabaseProductString() {
+        return databaseProductString;
+    }
 
-	public boolean isVersionEnabled() {
-		return versioning == Versioning.ON;
-	}
+    public void setDatabaseProductString(String databaseProductString) {
+        this.databaseProductString = databaseProductString;
+    }
 
-	public Versioning getVersioning() {
-		return versioning;
-	}
+    public DatabaseSrs getReferenceSystem() {
+        return srs;
+    }
 
-	public void setVersioning(Versioning versioning) {
-		this.versioning = versioning;
-	}
+    public void setReferenceSystem(DatabaseSrs srs) {
+        this.srs = srs;
+    }
 
-	public List<ADEMetadata> getRegisteredADEs() {
-		return ades != null ? new ArrayList<>(ades) : Collections.emptyList();
-	}
+    public boolean isVersionEnabled() {
+        return versioning == Versioning.ON;
+    }
 
-	public boolean hasRegisteredADEs() {
-		return ades != null && !ades.isEmpty();
-	}
-	
-	public void setRegisteredADEs(List<ADEMetadata> ades) {
-		this.ades = ades;
-	}
+    public Versioning getVersioning() {
+        return versioning;
+    }
 
-	public void printToConsole() {
+    public void setVersioning(Versioning versioning) {
+        this.versioning = versioning;
+    }
+
+    public List<ADEMetadata> getRegisteredADEs() {
+        return ades != null ? new ArrayList<>(ades) : Collections.emptyList();
+    }
+
+    public boolean hasRegisteredADEs() {
+        return ades != null && !ades.isEmpty();
+    }
+
+    public void setRegisteredADEs(List<ADEMetadata> ades) {
+        this.ades = ades;
+    }
+
+    public void printToConsole() {
         log.info("3D City Database: " + getCityDBVersion());
-		log.info("DBMS: " + getDatabaseProductName() + " " + getDatabaseProductVersion());
-		log.info("Connection: " + connectionDetails.toConnectString());
-		log.info("Schema: " + connectionDetails.getSchema());
-		log.info("SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
-		log.info("SRS: " + srs.getDatabaseSrsName());
-		log.info("gml:srsName: " + srs.getGMLSrsName());
+        log.info("DBMS: " + getDatabaseProductName() + " " + getDatabaseProductVersion());
+        log.info("Connection: " + connectionDetails.toConnectString());
+        log.info("Schema: " + connectionDetails.getSchema());
+        log.info("SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
+        log.info("SRS: " + srs.getDatabaseSrsName());
+        log.info("gml:srsName: " + srs.getGMLSrsName());
 
-		if (versioning != Versioning.NOT_SUPPORTED) {
-			log.info("Versioning: " + versioning);
-			if (versioning != Versioning.OFF && connectionDetails.isSetWorkspace()) {
-				log.info("Workspace: " + connectionDetails.getWorkspace());
-			}
-		}
+        if (versioning != Versioning.NOT_SUPPORTED) {
+            log.info("Versioning: " + versioning);
+            if (versioning != Versioning.OFF && connectionDetails.isSetWorkspace()) {
+                log.info("Workspace: " + connectionDetails.getWorkspace());
+            }
+        }
 
-		if (hasRegisteredADEs()) {
-			for (ADEMetadata ade : ades) {
-				if (ade.isSupported()) {
-					log.info("CityGML ADE: " + ade);
-				}
-			}
-		}
-	}
-	
-	public enum Versioning {
-		ON("On"),
-		OFF("Off"),
-		PARTLY("Partly"),
-		NOT_SUPPORTED("Not supported");
-		
-		private final String value;
-		
-		Versioning(String value) {
-			this.value = value;
-		}
-		
-		public String getValue() {
-			return value;
-		}
+        if (hasRegisteredADEs()) {
+            for (ADEMetadata ade : ades) {
+                if (ade.isSupported()) {
+                    log.info("CityGML ADE: " + ade);
+                }
+            }
+        }
+    }
 
-		public static Versioning fromValue(String value) {
-			for (Versioning versioning: Versioning.values()) {
-				if (versioning.value.equalsIgnoreCase(value)) {
-					return versioning;
-				}
-			}
+    public enum Versioning {
+        ON("On"),
+        OFF("Off"),
+        PARTLY("Partly"),
+        NOT_SUPPORTED("Not supported");
 
-			return NOT_SUPPORTED;
-		}
-		
-		public String toString() {
-			return value;
-		}
-	}
+        private final String value;
+
+        Versioning(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public static Versioning fromValue(String value) {
+            for (Versioning versioning : Versioning.values()) {
+                if (versioning.value.equalsIgnoreCase(value)) {
+                    return versioning;
+                }
+            }
+
+            return NOT_SUPPORTED;
+        }
+
+        public String toString() {
+            return value;
+        }
+    }
 }

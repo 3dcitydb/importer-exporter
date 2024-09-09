@@ -49,119 +49,121 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MenuBar extends JMenuBar implements EventHandler {
-	private final List<MenuExtension> menuExtensions;
+    private final List<MenuExtension> menuExtensions;
 
-	private final MenuFile file;
-	private final MenuView view;
-	private final MenuHelp help;
-	private JMenu extensions;
+    private final MenuFile file;
+    private final MenuView view;
+    private final MenuHelp help;
+    private JMenu extensions;
 
-	public MenuBar(ImpExpGui mainView, Config config) {
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PLUGIN_STATE, this);
-		
-		file = new MenuFile(mainView, config);
-		view = new MenuView(mainView, config);
-		help = new MenuHelp(mainView, config);
+    public MenuBar(ImpExpGui mainView, Config config) {
+        ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PLUGIN_STATE, this);
 
-		menuExtensions = new ArrayList<>();
-		for (MenuExtension extension : PluginManager.getInstance().getExternalPlugins(MenuExtension.class)) {
-			Menu menu = extension.getMenu();
-			if (menu == null || menu.getMenuComponent() == null) {
-				Logger.getInstance().error("Failed to get menu entry from plugin " + extension.getClass().getName() + ".");
-				continue;
-			}
+        file = new MenuFile(mainView, config);
+        view = new MenuView(mainView, config);
+        help = new MenuHelp(mainView, config);
 
-			menuExtensions.add(extension);
-		}
+        menuExtensions = new ArrayList<>();
+        for (MenuExtension extension : PluginManager.getInstance().getExternalPlugins(MenuExtension.class)) {
+            Menu menu = extension.getMenu();
+            if (menu == null || menu.getMenuComponent() == null) {
+                Logger.getInstance().error("Failed to get menu entry from plugin " + extension.getClass().getName() + ".");
+                continue;
+            }
 
-		buildMenu();
+            menuExtensions.add(extension);
+        }
 
-		view.addMenuListener(new MenuListener() {
-			@Override
-			public void menuSelected(MenuEvent e) {
-				view.update();
-			}
+        buildMenu();
 
-			@Override
-			public void menuDeselected(MenuEvent e) { }
+        view.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                view.update();
+            }
 
-			@Override
-			public void menuCanceled(MenuEvent e) { }
-		});
-	}
+            @Override
+            public void menuDeselected(MenuEvent e) {
+            }
 
-	private void buildMenu() {
-		if (getMenuCount() > 0) {
-			removeAll();
-		}
+            @Override
+            public void menuCanceled(MenuEvent e) {
+            }
+        });
+    }
 
-		add(file);
+    private void buildMenu() {
+        if (getMenuCount() > 0) {
+            removeAll();
+        }
 
-		extensions = null;
-		for (MenuExtension menuExtension : menuExtensions) {
-			if (((Plugin) menuExtension).isEnabled()) {
-				if (extensions == null) {
-					extensions = new JMenu();
-					extensions.setText(Language.I18N.getString("menu.plugins.label"));
-					GuiUtil.setMnemonic(extensions, "menu.plugins.label", "menu.plugins.label.mnemonic");
-				}
+        add(file);
 
-				extensions.add(menuExtension.getMenu().getMenuComponent());
-			}
-		}
+        extensions = null;
+        for (MenuExtension menuExtension : menuExtensions) {
+            if (((Plugin) menuExtension).isEnabled()) {
+                if (extensions == null) {
+                    extensions = new JMenu();
+                    extensions.setText(Language.I18N.getString("menu.plugins.label"));
+                    GuiUtil.setMnemonic(extensions, "menu.plugins.label", "menu.plugins.label.mnemonic");
+                }
 
-		if (extensions != null) {
-			add(extensions);
-			localizeExtensions();
-		}
+                extensions.add(menuExtension.getMenu().getMenuComponent());
+            }
+        }
 
-		add(view);
-		add(help);
-		revalidate();
-	}
+        if (extensions != null) {
+            add(extensions);
+            localizeExtensions();
+        }
 
-	public void switchLocale() {
-		file.setText(Language.I18N.getString("menu.file.label"));
-		view.setText(Language.I18N.getString("menu.view.label"));
-		help.setText(Language.I18N.getString("menu.help.label"));
+        add(view);
+        add(help);
+        revalidate();
+    }
 
-		GuiUtil.setMnemonic(file, "menu.file.label", "menu.file.label.mnemonic");
-		GuiUtil.setMnemonic(view, "menu.view.label", "menu.view.label.mnemonic");
-		GuiUtil.setMnemonic(help, "menu.help.label", "menu.help.label.mnemonic");
+    public void switchLocale() {
+        file.setText(Language.I18N.getString("menu.file.label"));
+        view.setText(Language.I18N.getString("menu.view.label"));
+        help.setText(Language.I18N.getString("menu.help.label"));
 
-		file.switchLocale();
-		view.switchLocale();
-		help.switchLocale();
+        GuiUtil.setMnemonic(file, "menu.file.label", "menu.file.label.mnemonic");
+        GuiUtil.setMnemonic(view, "menu.view.label", "menu.view.label.mnemonic");
+        GuiUtil.setMnemonic(help, "menu.help.label", "menu.help.label.mnemonic");
 
-		if (extensions != null) {
-			localizeExtensions();
-		}
-	}
+        file.switchLocale();
+        view.switchLocale();
+        help.switchLocale();
 
-	private void localizeExtensions() {
-		extensions.setText(Language.I18N.getString("menu.plugins.label"));
-		GuiUtil.setMnemonic(extensions, "menu.plugins.label", "menu.plugins.label.mnemonic");
+        if (extensions != null) {
+            localizeExtensions();
+        }
+    }
 
-		for (int i = 0; i < extensions.getMenuComponentCount(); i++) {
-			JMenu menu = (JMenu) extensions.getMenuComponent(i);
-			for (MenuExtension menuExtension : menuExtensions) {
-				if (menu == menuExtension.getMenu().getMenuComponent()) {
-					menu.setText(menuExtension.getMenu().getLocalizedTitle());
-					GuiUtil.setMnemonic(menu, menu.getText(), menuExtension.getMenu().getMnemonicIndex());
-					break;
-				}
-			}
-		}
-	}
+    private void localizeExtensions() {
+        extensions.setText(Language.I18N.getString("menu.plugins.label"));
+        GuiUtil.setMnemonic(extensions, "menu.plugins.label", "menu.plugins.label.mnemonic");
 
-	public void printInfo() {
-		help.printInfo();
-	}
+        for (int i = 0; i < extensions.getMenuComponentCount(); i++) {
+            JMenu menu = (JMenu) extensions.getMenuComponent(i);
+            for (MenuExtension menuExtension : menuExtensions) {
+                if (menu == menuExtension.getMenu().getMenuComponent()) {
+                    menu.setText(menuExtension.getMenu().getLocalizedTitle());
+                    GuiUtil.setMnemonic(menu, menu.getText(), menuExtension.getMenu().getMnemonicIndex());
+                    break;
+                }
+            }
+        }
+    }
 
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		if (((PluginStateEvent) event).getPlugins().stream().anyMatch(p -> p instanceof MenuExtension)) {
-			SwingUtilities.invokeLater(this::buildMenu);
-		}
-	}
+    public void printInfo() {
+        help.printInfo();
+    }
+
+    @Override
+    public void handleEvent(Event event) throws Exception {
+        if (((PluginStateEvent) event).getPlugins().stream().anyMatch(p -> p instanceof MenuExtension)) {
+            SwingUtilities.invokeLater(this::buildMenu);
+        }
+    }
 }

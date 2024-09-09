@@ -29,22 +29,22 @@
 package org.citydb.core.operation.exporter.writer;
 
 public class FeatureWriteException extends Exception {
-	private static final long serialVersionUID = 4539651915483540421L;
+    private static final long serialVersionUID = 4539651915483540421L;
 
-	public FeatureWriteException() {
-		super();
-	}
-	
-	public FeatureWriteException(String message) {
-		super(message);
-	}
-	
-	public FeatureWriteException(Throwable cause) {
-		super(cause);
-	}
-	
-	public FeatureWriteException(String message, Throwable cause) {
-		super(message, cause);
-	}
-	
+    public FeatureWriteException() {
+        super();
+    }
+
+    public FeatureWriteException(String message) {
+        super(message);
+    }
+
+    public FeatureWriteException(Throwable cause) {
+        super(cause);
+    }
+
+    public FeatureWriteException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

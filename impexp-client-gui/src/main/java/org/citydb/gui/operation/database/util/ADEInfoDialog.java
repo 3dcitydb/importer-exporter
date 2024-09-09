@@ -36,7 +36,6 @@ import org.citydb.core.database.schema.mapping.*;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.components.popup.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
-import org.citygml4j.builder.cityjson.extension.CityJSONExtension;
 import org.citygml4j.builder.cityjson.extension.CityJSONExtensionContext;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
@@ -68,8 +67,8 @@ public class ADEInfoDialog extends JDialog {
 
         List<FeatureType> featureTypes = adeSchema.listTopLevelFeatureTypes(true);
         JTextArea featureTypesText = createTextArea(featureTypes.stream()
-                        .map(FeatureType::toString)
-                        .collect(Collectors.joining("\n")), Math.min(featureTypes.size(), 5));
+                .map(FeatureType::toString)
+                .collect(Collectors.joining("\n")), Math.min(featureTypes.size(), 5));
 
         int lowerObjectClassId = Integer.MAX_VALUE;
         int upperObjectClassId = -Integer.MAX_VALUE;
@@ -100,7 +99,8 @@ public class ADEInfoDialog extends JDialog {
             cityGMLPanel.setLayout(new OverlayLayout(cityGMLPanel));
             {
                 JPanel glassPane = new JPanel();
-                glassPane.addMouseListener(new MouseAdapter() { });
+                glassPane.addMouseListener(new MouseAdapter() {
+                });
                 glassPane.setOpaque(false);
                 cityGMLPanel.add(glassPane);
 

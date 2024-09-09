@@ -43,158 +43,158 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class VisExportPreferences extends DefaultPreferences {
-	
-	public VisExportPreferences(ViewController viewController, Config config) {
-		super(new VisExportEntry());
 
-		DefaultPreferencesEntry renderingNode = new StylingPanel();
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.bridge.styling",
-				() -> config.getVisExportConfig().getBridgeStyles(),
-				true, true, true, true,
-				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingStylingPanel(config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.cityFurniture.styling",
-				() -> config.getVisExportConfig().getCityFurnitureStyles(),
-				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.cityObjectGroup.styling",
-				() -> config.getVisExportConfig().getReliefStyles(),
-				true, false, false, false, config)));
-		DefaultPreferencesEntry genericCityObjectRenderingNode = new EmptyPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.genericCityObject.styling"));
-		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.surfaceAndSolid.styling",
-				() -> config.getVisExportConfig().getGenericCityObjectStyles(),
-				config)));
-		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
-				() -> config.getVisExportConfig().getGenericCityObjectPointAndCurve(),
-				config)));
-		renderingNode.addChildEntry(genericCityObjectRenderingNode);
+    public VisExportPreferences(ViewController viewController, Config config) {
+        super(new VisExportEntry());
 
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.landUse.styling",
-				() -> config.getVisExportConfig().getLandUseStyles(),
-				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.relief.styling",
-				() -> config.getVisExportConfig().getReliefStyles(),
-				config)));
-		DefaultPreferencesEntry transportationComplexRenderingNode = new EmptyPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.transportation.styling"));
-		transportationComplexRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.surfaceAndSolid.styling",
-				() -> config.getVisExportConfig().getGenericCityObjectStyles(),
-				config)));
-		transportationComplexRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
-				() -> config.getVisExportConfig().getTransportationPointAndCurve(),
-				config)));
-		renderingNode.addChildEntry(transportationComplexRenderingNode);
+        DefaultPreferencesEntry renderingNode = new StylingPanel();
+        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.bridge.styling",
+                () -> config.getVisExportConfig().getBridgeStyles(),
+                true, true, true, true,
+                config)));
+        renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingStylingPanel(config)));
+        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.cityFurniture.styling",
+                () -> config.getVisExportConfig().getCityFurnitureStyles(),
+                config)));
+        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.cityObjectGroup.styling",
+                () -> config.getVisExportConfig().getReliefStyles(),
+                true, false, false, false, config)));
+        DefaultPreferencesEntry genericCityObjectRenderingNode = new EmptyPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.genericCityObject.styling"));
+        genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.surfaceAndSolid.styling",
+                () -> config.getVisExportConfig().getGenericCityObjectStyles(),
+                config)));
+        genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
+                () -> config.getVisExportConfig().getGenericCityObjectPointAndCurve(),
+                config)));
+        renderingNode.addChildEntry(genericCityObjectRenderingNode);
 
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.tunnel.styling",
-				() -> config.getVisExportConfig().getTunnelStyles(),
-				true, true, true, true,
-				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.vegetation.styling",
-				() -> config.getVisExportConfig().getVegetationStyles(),
-				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-				"pref.tree.visExport.waterBody.styling",
-				() -> config.getVisExportConfig().getWaterBodyStyles(),
-				config)));
+        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.landUse.styling",
+                () -> config.getVisExportConfig().getLandUseStyles(),
+                config)));
+        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.relief.styling",
+                () -> config.getVisExportConfig().getReliefStyles(),
+                config)));
+        DefaultPreferencesEntry transportationComplexRenderingNode = new EmptyPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.transportation.styling"));
+        transportationComplexRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.surfaceAndSolid.styling",
+                () -> config.getVisExportConfig().getGenericCityObjectStyles(),
+                config)));
+        transportationComplexRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
+                () -> config.getVisExportConfig().getTransportationPointAndCurve(),
+                config)));
+        renderingNode.addChildEntry(transportationComplexRenderingNode);
 
-		DefaultPreferencesEntry balloonNode = new BalloonPanel();
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.bridge.balloon"),
-				() -> config.getVisExportConfig().getBridgeBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.building.balloon"),
-				() -> config.getVisExportConfig().getBuildingBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.cityFurniture.balloon"),
-				() -> config.getVisExportConfig().getCityFurnitureBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.cityObjectGroup.balloon"),
-				() -> config.getVisExportConfig().getCityObjectGroupBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.genericCityObject.balloon"),
-				() -> config.getVisExportConfig().getGenericCityObject3DBalloon(),
-				() -> config.getVisExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon(),
-				() -> config.getVisExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.landUse.balloon"),
-				() -> config.getVisExportConfig().getLandUseBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.relief.balloon"),
-				() -> config.getVisExportConfig().getReliefBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.transportation.balloon"),
-				() -> config.getVisExportConfig().getTransportationBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.tunnel.balloon"),
-				() -> config.getVisExportConfig().getTunnelBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.vegetation.balloon"),
-				() -> config.getVisExportConfig().getVegetationBalloon(),
-				config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-				() -> Language.I18N.getString("pref.tree.visExport.waterBody.balloon"),
-				() -> config.getVisExportConfig().getWaterBodyBalloon(),
-				config)));
+        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.tunnel.styling",
+                () -> config.getVisExportConfig().getTunnelStyles(),
+                true, true, true, true,
+                config)));
+        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.vegetation.styling",
+                () -> config.getVisExportConfig().getVegetationStyles(),
+                config)));
+        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.waterBody.styling",
+                () -> config.getVisExportConfig().getWaterBodyStyles(),
+                config)));
 
-		// ADEs
-		List<ADEExtension> adeExtensions = ADEExtensionManager.getInstance().getExtensions().stream()
-				.filter(e -> e instanceof ADEVisExportExtension)
-				.collect(Collectors.toList());
-		
-		if (!adeExtensions.isEmpty()) {
-			ADEVisExportExtensionManager adeManager = ADEVisExportExtensionManager.getInstance();
+        DefaultPreferencesEntry balloonNode = new BalloonPanel();
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.bridge.balloon"),
+                () -> config.getVisExportConfig().getBridgeBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.building.balloon"),
+                () -> config.getVisExportConfig().getBuildingBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.cityFurniture.balloon"),
+                () -> config.getVisExportConfig().getCityFurnitureBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.cityObjectGroup.balloon"),
+                () -> config.getVisExportConfig().getCityObjectGroupBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.genericCityObject.balloon"),
+                () -> config.getVisExportConfig().getGenericCityObject3DBalloon(),
+                () -> config.getVisExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon(),
+                () -> config.getVisExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.landUse.balloon"),
+                () -> config.getVisExportConfig().getLandUseBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.relief.balloon"),
+                () -> config.getVisExportConfig().getReliefBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.transportation.balloon"),
+                () -> config.getVisExportConfig().getTransportationBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.tunnel.balloon"),
+                () -> config.getVisExportConfig().getTunnelBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.vegetation.balloon"),
+                () -> config.getVisExportConfig().getVegetationBalloon(),
+                config)));
+        balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.waterBody.balloon"),
+                () -> config.getVisExportConfig().getWaterBodyBalloon(),
+                config)));
 
-			for (ADEExtension adeExtension : adeExtensions) {
-				DefaultPreferencesEntry adeRenderingNode = new EmptyPanel(adeExtension.getMetadata()::getName);
-				DefaultPreferencesEntry adeBalloonNode = new EmptyPanel(adeExtension.getMetadata()::getName);
+        // ADEs
+        List<ADEExtension> adeExtensions = ADEExtensionManager.getInstance().getExtensions().stream()
+                .filter(e -> e instanceof ADEVisExportExtension)
+                .collect(Collectors.toList());
 
-				for (AppSchema schema : adeExtension.getSchemas()) {
-					for (FeatureType adeTopLevelFeatureType : schema.listTopLevelFeatureTypes(true)) {
-						DefaultPreferencesEntry adeFeatureRenderingNode = new EmptyPanel(adeTopLevelFeatureType::toString);
+        if (!adeExtensions.isEmpty()) {
+            ADEVisExportExtensionManager adeManager = ADEVisExportExtensionManager.getInstance();
 
-						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-								"pref.tree.visExport.surfaceAndSolid.styling",
-								() -> adeManager.getPreference(config, adeTopLevelFeatureType).getStyles(),
-								config)));
+            for (ADEExtension adeExtension : adeExtensions) {
+                DefaultPreferencesEntry adeRenderingNode = new EmptyPanel(adeExtension.getMetadata()::getName);
+                DefaultPreferencesEntry adeBalloonNode = new EmptyPanel(adeExtension.getMetadata()::getName);
 
-						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
-								() -> adeManager.getPreference(config, adeTopLevelFeatureType).getPointAndCurve(),
-								config)));
+                for (AppSchema schema : adeExtension.getSchemas()) {
+                    for (FeatureType adeTopLevelFeatureType : schema.listTopLevelFeatureTypes(true)) {
+                        DefaultPreferencesEntry adeFeatureRenderingNode = new EmptyPanel(adeTopLevelFeatureType::toString);
 
-						adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
-						adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
-								() -> adeManager.getPreference(config, adeTopLevelFeatureType).getTarget(),
-								() -> adeManager.getPreference(config, adeTopLevelFeatureType).getBalloon(),
-								config)));
-					}
-				}
+                        adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                                "pref.tree.visExport.surfaceAndSolid.styling",
+                                () -> adeManager.getPreference(config, adeTopLevelFeatureType).getStyles(),
+                                config)));
 
-				renderingNode.addChildEntry(adeRenderingNode);
-				balloonNode.addChildEntry(adeBalloonNode);
-			}
-		}
+                        adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
+                                () -> adeManager.getPreference(config, adeTopLevelFeatureType).getPointAndCurve(),
+                                config)));
 
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(viewController, config)));
-		rootEntry.addChildEntry(renderingNode);
-		rootEntry.addChildEntry(balloonNode);
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));
-	}
+                        adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
+                        adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+                                () -> adeManager.getPreference(config, adeTopLevelFeatureType).getTarget(),
+                                () -> adeManager.getPreference(config, adeTopLevelFeatureType).getBalloon(),
+                                config)));
+                    }
+                }
+
+                renderingNode.addChildEntry(adeRenderingNode);
+                balloonNode.addChildEntry(adeBalloonNode);
+            }
+        }
+
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(viewController, config)));
+        rootEntry.addChildEntry(renderingNode);
+        rootEntry.addChildEntry(balloonNode);
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));
+    }
 }

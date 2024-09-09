@@ -38,51 +38,51 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import java.sql.SQLException;
 
 public class SimpleBBOXFilter {
-	private BoundingBox bbox;
-	private SimpleBBOXMode mode;
+    private BoundingBox bbox;
+    private SimpleBBOXMode mode;
 
-	public SimpleBBOXFilter(SimpleBBOXOperator bboxOperator) throws FilterException {
-		if (bboxOperator == null || !bboxOperator.isSetExtent())
-			throw new FilterException("The bbox operator must not be null.");
+    public SimpleBBOXFilter(SimpleBBOXOperator bboxOperator) throws FilterException {
+        if (bboxOperator == null || !bboxOperator.isSetExtent())
+            throw new FilterException("The bbox operator must not be null.");
 
-		bbox = bboxOperator.getExtent();
-		this.mode = bboxOperator.getMode();
-	}
+        bbox = bboxOperator.getExtent();
+        this.mode = bboxOperator.getMode();
+    }
 
-	public void transform(DatabaseSrs targetSrs, AbstractDatabaseAdapter databaseAdapter) throws FilterException {
-		if (!targetSrs.isSupported())
-			throw new FilterException("The reference system " + targetSrs.getDescription() + " is not supported.");
+    public void transform(DatabaseSrs targetSrs, AbstractDatabaseAdapter databaseAdapter) throws FilterException {
+        if (!targetSrs.isSupported())
+            throw new FilterException("The reference system " + targetSrs.getDescription() + " is not supported.");
 
-		DatabaseSrs bboxSrs = bbox.isSetSrs() ? bbox.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
-		if (targetSrs.getSrid() == bboxSrs.getSrid())
-			return;
+        DatabaseSrs bboxSrs = bbox.isSetSrs() ? bbox.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
+        if (targetSrs.getSrid() == bboxSrs.getSrid())
+            return;
 
-		try {
-			bbox = databaseAdapter.getUtil().transform2D(bbox, bboxSrs, targetSrs);
-		} catch (SQLException e) {
-			throw new FilterException("Failed to transform bounding box to SRS " + targetSrs.getDescription() + ".", e);
-		}
-	}
+        try {
+            bbox = databaseAdapter.getUtil().transform2D(bbox, bboxSrs, targetSrs);
+        } catch (SQLException e) {
+            throw new FilterException("Failed to transform bounding box to SRS " + targetSrs.getDescription() + ".", e);
+        }
+    }
 
-	public boolean isSatisfiedBy(AbstractFeature feature) throws FilterException {
-		if (!feature.isSetBoundedBy() || !feature.getBoundedBy().isSetEnvelope())
-			return false;
+    public boolean isSatisfiedBy(AbstractFeature feature) throws FilterException {
+        if (!feature.isSetBoundedBy() || !feature.getBoundedBy().isSetEnvelope())
+            return false;
 
-		org.citygml4j.geometry.BoundingBox candidate = feature.getBoundedBy().getEnvelope().toBoundingBox();
-		if (candidate == null)
-			return false;
+        org.citygml4j.geometry.BoundingBox candidate = feature.getBoundedBy().getEnvelope().toBoundingBox();
+        if (candidate == null)
+            return false;
 
-		if (mode == SimpleBBOXMode.WITHIN) {
-			return (candidate.getLowerCorner().getX() >= bbox.getLowerCorner().getX() &&
-					candidate.getLowerCorner().getY() >= bbox.getLowerCorner().getY() &&
-					candidate.getUpperCorner().getX() <= bbox.getUpperCorner().getX() &&
-					candidate.getUpperCorner().getY() <= bbox.getUpperCorner().getY());
-		} else {
-			return !(candidate.getLowerCorner().getX() >= bbox.getUpperCorner().getX() ||
-					candidate.getLowerCorner().getY() >= bbox.getUpperCorner().getY() ||
-					candidate.getUpperCorner().getX() <= bbox.getLowerCorner().getX() ||
-					candidate.getUpperCorner().getY() <= bbox.getLowerCorner().getY());
-		}
-	}
+        if (mode == SimpleBBOXMode.WITHIN) {
+            return (candidate.getLowerCorner().getX() >= bbox.getLowerCorner().getX() &&
+                    candidate.getLowerCorner().getY() >= bbox.getLowerCorner().getY() &&
+                    candidate.getUpperCorner().getX() <= bbox.getUpperCorner().getX() &&
+                    candidate.getUpperCorner().getY() <= bbox.getUpperCorner().getY());
+        } else {
+            return !(candidate.getLowerCorner().getX() >= bbox.getUpperCorner().getX() ||
+                    candidate.getLowerCorner().getY() >= bbox.getUpperCorner().getY() ||
+                    candidate.getUpperCorner().getX() <= bbox.getLowerCorner().getX() ||
+                    candidate.getUpperCorner().getY() <= bbox.getLowerCorner().getY());
+        }
+    }
 
 }

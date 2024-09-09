@@ -42,157 +42,157 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 public class XlinkTexCoordList implements DBXlinkResolver {
-	private final Logger log = Logger.getInstance();
-	private final Connection connection;
-	private final DBXlinkResolverManager manager;
+    private final Logger log = Logger.getInstance();
+    private final Connection connection;
+    private final DBXlinkResolverManager manager;
 
-	private final PreparedStatement psSelectTexCoords;
-	private final PreparedStatement psSelectTexCoordsByGmlId;
-	private final PreparedStatement psSelectLinearRings;
-	private final PreparedStatement psTextureParam;
+    private final PreparedStatement psSelectTexCoords;
+    private final PreparedStatement psSelectTexCoordsByGmlId;
+    private final PreparedStatement psSelectLinearRings;
+    private final PreparedStatement psTextureParam;
 
-	private int batchCounter;
-	
-	public XlinkTexCoordList(Connection connection, CacheTable texCoords, CacheTable linearRings, DBXlinkResolverManager manager) throws SQLException {
-		this.connection = connection;
-		this.manager = manager;
-		String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+    private int batchCounter;
 
-		psSelectTexCoords = texCoords.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " +
-				texCoords.getTableName() + " where TARGET_ID=? and ID=?");
+    public XlinkTexCoordList(Connection connection, CacheTable texCoords, CacheTable linearRings, DBXlinkResolverManager manager) throws SQLException {
+        this.connection = connection;
+        this.manager = manager;
+        String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		psSelectTexCoordsByGmlId = texCoords.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " +
-				texCoords.getTableName() + " where GMLID=?");
+        psSelectTexCoords = texCoords.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " +
+                texCoords.getTableName() + " where TARGET_ID=? and ID=?");
 
-		psSelectLinearRings = linearRings.getConnection().prepareStatement("select GMLID, RING_NO from " +
-				linearRings.getTableName() + " where PARENT_ID = ?");
+        psSelectTexCoordsByGmlId = texCoords.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " +
+                texCoords.getTableName() + " where GMLID=?");
 
-		psTextureParam = connection.prepareStatement("insert into " + schema + ".TEXTUREPARAM (SURFACE_GEOMETRY_ID, " +
-				"IS_TEXTURE_PARAMETRIZATION, TEXTURE_COORDINATES, SURFACE_DATA_ID) " +
-				"values (?, 1, ?, ?)");
-	}
+        psSelectLinearRings = linearRings.getConnection().prepareStatement("select GMLID, RING_NO from " +
+                linearRings.getTableName() + " where PARENT_ID = ?");
 
-	public boolean insert(DBXlinkTextureCoordList xlink) throws SQLException {
-		// check whether we deal with a local gml:id
-		// remote gml:ids are not supported so far...
-		if (Util.isRemoteXlink(xlink.getGmlId()))
-			return false;
+        psTextureParam = connection.prepareStatement("insert into " + schema + ".TEXTUREPARAM (SURFACE_GEOMETRY_ID, " +
+                "IS_TEXTURE_PARAMETRIZATION, TEXTURE_COORDINATES, SURFACE_DATA_ID) " +
+                "values (?, 1, ?, ?)");
+    }
 
-		ResultSet rs = null;
+    public boolean insert(DBXlinkTextureCoordList xlink) throws SQLException {
+        // check whether we deal with a local gml:id
+        // remote gml:ids are not supported so far...
+        if (Util.isRemoteXlink(xlink.getGmlId()))
+            return false;
 
-		try {
-			// step 1: get linear rings
-			psSelectLinearRings.setLong(1, xlink.getSurfaceGeometryId());
-			rs = psSelectLinearRings.executeQuery();
+        ResultSet rs = null;
 
-			long surfaceGeometryId = xlink.getSurfaceGeometryId();
-			boolean reverse = xlink.isReverse();
+        try {
+            // step 1: get linear rings
+            psSelectLinearRings.setLong(1, xlink.getSurfaceGeometryId());
+            rs = psSelectLinearRings.executeQuery();
 
-			HashMap<String, Integer> ringNos = new HashMap<String, Integer>();
-			while (rs.next()) {
-				String ringId = rs.getString(1);
-				int ringNo = rs.getInt(2);
-				ringNos.put(ringId, ringNo);
-			}
+            long surfaceGeometryId = xlink.getSurfaceGeometryId();
+            boolean reverse = xlink.isReverse();
 
-			rs.close();
+            HashMap<String, Integer> ringNos = new HashMap<String, Integer>();
+            while (rs.next()) {
+                String ringId = rs.getString(1);
+                int ringNo = rs.getInt(2);
+                ringNos.put(ringId, ringNo);
+            }
 
-			if (surfaceGeometryId == 0)
-				return false;
+            rs.close();
 
-			// step 2: get texture coordinates
-			if (ringNos.size() == 1) {
-				psSelectTexCoordsByGmlId.setString(1, ringNos.keySet().iterator().next());
-				rs = psSelectTexCoordsByGmlId.executeQuery();
-			} else {			
-				psSelectTexCoords.setLong(1, xlink.getTargetId());
-				psSelectTexCoords.setLong(2, xlink.getId());
-				rs = psSelectTexCoords.executeQuery();
-			}
+            if (surfaceGeometryId == 0)
+                return false;
 
-			double[][] texCoords = new double[ringNos.size()][];
-			while (rs.next()) {
-				String ringId = rs.getString(1);
-				GeometryObject texCoord = manager.getCacheAdapter().getGeometryConverter().getPolygon(rs.getObject(2));
-				if (texCoord != null && ringNos.containsKey(ringId))
-					texCoords[ringNos.get(ringId)] = texCoord.getCoordinates(0);
-			}
+            // step 2: get texture coordinates
+            if (ringNos.size() == 1) {
+                psSelectTexCoordsByGmlId.setString(1, ringNos.keySet().iterator().next());
+                rs = psSelectTexCoordsByGmlId.executeQuery();
+            } else {
+                psSelectTexCoords.setLong(1, xlink.getTargetId());
+                psSelectTexCoords.setLong(2, xlink.getId());
+                rs = psSelectTexCoords.executeQuery();
+            }
 
-			rs.close();
+            double[][] texCoords = new double[ringNos.size()][];
+            while (rs.next()) {
+                String ringId = rs.getString(1);
+                GeometryObject texCoord = manager.getCacheAdapter().getGeometryConverter().getPolygon(rs.getObject(2));
+                if (texCoord != null && ringNos.containsKey(ringId))
+                    texCoords[ringNos.get(ringId)] = texCoord.getCoordinates(0);
+            }
 
-			// step 3: sanity check
-			for (int i = 0; i < texCoords.length; i++) {
-				if (texCoords[i] == null) {
-					for (Entry<String, Integer> entry : ringNos.entrySet()) {
-						if (entry.getValue() == i) {
-							log.warn("Missing texture coordinates for ring '" + entry.getValue() + "'.");
-							return false;
-						}
-					}
-				}
-			}
+            rs.close();
 
-			// step 4: reverse texture coordinates if required
-			if (reverse) {
-				for (int i = 0; i < texCoords.length; i++) {
-					double[] tmp = new double[texCoords[i].length];
-					for (int j = texCoords[i].length - 2, n = 0; j >= 0; j -=2) {
-						tmp[n++] = texCoords[i][j];
-						tmp[n++] = texCoords[i][j + 1];
-					}
+            // step 3: sanity check
+            for (int i = 0; i < texCoords.length; i++) {
+                if (texCoords[i] == null) {
+                    for (Entry<String, Integer> entry : ringNos.entrySet()) {
+                        if (entry.getValue() == i) {
+                            log.warn("Missing texture coordinates for ring '" + entry.getValue() + "'.");
+                            return false;
+                        }
+                    }
+                }
+            }
 
-					texCoords[i] = tmp;
-				}
-			}
+            // step 4: reverse texture coordinates if required
+            if (reverse) {
+                for (int i = 0; i < texCoords.length; i++) {
+                    double[] tmp = new double[texCoords[i].length];
+                    for (int j = texCoords[i].length - 2, n = 0; j >= 0; j -= 2) {
+                        tmp[n++] = texCoords[i][j];
+                        tmp[n++] = texCoords[i][j + 1];
+                    }
 
-			// step 5: update textureparam
-			psTextureParam.setLong(1, surfaceGeometryId);
-			psTextureParam.setObject(2, manager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(GeometryObject.createPolygon(texCoords, 2, 0), connection));
-			psTextureParam.setLong(3, xlink.getId());
+                    texCoords[i] = tmp;
+                }
+            }
 
-			psTextureParam.addBatch();
-			if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
-				executeBatch();
+            // step 5: update textureparam
+            psTextureParam.setLong(1, surfaceGeometryId);
+            psTextureParam.setObject(2, manager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(GeometryObject.createPolygon(texCoords, 2, 0), connection));
+            psTextureParam.setLong(3, xlink.getId());
 
-			if (xlink.getTexParamGmlId() != null) {
-				// make sure xlinks to the corresponding texture parameterization can be resolved
-				manager.propagateXlink(new DBXlinkTextureAssociationTarget(
-						xlink.getId(),
-						surfaceGeometryId,
-						xlink.getTexParamGmlId()));
-			}
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
+            psTextureParam.addBatch();
+            if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
+                executeBatch();
 
-				rs = null;
-			}
-		}
+            if (xlink.getTexParamGmlId() != null) {
+                // make sure xlinks to the corresponding texture parameterization can be resolved
+                manager.propagateXlink(new DBXlinkTextureAssociationTarget(
+                        xlink.getId(),
+                        surfaceGeometryId,
+                        xlink.getTexParamGmlId()));
+            }
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException sqlEx) {
+                    //
+                }
 
-		return true;
-	}
+                rs = null;
+            }
+        }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psTextureParam.executeBatch();
-		batchCounter = 0;
-	}
+        return true;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psSelectTexCoords.close();
-		psSelectTexCoordsByGmlId.close();
-		psSelectLinearRings.close();
-		psTextureParam.close();
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psTextureParam.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public DBXlinkResolverEnum getDBXlinkResolverType() {
-		return DBXlinkResolverEnum.TEXCOORDLIST;
-	}
+    @Override
+    public void close() throws SQLException {
+        psSelectTexCoords.close();
+        psSelectTexCoordsByGmlId.close();
+        psSelectLinearRings.close();
+        psTextureParam.close();
+    }
+
+    @Override
+    public DBXlinkResolverEnum getDBXlinkResolverType() {
+        return DBXlinkResolverEnum.TEXCOORDLIST;
+    }
 
 }

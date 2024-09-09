@@ -39,77 +39,77 @@ import java.util.Arrays;
 import java.util.Locale;
 
 public class CheckBoxGroupPopupMenu extends AbstractPopupMenu implements EventHandler {
-	private JMenuItem selectOthers;
-	private JMenuItem deselectOthers;
-	private JMenuItem selectAll;
-	private JMenuItem deselectAll;
-	private JMenuItem invert;
+    private JMenuItem selectOthers;
+    private JMenuItem deselectOthers;
+    private JMenuItem selectAll;
+    private JMenuItem deselectAll;
+    private JMenuItem invert;
 
-	private JCheckBox checkBox;
-	private JCheckBox[] group;
-	
-	public CheckBoxGroupPopupMenu() {
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
-	}
-	
-	public void init(JCheckBox checkBox, JCheckBox... group) {
-		this.checkBox = checkBox;
-		this.group = group;
+    private JCheckBox checkBox;
+    private JCheckBox[] group;
 
-		selectOthers = new JMenuItem();
-		deselectOthers = new JMenuItem();
-		selectAll = new JMenuItem();
-		deselectAll = new JMenuItem();
-		invert = new JMenuItem();
+    public CheckBoxGroupPopupMenu() {
+        ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
+    }
 
-		selectOthers.addActionListener(e -> setSelected(group, true, true));
-		deselectOthers.addActionListener(e -> setSelected(group, false, true));
-		selectAll.addActionListener(e -> setSelected(group, true, false));
-		deselectAll.addActionListener(e -> setSelected(group, false, false));
-		
-		invert.addActionListener(e -> {
-			for (JCheckBox member : group) {
-				member.setSelected(!member.isSelected());
-			}
-		});
-		
-		add(selectOthers);
-		add(deselectOthers);
-		addSeparator();		
-		add(selectAll);
-		add(deselectAll);
-		add(invert);
-	}
+    public void init(JCheckBox checkBox, JCheckBox... group) {
+        this.checkBox = checkBox;
+        this.group = group;
 
-	public void prepare() {
-		selectOthers.setEnabled(Arrays.stream(group).anyMatch(c -> c != checkBox && !c.isSelected()));
-		deselectOthers.setEnabled(Arrays.stream(group).anyMatch(c -> c != checkBox && c.isSelected()));
-		selectAll.setEnabled(Arrays.stream(group).anyMatch(c -> !c.isSelected()));
-		deselectAll.setEnabled(Arrays.stream(group).anyMatch(AbstractButton::isSelected));
-	}
+        selectOthers = new JMenuItem();
+        deselectOthers = new JMenuItem();
+        selectAll = new JMenuItem();
+        deselectAll = new JMenuItem();
+        invert = new JMenuItem();
 
-	private void setSelected(JCheckBox[] group, boolean selected, boolean skipSelf) {
-		for (JCheckBox member : group) {
-			if (skipSelf && member == checkBox) {
-				continue;
-			}
+        selectOthers.addActionListener(e -> setSelected(group, true, true));
+        deselectOthers.addActionListener(e -> setSelected(group, false, true));
+        selectAll.addActionListener(e -> setSelected(group, true, false));
+        deselectAll.addActionListener(e -> setSelected(group, false, false));
 
-			member.setSelected(selected);
-		}
-	}
-	
-	@Override
-	public void switchLocale(Locale locale) {
-		selectOthers.setText(Language.I18N.getString("common.popup.checkbox.selectOthers"));
-		deselectOthers.setText(Language.I18N.getString("common.popup.checkbox.deselectOthers"));
-		selectAll.setText(Language.I18N.getString("common.popup.checkbox.selectAll"));
-		deselectAll.setText(Language.I18N.getString("common.popup.checkbox.deselectAll"));
-		invert.setText(Language.I18N.getString("common.popup.checkbox.invert"));
-	}
+        invert.addActionListener(e -> {
+            for (JCheckBox member : group) {
+                member.setSelected(!member.isSelected());
+            }
+        });
 
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		switchLocale(((SwitchLocaleEvent) event).getLocale());
-	}
+        add(selectOthers);
+        add(deselectOthers);
+        addSeparator();
+        add(selectAll);
+        add(deselectAll);
+        add(invert);
+    }
+
+    public void prepare() {
+        selectOthers.setEnabled(Arrays.stream(group).anyMatch(c -> c != checkBox && !c.isSelected()));
+        deselectOthers.setEnabled(Arrays.stream(group).anyMatch(c -> c != checkBox && c.isSelected()));
+        selectAll.setEnabled(Arrays.stream(group).anyMatch(c -> !c.isSelected()));
+        deselectAll.setEnabled(Arrays.stream(group).anyMatch(AbstractButton::isSelected));
+    }
+
+    private void setSelected(JCheckBox[] group, boolean selected, boolean skipSelf) {
+        for (JCheckBox member : group) {
+            if (skipSelf && member == checkBox) {
+                continue;
+            }
+
+            member.setSelected(selected);
+        }
+    }
+
+    @Override
+    public void switchLocale(Locale locale) {
+        selectOthers.setText(Language.I18N.getString("common.popup.checkbox.selectOthers"));
+        deselectOthers.setText(Language.I18N.getString("common.popup.checkbox.deselectOthers"));
+        selectAll.setText(Language.I18N.getString("common.popup.checkbox.selectAll"));
+        deselectAll.setText(Language.I18N.getString("common.popup.checkbox.deselectAll"));
+        invert.setText(Language.I18N.getString("common.popup.checkbox.invert"));
+    }
+
+    @Override
+    public void handleEvent(Event event) throws Exception {
+        switchLocale(((SwitchLocaleEvent) event).getLocale());
+    }
 
 }

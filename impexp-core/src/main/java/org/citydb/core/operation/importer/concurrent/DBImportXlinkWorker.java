@@ -46,189 +46,189 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler {
-	private final ReentrantLock runLock = new ReentrantLock();
-	private volatile boolean shouldRun = true;
-	private volatile boolean shouldWork = true;
-	
-	private final DBXlinkImporterManager dbXlinkManager;
-	private final EventDispatcher eventDispatcher;
-	private int updateCounter = 0;
-	private int commitAfter;
+    private final ReentrantLock runLock = new ReentrantLock();
+    private volatile boolean shouldRun = true;
+    private volatile boolean shouldWork = true;
 
-	public DBImportXlinkWorker(CacheTableManager cacheTableManager, Config config, EventDispatcher eventDispatcher) {
-		this.eventDispatcher = eventDispatcher;
-		dbXlinkManager = new DBXlinkImporterManager(cacheTableManager, eventDispatcher);
+    private final DBXlinkImporterManager dbXlinkManager;
+    private final EventDispatcher eventDispatcher;
+    private int updateCounter = 0;
+    private int commitAfter;
 
-		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		DatabaseConfig databaseConfig = config.getDatabaseConfig();
+    public DBImportXlinkWorker(CacheTableManager cacheTableManager, Config config, EventDispatcher eventDispatcher) {
+        this.eventDispatcher = eventDispatcher;
+        dbXlinkManager = new DBXlinkImporterManager(cacheTableManager, eventDispatcher);
 
-		commitAfter = databaseConfig.getImportBatching().getTempBatchSize();
-		if (commitAfter > databaseAdapter.getMaxBatchSize())
-			commitAfter = databaseAdapter.getMaxBatchSize();
+        AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+        DatabaseConfig databaseConfig = config.getDatabaseConfig();
 
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-	}
+        commitAfter = databaseConfig.getImportBatching().getTempBatchSize();
+        if (commitAfter > databaseAdapter.getMaxBatchSize())
+            commitAfter = databaseAdapter.getMaxBatchSize();
 
-	@Override
-	public void interrupt() {
-		shouldRun = false;
-	}
+        eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+    }
 
-	@Override
-	public void run() {
-		if (firstWork != null) {
-			doWork(firstWork);
-			firstWork = null;
-		}
+    @Override
+    public void interrupt() {
+        shouldRun = false;
+    }
 
-		while (shouldRun) {
-			try {
-				DBXlink work = workQueue.take();
-				doWork(work);
-			} catch (InterruptedException ie) {
-				// re-check state
-			}
-		}
+    @Override
+    public void run() {
+        if (firstWork != null) {
+            doWork(firstWork);
+            firstWork = null;
+        }
 
-		try {
-			if (shouldWork)
-				dbXlinkManager.executeBatch();
-		} catch (Throwable e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
-		} finally {
-			try {
-				dbXlinkManager.close();
-			} catch (SQLException e) {
-				//
-			}
+        while (shouldRun) {
+            try {
+                DBXlink work = workQueue.take();
+                doWork(work);
+            } catch (InterruptedException ie) {
+                // re-check state
+            }
+        }
 
-			eventDispatcher.removeEventHandler(this);
-		}
-	}
+        try {
+            if (shouldWork)
+                dbXlinkManager.executeBatch();
+        } catch (Throwable e) {
+            eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
+        } finally {
+            try {
+                dbXlinkManager.close();
+            } catch (SQLException e) {
+                //
+            }
 
-	private void doWork(DBXlink work) {
-		final ReentrantLock runLock = this.runLock;
-		runLock.lock();
+            eventDispatcher.removeEventHandler(this);
+        }
+    }
 
-		try {
-			if (!shouldWork)
-				return;
-			
-			boolean success = false;
+    private void doWork(DBXlink work) {
+        final ReentrantLock runLock = this.runLock;
+        runLock.lock();
 
-			switch (work.getXlinkType()) {
-			case SURFACE_GEOMETRY:
-				DBXlinkSurfaceGeometry xlinkSurfaceGeometry = (DBXlinkSurfaceGeometry)work;
-				DBXlinkImporterSurfaceGeometry dbSurfaceGeometry = (DBXlinkImporterSurfaceGeometry)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SURFACE_GEOMETRY);
-				if (dbSurfaceGeometry != null)
-					success = dbSurfaceGeometry.insert(xlinkSurfaceGeometry);
+        try {
+            if (!shouldWork)
+                return;
 
-				break;
-			case LINEAR_RING:
-				DBXlinkLinearRing xlinkLinearRing = (DBXlinkLinearRing)work;
-				DBXlinkImporterLinearRing dbLinearRing = (DBXlinkImporterLinearRing)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.LINEAR_RING);
-				if (dbLinearRing != null)
-					success = dbLinearRing.insert(xlinkLinearRing);
+            boolean success = false;
 
-				break;
-			case BASIC:
-				DBXlinkBasic xlinkBasic = (DBXlinkBasic)work;
-				DBXlinkImporterBasic dbBasic = (DBXlinkImporterBasic)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_BASIC);
-				if (dbBasic != null)
-					success = dbBasic.insert(xlinkBasic);
+            switch (work.getXlinkType()) {
+                case SURFACE_GEOMETRY:
+                    DBXlinkSurfaceGeometry xlinkSurfaceGeometry = (DBXlinkSurfaceGeometry) work;
+                    DBXlinkImporterSurfaceGeometry dbSurfaceGeometry = (DBXlinkImporterSurfaceGeometry) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SURFACE_GEOMETRY);
+                    if (dbSurfaceGeometry != null)
+                        success = dbSurfaceGeometry.insert(xlinkSurfaceGeometry);
 
-				break;
-			case TEXTURE_COORD_LIST:
-				DBXlinkTextureCoordList xlinkTexCoord = (DBXlinkTextureCoordList)work;
-				DBXlinkImporterTextureCoordList dbTexCoord = (DBXlinkImporterTextureCoordList)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTURE_COORD_LIST);
-				if (dbTexCoord != null)
-					success = dbTexCoord.insert(xlinkTexCoord);
+                    break;
+                case LINEAR_RING:
+                    DBXlinkLinearRing xlinkLinearRing = (DBXlinkLinearRing) work;
+                    DBXlinkImporterLinearRing dbLinearRing = (DBXlinkImporterLinearRing) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.LINEAR_RING);
+                    if (dbLinearRing != null)
+                        success = dbLinearRing.insert(xlinkLinearRing);
 
-				break;
-			case TEXTUREPARAM:
-				DBXlinkTextureParam xlinkAppearance = (DBXlinkTextureParam)work;
-				DBXlinkImporterTextureParam dbAppearance = (DBXlinkImporterTextureParam)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTUREPARAM);
-				if (dbAppearance != null)
-					success = dbAppearance.insert(xlinkAppearance);
+                    break;
+                case BASIC:
+                    DBXlinkBasic xlinkBasic = (DBXlinkBasic) work;
+                    DBXlinkImporterBasic dbBasic = (DBXlinkImporterBasic) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_BASIC);
+                    if (dbBasic != null)
+                        success = dbBasic.insert(xlinkBasic);
 
-				break;
-			case TEXTUREASSOCIATION:
-				DBXlinkTextureAssociation xlinkTextureAss = (DBXlinkTextureAssociation)work;
-				DBXlinkImporterTextureAssociation dbTexAss = (DBXlinkImporterTextureAssociation)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTUREASSOCIATION);
-				if (dbTexAss != null)
-					success = dbTexAss.insert(xlinkTextureAss);
+                    break;
+                case TEXTURE_COORD_LIST:
+                    DBXlinkTextureCoordList xlinkTexCoord = (DBXlinkTextureCoordList) work;
+                    DBXlinkImporterTextureCoordList dbTexCoord = (DBXlinkImporterTextureCoordList) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTURE_COORD_LIST);
+                    if (dbTexCoord != null)
+                        success = dbTexCoord.insert(xlinkTexCoord);
 
-				break;
-			case TEXTUREASSOCIATION_TARGET:
-				DBXlinkTextureAssociationTarget xlinkTextureAssTarget = (DBXlinkTextureAssociationTarget)work;
-				DBXlinkImporterTextureAssociationTarget dbTexAssTarget = (DBXlinkImporterTextureAssociationTarget)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.TEXTUREASSOCIATION_TARGET);
-				if (dbTexAssTarget != null)
-					success = dbTexAssTarget.insert(xlinkTextureAssTarget);
+                    break;
+                case TEXTUREPARAM:
+                    DBXlinkTextureParam xlinkAppearance = (DBXlinkTextureParam) work;
+                    DBXlinkImporterTextureParam dbAppearance = (DBXlinkImporterTextureParam) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTUREPARAM);
+                    if (dbAppearance != null)
+                        success = dbAppearance.insert(xlinkAppearance);
 
-				break;
-			case TEXTURE_FILE:
-				DBXlinkTextureFile xlinkFile = (DBXlinkTextureFile)work;
-				DBXlinkImporterTextureFile dbFile = (DBXlinkImporterTextureFile)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.TEXTURE_FILE);
-				if (dbFile != null)
-					success = dbFile.insert(xlinkFile);
+                    break;
+                case TEXTUREASSOCIATION:
+                    DBXlinkTextureAssociation xlinkTextureAss = (DBXlinkTextureAssociation) work;
+                    DBXlinkImporterTextureAssociation dbTexAss = (DBXlinkImporterTextureAssociation) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTUREASSOCIATION);
+                    if (dbTexAss != null)
+                        success = dbTexAss.insert(xlinkTextureAss);
 
-				break;
-			case SURFACE_DATA_TO_TEX_IMAGE:
-				DBXlinkSurfaceDataToTexImage xlinkSurfData = (DBXlinkSurfaceDataToTexImage)work;
-				DBXlinkImporterSurfaceDataToTexImage dbSurfData = (DBXlinkImporterSurfaceDataToTexImage)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SURFACE_DATA_TO_TEX_IMAGE);
-				if (dbSurfData != null)
-					success = dbSurfData.insert(xlinkSurfData);
+                    break;
+                case TEXTUREASSOCIATION_TARGET:
+                    DBXlinkTextureAssociationTarget xlinkTextureAssTarget = (DBXlinkTextureAssociationTarget) work;
+                    DBXlinkImporterTextureAssociationTarget dbTexAssTarget = (DBXlinkImporterTextureAssociationTarget) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.TEXTUREASSOCIATION_TARGET);
+                    if (dbTexAssTarget != null)
+                        success = dbTexAssTarget.insert(xlinkTextureAssTarget);
 
-				break;
-			case LIBRARY_OBJECT:
-				DBXlinkLibraryObject xlinkLibraryObject = (DBXlinkLibraryObject)work;
-				DBXlinkImporterLibraryObject dbLibraryObject = (DBXlinkImporterLibraryObject)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.LIBRARY_OBJECT);
-				if (dbLibraryObject != null)
-					success = dbLibraryObject.insert(xlinkLibraryObject);
+                    break;
+                case TEXTURE_FILE:
+                    DBXlinkTextureFile xlinkFile = (DBXlinkTextureFile) work;
+                    DBXlinkImporterTextureFile dbFile = (DBXlinkImporterTextureFile) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.TEXTURE_FILE);
+                    if (dbFile != null)
+                        success = dbFile.insert(xlinkFile);
 
-				break;
-			case DEPRECATED_MATERIAL:
-				DBXlinkDeprecatedMaterial xlinkDeprecatedMaterial = (DBXlinkDeprecatedMaterial)work;
-				DBXlinkImporterDeprecatedMaterial dbDeprectatedMaterial = (DBXlinkImporterDeprecatedMaterial)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_DEPRECATED_MATERIAL);
-				if (dbDeprectatedMaterial != null)
-					success = dbDeprectatedMaterial.insert(xlinkDeprecatedMaterial);
+                    break;
+                case SURFACE_DATA_TO_TEX_IMAGE:
+                    DBXlinkSurfaceDataToTexImage xlinkSurfData = (DBXlinkSurfaceDataToTexImage) work;
+                    DBXlinkImporterSurfaceDataToTexImage dbSurfData = (DBXlinkImporterSurfaceDataToTexImage) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SURFACE_DATA_TO_TEX_IMAGE);
+                    if (dbSurfData != null)
+                        success = dbSurfData.insert(xlinkSurfData);
 
-				break;
-			case GROUP_TO_CITYOBJECT:
-				DBXlinkGroupToCityObject xlinkGroupToCityObject = (DBXlinkGroupToCityObject)work;
-				DBXlinkImporterGroupToCityObject dbGroup = (DBXlinkImporterGroupToCityObject)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.GROUP_TO_CITYOBJECT);
-				if (dbGroup != null)
-					success = dbGroup.insert(xlinkGroupToCityObject);
+                    break;
+                case LIBRARY_OBJECT:
+                    DBXlinkLibraryObject xlinkLibraryObject = (DBXlinkLibraryObject) work;
+                    DBXlinkImporterLibraryObject dbLibraryObject = (DBXlinkImporterLibraryObject) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.LIBRARY_OBJECT);
+                    if (dbLibraryObject != null)
+                        success = dbLibraryObject.insert(xlinkLibraryObject);
 
-				break;
-			case SOLID_GEOMETRY:
-				DBXlinkSolidGeometry xlinkSolidGeometry = (DBXlinkSolidGeometry)work;
-				DBXlinkImporterSolidGeometry solidGeometry = (DBXlinkImporterSolidGeometry)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SOLID_GEOMETRY);
-				if (solidGeometry != null)
-					success = solidGeometry.insert(xlinkSolidGeometry);
+                    break;
+                case DEPRECATED_MATERIAL:
+                    DBXlinkDeprecatedMaterial xlinkDeprecatedMaterial = (DBXlinkDeprecatedMaterial) work;
+                    DBXlinkImporterDeprecatedMaterial dbDeprectatedMaterial = (DBXlinkImporterDeprecatedMaterial) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_DEPRECATED_MATERIAL);
+                    if (dbDeprectatedMaterial != null)
+                        success = dbDeprectatedMaterial.insert(xlinkDeprecatedMaterial);
 
-				break;
-			}
+                    break;
+                case GROUP_TO_CITYOBJECT:
+                    DBXlinkGroupToCityObject xlinkGroupToCityObject = (DBXlinkGroupToCityObject) work;
+                    DBXlinkImporterGroupToCityObject dbGroup = (DBXlinkImporterGroupToCityObject) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.GROUP_TO_CITYOBJECT);
+                    if (dbGroup != null)
+                        success = dbGroup.insert(xlinkGroupToCityObject);
 
-			if (success)
-				updateCounter++;
+                    break;
+                case SOLID_GEOMETRY:
+                    DBXlinkSolidGeometry xlinkSolidGeometry = (DBXlinkSolidGeometry) work;
+                    DBXlinkImporterSolidGeometry solidGeometry = (DBXlinkImporterSolidGeometry) dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SOLID_GEOMETRY);
+                    if (solidGeometry != null)
+                        success = solidGeometry.insert(xlinkSolidGeometry);
 
-			if (updateCounter == commitAfter) {
-				dbXlinkManager.executeBatch();
-				updateCounter = 0;
-			}
+                    break;
+            }
 
-		} catch (Throwable e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
-		} finally {
-			runLock.unlock();
-		}
-	}
+            if (success)
+                updateCounter++;
 
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		if (event.getChannel() == eventChannel)
-			shouldWork = false;
-	}
+            if (updateCounter == commitAfter) {
+                dbXlinkManager.executeBatch();
+                updateCounter = 0;
+            }
+
+        } catch (Throwable e) {
+            eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
+        } finally {
+            runLock.unlock();
+        }
+    }
+
+    @Override
+    public void handleEvent(Event event) throws Exception {
+        if (event.getChannel() == eventChannel)
+            shouldWork = false;
+    }
 
 }

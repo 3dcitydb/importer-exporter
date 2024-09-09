@@ -31,123 +31,123 @@ import org.citydb.config.project.exporter.AddressMode;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
 import org.citygml4j.model.xal.AddressDetails;
 
-public class AddressObject {	
-	private final AddressExportFactory factory;
-	
-	protected String gmlId;
-	protected String street;
-	protected String houseNumber;
-	protected String poBox;
-	protected String zipCode;
-	protected String city;
-	protected String state;
-	protected String country;
-	protected MultiPointProperty multiPointProperty;
-	protected AddressDetails addressDetails;
+public class AddressObject {
+    private final AddressExportFactory factory;
 
-	protected AddressObject(AddressExportFactory factory) {
-		this.factory = factory;
-	}
-	
-	public String getGmlId() {
-		return gmlId;
-	}
+    protected String gmlId;
+    protected String street;
+    protected String houseNumber;
+    protected String poBox;
+    protected String zipCode;
+    protected String city;
+    protected String state;
+    protected String country;
+    protected MultiPointProperty multiPointProperty;
+    protected AddressDetails addressDetails;
 
-	public void setGmlId(String gmlId) {
-		this.gmlId = gmlId;
-	}
+    protected AddressObject(AddressExportFactory factory) {
+        this.factory = factory;
+    }
 
-	public String getStreet() {
-		return street;
-	}
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public void setStreet(String street) {
-		this.street = street;
-	}
+    public void setGmlId(String gmlId) {
+        this.gmlId = gmlId;
+    }
 
-	public String getCity() {
-		return city;
-	}
+    public String getStreet() {
+        return street;
+    }
 
-	public void setCity(String city) {
-		this.city = city;
-	}
+    public void setStreet(String street) {
+        this.street = street;
+    }
 
-	public String getHouseNumber() {
-		return houseNumber;
-	}
+    public String getCity() {
+        return city;
+    }
 
-	public void setHouseNumber(String houseNumber) {
-		this.houseNumber = houseNumber;
-	}
+    public void setCity(String city) {
+        this.city = city;
+    }
 
-	public String getPOBox() {
-		return poBox;
-	}
+    public String getHouseNumber() {
+        return houseNumber;
+    }
 
-	public void setPOBox(String poBox) {
-		this.poBox = poBox;
-	}
+    public void setHouseNumber(String houseNumber) {
+        this.houseNumber = houseNumber;
+    }
 
-	public String getZipCode() {
-		return zipCode;
-	}
+    public String getPOBox() {
+        return poBox;
+    }
 
-	public void setZipCode(String zipCode) {
-		this.zipCode = zipCode;
-	}
+    public void setPOBox(String poBox) {
+        this.poBox = poBox;
+    }
 
-	public String getState() {
-		return state;
-	}
+    public String getZipCode() {
+        return zipCode;
+    }
 
-	public void setState(String state) {
-		this.state = state;
-	}
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+    }
 
-	public String getCountry() {
-		return country;
-	}
+    public String getState() {
+        return state;
+    }
 
-	public void setCountry(String country) {
-		this.country = country;
-	}
+    public void setState(String state) {
+        this.state = state;
+    }
 
-	public MultiPointProperty getMultiPointProperty() {
-		return multiPointProperty;
-	}
+    public String getCountry() {
+        return country;
+    }
 
-	public void setMultiPointProperty(MultiPointProperty multiPointProperty) {
-		this.multiPointProperty = multiPointProperty;
-	}
+    public void setCountry(String country) {
+        this.country = country;
+    }
 
-	public AddressDetails getAddressDetails() {
-		return addressDetails;
-	}
+    public MultiPointProperty getMultiPointProperty() {
+        return multiPointProperty;
+    }
 
-	public void setAddressDetails(AddressDetails addressDetails) {
-		this.addressDetails = addressDetails;
-	}
-	
-	public boolean canCreate() {
-		boolean canCreate = canCreate(factory.primary);
-		if (!canCreate && factory.useFallback)
-			canCreate = canCreate(factory.fallback);
-		
-		return canCreate;
-	}
-	
-	public boolean canCreate(AddressMode mode) {
-		switch (mode) {
-		case DB:
-			return street != null || houseNumber != null || poBox != null || 
-			zipCode != null || city != null || state != null || 
-			country != null;
-		case XAL:
-			return addressDetails != null;
-		default:
-			return false;
-		}
-	}
+    public void setMultiPointProperty(MultiPointProperty multiPointProperty) {
+        this.multiPointProperty = multiPointProperty;
+    }
+
+    public AddressDetails getAddressDetails() {
+        return addressDetails;
+    }
+
+    public void setAddressDetails(AddressDetails addressDetails) {
+        this.addressDetails = addressDetails;
+    }
+
+    public boolean canCreate() {
+        boolean canCreate = canCreate(factory.primary);
+        if (!canCreate && factory.useFallback)
+            canCreate = canCreate(factory.fallback);
+
+        return canCreate;
+    }
+
+    public boolean canCreate(AddressMode mode) {
+        switch (mode) {
+            case DB:
+                return street != null || houseNumber != null || poBox != null ||
+                        zipCode != null || city != null || state != null ||
+                        country != null;
+            case XAL:
+                return addressDetails != null;
+            default:
+                return false;
+        }
+    }
 
 }

@@ -29,7 +29,6 @@ package org.citydb.gui.menu;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
-import org.citydb.util.config.ConfigUtil;
 import org.citydb.config.ProjectConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.Logging;
@@ -43,6 +42,7 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.srs.SrsComboBoxFactory;
 import org.citydb.gui.operation.preferences.PreferencesPlugin;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.config.ConfigUtil;
 import org.citydb.util.event.global.ConfigChangedEvent;
 import org.citydb.util.log.Logger;
 

@@ -42,52 +42,52 @@ import org.citydb.gui.plugin.view.ViewExtension;
 import java.util.Locale;
 
 public class DatabasePlugin extends InternalPlugin implements ViewExtension, PreferencesExtension {
-	private DatabaseView view;
-	private DatabasePreferences preferences;
+    private DatabaseView view;
+    private DatabasePreferences preferences;
 
-	@Override
-	public void initGuiExtension(ViewController viewController, Locale locale) {
-		Config config = ObjectRegistry.getInstance().getConfig();
-		view = new DatabaseView(viewController, config);
-		preferences = new DatabasePreferences(viewController, config);
-		loadSettings();
-	}
+    @Override
+    public void initGuiExtension(ViewController viewController, Locale locale) {
+        Config config = ObjectRegistry.getInstance().getConfig();
+        view = new DatabaseView(viewController, config);
+        preferences = new DatabasePreferences(viewController, config);
+        loadSettings();
+    }
 
-	@Override
-	public void shutdownGui() {
-		setSettings();
-	}
+    @Override
+    public void shutdownGui() {
+        setSettings();
+    }
 
-	@Override
-	public void switchLocale(Locale locale) {
-		view.switchLocale(locale);
-		preferences.switchLocale(locale);
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        view.switchLocale(locale);
+        preferences.switchLocale(locale);
+    }
 
-	@Override
-	public Preferences getPreferences() {
-		return preferences;
-	}
+    @Override
+    public Preferences getPreferences() {
+        return preferences;
+    }
 
-	@Override
-	public View getView() {
-		return view;
-	}
-	
-	@Override
-	public void loadSettings() {
-		view.loadSettings();
-		preferences.loadSettings();
-	}
+    @Override
+    public View getView() {
+        return view;
+    }
 
-	@Override
-	public void setSettings() {
-		view.setSettings();
-		preferences.setSettings();
-	}
-	
-	public ConnectionViewHandler getConnectionViewHandler() {
-		return (ConnectionViewHandler)view.getViewComponent();
-	}
-	
+    @Override
+    public void loadSettings() {
+        view.loadSettings();
+        preferences.loadSettings();
+    }
+
+    @Override
+    public void setSettings() {
+        view.setSettings();
+        preferences.setSettings();
+    }
+
+    public ConnectionViewHandler getConnectionViewHandler() {
+        return (ConnectionViewHandler) view.getViewComponent();
+    }
+
 }

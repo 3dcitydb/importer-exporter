@@ -34,6 +34,8 @@ import org.citygml4j.model.citygml.CityGML;
 
 public interface FeatureReader extends AutoCloseable {
     long getValidationErrors();
+
     void read(InputFile inputFile, WorkerPool<CityGML> workerPool) throws FeatureReadException;
+
     void close() throws FeatureReadException;
 }

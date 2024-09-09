@@ -28,70 +28,70 @@
 package org.citydb.core.operation.common.xlink;
 
 public class DBXlinkTextureParam implements DBXlink {
-	private long id;
-	private String gmlId;
-	private DBXlinkTextureParamEnum type;
+    private long id;
+    private String gmlId;
+    private DBXlinkTextureParamEnum type;
 
-	private boolean isTextureParameterization;
-	private String texParamGmlId;
-	private String worldToTexture;
+    private boolean isTextureParameterization;
+    private String texParamGmlId;
+    private String worldToTexture;
 
-	public DBXlinkTextureParam(long id, String gmlId, DBXlinkTextureParamEnum type) {
-		this.id = id;
-		this.gmlId = gmlId;
-		this.type = type;
-	}
+    public DBXlinkTextureParam(long id, String gmlId, DBXlinkTextureParamEnum type) {
+        this.id = id;
+        this.gmlId = gmlId;
+        this.type = type;
+    }
 
-	public long getId() {
-		return id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public void setId(long id) {
-		this.id = id;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public String getGmlId() {
-		return gmlId;
-	}
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public void setGmlId(String gmlId) {
-		this.gmlId = gmlId;
-	}
+    public void setGmlId(String gmlId) {
+        this.gmlId = gmlId;
+    }
 
-	public DBXlinkTextureParamEnum getType() {
-		return type;
-	}
+    public DBXlinkTextureParamEnum getType() {
+        return type;
+    }
 
-	public void setType(DBXlinkTextureParamEnum type) {
-		this.type = type;
-	}
+    public void setType(DBXlinkTextureParamEnum type) {
+        this.type = type;
+    }
 
-	public boolean isTextureParameterization() {
-		return isTextureParameterization;
-	}
+    public boolean isTextureParameterization() {
+        return isTextureParameterization;
+    }
 
-	public void setTextureParameterization(boolean isTextureParameterization) {
-		this.isTextureParameterization = isTextureParameterization;
-	}
+    public void setTextureParameterization(boolean isTextureParameterization) {
+        this.isTextureParameterization = isTextureParameterization;
+    }
 
-	public String getTexParamGmlId() {
-		return texParamGmlId;
-	}
+    public String getTexParamGmlId() {
+        return texParamGmlId;
+    }
 
-	public void setTexParamGmlId(String texParamGmlId) {
-		this.texParamGmlId = texParamGmlId;
-	}
+    public void setTexParamGmlId(String texParamGmlId) {
+        this.texParamGmlId = texParamGmlId;
+    }
 
-	public String getWorldToTexture() {
-		return worldToTexture;
-	}
+    public String getWorldToTexture() {
+        return worldToTexture;
+    }
 
-	public void setWorldToTexture(String worldToTexture) {
-		this.worldToTexture = worldToTexture;
-	}
-	
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.TEXTUREPARAM;
-	}
+    public void setWorldToTexture(String worldToTexture) {
+        this.worldToTexture = worldToTexture;
+    }
+
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.TEXTUREPARAM;
+    }
 }

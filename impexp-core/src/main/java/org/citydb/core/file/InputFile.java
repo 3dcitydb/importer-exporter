@@ -54,7 +54,9 @@ public abstract class InputFile implements AutoCloseable {
     }
 
     public abstract InputStream openStream() throws IOException;
+
     public abstract Path resolve(String path) throws InvalidPathException;
+
     public abstract String getSeparator();
 
     @Override

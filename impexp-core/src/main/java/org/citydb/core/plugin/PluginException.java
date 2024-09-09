@@ -29,22 +29,22 @@
 package org.citydb.core.plugin;
 
 public class PluginException extends Exception {
-	private static final long serialVersionUID = -3716015045363231263L;
+    private static final long serialVersionUID = -3716015045363231263L;
 
-	public PluginException() {
-		super();
-	}
+    public PluginException() {
+        super();
+    }
 
-	public PluginException(String message) {
-		super(message);
-	}
+    public PluginException(String message) {
+        super(message);
+    }
 
-	public PluginException(Throwable cause) {
-		super(cause);
-	}
+    public PluginException(Throwable cause) {
+        super(cause);
+    }
 
-	public PluginException(String message, Throwable cause) {
-		super(message, cause);
-	}
-	
+    public PluginException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

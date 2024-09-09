@@ -40,117 +40,117 @@ import org.citygml4j.util.child.ChildInfo;
 import java.util.List;
 
 public class GeometryValidator {
-	private final Logger log = Logger.getInstance();
-	private final boolean failOnError;
+    private final Logger log = Logger.getInstance();
+    private final boolean failOnError;
 
-	public GeometryValidator(boolean failOnError) {
-		this.failOnError = failOnError;
-	}
+    public GeometryValidator(boolean failOnError) {
+        this.failOnError = failOnError;
+    }
 
-	public GeometryValidator() {
-		this(false);
-	}
+    public GeometryValidator() {
+        this(false);
+    }
 
-	public boolean isValidCurve(List<Double> coordinates, AbstractCurve curve) throws CityGMLImportException {
-		if (coordinates == null || curve.hasLocalProperty(CoreConstants.GEOMETRY_INVALID)) {
-			return false;
-		}
+    public boolean isValidCurve(List<Double> coordinates, AbstractCurve curve) throws CityGMLImportException {
+        if (coordinates == null || curve.hasLocalProperty(CoreConstants.GEOMETRY_INVALID)) {
+            return false;
+        }
 
-		// too few points
-		if (coordinates.size() / 3 < 2) {
-			logOrThrowErrorMessage(curve, "Curve has too few points.");
-			return false;
-		}
+        // too few points
+        if (coordinates.size() / 3 < 2) {
+            logOrThrowErrorMessage(curve, "Curve has too few points.");
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	public boolean isValidCurve(List<Double> coordinates, AbstractCurveSegment segment) throws CityGMLImportException {
-		if (coordinates == null) {
-			return false;
-		}
+    public boolean isValidCurve(List<Double> coordinates, AbstractCurveSegment segment) throws CityGMLImportException {
+        if (coordinates == null) {
+            return false;
+        }
 
-		// too few points
-		if (coordinates.size() / 3 < 2) {
-			logOrThrowErrorMessage(segment, "Curve segment has too few points.");
-			return false;
-		}
+        // too few points
+        if (coordinates.size() / 3 < 2) {
+            logOrThrowErrorMessage(segment, "Curve segment has too few points.");
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	public boolean isValidRing(List<Double> coordinates, AbstractRing ring) throws CityGMLImportException {
-		if (coordinates == null || ring.hasLocalProperty(CoreConstants.GEOMETRY_INVALID)) {
-			return false;
-		}
+    public boolean isValidRing(List<Double> coordinates, AbstractRing ring) throws CityGMLImportException {
+        if (coordinates == null || ring.hasLocalProperty(CoreConstants.GEOMETRY_INVALID)) {
+            return false;
+        }
 
-		// check closedness
-		if (coordinates.size() >= 9 && !isClosed(coordinates)) {
-			log.debug(getGeometrySignature(getParentOrSelf(ring)) +
-					": Fixed unclosed ring by appending its first point.");
-		}
+        // check closedness
+        if (coordinates.size() >= 9 && !isClosed(coordinates)) {
+            log.debug(getGeometrySignature(getParentOrSelf(ring)) +
+                    ": Fixed unclosed ring by appending its first point.");
+        }
 
-		// too few points
-		if (coordinates.size() / 3 < 4) {
-			logOrThrowErrorMessage(getParentOrSelf(ring), "Ring has too few points.");
-			return false;
-		}
+        // too few points
+        if (coordinates.size() / 3 < 4) {
+            logOrThrowErrorMessage(getParentOrSelf(ring), "Ring has too few points.");
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	private boolean isClosed(List<Double> coords) {
-		Double x = coords.get(0);
-		Double y = coords.get(1);
-		Double z = coords.get(2);
+    private boolean isClosed(List<Double> coords) {
+        Double x = coords.get(0);
+        Double y = coords.get(1);
+        Double z = coords.get(2);
 
-		int nrOfPoints = coords.size();
-		if (!x.equals(coords.get(nrOfPoints - 3))
-				|| !y.equals(coords.get(nrOfPoints - 2))
-				|| !z.equals(coords.get(nrOfPoints - 1))) {
+        int nrOfPoints = coords.size();
+        if (!x.equals(coords.get(nrOfPoints - 3))
+                || !y.equals(coords.get(nrOfPoints - 2))
+                || !z.equals(coords.get(nrOfPoints - 1))) {
 
-			// repair unclosed ring...
-			coords.add(x);
-			coords.add(y);
-			coords.add(z);
+            // repair unclosed ring...
+            coords.add(x);
+            coords.add(y);
+            coords.add(z);
 
-			return false;
-		}
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	private String getGeometrySignature(GML gml) {
-		String signature = "gml:" + gml.getGMLClass().toString();
-		if (gml instanceof AbstractGeometry) {
-			AbstractGeometry geometry = (AbstractGeometry) gml;
-			String gmlId = geometry.hasLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) ?
-					(String) geometry.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) :
-					geometry.getId();
+    private String getGeometrySignature(GML gml) {
+        String signature = "gml:" + gml.getGMLClass().toString();
+        if (gml instanceof AbstractGeometry) {
+            AbstractGeometry geometry = (AbstractGeometry) gml;
+            String gmlId = geometry.hasLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) ?
+                    (String) geometry.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) :
+                    geometry.getId();
 
-			signature += gmlId != null ?
-					" '" + gmlId + "'" :
-					" (unknown gml:id)";
-		}
+            signature += gmlId != null ?
+                    " '" + gmlId + "'" :
+                    " (unknown gml:id)";
+        }
 
-		return signature;
-	}
+        return signature;
+    }
 
-	private void logOrThrowErrorMessage(GML gml, String message) throws CityGMLImportException {
-		if (gml instanceof AbstractGeometry) {
-			((AbstractGeometry) gml).setLocalProperty(CoreConstants.GEOMETRY_INVALID, message);
-		}
+    private void logOrThrowErrorMessage(GML gml, String message) throws CityGMLImportException {
+        if (gml instanceof AbstractGeometry) {
+            ((AbstractGeometry) gml).setLocalProperty(CoreConstants.GEOMETRY_INVALID, message);
+        }
 
-		message = getGeometrySignature(gml) + ": " + message;
-		if (!failOnError) {
-			log.error(message);
-		} else {
-			throw new CityGMLImportException(message);
-		}
-	}
+        message = getGeometrySignature(gml) + ": " + message;
+        if (!failOnError) {
+            log.error(message);
+        } else {
+            throw new CityGMLImportException(message);
+        }
+    }
 
-	private AbstractGeometry getParentOrSelf(AbstractGeometry geometry) {
-		AbstractGeometry parent = new ChildInfo().getParentGeometry(geometry);
-		return parent != null ? parent : geometry;
-	}
+    private AbstractGeometry getParentOrSelf(AbstractGeometry geometry) {
+        AbstractGeometry parent = new ChildInfo().getParentGeometry(geometry);
+        return parent != null ? parent : geometry;
+    }
 }

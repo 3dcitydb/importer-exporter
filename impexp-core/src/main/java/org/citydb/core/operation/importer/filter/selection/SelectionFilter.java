@@ -36,94 +36,94 @@ import org.citydb.core.query.filter.FilterException;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
 public class SelectionFilter {
-	private ResourceIdFilter resourceIdFilter;
-	private LikeFilter nameFilter;
-	private ImportListFilter importListFilter;
-	private DuplicateListFilter duplicateListFilter;
-	private SimpleBBOXFilter bboxFilter;
+    private ResourceIdFilter resourceIdFilter;
+    private LikeFilter nameFilter;
+    private ImportListFilter importListFilter;
+    private DuplicateListFilter duplicateListFilter;
+    private SimpleBBOXFilter bboxFilter;
 
-	public ResourceIdFilter getResourceIdFilter() {
-		return resourceIdFilter;
-	}
+    public ResourceIdFilter getResourceIdFilter() {
+        return resourceIdFilter;
+    }
 
-	public boolean isSetResourceIdFilter() {
-		return resourceIdFilter != null;
-	}
+    public boolean isSetResourceIdFilter() {
+        return resourceIdFilter != null;
+    }
 
-	public void setResourceIdFilter(ResourceIdFilter resourceIdFilter) {
-		this.resourceIdFilter = resourceIdFilter;
-	}
+    public void setResourceIdFilter(ResourceIdFilter resourceIdFilter) {
+        this.resourceIdFilter = resourceIdFilter;
+    }
 
-	public LikeFilter getNameFilter() {
-		return nameFilter;
-	}
+    public LikeFilter getNameFilter() {
+        return nameFilter;
+    }
 
-	public boolean isSetNameFilter() {
-		return nameFilter != null;
-	}
+    public boolean isSetNameFilter() {
+        return nameFilter != null;
+    }
 
-	public void setNameFilter(LikeFilter nameFilter) {
-		this.nameFilter = nameFilter;
-	}
+    public void setNameFilter(LikeFilter nameFilter) {
+        this.nameFilter = nameFilter;
+    }
 
-	public ImportListFilter getImportListFilter() {
-		return importListFilter;
-	}
+    public ImportListFilter getImportListFilter() {
+        return importListFilter;
+    }
 
-	public boolean isSetImportListFilter() {
-		return importListFilter != null;
-	}
+    public boolean isSetImportListFilter() {
+        return importListFilter != null;
+    }
 
-	public void setImportListFilter(ImportListFilter importListFilter) {
-		this.importListFilter = importListFilter;
-	}
+    public void setImportListFilter(ImportListFilter importListFilter) {
+        this.importListFilter = importListFilter;
+    }
 
-	public DuplicateListFilter getDuplicateListFilter() {
-		return duplicateListFilter;
-	}
+    public DuplicateListFilter getDuplicateListFilter() {
+        return duplicateListFilter;
+    }
 
-	public boolean isSetDuplicateListFilter() {
-		return duplicateListFilter != null;
-	}
+    public boolean isSetDuplicateListFilter() {
+        return duplicateListFilter != null;
+    }
 
-	public void setDuplicateListFilter(DuplicateListFilter duplicateListFilter) {
-		this.duplicateListFilter = duplicateListFilter;
-	}
+    public void setDuplicateListFilter(DuplicateListFilter duplicateListFilter) {
+        this.duplicateListFilter = duplicateListFilter;
+    }
 
-	public SimpleBBOXFilter getBboxFilter() {
-		return bboxFilter;
-	}
+    public SimpleBBOXFilter getBboxFilter() {
+        return bboxFilter;
+    }
 
-	public boolean isSetBboxFilter() {
-		return bboxFilter != null;
-	}
+    public boolean isSetBboxFilter() {
+        return bboxFilter != null;
+    }
 
-	public void setBboxFilter(SimpleBBOXFilter bboxFilter) {
-		this.bboxFilter = bboxFilter;
-	}
+    public void setBboxFilter(SimpleBBOXFilter bboxFilter) {
+        this.bboxFilter = bboxFilter;
+    }
 
-	public boolean isSatisfiedBy(AbstractFeature feature) throws FilterException {
-		if (resourceIdFilter != null && !resourceIdFilter.isSatisfiedBy(feature)) {
-			return false;
-		}
+    public boolean isSatisfiedBy(AbstractFeature feature) throws FilterException {
+        if (resourceIdFilter != null && !resourceIdFilter.isSatisfiedBy(feature)) {
+            return false;
+        }
 
-		if (nameFilter != null && !nameFilter.isSatisfiedBy(feature)) {
-			return false;
-		}
+        if (nameFilter != null && !nameFilter.isSatisfiedBy(feature)) {
+            return false;
+        }
 
-		if (importListFilter != null && !importListFilter.isSatisfiedBy(feature)) {
-			return false;
-		}
+        if (importListFilter != null && !importListFilter.isSatisfiedBy(feature)) {
+            return false;
+        }
 
-		if (duplicateListFilter != null && !duplicateListFilter.isSatisfiedBy(feature)) {
-			return false;
-		}
+        if (duplicateListFilter != null && !duplicateListFilter.isSatisfiedBy(feature)) {
+            return false;
+        }
 
-		if (bboxFilter != null && !bboxFilter.isSatisfiedBy(feature)) {
-			return false;
-		}
+        if (bboxFilter != null && !bboxFilter.isSatisfiedBy(feature)) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
 }

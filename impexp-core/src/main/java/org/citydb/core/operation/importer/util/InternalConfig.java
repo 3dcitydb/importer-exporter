@@ -32,73 +32,73 @@ import org.citydb.config.project.importer.Continuation;
 import org.citydb.core.file.InputFile;
 
 public class InternalConfig {
-	private InputFile inputFile;
-	private String currentGmlIdCodespace;
-	private UpdatingPersonMode updatingPersonMode;
-	private String updatingPerson;
-	private String reasonForUpdate;
-	private String lineage;
+    private InputFile inputFile;
+    private String currentGmlIdCodespace;
+    private UpdatingPersonMode updatingPersonMode;
+    private String updatingPerson;
+    private String reasonForUpdate;
+    private String lineage;
 
-	public InputFile getInputFile() {
-		return inputFile;
-	}
+    public InputFile getInputFile() {
+        return inputFile;
+    }
 
-	public void setInputFile(InputFile inputFile) {
-		this.inputFile = inputFile;
-	}
+    public void setInputFile(InputFile inputFile) {
+        this.inputFile = inputFile;
+    }
 
-	public String getCurrentGmlIdCodespace() {
-		return currentGmlIdCodespace;
-	}
+    public String getCurrentGmlIdCodespace() {
+        return currentGmlIdCodespace;
+    }
 
-	public void setCurrentGmlIdCodespace(String currentGmlIdCodespace) {
-		if (currentGmlIdCodespace != null && !currentGmlIdCodespace.trim().isEmpty()) {
-			this.currentGmlIdCodespace = currentGmlIdCodespace.trim();
-		}
-	}
+    public void setCurrentGmlIdCodespace(String currentGmlIdCodespace) {
+        if (currentGmlIdCodespace != null && !currentGmlIdCodespace.trim().isEmpty()) {
+            this.currentGmlIdCodespace = currentGmlIdCodespace.trim();
+        }
+    }
 
-	public UpdatingPersonMode getUpdatingPersonMode() {
-		return updatingPersonMode != null ? updatingPersonMode : UpdatingPersonMode.DATABASE;
-	}
+    public UpdatingPersonMode getUpdatingPersonMode() {
+        return updatingPersonMode != null ? updatingPersonMode : UpdatingPersonMode.DATABASE;
+    }
 
-	public void setUpdatingPersonMode(UpdatingPersonMode updatingPersonMode) {
-		this.updatingPersonMode = updatingPersonMode;
-	}
+    public void setUpdatingPersonMode(UpdatingPersonMode updatingPersonMode) {
+        this.updatingPersonMode = updatingPersonMode;
+    }
 
-	public String getUpdatingPerson() {
-		return updatingPerson;
-	}
+    public String getUpdatingPerson() {
+        return updatingPerson;
+    }
 
-	public void setUpdatingPerson(String updatingPerson) {
-		if (updatingPerson != null && !updatingPerson.trim().isEmpty()) {
-			this.updatingPerson = updatingPerson.trim();
-		}
-	}
+    public void setUpdatingPerson(String updatingPerson) {
+        if (updatingPerson != null && !updatingPerson.trim().isEmpty()) {
+            this.updatingPerson = updatingPerson.trim();
+        }
+    }
 
-	public String getReasonForUpdate() {
-		return reasonForUpdate;
-	}
+    public String getReasonForUpdate() {
+        return reasonForUpdate;
+    }
 
-	public void setReasonForUpdate(String reasonForUpdate) {
-		if (reasonForUpdate != null && !reasonForUpdate.trim().isEmpty()) {
-			this.reasonForUpdate = reasonForUpdate.trim();
-		}
-	}
+    public void setReasonForUpdate(String reasonForUpdate) {
+        if (reasonForUpdate != null && !reasonForUpdate.trim().isEmpty()) {
+            this.reasonForUpdate = reasonForUpdate.trim();
+        }
+    }
 
-	public String getLineage() {
-		return lineage;
-	}
+    public String getLineage() {
+        return lineage;
+    }
 
-	public void setLineage(String lineage) {
-		if (lineage != null && !lineage.trim().isEmpty()) {
-			this.lineage = lineage.trim();
-		}
-	}
+    public void setLineage(String lineage) {
+        if (lineage != null && !lineage.trim().isEmpty()) {
+            this.lineage = lineage.trim();
+        }
+    }
 
-	public void setMetadata(Continuation continuation) {
-		setUpdatingPersonMode(continuation.getUpdatingPersonMode());
-		setUpdatingPerson(continuation.getUpdatingPerson());
-		setReasonForUpdate(continuation.getReasonForUpdate());
-		setLineage(continuation.getLineage());
-	}
+    public void setMetadata(Continuation continuation) {
+        setUpdatingPersonMode(continuation.getUpdatingPersonMode());
+        setUpdatingPerson(continuation.getUpdatingPerson());
+        setReasonForUpdate(continuation.getReasonForUpdate());
+        setLineage(continuation.getLineage());
+    }
 }

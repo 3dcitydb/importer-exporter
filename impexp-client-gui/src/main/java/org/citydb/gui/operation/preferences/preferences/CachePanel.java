@@ -43,125 +43,125 @@ import java.io.File;
 import java.util.Locale;
 
 public class CachePanel extends InternalPreferencesComponent {
-	private TitledPanel cachePanel;
-	private JRadioButton useDatabase;
-	private JRadioButton useLocalCache;
-	private JTextField localCachePath;
-	private JButton browseButton;
-	
-	public CachePanel(Config config) {
-		super(config);
-		initGui();
-	}
+    private TitledPanel cachePanel;
+    private JRadioButton useDatabase;
+    private JRadioButton useLocalCache;
+    private JTextField localCachePath;
+    private JButton browseButton;
 
-	@Override
-	public boolean isModified() {
-		Cache cache = config.getGlobalConfig().getCache();
+    public CachePanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-		if (useDatabase.isSelected() != cache.isUseDatabase()) return true;
-		if (useLocalCache.isSelected() != cache.isUseLocal()) return true;
-		if (!localCachePath.getText().equals(cache.getLocalCachePath())) return true;
-		return false;
-	}
+    @Override
+    public boolean isModified() {
+        Cache cache = config.getGlobalConfig().getCache();
 
-	private void initGui() {
-		useDatabase = new JRadioButton();
-		useLocalCache = new JRadioButton();
-		ButtonGroup cacheRadioGroup = new ButtonGroup();
-		cacheRadioGroup.add(useDatabase);
-		cacheRadioGroup.add(useLocalCache);
-		
-		localCachePath = new JTextField();
-		browseButton = new JButton();
-		
-		PopupMenuDecorator.getInstance().decorate(localCachePath);
+        if (useDatabase.isSelected() != cache.isUseDatabase()) return true;
+        if (useLocalCache.isSelected() != cache.isUseLocal()) return true;
+        if (!localCachePath.getText().equals(cache.getLocalCachePath())) return true;
+        return false;
+    }
 
-		setLayout(new GridBagLayout());
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(useDatabase, GuiUtil.setConstraints(0, 0, 3, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
-				content.add(useLocalCache, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
-				content.add(localCachePath, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
-				content.add(browseButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
-			}
+    private void initGui() {
+        useDatabase = new JRadioButton();
+        useLocalCache = new JRadioButton();
+        ButtonGroup cacheRadioGroup = new ButtonGroup();
+        cacheRadioGroup.add(useDatabase);
+        cacheRadioGroup.add(useLocalCache);
 
-			cachePanel = new TitledPanel().build(content);
-		}
+        localCachePath = new JTextField();
+        browseButton = new JButton();
 
-		add(cachePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        PopupMenuDecorator.getInstance().decorate(localCachePath);
 
-		browseButton.addActionListener(e -> {
-			String dir = browseFile(Language.I18N.getString("pref.general.cache.label.useLocal"), localCachePath.getText());
-			if (!dir.isEmpty())
-				localCachePath.setText(dir);
-		});
+        setLayout(new GridBagLayout());
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(useDatabase, GuiUtil.setConstraints(0, 0, 3, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+                content.add(useLocalCache, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+                content.add(localCachePath, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+                content.add(browseButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+            }
 
-		ActionListener cacheListener = e -> setEnabledLocalCachePath();
-		useDatabase.addActionListener(cacheListener);
-		useLocalCache.addActionListener(cacheListener);
-	}
-	
-	private void setEnabledLocalCachePath() {
-		localCachePath.setEnabled(useLocalCache.isSelected());
-		browseButton.setEnabled(useLocalCache.isSelected());
-	}
-	
-	@Override
-	public void switchLocale(Locale locale) {
-		cachePanel.setTitle(Language.I18N.getString("pref.general.cache.border"));
-		useDatabase.setText(Language.I18N.getString("pref.general.cache.label.useDatabase"));
-		useLocalCache.setText(Language.I18N.getString("pref.general.cache.label.useLocal"));
-		browseButton.setText(Language.I18N.getString("common.button.browse"));		
-	}
+            cachePanel = new TitledPanel().build(content);
+        }
 
-	@Override
-	public void loadSettings() {
-		Cache cache = config.getGlobalConfig().getCache();
-		if (cache.isUseDatabase())
-			useDatabase.setSelected(true);
-		else
-			useLocalCache.setSelected(true);
+        add(cachePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		if (cache.isSetLocalCachePath()) {
-			localCachePath.setText(cache.getLocalCachePath());
-		} else {
-			String defaultDir = Cache.DEFAULT_LOCAL_CACHE_DIR.toString();
-			localCachePath.setText(defaultDir);
-			cache.setLocalCachePath(defaultDir);
-		}
+        browseButton.addActionListener(e -> {
+            String dir = browseFile(Language.I18N.getString("pref.general.cache.label.useLocal"), localCachePath.getText());
+            if (!dir.isEmpty())
+                localCachePath.setText(dir);
+        });
 
-		setEnabledLocalCachePath();
-	}
+        ActionListener cacheListener = e -> setEnabledLocalCachePath();
+        useDatabase.addActionListener(cacheListener);
+        useLocalCache.addActionListener(cacheListener);
+    }
 
-	@Override
-	public void setSettings() {		
-		Cache cache = config.getGlobalConfig().getCache();
-		cache.setCacheMode(useDatabase.isSelected() ? CacheMode.DATABASE : CacheMode.LOCAL);
+    private void setEnabledLocalCachePath() {
+        localCachePath.setEnabled(useLocalCache.isSelected());
+        browseButton.setEnabled(useLocalCache.isSelected());
+    }
 
-		if (!localCachePath.getText().isEmpty()) {
-			cache.setLocalCachePath(localCachePath.getText());
-		} else {
-			String defaultDir = Cache.DEFAULT_LOCAL_CACHE_DIR.toString();
-			localCachePath.setText(defaultDir);
-			cache.setLocalCachePath(defaultDir);
-		}
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.general.cache");
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        cachePanel.setTitle(Language.I18N.getString("pref.general.cache.border"));
+        useDatabase.setText(Language.I18N.getString("pref.general.cache.label.useDatabase"));
+        useLocalCache.setText(Language.I18N.getString("pref.general.cache.label.useLocal"));
+        browseButton.setText(Language.I18N.getString("common.button.browse"));
+    }
 
-	private String browseFile(String title, String oldDir) {
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle(title);
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		chooser.setCurrentDirectory(new File(oldDir));
+    @Override
+    public void loadSettings() {
+        Cache cache = config.getGlobalConfig().getCache();
+        if (cache.isUseDatabase())
+            useDatabase.setSelected(true);
+        else
+            useLocalCache.setSelected(true);
 
-		int result = chooser.showSaveDialog(getTopLevelAncestor());
-		if (result == JFileChooser.CANCEL_OPTION) return "";
-		return chooser.getSelectedFile().toString();
-	}
+        if (cache.isSetLocalCachePath()) {
+            localCachePath.setText(cache.getLocalCachePath());
+        } else {
+            String defaultDir = Cache.DEFAULT_LOCAL_CACHE_DIR.toString();
+            localCachePath.setText(defaultDir);
+            cache.setLocalCachePath(defaultDir);
+        }
+
+        setEnabledLocalCachePath();
+    }
+
+    @Override
+    public void setSettings() {
+        Cache cache = config.getGlobalConfig().getCache();
+        cache.setCacheMode(useDatabase.isSelected() ? CacheMode.DATABASE : CacheMode.LOCAL);
+
+        if (!localCachePath.getText().isEmpty()) {
+            cache.setLocalCachePath(localCachePath.getText());
+        } else {
+            String defaultDir = Cache.DEFAULT_LOCAL_CACHE_DIR.toString();
+            localCachePath.setText(defaultDir);
+            cache.setLocalCachePath(defaultDir);
+        }
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.general.cache");
+    }
+
+    private String browseFile(String title, String oldDir) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setCurrentDirectory(new File(oldDir));
+
+        int result = chooser.showSaveDialog(getTopLevelAncestor());
+        if (result == JFileChooser.CANCEL_OPTION) return "";
+        return chooser.getSelectedFile().toString();
+    }
 }

@@ -45,157 +45,157 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseController implements ConnectionManager {
-	private final Logger log = Logger.getInstance();
-	private final Config config;
-	private final DatabaseConnectionPool connectionPool;
+    private final Logger log = Logger.getInstance();
+    private final Config config;
+    private final DatabaseConnectionPool connectionPool;
 
-	private ConnectionViewHandler viewHandler;
+    private ConnectionViewHandler viewHandler;
 
-	public DatabaseController() {
-		config = ObjectRegistry.getInstance().getConfig();
-		connectionPool = DatabaseConnectionPool.getInstance();
-	}	
+    public DatabaseController() {
+        config = ObjectRegistry.getInstance().getConfig();
+        connectionPool = DatabaseConnectionPool.getInstance();
+    }
 
-	public void setConnectionViewHandler(ConnectionViewHandler viewHandler) {
-		this.viewHandler = viewHandler;
-	}
+    public void setConnectionViewHandler(ConnectionViewHandler viewHandler) {
+        this.viewHandler = viewHandler;
+    }
 
-	public synchronized boolean connect() {
-		return connect(false);
-	}
+    public synchronized boolean connect() {
+        return connect(false);
+    }
 
-	public synchronized boolean connect(boolean suppressDialog) {
-		// request to commit connection details
-		if (viewHandler != null) {
-			viewHandler.commitConnectionDetails();
-		}
+    public synchronized boolean connect(boolean suppressDialog) {
+        // request to commit connection details
+        if (viewHandler != null) {
+            viewHandler.commitConnectionDetails();
+        }
 
-		DatabaseConnection connection = config.getDatabaseConfig().getActiveConnection();
-		return connect(connection, suppressDialog);
-	}
+        DatabaseConnection connection = config.getDatabaseConfig().getActiveConnection();
+        return connect(connection, suppressDialog);
+    }
 
-	public synchronized boolean connect(DatabaseConnection connection) {
-		config.getDatabaseConfig().setActiveConnection(connection);
-		return connect(connection, false);
-	}
+    public synchronized boolean connect(DatabaseConnection connection) {
+        config.getDatabaseConfig().setActiveConnection(connection);
+        return connect(connection, false);
+    }
 
-	public synchronized boolean connect(DatabaseConnection connection, boolean suppressDialog) {
-		if (!connectionPool.isConnected()) {
-			if (connection == null) {
-				log.error("Connection to database could not be established.");
-				log.error("No valid database connection details provided in configuration.");
-				return false;
-			}
+    public synchronized boolean connect(DatabaseConnection connection, boolean suppressDialog) {
+        if (!connectionPool.isConnected()) {
+            if (connection == null) {
+                log.error("Connection to database could not be established.");
+                log.error("No valid database connection details provided in configuration.");
+                return false;
+            }
 
-			try {
-				log.info("Connecting to database '" + connection + "'.");
-				showConnectionStatus(ConnectionState.INIT_CONNECT);
+            try {
+                log.info("Connecting to database '" + connection + "'.");
+                showConnectionStatus(ConnectionState.INIT_CONNECT);
 
-				// connect to database
-				connectionPool.connect(connection);
+                // connect to database
+                connectionPool.connect(connection);
 
-				// show connection warnings
-				for (DatabaseConnectionWarning warning : connectionPool.getActiveDatabaseAdapter().getConnectionWarnings()) {
-					log.warn(warning.getMessage());
-					boolean connect = suppressDialog || showWarning(warning);
-					if (!connect) {
-						log.warn("Database connection attempt aborted.");
-						connectionPool.disconnect();
-						return false;
-					}
-				}
+                // show connection warnings
+                for (DatabaseConnectionWarning warning : connectionPool.getActiveDatabaseAdapter().getConnectionWarnings()) {
+                    log.warn(warning.getMessage());
+                    boolean connect = suppressDialog || showWarning(warning);
+                    if (!connect) {
+                        log.warn("Database connection attempt aborted.");
+                        connectionPool.disconnect();
+                        return false;
+                    }
+                }
 
-				log.info("Database connection established.");
-				connectionPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
+                log.info("Database connection established.");
+                connectionPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
 
-				// log unsupported user-defined SRSs
-				for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems()) {
-					if (!refSys.isSupported()) {
-						log.warn("Reference system '" + refSys.getDescription() +
-								"' (SRID: " + refSys.getSrid() + ") is not supported.");
-					}
-				}
-			} catch (DatabaseConfigurationException | SQLException e) {
-				log.error("Connection to database could not be established.", e);
-				showError(e, suppressDialog);
-				return false;
-			} catch (DatabaseVersionException e) {
-				log.error("Connection to database could not be established.", e);
-				log.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
-				showError(e, suppressDialog);
-				return false;
-			} finally {
-				showConnectionStatus(ConnectionState.FINISH_CONNECT);
-			}
-		}
+                // log unsupported user-defined SRSs
+                for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems()) {
+                    if (!refSys.isSupported()) {
+                        log.warn("Reference system '" + refSys.getDescription() +
+                                "' (SRID: " + refSys.getSrid() + ") is not supported.");
+                    }
+                }
+            } catch (DatabaseConfigurationException | SQLException e) {
+                log.error("Connection to database could not be established.", e);
+                showError(e, suppressDialog);
+                return false;
+            } catch (DatabaseVersionException e) {
+                log.error("Connection to database could not be established.", e);
+                log.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
+                showError(e, suppressDialog);
+                return false;
+            } finally {
+                showConnectionStatus(ConnectionState.FINISH_CONNECT);
+            }
+        }
 
-		return connectionPool.isConnected();
-	}
+        return connectionPool.isConnected();
+    }
 
-	public void disconnect() {
-		disconnect(false);
-	}
+    public void disconnect() {
+        disconnect(false);
+    }
 
-	public void disconnect(boolean suppressLogMessages) {
-		if (connectionPool.isConnected()) {
-			showConnectionStatus(ConnectionState.INIT_DISCONNECT);
-			connectionPool.disconnect();
-			showConnectionStatus(ConnectionState.FINISH_DISCONNECT);
+    public void disconnect(boolean suppressLogMessages) {
+        if (connectionPool.isConnected()) {
+            showConnectionStatus(ConnectionState.INIT_DISCONNECT);
+            connectionPool.disconnect();
+            showConnectionStatus(ConnectionState.FINISH_DISCONNECT);
 
-			if (!suppressLogMessages) {
-				log.info("Disconnected from database.");
-			}
-		}
-	}
+            if (!suppressLogMessages) {
+                log.info("Disconnected from database.");
+            }
+        }
+    }
 
-	public boolean isConnected() {
-		return connectionPool.isConnected();
-	}
+    public boolean isConnected() {
+        return connectionPool.isConnected();
+    }
 
-	public Connection getConnection() throws SQLException {
-		return connectionPool.getConnection();
-	}
+    public Connection getConnection() throws SQLException {
+        return connectionPool.getConnection();
+    }
 
-	public List<DatabaseConnectionDetails> getConnectionDetails() {
-		ArrayList<DatabaseConnectionDetails> result = new ArrayList<>();
-		for (DatabaseConnection connection : config.getDatabaseConfig().getConnections()) {
-			result.add(new DatabaseConnectionDetails(connection));
-		}
+    public List<DatabaseConnectionDetails> getConnectionDetails() {
+        ArrayList<DatabaseConnectionDetails> result = new ArrayList<>();
+        for (DatabaseConnection connection : config.getDatabaseConfig().getConnections()) {
+            result.add(new DatabaseConnectionDetails(connection));
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	public List<DatabaseSrs> getDatabaseSrs() {
-		return config.getDatabaseConfig().getReferenceSystems();
-	}
+    public List<DatabaseSrs> getDatabaseSrs() {
+        return config.getDatabaseConfig().getReferenceSystems();
+    }
 
-	public AbstractDatabaseAdapter getActiveDatabaseAdapter() {
-		return connectionPool.getActiveDatabaseAdapter();
-	}
+    public AbstractDatabaseAdapter getActiveDatabaseAdapter() {
+        return connectionPool.getActiveDatabaseAdapter();
+    }
 
-	public DatabaseVersionChecker getDatabaseVersionChecker() {
-		return connectionPool.getDatabaseVersionChecker();
-	}
+    public DatabaseVersionChecker getDatabaseVersionChecker() {
+        return connectionPool.getDatabaseVersionChecker();
+    }
 
-	private void showConnectionStatus(ConnectionState state) {
-		if (viewHandler != null) {
-			viewHandler.showConnectionStatus(state);
-		}
-	}
+    private void showConnectionStatus(ConnectionState state) {
+        if (viewHandler != null) {
+            viewHandler.showConnectionStatus(state);
+        }
+    }
 
-	private boolean showWarning(DatabaseConnectionWarning warning) {
-		return viewHandler == null || viewHandler.showWarning(warning);
-	}
+    private boolean showWarning(DatabaseConnectionWarning warning) {
+        return viewHandler == null || viewHandler.showWarning(warning);
+    }
 
-	private void showError(Exception e, boolean suppressDialog) {
-		if (!suppressDialog && viewHandler != null) {
-			if (e instanceof DatabaseConfigurationException) {
-				viewHandler.showError((DatabaseConfigurationException) e);
-			} else if (e instanceof DatabaseVersionException) {
-				viewHandler.showError((DatabaseVersionException) e);
-			} else if (e instanceof SQLException) {
-				viewHandler.showError((SQLException) e);
-			}
-		}
-	}
+    private void showError(Exception e, boolean suppressDialog) {
+        if (!suppressDialog && viewHandler != null) {
+            if (e instanceof DatabaseConfigurationException) {
+                viewHandler.showError((DatabaseConfigurationException) e);
+            } else if (e instanceof DatabaseVersionException) {
+                viewHandler.showError((DatabaseVersionException) e);
+            } else if (e instanceof SQLException) {
+                viewHandler.showError((SQLException) e);
+            }
+        }
+    }
 }

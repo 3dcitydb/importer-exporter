@@ -38,55 +38,55 @@ import org.xml.sax.SAXException;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class XMLWriterWorker extends Worker<SAXEventBuffer> {
-	private final ReentrantLock runLock = new ReentrantLock();	
-	private volatile boolean shouldRun = true;
-	private volatile boolean shouldWork = true;
+    private final ReentrantLock runLock = new ReentrantLock();
+    private volatile boolean shouldRun = true;
+    private volatile boolean shouldWork = true;
 
-	private final SAXWriter saxWriter;
-	private final EventDispatcher eventDispatcher;
+    private final SAXWriter saxWriter;
+    private final EventDispatcher eventDispatcher;
 
-	public XMLWriterWorker(SAXWriter saxWriter, EventDispatcher eventDispatcher) {
-		this.saxWriter = saxWriter;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public XMLWriterWorker(SAXWriter saxWriter, EventDispatcher eventDispatcher) {
+        this.saxWriter = saxWriter;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public void interrupt() {
-		shouldRun = false;
-	}
+    @Override
+    public void interrupt() {
+        shouldRun = false;
+    }
 
-	@Override
-	public void run() {
-		if (firstWork != null) {
-			doWork(firstWork);
-			firstWork = null;
-		}
+    @Override
+    public void run() {
+        if (firstWork != null) {
+            doWork(firstWork);
+            firstWork = null;
+        }
 
-		while (shouldRun) {
-			try {
-				SAXEventBuffer work = workQueue.take();
-				doWork(work);
-			} catch (InterruptedException ie) {
-				// re-check state
-			}
-		}
-	}
+        while (shouldRun) {
+            try {
+                SAXEventBuffer work = workQueue.take();
+                doWork(work);
+            } catch (InterruptedException ie) {
+                // re-check state
+            }
+        }
+    }
 
-	private void doWork(SAXEventBuffer work) {
-		final ReentrantLock runLock = this.runLock;
-		runLock.lock();
+    private void doWork(SAXEventBuffer work) {
+        final ReentrantLock runLock = this.runLock;
+        runLock.lock();
 
-		try {
-			if (!shouldWork)
-				return;
-			
-			work.send(saxWriter, true);
-		} catch (SAXException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write XML content.", LogLevel.ERROR, e, eventChannel));
-			shouldWork = false;
-		} finally {
-			runLock.unlock();
-		}
-	}
-	
+        try {
+            if (!shouldWork)
+                return;
+
+            work.send(saxWriter, true);
+        } catch (SAXException e) {
+            eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write XML content.", LogLevel.ERROR, e, eventChannel));
+            shouldWork = false;
+        } finally {
+            runLock.unlock();
+        }
+    }
+
 }

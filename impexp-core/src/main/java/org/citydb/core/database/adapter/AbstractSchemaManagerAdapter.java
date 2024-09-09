@@ -37,49 +37,53 @@ import java.util.List;
 import java.util.Properties;
 
 public abstract class AbstractSchemaManagerAdapter {
-	private final Logger log = Logger.getInstance();
-	protected final AbstractDatabaseAdapter databaseAdapter;
+    private final Logger log = Logger.getInstance();
+    protected final AbstractDatabaseAdapter databaseAdapter;
 
-	protected AbstractSchemaManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		this.databaseAdapter = databaseAdapter;
-	}
-	
-	public abstract String getDefaultSchema();
-	public abstract boolean equalsDefaultSchema(String schema);
-	public abstract boolean existsSchema(Connection connection, String schema);
-	public abstract List<String> fetchSchemasFromDatabase(Connection connection) throws SQLException;
-	public abstract String formatSchema(String schema);
+    protected AbstractSchemaManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
+        this.databaseAdapter = databaseAdapter;
+    }
 
-	public boolean existsSchema(String schema) {
-		return existsSchema(schema, false);
-	}
+    public abstract String getDefaultSchema();
 
-	public boolean existsSchema(String schema, boolean logResult) {
-		try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-			boolean exists = existsSchema(conn, schema);
-			if (logResult) {
-				if (!exists) {
-					log.error("The database schema '" + schema + "' does not exist.");
-				} else {
-					log.info("Switching to database schema '" + schema + "'.");
-				}
-			}
+    public abstract boolean equalsDefaultSchema(String schema);
 
-			return exists;
-		} catch (SQLException e) {
-			return false;
-		}
-	}
+    public abstract boolean existsSchema(Connection connection, String schema);
 
-	public List<String> fetchSchemasFromDatabase(DatabaseConnection databaseConnection) throws SQLException {
-		Properties properties = new Properties();
-		properties.setProperty("user", databaseConnection.getUser());
-		properties.setProperty("password", databaseConnection.getPassword());
+    public abstract List<String> fetchSchemasFromDatabase(Connection connection) throws SQLException;
 
-		try (Connection conn = DriverManager.getConnection(databaseAdapter.getJDBCUrl(
-				databaseConnection.getServer(), databaseConnection.getPort(), databaseConnection.getSid()), properties)) {
-			return fetchSchemasFromDatabase(conn);
-		}
-	}
+    public abstract String formatSchema(String schema);
+
+    public boolean existsSchema(String schema) {
+        return existsSchema(schema, false);
+    }
+
+    public boolean existsSchema(String schema, boolean logResult) {
+        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
+            boolean exists = existsSchema(conn, schema);
+            if (logResult) {
+                if (!exists) {
+                    log.error("The database schema '" + schema + "' does not exist.");
+                } else {
+                    log.info("Switching to database schema '" + schema + "'.");
+                }
+            }
+
+            return exists;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    public List<String> fetchSchemasFromDatabase(DatabaseConnection databaseConnection) throws SQLException {
+        Properties properties = new Properties();
+        properties.setProperty("user", databaseConnection.getUser());
+        properties.setProperty("password", databaseConnection.getPassword());
+
+        try (Connection conn = DriverManager.getConnection(databaseAdapter.getJDBCUrl(
+                databaseConnection.getServer(), databaseConnection.getPort(), databaseConnection.getSid()), properties)) {
+            return fetchSchemasFromDatabase(conn);
+        }
+    }
 
 }

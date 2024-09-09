@@ -125,7 +125,7 @@ public class SQLAdapter extends AbstractSQLAdapter {
     }
 
     @Override
-	public String getNextSequenceValuesQuery(String sequence) {
+    public String getNextSequenceValuesQuery(String sequence) {
         boolean requiresSchema = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) < 0;
         StringBuilder query = new StringBuilder("select ")
                 .append(resolveDatabaseOperationName("citydb_util.get_seq_values")).append("(");
@@ -140,8 +140,8 @@ public class SQLAdapter extends AbstractSQLAdapter {
                     .append("?");
         }
 
-		return query.append(")").toString();
-	}
+        return query.append(")").toString();
+    }
 
     @Override
     public String getUnloggedIndexProperty() {

@@ -95,7 +95,8 @@ public class PluginInfoPanel extends ScrollablePanel {
                 adeSupport.setSelected(metadata.hasADESupport());
 
                 JPanel glassPane = new JPanel();
-                glassPane.addMouseListener(new MouseAdapter() { });
+                glassPane.addMouseListener(new MouseAdapter() {
+                });
                 glassPane.setOpaque(false);
                 adeSupportPanel.add(glassPane);
 

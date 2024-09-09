@@ -30,26 +30,26 @@ package org.citydb.core.operation.common.cache.model;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 
 public class CacheTableSurfaceDataToTexImage extends AbstractCacheTableModel {
-	public static CacheTableSurfaceDataToTexImage instance = null;
+    public static CacheTableSurfaceDataToTexImage instance = null;
 
-	public synchronized static CacheTableSurfaceDataToTexImage getInstance() {
-		if (instance == null)
-			instance = new CacheTableSurfaceDataToTexImage();
+    public synchronized static CacheTableSurfaceDataToTexImage getInstance() {
+        if (instance == null)
+            instance = new CacheTableSurfaceDataToTexImage();
 
-		return instance;
-	}
+        return instance;
+    }
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.SURFACE_DATA_TO_TEX_IMAGE;
-	}
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.SURFACE_DATA_TO_TEX_IMAGE;
+    }
 
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"FROM_ID " + sqlAdapter.getBigInt() + ", " +
-				"TO_ID " + sqlAdapter.getBigInt() +
-				")";
-	}
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "FROM_ID " + sqlAdapter.getBigInt() + ", " +
+                "TO_ID " + sqlAdapter.getBigInt() +
+                ")";
+    }
 
 }

@@ -39,42 +39,42 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class XlinkLibraryObject implements DBXlinkResolver {
-	private final Logger log = Logger.getInstance();
-	private final DBXlinkResolverManager resolverManager;
-	private final BlobImportAdapter blobImportAdapter;
+    private final Logger log = Logger.getInstance();
+    private final DBXlinkResolverManager resolverManager;
+    private final BlobImportAdapter blobImportAdapter;
 
-	public XlinkLibraryObject(Connection connection, DBXlinkResolverManager resolverManager) throws SQLException {
-		this.resolverManager = resolverManager;
-		
-		blobImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
-				connection, BlobType.LIBRARY_OBJECT);
-	}
+    public XlinkLibraryObject(Connection connection, DBXlinkResolverManager resolverManager) throws SQLException {
+        this.resolverManager = resolverManager;
 
-	public boolean insert(DBXlinkLibraryObject xlink) throws SQLException {
-		String fileURI = xlink.getFileURI();
-		
-		try (InputStream stream = new BufferedInputStream(resolverManager.openStream(fileURI)))  {
-			blobImportAdapter.insert(xlink.getId(), stream);
-			return true;
-		} catch (IOException e) {
-			log.error("Failed to read library object file '" + fileURI + "'.", e);
-			return false;
-		}
-	}
+        blobImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
+                connection, BlobType.LIBRARY_OBJECT);
+    }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		// we do not have any action here
-	}
+    public boolean insert(DBXlinkLibraryObject xlink) throws SQLException {
+        String fileURI = xlink.getFileURI();
 
-	@Override
-	public void close() throws SQLException {
-		blobImportAdapter.close();
-	}
+        try (InputStream stream = new BufferedInputStream(resolverManager.openStream(fileURI))) {
+            blobImportAdapter.insert(xlink.getId(), stream);
+            return true;
+        } catch (IOException e) {
+            log.error("Failed to read library object file '" + fileURI + "'.", e);
+            return false;
+        }
+    }
 
-	@Override
-	public DBXlinkResolverEnum getDBXlinkResolverType() {
-		return DBXlinkResolverEnum.LIBRARY_OBJECT;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        // we do not have any action here
+    }
+
+    @Override
+    public void close() throws SQLException {
+        blobImportAdapter.close();
+    }
+
+    @Override
+    public DBXlinkResolverEnum getDBXlinkResolverType() {
+        return DBXlinkResolverEnum.LIBRARY_OBJECT;
+    }
 
 }

@@ -36,33 +36,33 @@ import java.util.Collections;
 import java.util.List;
 
 public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
-	
-	protected WorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		super(databaseAdapter);
-	}
 
-	@Override
-	public String getDefaultWorkspaceName() {
-		return null;
-	}
+    protected WorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
+        super(databaseAdapter);
+    }
 
-	@Override
-	public boolean equalsDefaultWorkspaceName(String workspaceName) {
-		return false;
-	}
+    @Override
+    public String getDefaultWorkspaceName() {
+        return null;
+    }
 
-	@Override
-	public void gotoWorkspace(Connection connection, Workspace workspace) {
-		// nothing to do
-	}
+    @Override
+    public boolean equalsDefaultWorkspaceName(String workspaceName) {
+        return false;
+    }
 
-	@Override
-	public List<String> fetchWorkspacesFromDatabase(Connection connection) {
-		return Collections.emptyList();
-	}
+    @Override
+    public void gotoWorkspace(Connection connection, Workspace workspace) {
+        // nothing to do
+    }
 
-	@Override
-	public String formatWorkspaceName(String workspaceName) {
-		return workspaceName;
-	}
+    @Override
+    public List<String> fetchWorkspacesFromDatabase(Connection connection) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public String formatWorkspaceName(String workspaceName) {
+        return workspaceName;
+    }
 }

@@ -30,40 +30,40 @@ package org.citydb.core.database.schema.path;
 import org.citydb.core.database.schema.mapping.FeatureType;
 
 public final class FeatureTypeNode extends AbstractTypeNode<FeatureType> {
-	private boolean useSchemaElement;
+    private boolean useSchemaElement;
 
-	public FeatureTypeNode(FeatureType featureType) {
-		super(featureType);
-	}
-	
-	FeatureTypeNode(FeatureTypeNode other) {
-		super(other);
-		this.useSchemaElement = other.useSchemaElement;
-	}
+    public FeatureTypeNode(FeatureType featureType) {
+        super(featureType);
+    }
 
-	public boolean isUseSchemaElement() {
-		return useSchemaElement;
-	}
+    FeatureTypeNode(FeatureTypeNode other) {
+        super(other);
+        this.useSchemaElement = other.useSchemaElement;
+    }
 
-	public void setUseSchemaElement(boolean useSchemaElement) {
-		this.useSchemaElement = useSchemaElement;
-	}
-	
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
+    public boolean isUseSchemaElement() {
+        return useSchemaElement;
+    }
 
-		if (useSchemaElement)
-			builder.append("schema-element(").append(super.toString()).append(")");
-		else
-			builder.append(super.toString());
+    public void setUseSchemaElement(boolean useSchemaElement) {
+        this.useSchemaElement = useSchemaElement;
+    }
 
-		return builder.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
 
-	@Override
-	protected FeatureTypeNode copy() {
-		return new FeatureTypeNode(this);
-	}
-	
+        if (useSchemaElement)
+            builder.append("schema-element(").append(super.toString()).append(")");
+        else
+            builder.append(super.toString());
+
+        return builder.toString();
+    }
+
+    @Override
+    protected FeatureTypeNode copy() {
+        return new FeatureTypeNode(this);
+    }
+
 }

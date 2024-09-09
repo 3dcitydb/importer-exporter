@@ -33,163 +33,163 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IndexStatusInfo {
-	private final Logger LOG = Logger.getInstance();
-	private List<IndexInfoObject> indexes;
-	private IndexType type;
+    private final Logger LOG = Logger.getInstance();
+    private List<IndexInfoObject> indexes;
+    private IndexType type;
 
-	public enum IndexType {
-		SPATIAL,
-		NORMAL
-	}
+    public enum IndexType {
+        SPATIAL,
+        NORMAL
+    }
 
-	public enum IndexStatus {
-		VALID,
-		DROPPED,
-		INVALID,
-		ERROR
-	}
-	
-	private IndexStatusInfo() {
-		// just to thwart instantiation
-	}
-	
-	public static synchronized IndexStatusInfo createFromDatabaseQuery(String[] query, IndexType type) {
-		IndexStatusInfo info = null;
+    public enum IndexStatus {
+        VALID,
+        DROPPED,
+        INVALID,
+        ERROR
+    }
 
-		if (query != null) {
-			info = new IndexStatusInfo();
-			info.indexes = new ArrayList<IndexInfoObject>(query.length);
-			info.type = type;
-			
-			for (String indexInfo : query) {
-				String[] parts = indexInfo.split(":");
+    private IndexStatusInfo() {
+        // just to thwart instantiation
+    }
 
-				if (parts.length > 4) {
-					IndexInfoObject obj = new IndexInfoObject();
+    public static synchronized IndexStatusInfo createFromDatabaseQuery(String[] query, IndexType type) {
+        IndexStatusInfo info = null;
 
-					switch (parts[0]) {
-						case "VALID":
-							obj.status = IndexStatus.VALID;
-							break;
-						case "DROPPED":
-							obj.status = IndexStatus.DROPPED;
-							break;
-						case "INVALID":
-							obj.status = IndexStatus.INVALID;
-							break;
-						default:
-							obj.status = IndexStatus.ERROR;
-							break;
-					}
+        if (query != null) {
+            info = new IndexStatusInfo();
+            info.indexes = new ArrayList<IndexInfoObject>(query.length);
+            info.type = type;
 
-					obj.name = parts[1].toUpperCase();
-					obj.schema = parts[2];
-					obj.table = parts[3].toUpperCase();
-					obj.column = parts[4].toUpperCase();
+            for (String indexInfo : query) {
+                String[] parts = indexInfo.split(":");
 
-					if (parts.length > 5 && !parts[5].equals("0"))
-						obj.errorMessage = parts[5];
-					else
-						obj.errorMessage = "";
-					
-					info.indexes.add(obj);
-				}
-			}
-		}
+                if (parts.length > 4) {
+                    IndexInfoObject obj = new IndexInfoObject();
 
-		return info;
-	}
+                    switch (parts[0]) {
+                        case "VALID":
+                            obj.status = IndexStatus.VALID;
+                            break;
+                        case "DROPPED":
+                            obj.status = IndexStatus.DROPPED;
+                            break;
+                        case "INVALID":
+                            obj.status = IndexStatus.INVALID;
+                            break;
+                        default:
+                            obj.status = IndexStatus.ERROR;
+                            break;
+                    }
 
-	public List<IndexInfoObject> getIndexObjects() {
-		return indexes;
-	}
-	
-	public List<IndexInfoObject> getIndexObjects(IndexStatus status) {
-		List<IndexInfoObject> tmp = new ArrayList<IndexInfoObject>();		
-		for (IndexInfoObject obj : indexes)
-			if (obj.status == status)
-				tmp.add(obj);
-		
-		return tmp;
-	}
-	
-	public int getNumberOfIndexes() {
-		return indexes.size();
-	}
-	
-	public int getNumberOfValidIndexes() {
-		return getIndexObjects(IndexStatus.VALID).size();
-	}
-	
-	public int getNumberOfInvalidIndexes() {
-		return getIndexObjects(IndexStatus.INVALID).size();
-	}
-	
-	public int getNumberOfDroppedIndexes() {
-		return getIndexObjects(IndexStatus.DROPPED).size();
-	}
-	
-	public int getNumberOfFaultyIndexes() {
-		return getIndexObjects(IndexStatus.ERROR).size();
-	}
-	
-	public void printStatusToConsole() {
-		int on = getNumberOfValidIndexes();
-		int all = getIndexObjects().size();
-		
-		StringBuilder msg = new StringBuilder();
-		
-		msg.append(type == IndexType.SPATIAL ? "Spatial" : "Normal").append(" indexes are ");
-		
-		if (on == 0)
-			msg.append("disabled.");
-		else if (on == all)
-			msg.append("enabled.");
-		else
-			msg.append("partly enabled (").append(on).append(" / ").append(all).append(").");
-		
-		LOG.info(msg.toString());
-	}
-	
-	public static final class IndexInfoObject {
-		private String name;
-		private String schema;
-		private String table;
-		private String column;
-		private IndexStatus status;
-		private String errorMessage;
+                    obj.name = parts[1].toUpperCase();
+                    obj.schema = parts[2];
+                    obj.table = parts[3].toUpperCase();
+                    obj.column = parts[4].toUpperCase();
 
-		public String getName() {
-			return name;
-		}
+                    if (parts.length > 5 && !parts[5].equals("0"))
+                        obj.errorMessage = parts[5];
+                    else
+                        obj.errorMessage = "";
 
-		public String getSchema() {
-			return schema;
-		}
-		
-		public String getTable() {
-			return table;
-		}
-		
-		public String getColumn() {
-			return column;
-		}
+                    info.indexes.add(obj);
+                }
+            }
+        }
 
-		public IndexStatus getStatus() {
-			return status;
-		}
+        return info;
+    }
 
-		public String getErrorMessage() {
-			return errorMessage;
-		}
-		
-		public boolean hasErrorMessage() {
-			return errorMessage != null && errorMessage.length() > 0;
-		}
-		
-		public String toString() {
-			return name + " on " + schema + "." + table + "(" + column + ")";
-		}
-	}
+    public List<IndexInfoObject> getIndexObjects() {
+        return indexes;
+    }
+
+    public List<IndexInfoObject> getIndexObjects(IndexStatus status) {
+        List<IndexInfoObject> tmp = new ArrayList<IndexInfoObject>();
+        for (IndexInfoObject obj : indexes)
+            if (obj.status == status)
+                tmp.add(obj);
+
+        return tmp;
+    }
+
+    public int getNumberOfIndexes() {
+        return indexes.size();
+    }
+
+    public int getNumberOfValidIndexes() {
+        return getIndexObjects(IndexStatus.VALID).size();
+    }
+
+    public int getNumberOfInvalidIndexes() {
+        return getIndexObjects(IndexStatus.INVALID).size();
+    }
+
+    public int getNumberOfDroppedIndexes() {
+        return getIndexObjects(IndexStatus.DROPPED).size();
+    }
+
+    public int getNumberOfFaultyIndexes() {
+        return getIndexObjects(IndexStatus.ERROR).size();
+    }
+
+    public void printStatusToConsole() {
+        int on = getNumberOfValidIndexes();
+        int all = getIndexObjects().size();
+
+        StringBuilder msg = new StringBuilder();
+
+        msg.append(type == IndexType.SPATIAL ? "Spatial" : "Normal").append(" indexes are ");
+
+        if (on == 0)
+            msg.append("disabled.");
+        else if (on == all)
+            msg.append("enabled.");
+        else
+            msg.append("partly enabled (").append(on).append(" / ").append(all).append(").");
+
+        LOG.info(msg.toString());
+    }
+
+    public static final class IndexInfoObject {
+        private String name;
+        private String schema;
+        private String table;
+        private String column;
+        private IndexStatus status;
+        private String errorMessage;
+
+        public String getName() {
+            return name;
+        }
+
+        public String getSchema() {
+            return schema;
+        }
+
+        public String getTable() {
+            return table;
+        }
+
+        public String getColumn() {
+            return column;
+        }
+
+        public IndexStatus getStatus() {
+            return status;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        public boolean hasErrorMessage() {
+            return errorMessage != null && errorMessage.length() > 0;
+        }
+
+        public String toString() {
+            return name + " on " + schema + "." + table + "(" + column + ")";
+        }
+    }
 
 }

@@ -32,18 +32,18 @@ import org.citydb.util.event.Event;
 import java.util.Map;
 
 public class ObjectCounterEvent extends Event {
-	private final Map<Integer, Long> counter;
+    private final Map<Integer, Long> counter;
 
-	public ObjectCounterEvent(Map<Integer, Long> counter, Object channel) {
-		super(EventType.OBJECT_COUNTER, channel);
-		this.counter = counter;
-	}
+    public ObjectCounterEvent(Map<Integer, Long> counter, Object channel) {
+        super(EventType.OBJECT_COUNTER, channel);
+        this.counter = counter;
+    }
 
-	public ObjectCounterEvent(Map<Integer, Long> counter) {
-		this(counter, Event.GLOBAL_CHANNEL);
-	}
+    public ObjectCounterEvent(Map<Integer, Long> counter) {
+        this(counter, Event.GLOBAL_CHANNEL);
+    }
 
-	public Map<Integer, Long> getCounter() {
-		return counter;
-	}
+    public Map<Integer, Long> getCounter() {
+        return counter;
+    }
 }

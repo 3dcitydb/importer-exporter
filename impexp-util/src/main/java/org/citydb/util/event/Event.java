@@ -31,35 +31,35 @@ import java.lang.ref.WeakReference;
 import java.util.Objects;
 
 public abstract class Event {
-	public static final Object GLOBAL_CHANNEL = new Object();
-	
-	private final Enum<?> eventType;
-	private WeakReference<Object> channel;
-	private boolean cancelled;
+    public static final Object GLOBAL_CHANNEL = new Object();
 
-	public Event(Enum<?> eventType, Object channel) {
-		this.eventType = Objects.requireNonNull(eventType, "The type of an event may not be null.");
-		cancelled = false;
-		setChannel(channel);
-	}
+    private final Enum<?> eventType;
+    private WeakReference<Object> channel;
+    private boolean cancelled;
 
-	public boolean isCancelled() {
-		return cancelled;
-	}
+    public Event(Enum<?> eventType, Object channel) {
+        this.eventType = Objects.requireNonNull(eventType, "The type of an event may not be null.");
+        cancelled = false;
+        setChannel(channel);
+    }
 
-	public void setCancelled(boolean cancelled) {
-		this.cancelled = cancelled;
-	}
+    public boolean isCancelled() {
+        return cancelled;
+    }
 
-	public Enum<?> getEventType() {
-		return eventType;
-	}
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
 
-	public Object getChannel() {
-		return channel.get();
-	}
+    public Enum<?> getEventType() {
+        return eventType;
+    }
 
-	public void setChannel(Object channel) {
-		this.channel = new WeakReference<>(channel != null ? channel : GLOBAL_CHANNEL);
-	}
+    public Object getChannel() {
+        return channel.get();
+    }
+
+    public void setChannel(Object channel) {
+        this.channel = new WeakReference<>(channel != null ? channel : GLOBAL_CHANNEL);
+    }
 }

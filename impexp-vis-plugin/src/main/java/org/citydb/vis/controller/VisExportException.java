@@ -29,51 +29,51 @@
 package org.citydb.vis.controller;
 
 public class VisExportException extends Exception {
-	private final ErrorCode errorCode;
+    private final ErrorCode errorCode;
 
-	public enum ErrorCode {
-		SPATIAL_INDEXES_NOT_ACTIVATED,
-		MISSING_GOOGLE_API_KEY,
-		UNKNOWN
-	}
+    public enum ErrorCode {
+        SPATIAL_INDEXES_NOT_ACTIVATED,
+        MISSING_GOOGLE_API_KEY,
+        UNKNOWN
+    }
 
-	public VisExportException(ErrorCode errorCode) {
-		super();
-		this.errorCode = errorCode;
-	}
+    public VisExportException(ErrorCode errorCode) {
+        super();
+        this.errorCode = errorCode;
+    }
 
-	public VisExportException(ErrorCode errorCode, String message) {
-		super(message);
-		this.errorCode = errorCode;
-	}
+    public VisExportException(ErrorCode errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+    }
 
-	public VisExportException(ErrorCode errorCode, String message, Throwable cause) {
-		super(message, cause);
-		this.errorCode = errorCode;
-	}
+    public VisExportException(ErrorCode errorCode, String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = errorCode;
+    }
 
-	public VisExportException(ErrorCode errorCode, Throwable cause) {
-		super(cause);
-		this.errorCode = errorCode;
-	}
+    public VisExportException(ErrorCode errorCode, Throwable cause) {
+        super(cause);
+        this.errorCode = errorCode;
+    }
 
-	public VisExportException() {
-		this(ErrorCode.UNKNOWN);
-	}
+    public VisExportException() {
+        this(ErrorCode.UNKNOWN);
+    }
 
-	public VisExportException(String message) {
-		this(ErrorCode.UNKNOWN, message);
-	}
+    public VisExportException(String message) {
+        this(ErrorCode.UNKNOWN, message);
+    }
 
-	public VisExportException(String message, Throwable cause) {
-		this(ErrorCode.UNKNOWN, message, cause);
-	}
+    public VisExportException(String message, Throwable cause) {
+        this(ErrorCode.UNKNOWN, message, cause);
+    }
 
-	public VisExportException(Throwable cause) {
-		this(ErrorCode.UNKNOWN, cause);
-	}
+    public VisExportException(Throwable cause) {
+        this(ErrorCode.UNKNOWN, cause);
+    }
 
-	public ErrorCode getErrorCode() {
-		return errorCode;
-	}
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
 }

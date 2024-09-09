@@ -29,9 +29,9 @@ package org.citydb.core.query.filter.selection.expression;
 
 public abstract class AbstractFunction implements Expression {
 
-	@Override
-	public ExpressionName getExpressionName() {
-		return ExpressionName.FUNCTION;
-	}
-	
+    @Override
+    public ExpressionName getExpressionName() {
+        return ExpressionName.FUNCTION;
+    }
+
 }

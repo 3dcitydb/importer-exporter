@@ -50,97 +50,97 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
-	private final Logger log = Logger.getInstance();
+    private final Logger log = Logger.getInstance();
 
-	private final ConnectionManager connectionManager;
-	private final boolean isManagedTransaction;
-	private final AbstractDatabaseAdapter databaseAdapter;
-	private final SchemaMapping schemaMapping;
-	private final CityGMLBuilder cityGMLBuilder;
-	private final WorkerPool<DBXlink> xlinkWorkerPool;
-	private final IdCacheManager idCacheManager;
-	private final CityGMLFilter filter;
-	private final AffineTransformer affineTransformer;
-	private final ImportLogger importLogger;
-	private final InternalConfig internalConfig;
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
+    private final ConnectionManager connectionManager;
+    private final boolean isManagedTransaction;
+    private final AbstractDatabaseAdapter databaseAdapter;
+    private final SchemaMapping schemaMapping;
+    private final CityGMLBuilder cityGMLBuilder;
+    private final WorkerPool<DBXlink> xlinkWorkerPool;
+    private final IdCacheManager idCacheManager;
+    private final CityGMLFilter filter;
+    private final AffineTransformer affineTransformer;
+    private final ImportLogger importLogger;
+    private final InternalConfig internalConfig;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
 
-	public DBImportWorkerFactory(ConnectionManager connectionManager,
-			boolean isManagedTransaction,
-			AbstractDatabaseAdapter databaseAdapter,
-			SchemaMapping schemaMapping,
-			CityGMLBuilder cityGMLBuilder,
-			WorkerPool<DBXlink> xlinkWorkerPool,
-			IdCacheManager idCacheManager,
-			CityGMLFilter filter,
-			AffineTransformer affineTransformer,
-			ImportLogger importLogger,
-			InternalConfig internalConfig,
-			Config config,
-			EventDispatcher eventDispatcher) {
-		this.connectionManager = connectionManager;
-		this.isManagedTransaction = isManagedTransaction;
-		this.databaseAdapter = databaseAdapter;
-		this.schemaMapping = schemaMapping;
-		this.cityGMLBuilder = cityGMLBuilder;
-		this.xlinkWorkerPool = xlinkWorkerPool;
-		this.idCacheManager = idCacheManager;
-		this.filter = filter;
-		this.affineTransformer = affineTransformer;
-		this.importLogger = importLogger;
-		this.internalConfig = internalConfig;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public DBImportWorkerFactory(ConnectionManager connectionManager,
+                                 boolean isManagedTransaction,
+                                 AbstractDatabaseAdapter databaseAdapter,
+                                 SchemaMapping schemaMapping,
+                                 CityGMLBuilder cityGMLBuilder,
+                                 WorkerPool<DBXlink> xlinkWorkerPool,
+                                 IdCacheManager idCacheManager,
+                                 CityGMLFilter filter,
+                                 AffineTransformer affineTransformer,
+                                 ImportLogger importLogger,
+                                 InternalConfig internalConfig,
+                                 Config config,
+                                 EventDispatcher eventDispatcher) {
+        this.connectionManager = connectionManager;
+        this.isManagedTransaction = isManagedTransaction;
+        this.databaseAdapter = databaseAdapter;
+        this.schemaMapping = schemaMapping;
+        this.cityGMLBuilder = cityGMLBuilder;
+        this.xlinkWorkerPool = xlinkWorkerPool;
+        this.idCacheManager = idCacheManager;
+        this.filter = filter;
+        this.affineTransformer = affineTransformer;
+        this.importLogger = importLogger;
+        this.internalConfig = internalConfig;
+        this.config = config;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	public DBImportWorkerFactory(SchemaMapping schemaMapping,
-			CityGMLBuilder cityGMLBuilder,
-			WorkerPool<DBXlink> xlinkWorkerPool,
-			IdCacheManager idCacheManager,
-			CityGMLFilter filter,
-			AffineTransformer affineTransformer,
-			ImportLogger importLogger,
-			InternalConfig internalConfig,
-			Config config,
-			EventDispatcher eventDispatcher) {
-		this(DatabaseConnectionPool.getInstance(), false, DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter(),
-				schemaMapping, cityGMLBuilder, xlinkWorkerPool, idCacheManager, filter, affineTransformer, importLogger,
-				internalConfig, config, eventDispatcher);
-	}
+    public DBImportWorkerFactory(SchemaMapping schemaMapping,
+                                 CityGMLBuilder cityGMLBuilder,
+                                 WorkerPool<DBXlink> xlinkWorkerPool,
+                                 IdCacheManager idCacheManager,
+                                 CityGMLFilter filter,
+                                 AffineTransformer affineTransformer,
+                                 ImportLogger importLogger,
+                                 InternalConfig internalConfig,
+                                 Config config,
+                                 EventDispatcher eventDispatcher) {
+        this(DatabaseConnectionPool.getInstance(), false, DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter(),
+                schemaMapping, cityGMLBuilder, xlinkWorkerPool, idCacheManager, filter, affineTransformer, importLogger,
+                internalConfig, config, eventDispatcher);
+    }
 
-	public DBImportWorkerFactory(ConnectionManager connectionManager,
-			AbstractDatabaseAdapter databaseAdapter,
-			SchemaMapping schemaMapping,
-			CityGMLBuilder cityGMLBuilder,
-			WorkerPool<DBXlink> xlinkWorkerPool,
-			IdCacheManager idCacheManager,
-			CityGMLFilter filter,
-			AffineTransformer affineTransformer,
-			ImportLogger importLogger,
-			InternalConfig internalConfig,
-			Config config,
-			EventDispatcher eventDispatcher) {
-		this(connectionManager, true, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkWorkerPool, idCacheManager,
-				filter, affineTransformer, importLogger, internalConfig, config, eventDispatcher);
-	}
+    public DBImportWorkerFactory(ConnectionManager connectionManager,
+                                 AbstractDatabaseAdapter databaseAdapter,
+                                 SchemaMapping schemaMapping,
+                                 CityGMLBuilder cityGMLBuilder,
+                                 WorkerPool<DBXlink> xlinkWorkerPool,
+                                 IdCacheManager idCacheManager,
+                                 CityGMLFilter filter,
+                                 AffineTransformer affineTransformer,
+                                 ImportLogger importLogger,
+                                 InternalConfig internalConfig,
+                                 Config config,
+                                 EventDispatcher eventDispatcher) {
+        this(connectionManager, true, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkWorkerPool, idCacheManager,
+                filter, affineTransformer, importLogger, internalConfig, config, eventDispatcher);
+    }
 
-	@Override
-	public Worker<CityGML> createWorker() {
-		DBImportWorker dbWorker = null;
+    @Override
+    public Worker<CityGML> createWorker() {
+        DBImportWorker dbWorker = null;
 
-		try {
-			Connection connection = connectionManager.getConnection();
-			if (!isManagedTransaction) {
-				connection.setAutoCommit(false);
-			}
+        try {
+            Connection connection = connectionManager.getConnection();
+            if (!isManagedTransaction) {
+                connection.setAutoCommit(false);
+            }
 
-			dbWorker = new DBImportWorker(connection, isManagedTransaction, databaseAdapter, schemaMapping, cityGMLBuilder,
-					xlinkWorkerPool, idCacheManager, filter, affineTransformer, importLogger, internalConfig, config, eventDispatcher);
-		} catch (SQLException e) {
-			log.error("Failed to create import worker.", e);
-		}
+            dbWorker = new DBImportWorker(connection, isManagedTransaction, databaseAdapter, schemaMapping, cityGMLBuilder,
+                    xlinkWorkerPool, idCacheManager, filter, affineTransformer, importLogger, internalConfig, config, eventDispatcher);
+        } catch (SQLException e) {
+            log.error("Failed to create import worker.", e);
+        }
 
-		return dbWorker;
-	}
+        return dbWorker;
+    }
 }

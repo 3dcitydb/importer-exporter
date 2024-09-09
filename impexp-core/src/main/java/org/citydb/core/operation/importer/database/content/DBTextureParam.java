@@ -38,72 +38,72 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class DBTextureParam implements DBImporter {
-	private final Connection batchConn;
-	private final CityGMLImportManager importer;
+    private final Connection batchConn;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psTextureParam;
-	private int batchCounter;
+    private PreparedStatement psTextureParam;
+    private int batchCounter;
 
-	public DBTextureParam(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
-		this.batchConn = batchConn;
-		this.importer = importer;
+    public DBTextureParam(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
+        this.batchConn = batchConn;
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String texCoordListStmt = "insert into " + schema + ".textureparam (surface_geometry_id, is_texture_parametrization, world_to_texture, texture_coordinates, surface_data_id) values " +
-				"(?, ?, ?, ?, ?)";
-		psTextureParam = batchConn.prepareStatement(texCoordListStmt);
-	}
+        String texCoordListStmt = "insert into " + schema + ".textureparam (surface_geometry_id, is_texture_parametrization, world_to_texture, texture_coordinates, surface_data_id) values " +
+                "(?, ?, ?, ?, ?)";
+        psTextureParam = batchConn.prepareStatement(texCoordListStmt);
+    }
 
-	protected void doImport(SurfaceGeometryTarget target, long surfaceDataId) throws CityGMLImportException, SQLException {
-		psTextureParam.setLong(1, target.getSurfaceGeometryId());
-		psTextureParam.setInt(2, 1);
-		psTextureParam.setNull(3, Types.VARCHAR);
-		psTextureParam.setObject(4, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(target.compileTextureCoordinates(), batchConn));
-		psTextureParam.setLong(5, surfaceDataId);
+    protected void doImport(SurfaceGeometryTarget target, long surfaceDataId) throws CityGMLImportException, SQLException {
+        psTextureParam.setLong(1, target.getSurfaceGeometryId());
+        psTextureParam.setInt(2, 1);
+        psTextureParam.setNull(3, Types.VARCHAR);
+        psTextureParam.setObject(4, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(target.compileTextureCoordinates(), batchConn));
+        psTextureParam.setLong(5, surfaceDataId);
 
-		addBatch();
-	}
+        addBatch();
+    }
 
-	protected void doImport(String worldToTexture, long surfaceDataId, long surfaceGeometryId) throws CityGMLImportException, SQLException {
-		psTextureParam.setLong(1, surfaceGeometryId);
-		psTextureParam.setInt(2, 1);
-		psTextureParam.setString(3, worldToTexture);
-		psTextureParam.setNull(4, importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
-				importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
-		psTextureParam.setLong(5, surfaceDataId);
+    protected void doImport(String worldToTexture, long surfaceDataId, long surfaceGeometryId) throws CityGMLImportException, SQLException {
+        psTextureParam.setLong(1, surfaceGeometryId);
+        psTextureParam.setInt(2, 1);
+        psTextureParam.setString(3, worldToTexture);
+        psTextureParam.setNull(4, importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+                importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
+        psTextureParam.setLong(5, surfaceDataId);
 
-		addBatch();
-	}
+        addBatch();
+    }
 
-	protected void doImport(long surfaceDataId, long surfaceGeometryId) throws CityGMLImportException, SQLException {
-		psTextureParam.setLong(1, surfaceGeometryId);
-		psTextureParam.setInt(2, 0);
-		psTextureParam.setNull(3, Types.VARCHAR);
-		psTextureParam.setNull(4, importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
-				importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
-		psTextureParam.setLong(5, surfaceDataId);
+    protected void doImport(long surfaceDataId, long surfaceGeometryId) throws CityGMLImportException, SQLException {
+        psTextureParam.setLong(1, surfaceGeometryId);
+        psTextureParam.setInt(2, 0);
+        psTextureParam.setNull(3, Types.VARCHAR);
+        psTextureParam.setNull(4, importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+                importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
+        psTextureParam.setLong(5, surfaceDataId);
 
-		addBatch();
-	}
+        addBatch();
+    }
 
-	private void addBatch() throws CityGMLImportException, SQLException {
-		psTextureParam.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.TEXTUREPARAM);		
-	}
+    private void addBatch() throws CityGMLImportException, SQLException {
+        psTextureParam.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.TEXTUREPARAM);
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psTextureParam.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psTextureParam.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psTextureParam.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psTextureParam.close();
+    }
 
 }

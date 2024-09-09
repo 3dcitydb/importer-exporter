@@ -30,5 +30,5 @@ package org.citydb.gui.plugin.view;
 import org.citydb.gui.plugin.GuiExtension;
 
 public interface ViewExtension extends GuiExtension {
-	View getView();
+    View getView();
 }

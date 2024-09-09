@@ -44,35 +44,35 @@ import java.util.List;
 import java.util.Set;
 
 public class FeatureTypeFilterBuilder {
-	private final SchemaPathBuilder builder;
+    private final SchemaPathBuilder builder;
 
-	protected FeatureTypeFilterBuilder(SchemaPathBuilder builder) {
-		this.builder = builder;
-	}
+    protected FeatureTypeFilterBuilder(SchemaPathBuilder builder) {
+        this.builder = builder;
+    }
 
-	protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, CityGMLVersion targetVersion, SQLQueryContext queryContext) throws QueryBuildException {
-		if (targetVersion == null)
-			targetVersion = CityGMLVersion.DEFAULT;
+    protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, CityGMLVersion targetVersion, SQLQueryContext queryContext) throws QueryBuildException {
+        if (targetVersion == null)
+            targetVersion = CityGMLVersion.DEFAULT;
 
-		List<FeatureType> featureTypes = typeFilter.getFeatureTypes(targetVersion);
-		if (featureTypes.isEmpty())
-			return;
+        List<FeatureType> featureTypes = typeFilter.getFeatureTypes(targetVersion);
+        if (featureTypes.isEmpty())
+            return;
 
-		Set<Integer> ids = new HashSet<>(featureTypes.size());
-		for (FeatureType featureType : featureTypes)
-			ids.add(featureType.getObjectClassId());
+        Set<Integer> ids = new HashSet<>(featureTypes.size());
+        for (FeatureType featureType : featureTypes)
+            ids.add(featureType.getObjectClassId());
 
-		Select select = queryContext.getSelect();
-		Table cityObject = builder.joinCityObjectTable(queryContext);
-		Column objectClassId = cityObject.getColumn(MappingConstants.OBJECTCLASS_ID);
+        Select select = queryContext.getSelect();
+        Table cityObject = builder.joinCityObjectTable(queryContext);
+        Column objectClassId = cityObject.getColumn(MappingConstants.OBJECTCLASS_ID);
 
-		if (ids.size() == 1)
-			select.addSelection(ComparisonFactory.equalTo(objectClassId, new IntegerLiteral(ids.iterator().next())));
-		else
-			select.addSelection(ComparisonFactory.in(objectClassId, new LiteralList(ids.toArray(new Integer[0]))));
-	}
+        if (ids.size() == 1)
+            select.addSelection(ComparisonFactory.equalTo(objectClassId, new IntegerLiteral(ids.iterator().next())));
+        else
+            select.addSelection(ComparisonFactory.in(objectClassId, new LiteralList(ids.toArray(new Integer[0]))));
+    }
 
-	protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, SQLQueryContext queryContext) throws QueryBuildException {
-		buildFeatureTypeFilter(typeFilter, CityGMLVersion.DEFAULT, queryContext);
-	}
+    protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, SQLQueryContext queryContext) throws QueryBuildException {
+        buildFeatureTypeFilter(typeFilter, CityGMLVersion.DEFAULT, queryContext);
+    }
 }

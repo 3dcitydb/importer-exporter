@@ -28,7 +28,7 @@
 package org.citydb.gui.map.map.event;
 
 public enum MapEvents {
-	BOUNDING_BOX_SELECTION,
-	MAP_BOUNDS,
-	REVERSE_GEOCODER
+    BOUNDING_BOX_SELECTION,
+    MAP_BOUNDS,
+    REVERSE_GEOCODER
 }

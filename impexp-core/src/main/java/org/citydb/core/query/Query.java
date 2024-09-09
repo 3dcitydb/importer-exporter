@@ -42,189 +42,189 @@ import org.citydb.core.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 public class Query {
-	private CityGMLVersion targetVersion;
-	private DatabaseSrs targetSrs;
-	private FeatureTypeFilter featureTypeFilter;
-	private CounterFilter counterFilter;
-	private LodFilter lodFilter;
-	private Projection projectionFilter;
-	private SelectionFilter selection;
-	private AppearanceFilter appearanceFilter;
-	private Sorting sorting;
-	private Tiling tiling;
+    private CityGMLVersion targetVersion;
+    private DatabaseSrs targetSrs;
+    private FeatureTypeFilter featureTypeFilter;
+    private CounterFilter counterFilter;
+    private LodFilter lodFilter;
+    private Projection projectionFilter;
+    private SelectionFilter selection;
+    private AppearanceFilter appearanceFilter;
+    private Sorting sorting;
+    private Tiling tiling;
 
-	public Query() {
-	}
+    public Query() {
+    }
 
-	public Query(Query other) {
-		copyFrom(other);
-	}
+    public Query(Query other) {
+        copyFrom(other);
+    }
 
-	public boolean isSetTargetVersion() {
-		return targetVersion != null;
-	}
+    public boolean isSetTargetVersion() {
+        return targetVersion != null;
+    }
 
-	public CityGMLVersion getTargetVersion() {
-		return targetVersion;
-	}
+    public CityGMLVersion getTargetVersion() {
+        return targetVersion;
+    }
 
-	public void setTargetVersion(CityGMLVersion targetVersion) {
-		this.targetVersion = targetVersion;
-	}
+    public void setTargetVersion(CityGMLVersion targetVersion) {
+        this.targetVersion = targetVersion;
+    }
 
-	public boolean isSetTargetSrs() {
-		return targetSrs != null;
-	}
+    public boolean isSetTargetSrs() {
+        return targetSrs != null;
+    }
 
-	public DatabaseSrs getTargetSrs() {
-		return targetSrs;
-	}
+    public DatabaseSrs getTargetSrs() {
+        return targetSrs;
+    }
 
-	public void setTargetSrs(DatabaseSrs targetSrs) {
-		this.targetSrs = targetSrs;
-	}
+    public void setTargetSrs(DatabaseSrs targetSrs) {
+        this.targetSrs = targetSrs;
+    }
 
-	public boolean isSetFeatureTypeFilter() {
-		return featureTypeFilter != null;
-	}
+    public boolean isSetFeatureTypeFilter() {
+        return featureTypeFilter != null;
+    }
 
-	public FeatureTypeFilter getFeatureTypeFilter() {
-		return featureTypeFilter;
-	}
+    public FeatureTypeFilter getFeatureTypeFilter() {
+        return featureTypeFilter;
+    }
 
-	public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
-		this.featureTypeFilter = featureTypeFilter;
-	}
+    public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
+        this.featureTypeFilter = featureTypeFilter;
+    }
 
-	public void unsetFeatureTypeFilter() {
-		featureTypeFilter = null;
-	}
+    public void unsetFeatureTypeFilter() {
+        featureTypeFilter = null;
+    }
 
-	public boolean isSetCounterFilter() {
-		return counterFilter != null;
-	}
+    public boolean isSetCounterFilter() {
+        return counterFilter != null;
+    }
 
-	public CounterFilter getCounterFilter() {
-		return counterFilter;
-	}
+    public CounterFilter getCounterFilter() {
+        return counterFilter;
+    }
 
-	public void setCounterFilter(CounterFilter counterFilter) {
-		this.counterFilter = counterFilter;
-	}
+    public void setCounterFilter(CounterFilter counterFilter) {
+        this.counterFilter = counterFilter;
+    }
 
-	public void unsetCounterFilter() {
-		counterFilter = null;
-	}
+    public void unsetCounterFilter() {
+        counterFilter = null;
+    }
 
-	public boolean isSetLodFilter() {
-		return lodFilter != null;
-	}
+    public boolean isSetLodFilter() {
+        return lodFilter != null;
+    }
 
-	public LodFilter getLodFilter() {
-		if (lodFilter == null)
-			lodFilter = new LodFilter(LodFilterMode.OR);
+    public LodFilter getLodFilter() {
+        if (lodFilter == null)
+            lodFilter = new LodFilter(LodFilterMode.OR);
 
-		return lodFilter;
-	}
+        return lodFilter;
+    }
 
-	public void setLodFilter(LodFilter lodFilter) {
-		this.lodFilter = lodFilter;
-	}
+    public void setLodFilter(LodFilter lodFilter) {
+        this.lodFilter = lodFilter;
+    }
 
-	public void unsetLodFilter() {
-		lodFilter = null;
-	}
+    public void unsetLodFilter() {
+        lodFilter = null;
+    }
 
-	public boolean isSetProjection() {
-		return projectionFilter != null;
-	}
+    public boolean isSetProjection() {
+        return projectionFilter != null;
+    }
 
-	public ProjectionFilter getProjectionFilter(AbstractObjectType<?> objectType) {
-		return projectionFilter != null ? projectionFilter.getProjectionFilter(objectType) : new ProjectionFilter(objectType);
-	}
+    public ProjectionFilter getProjectionFilter(AbstractObjectType<?> objectType) {
+        return projectionFilter != null ? projectionFilter.getProjectionFilter(objectType) : new ProjectionFilter(objectType);
+    }
 
-	public void setProjection(Projection projectionFilter) {
-		this.projectionFilter = projectionFilter;
-	}
+    public void setProjection(Projection projectionFilter) {
+        this.projectionFilter = projectionFilter;
+    }
 
-	public void unsetProjection() {
-		projectionFilter = null;
-	}
+    public void unsetProjection() {
+        projectionFilter = null;
+    }
 
-	public boolean isSetSelection() {
-		return selection != null && selection.isSetPredicate();
-	}
+    public boolean isSetSelection() {
+        return selection != null && selection.isSetPredicate();
+    }
 
-	public SelectionFilter getSelection() {
-		return selection;
-	}
+    public SelectionFilter getSelection() {
+        return selection;
+    }
 
-	public void setSelection(SelectionFilter selection) {
-		this.selection = selection;
-	}
+    public void setSelection(SelectionFilter selection) {
+        this.selection = selection;
+    }
 
-	public void unsetSelection() {
-		selection = null;
-	}
+    public void unsetSelection() {
+        selection = null;
+    }
 
-	public AppearanceFilter getAppearanceFilter() {
-		return appearanceFilter;
-	}
-	
-	public boolean isSetAppearanceFilter() {
-		return appearanceFilter != null && appearanceFilter.containsThemes();
-	}
+    public AppearanceFilter getAppearanceFilter() {
+        return appearanceFilter;
+    }
 
-	public void setAppearanceFilter(AppearanceFilter appearanceFilter) {
-		this.appearanceFilter = appearanceFilter;
-	}
+    public boolean isSetAppearanceFilter() {
+        return appearanceFilter != null && appearanceFilter.containsThemes();
+    }
 
-	public void unsetAppearanceFilter() {
-		appearanceFilter = null;
-	}
+    public void setAppearanceFilter(AppearanceFilter appearanceFilter) {
+        this.appearanceFilter = appearanceFilter;
+    }
 
-	public boolean isSetSorting() {
-		return sorting != null && sorting.hasSortProperties();
-	}
+    public void unsetAppearanceFilter() {
+        appearanceFilter = null;
+    }
 
-	public Sorting getSorting() {
-		return sorting;
-	}
+    public boolean isSetSorting() {
+        return sorting != null && sorting.hasSortProperties();
+    }
 
-	public void setSorting(Sorting sorting) {
-		this.sorting = sorting;
-	}
+    public Sorting getSorting() {
+        return sorting;
+    }
 
-	public void unsetSorting() {
-		sorting = null;
-	}
+    public void setSorting(Sorting sorting) {
+        this.sorting = sorting;
+    }
 
-	public boolean isSetTiling() {
-		return tiling != null;
-	}
+    public void unsetSorting() {
+        sorting = null;
+    }
 
-	public Tiling getTiling() {
-		return tiling;
-	}
+    public boolean isSetTiling() {
+        return tiling != null;
+    }
 
-	public void setTiling(Tiling tiling) {
-		this.tiling = tiling;
-	}
+    public Tiling getTiling() {
+        return tiling;
+    }
 
-	public void unsetTiling() {
-		tiling = null;
-	}
+    public void setTiling(Tiling tiling) {
+        this.tiling = tiling;
+    }
 
-	public void copyFrom(Query query) {
-		targetVersion = query.targetVersion;
-		targetSrs = query.targetSrs;
-		featureTypeFilter = query.featureTypeFilter;
-		counterFilter = query.counterFilter;
-		lodFilter = query.lodFilter;
-		projectionFilter = query.projectionFilter;
-		selection = query.selection;
-		appearanceFilter = query.appearanceFilter;
-		sorting = query.sorting;
-		tiling = query.tiling;
-	}
+    public void unsetTiling() {
+        tiling = null;
+    }
+
+    public void copyFrom(Query query) {
+        targetVersion = query.targetVersion;
+        targetSrs = query.targetSrs;
+        featureTypeFilter = query.featureTypeFilter;
+        counterFilter = query.counterFilter;
+        lodFilter = query.lodFilter;
+        projectionFilter = query.projectionFilter;
+        selection = query.selection;
+        appearanceFilter = query.appearanceFilter;
+        sorting = query.sorting;
+        tiling = query.tiling;
+    }
 }

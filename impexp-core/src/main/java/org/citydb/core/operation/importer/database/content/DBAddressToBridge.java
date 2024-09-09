@@ -36,41 +36,41 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBAddressToBridge implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psAddressToBridge;
-	private int batchCounter;
+    private PreparedStatement psAddressToBridge;
+    private int batchCounter;
 
-	public DBAddressToBridge(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
-		this.importer = importer;
+    public DBAddressToBridge(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String stmt = "insert into " + schema + ".address_to_bridge (bridge_id, address_id) values " +
-				"(?, ?)";
-		psAddressToBridge = batchConn.prepareStatement(stmt);
-	}
+        String stmt = "insert into " + schema + ".address_to_bridge (bridge_id, address_id) values " +
+                "(?, ?)";
+        psAddressToBridge = batchConn.prepareStatement(stmt);
+    }
 
-	protected void doImport(long addressId, long bridgeId) throws CityGMLImportException, SQLException {
-		psAddressToBridge.setLong(1, bridgeId);
-		psAddressToBridge.setLong(2, addressId);
+    protected void doImport(long addressId, long bridgeId) throws CityGMLImportException, SQLException {
+        psAddressToBridge.setLong(1, bridgeId);
+        psAddressToBridge.setLong(2, addressId);
 
-		psAddressToBridge.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.ADDRESS_TO_BRIDGE);
-	}
+        psAddressToBridge.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.ADDRESS_TO_BRIDGE);
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psAddressToBridge.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psAddressToBridge.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psAddressToBridge.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psAddressToBridge.close();
+    }
 
 }

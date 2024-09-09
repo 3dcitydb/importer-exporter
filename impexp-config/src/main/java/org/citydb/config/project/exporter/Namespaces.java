@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import java.util.*;
 
-@XmlType(name="NamespacesType", propOrder={})
+@XmlType(name = "NamespacesType", propOrder = {})
 public class Namespaces {
     @XmlAttribute(required = true)
     private boolean isEnabled;

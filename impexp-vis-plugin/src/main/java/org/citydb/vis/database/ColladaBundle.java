@@ -34,82 +34,82 @@ import org.collada._2005._11.colladaschema.COLLADA;
 import java.util.HashMap;
 
 public class ColladaBundle {
-	
-	// wrapped textures or images in unknown formats (like .rgb)
-	// they cannot be "atlased", this is why they must be stored separately
-	private HashMap<String, Long> unsupportedTexImageIds;
 
-	// images or atlases in usual formats (like .jpg)
-	private HashMap<String, TextureImage> texImages;
+    // wrapped textures or images in unknown formats (like .rgb)
+    // they cannot be "atlased", this is why they must be stored separately
+    private HashMap<String, Long> unsupportedTexImageIds;
 
-	private COLLADA collada;
-	private String colladaAsString;
-	private PlacemarkType placemark;
-	private String gmlId;
-	private long id;
-	private String externalBalloonFileContent;
+    // images or atlases in usual formats (like .jpg)
+    private HashMap<String, TextureImage> texImages;
 
-	public void setTexImages(HashMap<String, TextureImage> texImages) {
-		this.texImages = texImages;
-	}
+    private COLLADA collada;
+    private String colladaAsString;
+    private PlacemarkType placemark;
+    private String gmlId;
+    private long id;
+    private String externalBalloonFileContent;
 
-	public HashMap<String, TextureImage> getTexImages() {
-		return texImages;
-	}
+    public void setTexImages(HashMap<String, TextureImage> texImages) {
+        this.texImages = texImages;
+    }
 
-	public 	void setUnsupportedTexImageIds(HashMap<String, Long> unsupportedTexImageIds) {
-		this.unsupportedTexImageIds = unsupportedTexImageIds;
-	}
+    public HashMap<String, TextureImage> getTexImages() {
+        return texImages;
+    }
 
-	public 	HashMap<String, Long> getUnsupportedTexImageIds() {
-		return unsupportedTexImageIds;
-	}
+    public void setUnsupportedTexImageIds(HashMap<String, Long> unsupportedTexImageIds) {
+        this.unsupportedTexImageIds = unsupportedTexImageIds;
+    }
 
-	public void setCollada(COLLADA collada) {
-		this.collada = collada;
-	}
+    public HashMap<String, Long> getUnsupportedTexImageIds() {
+        return unsupportedTexImageIds;
+    }
 
-	public COLLADA getCollada() {
-		return collada;
-	}
+    public void setCollada(COLLADA collada) {
+        this.collada = collada;
+    }
 
-	public void setPlacemark(PlacemarkType placemark) {
-		this.placemark = placemark;
-	}
+    public COLLADA getCollada() {
+        return collada;
+    }
 
-	public PlacemarkType getPlacemark() {
-		return placemark;
-	}
+    public void setPlacemark(PlacemarkType placemark) {
+        this.placemark = placemark;
+    }
 
-	public void setGmlId(String gmlId) {
-		this.gmlId = gmlId;
-	}
+    public PlacemarkType getPlacemark() {
+        return placemark;
+    }
 
-	public String getGmlId() {
-		return gmlId;
-	}
+    public void setGmlId(String gmlId) {
+        this.gmlId = gmlId;
+    }
 
-	public long getId() {
-		return id;
-	}
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public void setId(long id) {
-		this.id = id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public void setColladaAsString(String colladaAsString) {
-		this.colladaAsString = colladaAsString;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public String getColladaAsString() {
-		return colladaAsString;
-	}
+    public void setColladaAsString(String colladaAsString) {
+        this.colladaAsString = colladaAsString;
+    }
 
-	public void setExternalBalloonFileContent(String externalBalloonFileContent) {
-		this.externalBalloonFileContent = externalBalloonFileContent;
-	}
+    public String getColladaAsString() {
+        return colladaAsString;
+    }
 
-	public String getExternalBalloonFileContent() {
-		return externalBalloonFileContent;
-	}
+    public void setExternalBalloonFileContent(String externalBalloonFileContent) {
+        this.externalBalloonFileContent = externalBalloonFileContent;
+    }
+
+    public String getExternalBalloonFileContent() {
+        return externalBalloonFileContent;
+    }
 }

@@ -36,41 +36,41 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBAddressToBuilding implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psAddressToBuilding;
-	private int batchCounter;
+    private PreparedStatement psAddressToBuilding;
+    private int batchCounter;
 
-	public DBAddressToBuilding(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
-		this.importer = importer;
+    public DBAddressToBuilding(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String stmt = "insert into " + schema + ".address_to_building (building_id, address_id) values " +
-				"(?, ?)";
-		psAddressToBuilding = batchConn.prepareStatement(stmt);
-	}
+        String stmt = "insert into " + schema + ".address_to_building (building_id, address_id) values " +
+                "(?, ?)";
+        psAddressToBuilding = batchConn.prepareStatement(stmt);
+    }
 
-	protected void doImport(long addressId, long buildingId) throws CityGMLImportException, SQLException {
-		psAddressToBuilding.setLong(1, buildingId);
-		psAddressToBuilding.setLong(2, addressId);
+    protected void doImport(long addressId, long buildingId) throws CityGMLImportException, SQLException {
+        psAddressToBuilding.setLong(1, buildingId);
+        psAddressToBuilding.setLong(2, addressId);
 
-		psAddressToBuilding.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.ADDRESS_TO_BUILDING);
-	}
+        psAddressToBuilding.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.ADDRESS_TO_BUILDING);
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psAddressToBuilding.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psAddressToBuilding.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psAddressToBuilding.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psAddressToBuilding.close();
+    }
 
 }

@@ -30,29 +30,29 @@ package org.citydb.core.operation.deleter.database;
 import org.citydb.core.database.schema.mapping.AbstractObjectType;
 
 public class DBSplittingResult {
-	private final long id;
-	private final AbstractObjectType<?> objectType;
-	private final String gmlId;
+    private final long id;
+    private final AbstractObjectType<?> objectType;
+    private final String gmlId;
 
-	public DBSplittingResult(long id, AbstractObjectType<?> objectType, String gmlId) {
-		this.id = id;
-		this.objectType = objectType;
-		this.gmlId = gmlId;
-	}
+    public DBSplittingResult(long id, AbstractObjectType<?> objectType, String gmlId) {
+        this.id = id;
+        this.objectType = objectType;
+        this.gmlId = gmlId;
+    }
 
-	public DBSplittingResult(long id, AbstractObjectType<?> objectType) {
-		this(id, objectType, null);
-	}
+    public DBSplittingResult(long id, AbstractObjectType<?> objectType) {
+        this(id, objectType, null);
+    }
 
-	public long getId() {
-		return id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public AbstractObjectType<?> getObjectType() {
-		return objectType;
-	}
+    public AbstractObjectType<?> getObjectType() {
+        return objectType;
+    }
 
-	public String getGmlId() {
-		return gmlId;
-	}
+    public String getGmlId() {
+        return gmlId;
+    }
 }

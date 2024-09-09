@@ -36,37 +36,37 @@ import javax.swing.*;
 import java.awt.*;
 
 public class PreferencesView extends View {
-	private final PreferencesPanel component;
-	
-	public PreferencesView(ImpExpGui mainView, Config config) {
-		component = new PreferencesPanel(mainView, config);
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("main.tabbedPane.preferences");
-	}
+    private final PreferencesPanel component;
 
-	@Override
-	public Component getViewComponent() {
-		return component;
-	}
+    public PreferencesView(ImpExpGui mainView, Config config) {
+        component = new PreferencesPanel(mainView, config);
+    }
 
-	@Override
-	public String getToolTip() {
-		return null;
-	}
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("main.tabbedPane.preferences");
+    }
 
-	@Override
-	public Icon getIcon() {
-		return null;
-	}
-	
-	public void switchLocale() {
-		component.switchLocale();
-	}
-	
-	public boolean requestChange() {
-		return component.requestChange();
-	}
+    @Override
+    public Component getViewComponent() {
+        return component;
+    }
+
+    @Override
+    public String getToolTip() {
+        return null;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return null;
+    }
+
+    public void switchLocale() {
+        component.switchLocale();
+    }
+
+    public boolean requestChange() {
+        return component.requestChange();
+    }
 }

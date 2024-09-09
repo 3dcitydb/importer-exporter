@@ -37,136 +37,136 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BranchCacheTable extends AbstractCacheTable {
-	private final CacheTable main;
-	private final CacheTableModel model;
-	private final ReentrantLock mainLock = new ReentrantLock();
+    private final CacheTable main;
+    private final CacheTableModel model;
+    private final ReentrantLock mainLock = new ReentrantLock();
 
-	private volatile boolean isCreated = false;
-	private List<CacheTable> branches;
+    private volatile boolean isCreated = false;
+    private List<CacheTable> branches;
 
-	protected BranchCacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
-		super(connection, sqlAdapter);
-		this.model = model;
+    protected BranchCacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
+        super(connection, sqlAdapter);
+        this.model = model;
 
-		main = new CacheTable(model, connection, sqlAdapter, false);
-		branches = new ArrayList<>();
-	}
+        main = new CacheTable(model, connection, sqlAdapter, false);
+        branches = new ArrayList<>();
+    }
 
-	@Override
-	protected void create() throws SQLException {
-		if (isCreated)
-			return;
+    @Override
+    protected void create() throws SQLException {
+        if (isCreated)
+            return;
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			if (!isCreated) {
-				main.create();
-				isCreated = true;
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
+        try {
+            if (!isCreated) {
+                main.create();
+                isCreated = true;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	@Override
-	protected void createAndIndex() throws SQLException {
-		if (isCreated)
-			return;
+    @Override
+    protected void createAndIndex() throws SQLException {
+        if (isCreated)
+            return;
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			if (!isCreated) {
-				main.createAndIndex();
-				isCreated = true;
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
+        try {
+            if (!isCreated) {
+                main.createAndIndex();
+                isCreated = true;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	public CacheTable branch() throws SQLException {
-		if (!isCreated)
-			return null;
+    public CacheTable branch() throws SQLException {
+        if (!isCreated)
+            return null;
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			if (isCreated) {
-				CacheTable branch = new CacheTable(model, connection, sqlAdapter, false);	
-				branch.create();
-				branches.add(branch);
+        try {
+            if (isCreated) {
+                CacheTable branch = new CacheTable(model, connection, sqlAdapter, false);
+                branch.create();
+                branches.add(branch);
 
-				return branch;
-			} else
-				return null;
-		} finally {
-			lock.unlock();
-		}
-	}
+                return branch;
+            } else
+                return null;
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	public CacheTable branchAndIndex() throws SQLException {
-		if (!isCreated)
-			return null;
+    public CacheTable branchAndIndex() throws SQLException {
+        if (!isCreated)
+            return null;
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			if (isCreated) {
-				CacheTable branch = new CacheTable(model, connection, sqlAdapter, false);	
-				branch.createAndIndex();
-				branches.add(branch);
+        try {
+            if (isCreated) {
+                CacheTable branch = new CacheTable(model, connection, sqlAdapter, false);
+                branch.createAndIndex();
+                branches.add(branch);
 
-				return branch;
-			} else
-				return null;
-		} finally {
-			lock.unlock();
-		}
-	}
+                return branch;
+            } else
+                return null;
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	public CacheTable getMainTable() {
-		return main;
-	}
+    public CacheTable getMainTable() {
+        return main;
+    }
 
-	public List<CacheTable> getBranchTables() {
-		return new ArrayList<>(branches);
-	}
+    public List<CacheTable> getBranchTables() {
+        return new ArrayList<>(branches);
+    }
 
-	@Override
-	public boolean isCreated() {
-		return isCreated;
-	}
+    @Override
+    public boolean isCreated() {
+        return isCreated;
+    }
 
-	@Override
-	protected void drop() throws SQLException {
-		if (!isCreated)
-			return;
+    @Override
+    protected void drop() throws SQLException {
+        if (!isCreated)
+            return;
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			if (isCreated) {
-				main.dropInternal();
-				for (CacheTable branch : branches)
-					branch.dropInternal();
+        try {
+            if (isCreated) {
+                main.dropInternal();
+                for (CacheTable branch : branches)
+                    branch.dropInternal();
 
-				isCreated = false;
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
+                isCreated = false;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	@Override
-	public CacheTableModel getModelType() {
-		return model;
-	}
+    @Override
+    public CacheTableModel getModelType() {
+        return model;
+    }
 
 }

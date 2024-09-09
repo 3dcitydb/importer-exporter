@@ -31,30 +31,30 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class DatabaseVersionException extends Exception {
-	private final String formattedMessage;
-	private final String productName;
-	private final List<DatabaseVersionSupport> supportedVersions;
-	
-	public DatabaseVersionException(String message, String formattedMessage, String productName, List<DatabaseVersionSupport> supportedVersions, Throwable cause) {
-		super(message, cause);
-		this.formattedMessage = formattedMessage;
-		this.productName = productName;
-		this.supportedVersions = supportedVersions;
-	}
+    private final String formattedMessage;
+    private final String productName;
+    private final List<DatabaseVersionSupport> supportedVersions;
 
-	public DatabaseVersionException(String message, String formattedMessage, String productName, List<DatabaseVersionSupport> supportedVersions) {
-		this(message, formattedMessage, productName, supportedVersions, null);
-	}
-	
-	public String getFormattedMessage() {
-		return formattedMessage;
-	}
+    public DatabaseVersionException(String message, String formattedMessage, String productName, List<DatabaseVersionSupport> supportedVersions, Throwable cause) {
+        super(message, cause);
+        this.formattedMessage = formattedMessage;
+        this.productName = productName;
+        this.supportedVersions = supportedVersions;
+    }
 
-	public String getProductName() {
-		return productName;
-	}
+    public DatabaseVersionException(String message, String formattedMessage, String productName, List<DatabaseVersionSupport> supportedVersions) {
+        this(message, formattedMessage, productName, supportedVersions, null);
+    }
 
-	public List<DatabaseVersionSupport> getSupportedVersions() {
-		return supportedVersions;
-	}
+    public String getFormattedMessage() {
+        return formattedMessage;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public List<DatabaseVersionSupport> getSupportedVersions() {
+        return supportedVersions;
+    }
 }

@@ -52,8 +52,11 @@ public abstract class AbstractGeometry {
     private Integer srid;
 
     public abstract boolean is3D();
+
     public abstract boolean isValid();
+
     public abstract GeometryType getGeometryType();
+
     public abstract BoundingBox toBoundingBox();
 
     public DatabaseSrs getSrs() {

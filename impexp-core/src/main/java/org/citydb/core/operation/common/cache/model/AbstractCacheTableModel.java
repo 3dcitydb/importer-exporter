@@ -42,6 +42,7 @@ public abstract class AbstractCacheTableModel {
     }
 
     public abstract CacheTableModel getType();
+
     protected abstract String getColumns(AbstractSQLAdapter sqlAdapter);
 
     public void create(Connection conn, String tableName, AbstractSQLAdapter sqlAdapter) throws SQLException {

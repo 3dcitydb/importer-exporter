@@ -33,6 +33,8 @@ import org.citydb.core.operation.validator.ValidationException;
 
 public interface Validator extends AutoCloseable {
     long getValidationErrors();
+
     void validate(InputFile inputFile) throws ValidationException;
+
     void close() throws ValidationException;
 }

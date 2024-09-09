@@ -42,14 +42,34 @@ import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 @FunctionalInterface
 public interface GeometrySetter<T extends GeometryProperty<?>> {
     void set(T property);
-    interface AbstractGeometry extends GeometrySetter<GeometryProperty<?>> { }
-    interface Surface extends GeometrySetter<SurfaceProperty> { }
-    interface CompositeSurface extends GeometrySetter<CompositeSurfaceProperty> { }
-    interface MultiSurface extends GeometrySetter<MultiSurfaceProperty> { }
-    interface Polygon extends GeometrySetter<PolygonProperty> { }
-    interface MultiPolygon extends GeometrySetter<MultiPolygonProperty> { }
-    interface Solid extends GeometrySetter<SolidProperty> { }
-    interface CompositeSolid extends GeometrySetter<CompositeSolidProperty> { }
-    interface MultiSolid extends GeometrySetter<MultiSolidProperty> { }
-    interface Tin extends GeometrySetter<TinProperty> { }
+
+    interface AbstractGeometry extends GeometrySetter<GeometryProperty<?>> {
+    }
+
+    interface Surface extends GeometrySetter<SurfaceProperty> {
+    }
+
+    interface CompositeSurface extends GeometrySetter<CompositeSurfaceProperty> {
+    }
+
+    interface MultiSurface extends GeometrySetter<MultiSurfaceProperty> {
+    }
+
+    interface Polygon extends GeometrySetter<PolygonProperty> {
+    }
+
+    interface MultiPolygon extends GeometrySetter<MultiPolygonProperty> {
+    }
+
+    interface Solid extends GeometrySetter<SolidProperty> {
+    }
+
+    interface CompositeSolid extends GeometrySetter<CompositeSolidProperty> {
+    }
+
+    interface MultiSolid extends GeometrySetter<MultiSolidProperty> {
+    }
+
+    interface Tin extends GeometrySetter<TinProperty> {
+    }
 }

@@ -33,12 +33,12 @@ import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 
 public class BalloonPanel extends DefaultPreferencesEntry {
 
-	public BalloonPanel() {
-		super(EmptyPreferencesComponent.getInstance());
-	}
+    public BalloonPanel() {
+        super(EmptyPreferencesComponent.getInstance());
+    }
 
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.visExport.balloon");
-	}
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.visExport.balloon");
+    }
 }

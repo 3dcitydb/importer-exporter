@@ -32,42 +32,42 @@ import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 
 public class DatabaseSrsParser extends SrsNameParser {
-	private final AbstractDatabaseAdapter databaseAdapter;
-	private final Config config;
+    private final AbstractDatabaseAdapter databaseAdapter;
+    private final Config config;
 
-	public DatabaseSrsParser(AbstractDatabaseAdapter databaseAdapter, Config config) {
-		this.databaseAdapter = databaseAdapter;
-		this.config = config;
-	}
+    public DatabaseSrsParser(AbstractDatabaseAdapter databaseAdapter, Config config) {
+        this.databaseAdapter = databaseAdapter;
+        this.config = config;
+    }
 
-	public DatabaseSrs getDefaultSrs() {
-		return databaseAdapter.getConnectionMetaData().getReferenceSystem();
-	}
+    public DatabaseSrs getDefaultSrs() {
+        return databaseAdapter.getConnectionMetaData().getReferenceSystem();
+    }
 
-	public DatabaseSrs getDatabaseSrs(String srsName) throws SrsParseException {
-		if (srsName.equals(databaseAdapter.getConnectionMetaData().getReferenceSystem().getGMLSrsName()))
-			return databaseAdapter.getConnectionMetaData().getReferenceSystem();
+    public DatabaseSrs getDatabaseSrs(String srsName) throws SrsParseException {
+        if (srsName.equals(databaseAdapter.getConnectionMetaData().getReferenceSystem().getGMLSrsName()))
+            return databaseAdapter.getConnectionMetaData().getReferenceSystem();
 
-		int epsgCode = getEPSGCode(srsName);
-		if (epsgCode == databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid())
-			return databaseAdapter.getConnectionMetaData().getReferenceSystem();
+        int epsgCode = getEPSGCode(srsName);
+        if (epsgCode == databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid())
+            return databaseAdapter.getConnectionMetaData().getReferenceSystem();
 
-		// check whether SRS is supported by database
-		DatabaseSrs targetSrs = null;
-		for (DatabaseSrs srs: config.getDatabaseConfig().getReferenceSystems()) {
-			if (srs.getSrid() == epsgCode) {
-				if (!srs.isSupported())
-					throw new SrsParseException("The CRS '" + srsName + "' is advertised but not supported by the database.");
+        // check whether SRS is supported by database
+        DatabaseSrs targetSrs = null;
+        for (DatabaseSrs srs : config.getDatabaseConfig().getReferenceSystems()) {
+            if (srs.getSrid() == epsgCode) {
+                if (!srs.isSupported())
+                    throw new SrsParseException("The CRS '" + srsName + "' is advertised but not supported by the database.");
 
-				targetSrs = srs;
-				break;
-			}
-		}
+                targetSrs = srs;
+                break;
+            }
+        }
 
-		if (targetSrs == null)
-			throw new SrsParseException("The CRS '" + srsName + "' is not advertised.");
+        if (targetSrs == null)
+            throw new SrsParseException("The CRS '" + srsName + "' is not advertised.");
 
-		return targetSrs;
-	}
+        return targetSrs;
+    }
 
 }

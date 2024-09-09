@@ -32,6 +32,7 @@ import org.citydb.core.operation.importer.CityGMLImportException;
 import java.sql.SQLException;
 
 public interface DBImporter {
-	public void executeBatch() throws CityGMLImportException, SQLException;
-	public void close() throws CityGMLImportException, SQLException;
+    public void executeBatch() throws CityGMLImportException, SQLException;
+
+    public void close() throws CityGMLImportException, SQLException;
 }

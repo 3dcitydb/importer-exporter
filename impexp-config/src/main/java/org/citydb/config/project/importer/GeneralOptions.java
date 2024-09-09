@@ -31,7 +31,7 @@ package org.citydb.config.project.importer;
 import javax.xml.bind.annotation.XmlType;
 import java.nio.charset.StandardCharsets;
 
-@XmlType(name="GeneralImportOptionsType", propOrder={})
+@XmlType(name = "GeneralImportOptionsType", propOrder = {})
 public class GeneralOptions {
     private Boolean failFastOnErrors = true;
     private String fileEncoding;

@@ -32,48 +32,48 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 public class SurfaceGeometry {
-	private final AbstractGeometry geometry;
-	private final String reference;
-	private final GMLClass type;
+    private final AbstractGeometry geometry;
+    private final String reference;
+    private final GMLClass type;
 
-	public SurfaceGeometry(AbstractGeometry geometry) {
-		this.geometry = geometry;
-		type = geometry.getGMLClass();
-		reference = null;
-	}
+    public SurfaceGeometry(AbstractGeometry geometry) {
+        this.geometry = geometry;
+        type = geometry.getGMLClass();
+        reference = null;
+    }
 
-	public SurfaceGeometry(String reference, GMLClass type) {
-		this.reference = reference;
-		this.type = type;
-		geometry = null;
-	}
-	
-	public boolean isSetGeometry() {
-		return geometry != null;
-	}
+    public SurfaceGeometry(String reference, GMLClass type) {
+        this.reference = reference;
+        this.type = type;
+        geometry = null;
+    }
 
-	public AbstractGeometry getGeometry() {
-		return geometry;
-	}
+    public boolean isSetGeometry() {
+        return geometry != null;
+    }
 
-	public boolean isSetReference() {
-		return reference != null;
-	}
-	
-	public String getReference() {
-		return reference;
-	}
+    public AbstractGeometry getGeometry() {
+        return geometry;
+    }
 
-	public GMLClass getType() {
-		return type;
-	}
+    public boolean isSetReference() {
+        return reference != null;
+    }
 
-	public <S extends AbstractGeometry, T extends GeometryProperty<S>> T fill(T property) {
-		if (property.getAssociableClass().isInstance(geometry))
-			property.setGeometry(property.getAssociableClass().cast(geometry));
-		else if (reference != null)
-			property.setHref(reference);
+    public String getReference() {
+        return reference;
+    }
 
-		return property;
-	}
+    public GMLClass getType() {
+        return type;
+    }
+
+    public <S extends AbstractGeometry, T extends GeometryProperty<S>> T fill(T property) {
+        if (property.getAssociableClass().isInstance(geometry))
+            property.setGeometry(property.getAssociableClass().cast(geometry));
+        else if (reference != null)
+            property.setHref(reference);
+
+        return property;
+    }
 }

@@ -33,13 +33,13 @@ import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 
 public class GeneralPreferencesEntry extends DefaultPreferencesEntry {
 
-	public GeneralPreferencesEntry() {
-		super(EmptyPreferencesComponent.getInstance());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.general");
-	}
+    public GeneralPreferencesEntry() {
+        super(EmptyPreferencesComponent.getInstance());
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.general");
+    }
 
 }

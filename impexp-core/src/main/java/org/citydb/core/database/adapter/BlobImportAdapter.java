@@ -33,32 +33,32 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class BlobImportAdapter {
-	protected final Connection connection;
-	private final BlobType blobType;
-	private final String schema;
+    protected final Connection connection;
+    private final BlobType blobType;
+    private final String schema;
 
-	private PreparedStatement psUpdate;
+    private PreparedStatement psUpdate;
 
-	public BlobImportAdapter(Connection connection, BlobType blobType, String schema) {
-		this.connection = connection;
-		this.blobType = blobType;
-		this.schema = schema;
-	}
+    public BlobImportAdapter(Connection connection, BlobType blobType, String schema) {
+        this.connection = connection;
+        this.blobType = blobType;
+        this.schema = schema;
+    }
 
-	public void insert(long id, InputStream stream) throws SQLException {
-		if (psUpdate == null) {
-			psUpdate = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
-					"update " + schema + ".tex_image set tex_image_data=? where id=?" :
-					"update " + schema + ".implicit_geometry set library_object=? where id=?");
-		}
+    public void insert(long id, InputStream stream) throws SQLException {
+        if (psUpdate == null) {
+            psUpdate = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
+                    "update " + schema + ".tex_image set tex_image_data=? where id=?" :
+                    "update " + schema + ".implicit_geometry set library_object=? where id=?");
+        }
 
-		psUpdate.setBinaryStream(1, stream);
-		psUpdate.setLong(2, id);
-		psUpdate.executeUpdate();
-	}
+        psUpdate.setBinaryStream(1, stream);
+        psUpdate.setLong(2, id);
+        psUpdate.executeUpdate();
+    }
 
-	public void close() throws SQLException {
-		if (psUpdate != null)
-			psUpdate.close();
-	}
+    public void close() throws SQLException {
+        if (psUpdate != null)
+            psUpdate.close();
+    }
 }

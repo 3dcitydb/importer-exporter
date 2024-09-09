@@ -96,7 +96,7 @@ public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> impleme
         component.setLayout(new GridBagLayout());
 
         featureTypeTree = new FeatureTypeTree(version, adeFilter);
-        featureTypeTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 1);
+        featureTypeTree.setRowHeight((int) (new JCheckBox().getPreferredSize().getHeight()) - 1);
 
         // get rid of standard icons
         DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer) featureTypeTree.getCellRenderer();
@@ -176,7 +176,7 @@ public class FeatureTypeFilterView extends FilterView<FeatureTypeFilter> impleme
 
     @Override
     public void handleEvent(Event event) throws Exception {
-        PropertyChangeEvent e = (PropertyChangeEvent)event;
+        PropertyChangeEvent e = (PropertyChangeEvent) event;
         if (e.getPropertyName().equals("citygml.version")) {
             featureTypeTree.updateCityGMLVersion((CityGMLVersion) e.getNewValue(), enabled);
             featureTypeFilterConsumer.accept(toSettings());

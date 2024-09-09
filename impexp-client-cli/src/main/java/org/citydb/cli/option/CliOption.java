@@ -31,5 +31,6 @@ package org.citydb.cli.option;
 import picocli.CommandLine;
 
 public interface CliOption {
-    default void preprocess(CommandLine commandLine) throws Exception {}
+    default void preprocess(CommandLine commandLine) throws Exception {
+    }
 }

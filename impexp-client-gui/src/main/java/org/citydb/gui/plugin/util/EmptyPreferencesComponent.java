@@ -30,38 +30,38 @@ package org.citydb.gui.plugin.util;
 import java.util.Locale;
 
 public class EmptyPreferencesComponent extends DefaultPreferencesComponent {
-	private static final EmptyPreferencesComponent instance = new EmptyPreferencesComponent();
-	
-	private EmptyPreferencesComponent() {
-	}
-	
-	public static EmptyPreferencesComponent getInstance() {
-		return instance;
-	}
+    private static final EmptyPreferencesComponent instance = new EmptyPreferencesComponent();
 
-	@Override
-	public final String getLocalizedTitle() {
-		return null;
-	}
+    private EmptyPreferencesComponent() {
+    }
 
-	@Override
-	public final boolean isModified() {
-		return false;
-	}
+    public static EmptyPreferencesComponent getInstance() {
+        return instance;
+    }
 
-	@Override
-	public final void switchLocale(Locale locale) {
-	}
+    @Override
+    public final String getLocalizedTitle() {
+        return null;
+    }
 
-	@Override
-	public final void loadSettings() {
-	}
+    @Override
+    public final boolean isModified() {
+        return false;
+    }
 
-	@Override
-	public final void setSettings() {
-	}
+    @Override
+    public final void switchLocale(Locale locale) {
+    }
 
-	@Override
-	public final void resetSettings() {
-	}
+    @Override
+    public final void loadSettings() {
+    }
+
+    @Override
+    public final void setSettings() {
+    }
+
+    @Override
+    public final void resetSettings() {
+    }
 }

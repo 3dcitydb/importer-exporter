@@ -28,9 +28,9 @@
 package org.citydb.core.ade.visExporter;
 
 public interface ADEBalloonHandler {
-	String getSqlStatement(String table,
-	                       String tableShortId,
-	                       String aggregateColumnsClause,
-	                       int lod,
-	                       String schemaName) throws ADEBalloonException;
+    String getSqlStatement(String table,
+                           String tableShortId,
+                           String aggregateColumnsClause,
+                           int lod,
+                           String schemaName) throws ADEBalloonException;
 }

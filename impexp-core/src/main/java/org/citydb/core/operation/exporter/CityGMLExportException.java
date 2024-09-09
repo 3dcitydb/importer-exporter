@@ -29,50 +29,50 @@
 package org.citydb.core.operation.exporter;
 
 public class CityGMLExportException extends Exception {
-	private final ErrorCode errorCode;
+    private final ErrorCode errorCode;
 
-	public enum ErrorCode {
-		SPATIAL_INDEXES_NOT_ACTIVATED,
-		UNKNOWN
-	}
+    public enum ErrorCode {
+        SPATIAL_INDEXES_NOT_ACTIVATED,
+        UNKNOWN
+    }
 
-	public CityGMLExportException(ErrorCode errorCode) {
-		super();
-		this.errorCode = errorCode;
-	}
+    public CityGMLExportException(ErrorCode errorCode) {
+        super();
+        this.errorCode = errorCode;
+    }
 
-	public CityGMLExportException(ErrorCode errorCode, String message) {
-		super(message);
-		this.errorCode = errorCode;
-	}
+    public CityGMLExportException(ErrorCode errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+    }
 
-	public CityGMLExportException(ErrorCode errorCode, String message, Throwable cause) {
-		super(message, cause);
-		this.errorCode = errorCode;
-	}
+    public CityGMLExportException(ErrorCode errorCode, String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = errorCode;
+    }
 
-	public CityGMLExportException(ErrorCode errorCode, Throwable cause) {
-		super(cause);
-		this.errorCode = errorCode;
-	}
+    public CityGMLExportException(ErrorCode errorCode, Throwable cause) {
+        super(cause);
+        this.errorCode = errorCode;
+    }
 
-	public CityGMLExportException() {
-		this(ErrorCode.UNKNOWN);
-	}
+    public CityGMLExportException() {
+        this(ErrorCode.UNKNOWN);
+    }
 
-	public CityGMLExportException(String message) {
-		this(ErrorCode.UNKNOWN, message);
-	}
+    public CityGMLExportException(String message) {
+        this(ErrorCode.UNKNOWN, message);
+    }
 
-	public CityGMLExportException(String message, Throwable cause) {
-		this(ErrorCode.UNKNOWN, message, cause);
-	}
+    public CityGMLExportException(String message, Throwable cause) {
+        this(ErrorCode.UNKNOWN, message, cause);
+    }
 
-	public CityGMLExportException(Throwable cause) {
-		this(ErrorCode.UNKNOWN, cause);
-	}
+    public CityGMLExportException(Throwable cause) {
+        this(ErrorCode.UNKNOWN, cause);
+    }
 
-	public ErrorCode getErrorCode() {
-		return errorCode;
-	}
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
 }

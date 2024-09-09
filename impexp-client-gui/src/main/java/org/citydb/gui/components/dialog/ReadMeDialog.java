@@ -39,60 +39,60 @@ import java.nio.charset.StandardCharsets;
 
 public class ReadMeDialog extends JDialog {
 
-	public ReadMeDialog(JFrame frame) {
-		super(frame, Language.I18N.getString("menu.help.readMe.label"), true);
-		initGUI();
-	}
+    public ReadMeDialog(JFrame frame) {
+        super(frame, Language.I18N.getString("menu.help.readMe.label"), true);
+        initGUI();
+    }
 
-	private void initGUI() {
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    private void initGUI() {
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-		setLayout(new GridBagLayout());
-		JPanel main = new JPanel();
-		main.setLayout(new GridBagLayout());
-		{
-			JLabel readMeHeader = new JLabel(Language.I18N.getString("menu.help.readMe.information"));
+        setLayout(new GridBagLayout());
+        JPanel main = new JPanel();
+        main.setLayout(new GridBagLayout());
+        {
+            JLabel readMeHeader = new JLabel(Language.I18N.getString("menu.help.readMe.information"));
 
-			JTextArea readMe = new JTextArea();
-			readMe.setEditable(false);
-			readMe.setBackground(UIManager.getColor("TextField.background"));
-			readMe.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
-			readMe.setColumns(80);
-			readMe.setRows(20);
+            JTextArea readMe = new JTextArea();
+            readMe.setEditable(false);
+            readMe.setBackground(UIManager.getColor("TextField.background"));
+            readMe.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
+            readMe.setColumns(80);
+            readMe.setRows(20);
 
-			JScrollPane scroll = new JScrollPane(readMe);
-			scroll.setAutoscrolls(true);
+            JScrollPane scroll = new JScrollPane(readMe);
+            scroll.setAutoscrolls(true);
 
-			try (BufferedReader in = new BufferedReader(new InputStreamReader(
-					getClass().getResourceAsStream("/META-INF/README.txt"), StandardCharsets.UTF_8))) {
-				StringBuilder builder = new StringBuilder();
-				String line;
-				while ((line = in.readLine()) != null) {
-					builder.append(line);
-					builder.append("\n");
-				}
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(
+                    getClass().getResourceAsStream("/META-INF/README.txt"), StandardCharsets.UTF_8))) {
+                StringBuilder builder = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) {
+                    builder.append(line);
+                    builder.append("\n");
+                }
 
-				readMe.setText(builder.toString());
-			} catch (Exception e) {
-				readMe.setText("The README.txt file could not be found.\n\n" +
-						"Please refer to the README.txt file provided with the installation package.");
-			}
+                readMe.setText(builder.toString());
+            } catch (Exception e) {
+                readMe.setText("The README.txt file could not be found.\n\n" +
+                        "Please refer to the README.txt file provided with the installation package.");
+            }
 
-			readMe.setCaretPosition(0);
+            readMe.setCaretPosition(0);
 
-			main.add(readMeHeader, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-			main.add(scroll, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            main.add(readMeHeader, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+            main.add(scroll, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
 
-			PopupMenuDecorator.getInstance().decorate(readMe);
-		}
+            PopupMenuDecorator.getInstance().decorate(readMe);
+        }
 
-		JButton button = new JButton(Language.I18N.getString("common.button.ok"));
+        JButton button = new JButton(Language.I18N.getString("common.button.ok"));
 
-		add(main, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 10, 0, 10));
-		add(button, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 15, 10, 10, 10));
+        add(main, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 10, 0, 10));
+        add(button, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 15, 10, 10, 10));
 
-		pack();
+        pack();
 
-		button.addActionListener(e -> dispose());
-	}
+        button.addActionListener(e -> dispose());
+    }
 }

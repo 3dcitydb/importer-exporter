@@ -28,7 +28,7 @@
 package org.citydb.util.concurrent;
 
 public enum PoolSizeAdaptationStrategy {
-	AGGRESSIVE,
-	STEPWISE,
-	NONE
+    AGGRESSIVE,
+    STEPWISE,
+    NONE
 }

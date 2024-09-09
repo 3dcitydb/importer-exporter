@@ -32,14 +32,14 @@ import org.citydb.util.event.Event;
 import java.util.Locale;
 
 public final class SwitchLocaleEvent extends Event {
-	private final Locale locale;
-	
-	public SwitchLocaleEvent(Locale locale) {
-		super(EventType.SWITCH_LOCALE, GLOBAL_CHANNEL);
-		this.locale = locale;
-	}
-	
-	public Locale getLocale() {
-		return locale;
-	}
+    private final Locale locale;
+
+    public SwitchLocaleEvent(Locale locale) {
+        super(EventType.SWITCH_LOCALE, GLOBAL_CHANNEL);
+        this.locale = locale;
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
 }

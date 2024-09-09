@@ -36,23 +36,23 @@ import javax.swing.*;
 
 public class DatabaseView extends DefaultView {
 
-	public DatabaseView(ViewController viewController, Config config) {
-		super(new DatabasePanel(viewController, config));
-		addViewListener((DatabasePanel) getViewComponent());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("main.tabbedPane.database");
-	}
+    public DatabaseView(ViewController viewController, Config config) {
+        super(new DatabasePanel(viewController, config));
+        addViewListener((DatabasePanel) getViewComponent());
+    }
 
-	@Override
-	public String getToolTip() {
-		return null;
-	}
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("main.tabbedPane.database");
+    }
 
-	@Override
-	public Icon getIcon() {
-		return null;
-	}
+    @Override
+    public String getToolTip() {
+        return null;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return null;
+    }
 }

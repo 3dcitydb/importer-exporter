@@ -28,66 +28,66 @@
 package org.citydb.core.database.connection;
 
 public class ADEMetadata {
-	private String adeId;
-	private String name;
-	private String description;
-	private String version;
-	private String dbPrefix;
-	private boolean isSupported;
-	
-	public String getADEId() {
-		return adeId;
-	}
+    private String adeId;
+    private String name;
+    private String description;
+    private String version;
+    private String dbPrefix;
+    private boolean isSupported;
 
-	public void setADEId(String adeId) {
-		this.adeId = adeId;
-	}
+    public String getADEId() {
+        return adeId;
+    }
 
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setADEId(String adeId) {
+        this.adeId = adeId;
+    }
 
-	public String getDescription() {
-		return description;
-	}
-	
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getVersion() {
-		return version;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public String getDBPrefix() {
-		return dbPrefix;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public void setDBPrefix(String dbPrefix) {
-		this.dbPrefix = dbPrefix;
-	}
+    public String getVersion() {
+        return version;
+    }
 
-	public boolean isSupported() {
-		return isSupported;
-	}
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
-	public void setSupported(boolean isSupported) {
-		this.isSupported = isSupported;
-	}
-	
-	public String toString() {
-		return new StringBuilder(name)
-				.append(" ")
-				.append(version)
-				.toString();
-	}
-	
+    public String getDBPrefix() {
+        return dbPrefix;
+    }
+
+    public void setDBPrefix(String dbPrefix) {
+        this.dbPrefix = dbPrefix;
+    }
+
+    public boolean isSupported() {
+        return isSupported;
+    }
+
+    public void setSupported(boolean isSupported) {
+        this.isSupported = isSupported;
+    }
+
+    public String toString() {
+        return new StringBuilder(name)
+                .append(" ")
+                .append(version)
+                .toString();
+    }
+
 }

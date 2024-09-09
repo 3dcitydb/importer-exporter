@@ -30,14 +30,14 @@ package org.citydb.util.event.global;
 import org.citydb.util.event.Event;
 
 public class StatusDialogMessage extends Event {
-	private final String message;
-	
-	public StatusDialogMessage(String message) {
-		super(EventType.STATUS_DIALOG_MESSAGE, GLOBAL_CHANNEL);
-		this.message = message;
-	}
+    private final String message;
 
-	public String getMessage() {
-		return message;
-	}
+    public StatusDialogMessage(String message) {
+        super(EventType.STATUS_DIALOG_MESSAGE, GLOBAL_CHANNEL);
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

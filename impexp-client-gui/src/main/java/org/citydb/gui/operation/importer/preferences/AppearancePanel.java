@@ -40,95 +40,95 @@ import java.awt.*;
 import java.util.Locale;
 
 public class AppearancePanel extends InternalPreferencesComponent {
-	private TitledPanel appearancePanel;
-	private JLabel impAppOldLabel;
-	private JCheckBox importAppearance;
-	private JCheckBox importTextures;
-	private JTextField impAppOldText;
+    private TitledPanel appearancePanel;
+    private JLabel impAppOldLabel;
+    private JCheckBox importAppearance;
+    private JCheckBox importTextures;
+    private JTextField impAppOldText;
 
-	public AppearancePanel(Config config) {
-		super(config);
-		initGui();
-	}
+    public AppearancePanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-	@Override
-	public boolean isModified() {
-		ImportAppearance appearances = config.getImportConfig().getAppearances();
+    @Override
+    public boolean isModified() {
+        ImportAppearance appearances = config.getImportConfig().getAppearances();
 
-		if (importAppearance.isSelected() != appearances.isSetImportAppearance()) return true;
-		if (importTextures.isSelected() != appearances.isSetImportTextureFiles()) return true;
-		if (!impAppOldText.getText().equals(appearances.getThemeForTexturedSurface())) return true;
+        if (importAppearance.isSelected() != appearances.isSetImportAppearance()) return true;
+        if (importTextures.isSelected() != appearances.isSetImportTextureFiles()) return true;
+        if (!impAppOldText.getText().equals(appearances.getThemeForTexturedSurface())) return true;
 
-		return false;
-	}
+        return false;
+    }
 
-	private void initGui() {
-		importAppearance = new JCheckBox();
-		importTextures = new JCheckBox();
-		impAppOldLabel = new JLabel();
-		impAppOldText = new JTextField();
+    private void initGui() {
+        importAppearance = new JCheckBox();
+        importTextures = new JCheckBox();
+        impAppOldLabel = new JLabel();
+        impAppOldText = new JTextField();
 
-		PopupMenuDecorator.getInstance().decorate(impAppOldText);
-		
-		setLayout(new GridBagLayout());
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(importTextures, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				content.add(impAppOldLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
-				content.add(impAppOldText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 5, 5, 0, 0));
-			}
+        PopupMenuDecorator.getInstance().decorate(impAppOldText);
 
-			appearancePanel = new TitledPanel().withToggleButton(importAppearance).build(content);
-		}
+        setLayout(new GridBagLayout());
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(importTextures, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(impAppOldLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
+                content.add(impAppOldText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 5, 5, 0, 0));
+            }
 
-		add(appearancePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            appearancePanel = new TitledPanel().withToggleButton(importAppearance).build(content);
+        }
 
-		importAppearance.addActionListener(e -> setEnabledTheme());
-	}
-	
-	private void setEnabledTheme() {
-		importTextures.setEnabled(importAppearance.isSelected());
-		impAppOldLabel.setEnabled(importAppearance.isSelected());
-		impAppOldText.setEnabled(importAppearance.isSelected());
-	}
+        add(appearancePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-	@Override
-	public void switchLocale(Locale locale) {
-		appearancePanel.setTitle(Language.I18N.getString("pref.import.appearance.border.import"));
-		importTextures.setText(Language.I18N.getString("pref.import.appearance.label.importTexture"));
-		impAppOldLabel.setText(Language.I18N.getString("pref.import.appearance.label.texturedSurface.theme"));
-	}
+        importAppearance.addActionListener(e -> setEnabledTheme());
+    }
 
-	@Override
-	public void loadSettings() {
-		ImportAppearance appearances = config.getImportConfig().getAppearances();
+    private void setEnabledTheme() {
+        importTextures.setEnabled(importAppearance.isSelected());
+        impAppOldLabel.setEnabled(importAppearance.isSelected());
+        impAppOldText.setEnabled(importAppearance.isSelected());
+    }
 
-		importAppearance.setSelected(appearances.isSetImportAppearance());
-		importTextures.setSelected(appearances.isSetImportTextureFiles());
-		impAppOldText.setText(appearances.getThemeForTexturedSurface());
-		
-		setEnabledTheme();
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        appearancePanel.setTitle(Language.I18N.getString("pref.import.appearance.border.import"));
+        importTextures.setText(Language.I18N.getString("pref.import.appearance.label.importTexture"));
+        impAppOldLabel.setText(Language.I18N.getString("pref.import.appearance.label.texturedSurface.theme"));
+    }
 
-	@Override
-	public void setSettings() {
-		ImportAppearance appearances = config.getImportConfig().getAppearances();
+    @Override
+    public void loadSettings() {
+        ImportAppearance appearances = config.getImportConfig().getAppearances();
 
-		appearances.setImportAppearances(importAppearance.isSelected());
-		appearances.setImportTextureFiles(importTextures.isSelected());
+        importAppearance.setSelected(appearances.isSetImportAppearance());
+        importTextures.setSelected(appearances.isSetImportTextureFiles());
+        impAppOldText.setText(appearances.getThemeForTexturedSurface());
 
-		String theme = impAppOldText.getText();
-		if (theme == null || theme.trim().length() == 0)
-			theme = "rgbTexture";
+        setEnabledTheme();
+    }
 
-		appearances.setThemeForTexturedSurface(theme);
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.import.appearance");
-	}
+    @Override
+    public void setSettings() {
+        ImportAppearance appearances = config.getImportConfig().getAppearances();
+
+        appearances.setImportAppearances(importAppearance.isSelected());
+        appearances.setImportTextureFiles(importTextures.isSelected());
+
+        String theme = impAppOldText.getText();
+        if (theme == null || theme.trim().length() == 0)
+            theme = "rgbTexture";
+
+        appearances.setThemeForTexturedSurface(theme);
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.import.appearance");
+    }
 
 }

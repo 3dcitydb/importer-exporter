@@ -37,11 +37,11 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "cityGMLContext")
 public enum CityGMLContext {
 
-	@XmlEnumValue("citygml-2.0")
+    @XmlEnumValue("citygml-2.0")
     CITYGML_2_0(CityGMLVersion.v2_0_0, "citygml-2.0"),
     @XmlEnumValue("citygml-1.0")
     CITYGML_1_0(CityGMLVersion.v1_0_0, "citygml-1.0");
-    
+
     private final CityGMLVersion version;
     private final String value;
 
@@ -55,15 +55,15 @@ public enum CityGMLContext {
     }
 
     public static CityGMLContext fromCityGMLVersion(CityGMLVersion version) {
-		if (version == CityGMLVersion.v1_0_0)
-			return CITYGML_1_0;
-		else
-			return CITYGML_2_0;
-	}
+        if (version == CityGMLVersion.v1_0_0)
+            return CITYGML_1_0;
+        else
+            return CITYGML_2_0;
+    }
 
-	@Override
-	public String toString() {
-		return value;
-	}
+    @Override
+    public String toString() {
+        return value;
+    }
 
 }

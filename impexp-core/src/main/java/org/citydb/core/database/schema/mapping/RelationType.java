@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlEnum
-@XmlType(name="relationType")
+@XmlType(name = "relationType")
 public enum RelationType {
 
     @XmlEnumValue("association")
@@ -53,7 +53,7 @@ public enum RelationType {
     }
 
     public static RelationType fromValue(String v) {
-        for (RelationType c: RelationType.values()) {
+        for (RelationType c : RelationType.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

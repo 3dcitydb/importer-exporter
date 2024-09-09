@@ -31,14 +31,17 @@ import org.citydb.core.database.schema.mapping.AbstractPathElement;
 import org.citydb.core.database.schema.path.predicate.PredicateName;
 
 public abstract class AbstractNodePredicate {
-	protected AbstractNode<? extends AbstractPathElement> contextNode;
-	public abstract boolean isEqualTo(AbstractNodePredicate other);
-	public abstract PredicateName getPredicateName();
-	public abstract String toString(boolean removeAttributePrefixes);
+    protected AbstractNode<? extends AbstractPathElement> contextNode;
 
-	@Override
-	public String toString() {
-		return toString(false);
-	}
-	
+    public abstract boolean isEqualTo(AbstractNodePredicate other);
+
+    public abstract PredicateName getPredicateName();
+
+    public abstract String toString(boolean removeAttributePrefixes);
+
+    @Override
+    public String toString() {
+        return toString(false);
+    }
+
 }

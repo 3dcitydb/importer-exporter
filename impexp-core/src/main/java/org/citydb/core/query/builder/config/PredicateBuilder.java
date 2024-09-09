@@ -44,76 +44,74 @@ import org.citydb.core.query.filter.selection.operator.logical.LogicalOperationF
 import org.citydb.core.query.filter.selection.operator.logical.LogicalOperatorName;
 
 public class PredicateBuilder {
-	private final ComparisonOperatorBuilder comparisonBuilder;
-	private final SpatialOperatorBuilder spatialBuilder;
-	private final IdOperatorBuilder idBuilder;
-	private final SelectOperatorBuilder selectBuilder;
+    private final ComparisonOperatorBuilder comparisonBuilder;
+    private final SpatialOperatorBuilder spatialBuilder;
+    private final IdOperatorBuilder idBuilder;
+    private final SelectOperatorBuilder selectBuilder;
 
-	protected PredicateBuilder(ValueReferenceBuilder valueReferenceBuilder, AbstractDatabaseAdapter databaseAdapter) {
-		comparisonBuilder = new ComparisonOperatorBuilder(valueReferenceBuilder);
-		spatialBuilder = new SpatialOperatorBuilder(valueReferenceBuilder, databaseAdapter);
-		idBuilder = new IdOperatorBuilder();
-		selectBuilder = new SelectOperatorBuilder();
-	}
+    protected PredicateBuilder(ValueReferenceBuilder valueReferenceBuilder, AbstractDatabaseAdapter databaseAdapter) {
+        comparisonBuilder = new ComparisonOperatorBuilder(valueReferenceBuilder);
+        spatialBuilder = new SpatialOperatorBuilder(valueReferenceBuilder, databaseAdapter);
+        idBuilder = new IdOperatorBuilder();
+        selectBuilder = new SelectOperatorBuilder();
+    }
 
-	protected Predicate buildPredicate(AbstractPredicate predicateConfig) throws QueryBuildException {
-		if (predicateConfig == null)
-			throw new QueryBuildException("No valid filter predicate provided.");
+    protected Predicate buildPredicate(AbstractPredicate predicateConfig) throws QueryBuildException {
+        if (predicateConfig == null)
+            throw new QueryBuildException("No valid filter predicate provided.");
 
-		Predicate predicate = null;
+        Predicate predicate = null;
 
-		switch (predicateConfig.getPredicateName()) {
-			case COMPARISON_OPERATOR:
-				predicate = comparisonBuilder.buildComparisonOperator((AbstractComparisonOperator) predicateConfig);
-				break;
-			case SPATIAL_OPERATOR:
-				predicate = spatialBuilder.buildSpatialOperator((AbstractSpatialOperator) predicateConfig);
-				break;
-			case LOGICAL_OPERATOR:
-				predicate = buildLogicalOperator((AbstractLogicalOperator) predicateConfig);
-				break;
-			case ID_OPERATOR:
-				predicate = idBuilder.buildIdOperator((AbstractIdOperator) predicateConfig);
-				break;
-			case SQL_OPERATOR:
-				predicate = selectBuilder.buildSelectOperator((SelectOperator) predicateConfig);
-				break;
-		}
-		
-		return predicate;
-	}
-	
-	private Predicate buildLogicalOperator(AbstractLogicalOperator logicalOperatorConfig) throws QueryBuildException {
-		if (logicalOperatorConfig.getOperatorName() == org.citydb.config.project.query.filter.selection.logical.LogicalOperatorName.NOT) {
-			NotOperator not = (NotOperator)logicalOperatorConfig;
-			return LogicalOperationFactory.NOT(buildPredicate(not.getOperand()));
-		}
+        switch (predicateConfig.getPredicateName()) {
+            case COMPARISON_OPERATOR:
+                predicate = comparisonBuilder.buildComparisonOperator((AbstractComparisonOperator) predicateConfig);
+                break;
+            case SPATIAL_OPERATOR:
+                predicate = spatialBuilder.buildSpatialOperator((AbstractSpatialOperator) predicateConfig);
+                break;
+            case LOGICAL_OPERATOR:
+                predicate = buildLogicalOperator((AbstractLogicalOperator) predicateConfig);
+                break;
+            case ID_OPERATOR:
+                predicate = idBuilder.buildIdOperator((AbstractIdOperator) predicateConfig);
+                break;
+            case SQL_OPERATOR:
+                predicate = selectBuilder.buildSelectOperator((SelectOperator) predicateConfig);
+                break;
+        }
 
-		else {
-			AbstractBinaryLogicalOperator binaryOperatorConfig = (AbstractBinaryLogicalOperator)logicalOperatorConfig;
-			if (binaryOperatorConfig.numberOfOperands() == 0)
-				throw new QueryBuildException("No operand provided for the binary logical " + binaryOperatorConfig.getOperatorName() + " operator.");
+        return predicate;
+    }
 
-			if (binaryOperatorConfig.numberOfOperands() == 1)
-				return buildPredicate(binaryOperatorConfig.getOperands().get(0));
-			
-			BinaryLogicalOperator logicalOperator;
-			switch (logicalOperatorConfig.getOperatorName()) {
-			case AND:
-				logicalOperator = new BinaryLogicalOperator(LogicalOperatorName.AND);
-				break;
-			case OR:
-				logicalOperator = new BinaryLogicalOperator(LogicalOperatorName.OR);
-				break;
-			default:
-				return null;
-			}
-			
-			for (AbstractPredicate predicateConfig : binaryOperatorConfig.getOperands())
-				logicalOperator.addOperand(buildPredicate(predicateConfig));
-			
-			return logicalOperator;
-		}
-	}
-	
+    private Predicate buildLogicalOperator(AbstractLogicalOperator logicalOperatorConfig) throws QueryBuildException {
+        if (logicalOperatorConfig.getOperatorName() == org.citydb.config.project.query.filter.selection.logical.LogicalOperatorName.NOT) {
+            NotOperator not = (NotOperator) logicalOperatorConfig;
+            return LogicalOperationFactory.NOT(buildPredicate(not.getOperand()));
+        } else {
+            AbstractBinaryLogicalOperator binaryOperatorConfig = (AbstractBinaryLogicalOperator) logicalOperatorConfig;
+            if (binaryOperatorConfig.numberOfOperands() == 0)
+                throw new QueryBuildException("No operand provided for the binary logical " + binaryOperatorConfig.getOperatorName() + " operator.");
+
+            if (binaryOperatorConfig.numberOfOperands() == 1)
+                return buildPredicate(binaryOperatorConfig.getOperands().get(0));
+
+            BinaryLogicalOperator logicalOperator;
+            switch (logicalOperatorConfig.getOperatorName()) {
+                case AND:
+                    logicalOperator = new BinaryLogicalOperator(LogicalOperatorName.AND);
+                    break;
+                case OR:
+                    logicalOperator = new BinaryLogicalOperator(LogicalOperatorName.OR);
+                    break;
+                default:
+                    return null;
+            }
+
+            for (AbstractPredicate predicateConfig : binaryOperatorConfig.getOperands())
+                logicalOperator.addOperand(buildPredicate(predicateConfig));
+
+            return logicalOperator;
+        }
+    }
+
 }

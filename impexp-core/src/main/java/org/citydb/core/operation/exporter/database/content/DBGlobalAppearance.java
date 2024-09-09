@@ -49,83 +49,83 @@ import java.util.Map;
 import java.util.Set;
 
 public class DBGlobalAppearance extends AbstractAppearanceExporter {
-	private final PreparedStatement ps;
-	private final PreparedStatement psImport;
-	private final boolean replaceIds;
+    private final PreparedStatement ps;
+    private final PreparedStatement psImport;
+    private final boolean replaceIds;
 
-	private int batchSize;
-	private int batchCounter;
+    private int batchSize;
+    private int batchCounter;
 
-	public DBGlobalAppearance(CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
-		super(Mode.GLOBAL, cacheTable, exporter, config);
-		ps = cacheTable.getConnection().prepareStatement(select.toString());
+    public DBGlobalAppearance(CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+        super(Mode.GLOBAL, cacheTable, exporter, config);
+        ps = cacheTable.getConnection().prepareStatement(select.toString());
 
-		replaceIds = config.getExportConfig().getResourceId().isReplaceWithUUIDs();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-		batchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
-		if (batchSize > exporter.getDatabaseAdapter().getMaxBatchSize())
-			batchSize = exporter.getDatabaseAdapter().getMaxBatchSize();
+        replaceIds = config.getExportConfig().getResourceId().isReplaceWithUUIDs();
+        String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+        batchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
+        if (batchSize > exporter.getDatabaseAdapter().getMaxBatchSize())
+            batchSize = exporter.getDatabaseAdapter().getMaxBatchSize();
 
-		Table table = new Table(TableEnum.TEXTUREPARAM.getName(), schema);
-		Select select = new Select().addProjection(new ConstantColumn(new PlaceHolder<>()))
-				.addSelection(ComparisonFactory.exists(new Select()
-						.addProjection(new ConstantColumn(1).withFromTable(table))
-						.addSelection(ComparisonFactory.equalTo(table.getColumn("surface_geometry_id"), new PlaceHolder<>()))));
+        Table table = new Table(TableEnum.TEXTUREPARAM.getName(), schema);
+        Select select = new Select().addProjection(new ConstantColumn(new PlaceHolder<>()))
+                .addSelection(ComparisonFactory.exists(new Select()
+                        .addProjection(new ConstantColumn(1).withFromTable(table))
+                        .addSelection(ComparisonFactory.equalTo(table.getColumn("surface_geometry_id"), new PlaceHolder<>()))));
 
-		if (exporter.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect())
-			select.setPseudoTable(exporter.getDatabaseAdapter().getSQLAdapter().getPseudoTableName());
+        if (exporter.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect())
+            select.setPseudoTable(exporter.getDatabaseAdapter().getSQLAdapter().getPseudoTableName());
 
-		psImport = cacheTable.getConnection().prepareStatement("insert into " + cacheTable.getTableName() + " " + select.toString());
-	}
+        psImport = cacheTable.getConnection().prepareStatement("insert into " + cacheTable.getTableName() + " " + select.toString());
+    }
 
-	protected Appearance doExport(long appearanceId) throws CityGMLExportException, SQLException {
-		ps.setLong(1, appearanceId);
+    protected Appearance doExport(long appearanceId) throws CityGMLExportException, SQLException {
+        ps.setLong(1, appearanceId);
 
-		try (ResultSet rs = ps.executeQuery()) {
-			Map<Long, Appearance> appearances = doExport(rs);
-			if (!appearances.isEmpty()) {
-				Appearance appearance = appearances.values().iterator().next();
-				if (replaceIds) {
-					appearance.accept(exporter.getIdReplacer());
-				}
+        try (ResultSet rs = ps.executeQuery()) {
+            Map<Long, Appearance> appearances = doExport(rs);
+            if (!appearances.isEmpty()) {
+                Appearance appearance = appearances.values().iterator().next();
+                if (replaceIds) {
+                    appearance.accept(exporter.getIdReplacer());
+                }
 
-				return appearance;
-			} else {
-				return null;
-			}
-		}
-	}
+                return appearance;
+            } else {
+                return null;
+            }
+        }
+    }
 
-	protected void cacheGeometryIds(AbstractGML object) throws SQLException {
-		Set<Long> ids = new HashSet<>();
+    protected void cacheGeometryIds(AbstractGML object) throws SQLException {
+        Set<Long> ids = new HashSet<>();
 
-		object.accept(new GMLWalker() {
-			@Override
-			public void visit(AbstractGeometry geometry) {
-				Long id = (Long) geometry.getLocalProperty("global_app_cache_id");
-				if (id != null)
-					ids.add(id);
-			}
-		});
+        object.accept(new GMLWalker() {
+            @Override
+            public void visit(AbstractGeometry geometry) {
+                Long id = (Long) geometry.getLocalProperty("global_app_cache_id");
+                if (id != null)
+                    ids.add(id);
+            }
+        });
 
-		for (Long id : ids) {
-			psImport.setLong(1, id);
-			psImport.setLong(2, id);
-			psImport.addBatch();
+        for (Long id : ids) {
+            psImport.setLong(1, id);
+            psImport.setLong(2, id);
+            psImport.addBatch();
 
-			if (++batchCounter == batchSize) {
-				psImport.executeBatch();
-				batchCounter = 0;
-			}
-		}
-	}
+            if (++batchCounter == batchSize) {
+                psImport.executeBatch();
+                batchCounter = 0;
+            }
+        }
+    }
 
-	@Override
-	public void close() throws SQLException {
-		if (batchCounter > 0)
-			psImport.executeBatch();
+    @Override
+    public void close() throws SQLException {
+        if (batchCounter > 0)
+            psImport.executeBatch();
 
-		psImport.close();
-		ps.close();
-	}
+        psImport.close();
+        ps.close();
+    }
 }

@@ -28,5 +28,5 @@
 package org.citydb.util.event;
 
 public interface EventHandler {
-	public void handleEvent(Event event) throws Exception;
+    public void handleEvent(Event event) throws Exception;
 }

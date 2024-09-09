@@ -31,30 +31,30 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.util.event.Event;
 
 public class InterruptEvent extends Event {
-	private final String logMessage;
-	private final LogLevel logLevelType;
-	private final Throwable cause;
-	
-	public InterruptEvent(String logMessage, LogLevel logLevelType, Throwable cause, Object channel) {
-		super(EventType.INTERRUPT, channel);
-		this.logMessage = logMessage;
-		this.logLevelType = logLevelType;
-		this.cause = cause;
-	}
+    private final String logMessage;
+    private final LogLevel logLevelType;
+    private final Throwable cause;
 
-	public InterruptEvent(String logMessage, LogLevel logLevelType, Object channel) {
-		this(logMessage, logLevelType, null, channel);
-	}
+    public InterruptEvent(String logMessage, LogLevel logLevelType, Throwable cause, Object channel) {
+        super(EventType.INTERRUPT, channel);
+        this.logMessage = logMessage;
+        this.logLevelType = logLevelType;
+        this.cause = cause;
+    }
 
-	public String getLogMessage() {
-		return logMessage;
-	}
+    public InterruptEvent(String logMessage, LogLevel logLevelType, Object channel) {
+        this(logMessage, logLevelType, null, channel);
+    }
 
-	public LogLevel getLogLevelType() {
-		return logLevelType;
-	}
+    public String getLogMessage() {
+        return logMessage;
+    }
 
-	public Throwable getCause() {
-		return cause;
-	}
+    public LogLevel getLogLevelType() {
+        return logLevelType;
+    }
+
+    public Throwable getCause() {
+        return cause;
+    }
 }

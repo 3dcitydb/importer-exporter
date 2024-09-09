@@ -34,33 +34,33 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class CacheTableIdList extends AbstractCacheTableModel {
-	private static CacheTableIdList instance;
+    private static CacheTableIdList instance;
 
-	public synchronized static CacheTableIdList getInstance() {
-		if (instance == null)
-			instance = new CacheTableIdList();
+    public synchronized static CacheTableIdList getInstance() {
+        if (instance == null)
+            instance = new CacheTableIdList();
 
-		return instance;
-	}
-	
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.ID_LIST;
-	}
+        return instance;
+    }
 
-	@Override
-	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		try (Statement stmt = conn.createStatement()) {
-			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
-			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (ID) " + properties);
-		}
-	}
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.ID_LIST;
+    }
 
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"ID " + sqlAdapter.getBigInt() +
-				")";
-	}
+    @Override
+    public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
+            stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (ID) " + properties);
+        }
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+                "ID " + sqlAdapter.getBigInt() +
+                ")";
+    }
 }

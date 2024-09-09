@@ -33,49 +33,49 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 @XmlType(name = "objectProperty")
 public class ObjectProperty extends AbstractRefTypeProperty<ObjectType> {
-	@XmlAttribute(name = "target", required = true)
-	@XmlJavaTypeAdapter(ObjectTypeAdapter.class)
-	protected ObjectType type;
+    @XmlAttribute(name = "target", required = true)
+    @XmlJavaTypeAdapter(ObjectTypeAdapter.class)
+    protected ObjectType type;
 
-	protected ObjectProperty() {
-	}
-    
-    public ObjectProperty(String path, ObjectType type, AppSchema schema) {
-    	super(path, schema);
-    	this.type = type;
+    protected ObjectProperty() {
     }
 
-	@Override
-	public ObjectType getType() {
-		return type;
-	}
+    public ObjectProperty(String path, ObjectType type, AppSchema schema) {
+        super(path, schema);
+        this.type = type;
+    }
 
-	@Override
-	public boolean isSetType() {
-		return type != null;
-	}
+    @Override
+    public ObjectType getType() {
+        return type;
+    }
 
-	@Override
-	public void setType(ObjectType type) {
-		this.type = type;
-	}
+    @Override
+    public boolean isSetType() {
+        return type != null;
+    }
 
-	@Override
-	public PathElementType getElementType() {
-		return PathElementType.OBJECT_PROPERTY;
-	}
+    @Override
+    public void setType(ObjectType type) {
+        this.type = type;
+    }
 
-	@Override
-	protected void validate(SchemaMapping schemaMapping, Object parent) throws SchemaMappingException {
-		if (type.hasLocalProperty(MappingConstants.IS_XLINK)) {
-			ObjectType ref = schemaMapping.getObjectTypeById(type.getId());
-			if (ref == null)
-				throw new SchemaMappingException("Failed to resolve object type reference '" + type.getId() + "'.");
+    @Override
+    public PathElementType getElementType() {
+        return PathElementType.OBJECT_PROPERTY;
+    }
 
-			type = ref;
-		}
-		
-		super.validate(schemaMapping, parent);
-	}
+    @Override
+    protected void validate(SchemaMapping schemaMapping, Object parent) throws SchemaMappingException {
+        if (type.hasLocalProperty(MappingConstants.IS_XLINK)) {
+            ObjectType ref = schemaMapping.getObjectTypeById(type.getId());
+            if (ref == null)
+                throw new SchemaMappingException("Failed to resolve object type reference '" + type.getId() + "'.");
+
+            type = ref;
+        }
+
+        super.validate(schemaMapping, parent);
+    }
 
 }

@@ -46,96 +46,96 @@ import java.util.EnumSet;
 import java.util.Iterator;
 
 public class SelectionFilter {
-	private Predicate predicate;
+    private Predicate predicate;
 
-	public SelectionFilter(Predicate predicate) {
-		this.predicate = predicate;
-	}
+    public SelectionFilter(Predicate predicate) {
+        this.predicate = predicate;
+    }
 
-	public Predicate getPredicate() {
-		return predicate;
-	}
+    public Predicate getPredicate() {
+        return predicate;
+    }
 
-	public boolean isSetPredicate() {
-		return predicate != null;
-	}
+    public boolean isSetPredicate() {
+        return predicate != null;
+    }
 
-	public void setPredicate(Predicate predicate) {
-		this.predicate = predicate;
-	}
+    public void setPredicate(Predicate predicate) {
+        this.predicate = predicate;
+    }
 
-	public boolean containsSpatialOperators() {
-		return containsOperator(predicate, EnumSet.of(PredicateName.SPATIAL_OPERATOR));
-	}
+    public boolean containsSpatialOperators() {
+        return containsOperator(predicate, EnumSet.of(PredicateName.SPATIAL_OPERATOR));
+    }
 
-	private boolean containsOperator(Predicate predicate, EnumSet<PredicateName> predicateNames) {
-		if (predicateNames.contains(predicate.getPredicateName()))
-			return true;
+    private boolean containsOperator(Predicate predicate, EnumSet<PredicateName> predicateNames) {
+        if (predicateNames.contains(predicate.getPredicateName()))
+            return true;
 
-		if (predicate.getPredicateName() == PredicateName.LOGICAL_OPERATOR) {
-			if (((AbstractLogicalOperator)predicate).getOperatorName() == LogicalOperatorName.NOT)
-				return containsOperator(((NotOperator)predicate).getOperand(), predicateNames);
-			else {
-				BinaryLogicalOperator binaryLogicalOperator = (BinaryLogicalOperator)predicate;
+        if (predicate.getPredicateName() == PredicateName.LOGICAL_OPERATOR) {
+            if (((AbstractLogicalOperator) predicate).getOperatorName() == LogicalOperatorName.NOT)
+                return containsOperator(((NotOperator) predicate).getOperand(), predicateNames);
+            else {
+                BinaryLogicalOperator binaryLogicalOperator = (BinaryLogicalOperator) predicate;
 
-				for (Predicate operand : binaryLogicalOperator.getOperands()) {
-					if (containsOperator(operand, predicateNames))
-						return true;
-				}
-			}
-		}
+                for (Predicate operand : binaryLogicalOperator.getOperands()) {
+                    if (containsOperator(operand, predicateNames))
+                        return true;
+                }
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public Predicate getGenericSpatialFilter(FeatureType featureType) throws FilterException {
-		ValueReference valueReference = null;
-		try {
-			SchemaPath schemaPath = new SchemaPath(featureType);
-			schemaPath.appendChild(featureType.getProperty("boundedBy", GMLCoreModule.v3_1_1.getNamespaceURI(), true));
-			valueReference = new ValueReference(schemaPath);
-		} catch (InvalidSchemaPathException e) {
-			throw new FilterException("Failed to build schema path.", e);
-		}
+    public Predicate getGenericSpatialFilter(FeatureType featureType) throws FilterException {
+        ValueReference valueReference = null;
+        try {
+            SchemaPath schemaPath = new SchemaPath(featureType);
+            schemaPath.appendChild(featureType.getProperty("boundedBy", GMLCoreModule.v3_1_1.getNamespaceURI(), true));
+            valueReference = new ValueReference(schemaPath);
+        } catch (InvalidSchemaPathException e) {
+            throw new FilterException("Failed to build schema path.", e);
+        }
 
-		Predicate predicate = this.predicate.copy();
-		return reduceToGenericSpatialFilter(predicate, valueReference) ? predicate : null;
-	}
+        Predicate predicate = this.predicate.copy();
+        return reduceToGenericSpatialFilter(predicate, valueReference) ? predicate : null;
+    }
 
-	private boolean reduceToGenericSpatialFilter(Predicate predicate, ValueReference valueReference) throws FilterException {
-		switch (predicate.getPredicateName()) {
-			case SPATIAL_OPERATOR:
-				return reduceToGenericSpatialFilter((AbstractSpatialOperator) predicate, valueReference);
-			case LOGICAL_OPERATOR:
-				return reduceToGenericSpatialFilter((AbstractLogicalOperator) predicate, valueReference);
-			default:
-				return false;
-		}
-	}
+    private boolean reduceToGenericSpatialFilter(Predicate predicate, ValueReference valueReference) throws FilterException {
+        switch (predicate.getPredicateName()) {
+            case SPATIAL_OPERATOR:
+                return reduceToGenericSpatialFilter((AbstractSpatialOperator) predicate, valueReference);
+            case LOGICAL_OPERATOR:
+                return reduceToGenericSpatialFilter((AbstractLogicalOperator) predicate, valueReference);
+            default:
+                return false;
+        }
+    }
 
-	private boolean reduceToGenericSpatialFilter(AbstractLogicalOperator logicalOperator, ValueReference valueReference) throws FilterException {
-		if (logicalOperator.getOperatorName() == LogicalOperatorName.NOT) {
-			return reduceToGenericSpatialFilter(((NotOperator)logicalOperator).getOperand(), valueReference);
-		} else {
-			BinaryLogicalOperator binaryLogicalOperator = (BinaryLogicalOperator)logicalOperator;
+    private boolean reduceToGenericSpatialFilter(AbstractLogicalOperator logicalOperator, ValueReference valueReference) throws FilterException {
+        if (logicalOperator.getOperatorName() == LogicalOperatorName.NOT) {
+            return reduceToGenericSpatialFilter(((NotOperator) logicalOperator).getOperand(), valueReference);
+        } else {
+            BinaryLogicalOperator binaryLogicalOperator = (BinaryLogicalOperator) logicalOperator;
 
-			Iterator<Predicate> iter = binaryLogicalOperator.getOperands().iterator();
-			while (iter.hasNext()) {
-				if (!reduceToGenericSpatialFilter(iter.next(), valueReference))
-					iter.remove();
-			}
+            Iterator<Predicate> iter = binaryLogicalOperator.getOperands().iterator();
+            while (iter.hasNext()) {
+                if (!reduceToGenericSpatialFilter(iter.next(), valueReference))
+                    iter.remove();
+            }
 
-			return !binaryLogicalOperator.getOperands().isEmpty();
-		}
+            return !binaryLogicalOperator.getOperands().isEmpty();
+        }
 
-	}
+    }
 
-	private boolean reduceToGenericSpatialFilter(AbstractSpatialOperator spatialOperator, ValueReference valueReference) throws FilterException {
-		if (SpatialOperatorName.BINARY_SPATIAL_OPERATORS.contains(spatialOperator.getOperatorName()))
-			((BinarySpatialOperator)spatialOperator).setLeftOperand(valueReference);
-		else if (SpatialOperatorName.DISTANCE_OPERATORS.contains(spatialOperator.getOperatorName()))
-			((DistanceOperator)spatialOperator).setLeftOperand(valueReference);
+    private boolean reduceToGenericSpatialFilter(AbstractSpatialOperator spatialOperator, ValueReference valueReference) throws FilterException {
+        if (SpatialOperatorName.BINARY_SPATIAL_OPERATORS.contains(spatialOperator.getOperatorName()))
+            ((BinarySpatialOperator) spatialOperator).setLeftOperand(valueReference);
+        else if (SpatialOperatorName.DISTANCE_OPERATORS.contains(spatialOperator.getOperatorName()))
+            ((DistanceOperator) spatialOperator).setLeftOperand(valueReference);
 
-		return true;
-	}
+        return true;
+    }
 }

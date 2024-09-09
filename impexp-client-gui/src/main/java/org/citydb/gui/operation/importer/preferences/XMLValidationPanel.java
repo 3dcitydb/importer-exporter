@@ -39,84 +39,84 @@ import java.awt.*;
 import java.util.Locale;
 
 public class XMLValidationPanel extends InternalPreferencesComponent {
-	private TitledPanel validationPanel;
-	private JCheckBox useXMLValidation;
-	private JLabel useXMLValidationDescr;
-	private JCheckBox oneError;
-	
-	public XMLValidationPanel(Config config) {
-		super(config);
-		initGui();
-	}
-	
-	@Override
-	public boolean isModified() {
-		XMLValidation xmlValidation = config.getImportConfig().getCityGMLOptions().getXMLValidation();
-		
-		if (useXMLValidation.isSelected() != xmlValidation.isSetUseXMLValidation()) return true;		
-		if (oneError.isSelected() != xmlValidation.isSetReportOneErrorPerFeature()) return true;
-		
-		return false;
-	}
-	
-	private void initGui() {
-		useXMLValidation = new JCheckBox("");
-		useXMLValidationDescr = new JLabel("");
-		oneError = new JCheckBox("");
+    private TitledPanel validationPanel;
+    private JCheckBox useXMLValidation;
+    private JLabel useXMLValidationDescr;
+    private JCheckBox oneError;
 
-		setLayout(new GridBagLayout());
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			useXMLValidationDescr.setFont(useXMLValidationDescr.getFont().deriveFont(Font.ITALIC));
-			{
-				content.add(useXMLValidationDescr, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				content.add(oneError, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			}
+    public XMLValidationPanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-			validationPanel = new TitledPanel()
-					.withToggleButton(useXMLValidation)
-					.build(content);
+    @Override
+    public boolean isModified() {
+        XMLValidation xmlValidation = config.getImportConfig().getCityGMLOptions().getXMLValidation();
 
-			add(validationPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		}
+        if (useXMLValidation.isSelected() != xmlValidation.isSetUseXMLValidation()) return true;
+        if (oneError.isSelected() != xmlValidation.isSetReportOneErrorPerFeature()) return true;
 
-		useXMLValidation.addActionListener(e -> setEnabledValidation());
-	}
-	
-	@Override
-	public void switchLocale(Locale locale) {
-		validationPanel.setTitle(Language.I18N.getString("pref.import.xmlValidation.label.useXMLValidation"));
-		useXMLValidationDescr.setText(Language.I18N.getString("pref.import.xmlValidation.label.useXMLValidation.description"));
-		oneError.setText(Language.I18N.getString("pref.import.xmlValidation.label.oneError"));
-	}
+        return false;
+    }
 
-	private void setEnabledValidation() {
-		useXMLValidationDescr.setEnabled(useXMLValidation.isSelected());
-		oneError.setEnabled(useXMLValidation.isSelected());
-	}
+    private void initGui() {
+        useXMLValidation = new JCheckBox("");
+        useXMLValidationDescr = new JLabel("");
+        oneError = new JCheckBox("");
 
-	@Override
-	public void loadSettings() {
-		XMLValidation xmlValidation = config.getImportConfig().getCityGMLOptions().getXMLValidation();
+        setLayout(new GridBagLayout());
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            useXMLValidationDescr.setFont(useXMLValidationDescr.getFont().deriveFont(Font.ITALIC));
+            {
+                content.add(useXMLValidationDescr, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(oneError, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            }
 
-		useXMLValidation.setSelected(xmlValidation.isSetUseXMLValidation());
-		oneError.setSelected(xmlValidation.isSetReportOneErrorPerFeature());
+            validationPanel = new TitledPanel()
+                    .withToggleButton(useXMLValidation)
+                    .build(content);
 
-		setEnabledValidation();
-	}
+            add(validationPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        }
 
-	@Override
-	public void setSettings() {
-		XMLValidation xmlValidation = config.getImportConfig().getCityGMLOptions().getXMLValidation();
+        useXMLValidation.addActionListener(e -> setEnabledValidation());
+    }
 
-		xmlValidation.setUseXMLValidation(useXMLValidation.isSelected());
-		xmlValidation.setReportOneErrorPerFeature(oneError.isSelected());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.import.xmlValidation");
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        validationPanel.setTitle(Language.I18N.getString("pref.import.xmlValidation.label.useXMLValidation"));
+        useXMLValidationDescr.setText(Language.I18N.getString("pref.import.xmlValidation.label.useXMLValidation.description"));
+        oneError.setText(Language.I18N.getString("pref.import.xmlValidation.label.oneError"));
+    }
+
+    private void setEnabledValidation() {
+        useXMLValidationDescr.setEnabled(useXMLValidation.isSelected());
+        oneError.setEnabled(useXMLValidation.isSelected());
+    }
+
+    @Override
+    public void loadSettings() {
+        XMLValidation xmlValidation = config.getImportConfig().getCityGMLOptions().getXMLValidation();
+
+        useXMLValidation.setSelected(xmlValidation.isSetUseXMLValidation());
+        oneError.setSelected(xmlValidation.isSetReportOneErrorPerFeature());
+
+        setEnabledValidation();
+    }
+
+    @Override
+    public void setSettings() {
+        XMLValidation xmlValidation = config.getImportConfig().getCityGMLOptions().getXMLValidation();
+
+        xmlValidation.setUseXMLValidation(useXMLValidation.isSelected());
+        xmlValidation.setReportOneErrorPerFeature(oneError.isSelected());
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.import.xmlValidation");
+    }
 
 }

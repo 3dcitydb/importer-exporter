@@ -36,22 +36,22 @@ import javax.swing.*;
 
 public class CityGMLImportView extends DefaultView {
 
-	public CityGMLImportView(ViewController viewController, Config config) {
-		super(new ImportPanel(viewController, config));
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("main.tabbedPane.import");
-	}
+    public CityGMLImportView(ViewController viewController, Config config) {
+        super(new ImportPanel(viewController, config));
+    }
 
-	@Override
-	public String getToolTip() {
-		return null;
-	}
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("main.tabbedPane.import");
+    }
 
-	@Override
-	public Icon getIcon() {
-		return null;
-	}
+    @Override
+    public String getToolTip() {
+        return null;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return null;
+    }
 }

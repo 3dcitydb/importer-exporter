@@ -28,55 +28,55 @@
 package org.citydb.core.operation.common.xlink;
 
 public class DBXlinkLinearRing implements DBXlink {
-	private String gmlId;
-	private long parentId;
-	private int ringNo;
-	private boolean isReverse;
+    private String gmlId;
+    private long parentId;
+    private int ringNo;
+    private boolean isReverse;
 
-	public DBXlinkLinearRing(String gmlId, long parentId, int ringNo, boolean isReverse) {
-		this.gmlId = gmlId;
-		this.parentId = parentId;
-		this.ringNo = ringNo;
-		this.isReverse = isReverse;
-	}
-	
-	@Override
-	public String getGmlId() {
-		return gmlId;
-	}
+    public DBXlinkLinearRing(String gmlId, long parentId, int ringNo, boolean isReverse) {
+        this.gmlId = gmlId;
+        this.parentId = parentId;
+        this.ringNo = ringNo;
+        this.isReverse = isReverse;
+    }
 
-	@Override
-	public void setGmlId(String gmlId) {
-		this.gmlId = gmlId;
-	}
-	
-	public long getParentId() {
-		return parentId;
-	}
+    @Override
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public void setParentId(long parentId) {
-		this.parentId = parentId;
-	}
+    @Override
+    public void setGmlId(String gmlId) {
+        this.gmlId = gmlId;
+    }
 
-	public int getRingNo() {
-		return ringNo;
-	}
+    public long getParentId() {
+        return parentId;
+    }
 
-	public void setRingNo(int ringNo) {
-		this.ringNo = ringNo;
-	}
+    public void setParentId(long parentId) {
+        this.parentId = parentId;
+    }
 
-	public boolean isReverse() {
-		return isReverse;
-	}
+    public int getRingNo() {
+        return ringNo;
+    }
 
-	public void setReverse(boolean isReverse) {
-		this.isReverse = isReverse;
-	}
+    public void setRingNo(int ringNo) {
+        this.ringNo = ringNo;
+    }
 
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.LINEAR_RING;
-	}
+    public boolean isReverse() {
+        return isReverse;
+    }
+
+    public void setReverse(boolean isReverse) {
+        this.isReverse = isReverse;
+    }
+
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.LINEAR_RING;
+    }
 
 }

@@ -35,18 +35,18 @@ import org.citydb.util.concurrent.WorkerFactory;
 import org.citydb.util.event.EventDispatcher;
 
 public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
-	private final CacheTableManager cacheTableManager;
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
+    private final CacheTableManager cacheTableManager;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
 
-	public DBImportXlinkWorkerFactory(CacheTableManager cacheTableManager, Config config, EventDispatcher eventDispatcher) {
-		this.cacheTableManager = cacheTableManager;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public DBImportXlinkWorkerFactory(CacheTableManager cacheTableManager, Config config, EventDispatcher eventDispatcher) {
+        this.cacheTableManager = cacheTableManager;
+        this.config = config;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public Worker<DBXlink> createWorker() {
-		return new DBImportXlinkWorker(cacheTableManager, config, eventDispatcher);
-	}
+    @Override
+    public Worker<DBXlink> createWorker() {
+        return new DBImportXlinkWorker(cacheTableManager, config, eventDispatcher);
+    }
 }

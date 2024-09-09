@@ -30,5 +30,6 @@ package org.citydb.cli.option;
 
 public interface StartupProgressListener {
     void setProcessSteps(int processSteps);
+
     void nextStep(String message, int step);
 }

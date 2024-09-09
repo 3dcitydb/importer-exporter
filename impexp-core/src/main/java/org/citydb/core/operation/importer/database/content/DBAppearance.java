@@ -51,171 +51,171 @@ import java.util.List;
 import java.util.Map.Entry;
 
 public class DBAppearance implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psAppearance;
-	private DBSurfaceData surfaceDataImporter;
-	private TexturedSurfaceConverter texturedSurfaceConverter;
-	private AttributeValueJoiner valueJoiner;
+    private PreparedStatement psAppearance;
+    private DBSurfaceData surfaceDataImporter;
+    private TexturedSurfaceConverter texturedSurfaceConverter;
+    private AttributeValueJoiner valueJoiner;
 
-	private int batchCounter;
-	private boolean replaceGmlId;
+    private int batchCounter;
+    private boolean replaceGmlId;
 
-	public DBAppearance(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
-		this.importer = importer;
+    public DBAppearance(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
+        this.importer = importer;
 
-		replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
-		if (gmlIdCodespace != null)
-			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
+        String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
+        if (gmlIdCodespace != null)
+            gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 
-		String stmt = "insert into " + schema + ".appearance (id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
-				"name, name_codespace, description, theme, citymodel_id, cityobject_id) values " +
-				"(?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?)";
-		psAppearance = batchConn.prepareStatement(stmt);
+        String stmt = "insert into " + schema + ".appearance (id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
+                "name, name_codespace, description, theme, citymodel_id, cityobject_id) values " +
+                "(?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?)";
+        psAppearance = batchConn.prepareStatement(stmt);
 
-		surfaceDataImporter = importer.getImporter(DBSurfaceData.class);
-		texturedSurfaceConverter = new TexturedSurfaceConverter(this, config, importer);
-		valueJoiner = importer.getAttributeValueJoiner();
-	}
+        surfaceDataImporter = importer.getImporter(DBSurfaceData.class);
+        texturedSurfaceConverter = new TexturedSurfaceConverter(this, config, importer);
+        valueJoiner = importer.getAttributeValueJoiner();
+    }
 
-	public long doImport(Appearance appearance, long parentId, boolean isLocalAppearance) throws CityGMLImportException, SQLException {
-		long appearanceId = importer.getNextSequenceValue(SequenceEnum.APPEARANCE_ID_SEQ.getName());
+    public long doImport(Appearance appearance, long parentId, boolean isLocalAppearance) throws CityGMLImportException, SQLException {
+        long appearanceId = importer.getNextSequenceValue(SequenceEnum.APPEARANCE_ID_SEQ.getName());
 
-		FeatureType featureType = importer.getFeatureType(appearance);
-		if (featureType == null)
-			throw new SQLException("Failed to retrieve feature type.");
+        FeatureType featureType = importer.getFeatureType(appearance);
+        if (featureType == null)
+            throw new SQLException("Failed to retrieve feature type.");
 
-		// primary id
-		psAppearance.setLong(1, appearanceId);
+        // primary id
+        psAppearance.setLong(1, appearanceId);
 
-		// gml:id
-		String origGmlId = appearance.isSetId() && !appearance.getId().isEmpty() ? appearance.getId() : null;
-		if (origGmlId != null)
-			appearance.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
-		
-		if (replaceGmlId) {
-			String gmlId = importer.generateNewGmlId();
+        // gml:id
+        String origGmlId = appearance.isSetId() && !appearance.getId().isEmpty() ? appearance.getId() : null;
+        if (origGmlId != null)
+            appearance.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 
-			// mapping entry
-			if (origGmlId != null)
-				importer.putObjectId(origGmlId, appearanceId, gmlId, featureType.getObjectClassId());
+        if (replaceGmlId) {
+            String gmlId = importer.generateNewGmlId();
 
-			appearance.setId(gmlId);
-		} else {
-			if (origGmlId != null)
-				importer.putObjectId(origGmlId, appearanceId, featureType.getObjectClassId());
-			else
-				appearance.setId(importer.generateNewGmlId());
-		}
+            // mapping entry
+            if (origGmlId != null)
+                importer.putObjectId(origGmlId, appearanceId, gmlId, featureType.getObjectClassId());
 
-		psAppearance.setString(2, appearance.getId());
+            appearance.setId(gmlId);
+        } else {
+            if (origGmlId != null)
+                importer.putObjectId(origGmlId, appearanceId, featureType.getObjectClassId());
+            else
+                appearance.setId(importer.generateNewGmlId());
+        }
 
-		// gml:name
-		if (appearance.isSetName()) {
-			valueJoiner.join(appearance.getName(), Code::getValue, Code::getCodeSpace);
-			psAppearance.setString(3, valueJoiner.result(0));
-			psAppearance.setString(4, valueJoiner.result(1));
-		} else {
-			psAppearance.setNull(3, Types.VARCHAR);
-			psAppearance.setNull(4, Types.VARCHAR);
-		}
+        psAppearance.setString(2, appearance.getId());
 
-		// gml:description
-		if (appearance.isSetDescription()) {
-			String description = appearance.getDescription().getValue();
-			if (description != null)
-				description = description.trim();
+        // gml:name
+        if (appearance.isSetName()) {
+            valueJoiner.join(appearance.getName(), Code::getValue, Code::getCodeSpace);
+            psAppearance.setString(3, valueJoiner.result(0));
+            psAppearance.setString(4, valueJoiner.result(1));
+        } else {
+            psAppearance.setNull(3, Types.VARCHAR);
+            psAppearance.setNull(4, Types.VARCHAR);
+        }
 
-			psAppearance.setString(5, description);
-		} else {
-			psAppearance.setNull(5, Types.VARCHAR);
-		}
+        // gml:description
+        if (appearance.isSetDescription()) {
+            String description = appearance.getDescription().getValue();
+            if (description != null)
+                description = description.trim();
 
-		// app:theme
-		psAppearance.setString(6, appearance.getTheme());
+            psAppearance.setString(5, description);
+        } else {
+            psAppearance.setNull(5, Types.VARCHAR);
+        }
 
-		// cityobject or citymodel id
-		if (isLocalAppearance) {
-			psAppearance.setNull(7, Types.NULL);
-			psAppearance.setLong(8, parentId);
-		} else {
-			psAppearance.setNull(7, Types.NULL);
-			psAppearance.setNull(8, Types.NULL);
-		}
+        // app:theme
+        psAppearance.setString(6, appearance.getTheme());
 
-		psAppearance.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.APPEARANCE);
+        // cityobject or citymodel id
+        if (isLocalAppearance) {
+            psAppearance.setNull(7, Types.NULL);
+            psAppearance.setLong(8, parentId);
+        } else {
+            psAppearance.setNull(7, Types.NULL);
+            psAppearance.setNull(8, Types.NULL);
+        }
 
-		// surfaceData members
-		if (appearance.isSetSurfaceDataMember()) {
-			for (SurfaceDataProperty property : appearance.getSurfaceDataMember()) {
-				AbstractSurfaceData surfaceData = property.getSurfaceData();
+        psAppearance.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.APPEARANCE);
 
-				if (surfaceData != null) {
-					surfaceDataImporter.doImport(surfaceData, appearanceId, isLocalAppearance);
-				} else {
-					String href = property.getHref();
-					if (href != null && href.length() != 0) {
-						importer.propagateXlink(new DBXlinkBasic(
-								TableEnum.APPEAR_TO_SURFACE_DATA.getName(),
-								appearanceId,
-								"APPEARANCE_ID",
-								href,
-								"SURFACE_DATA_ID"));
-					}
-				}
-			}
-		}
-		
-		// ADE-specific extensions
-		if (importer.hasADESupport())
-			importer.delegateToADEImporter(appearance, appearanceId, featureType);
+        // surfaceData members
+        if (appearance.isSetSurfaceDataMember()) {
+            for (SurfaceDataProperty property : appearance.getSurfaceDataMember()) {
+                AbstractSurfaceData surfaceData = property.getSurfaceData();
 
-		importer.updateObjectCounter(appearance, featureType, appearanceId);
-		return appearanceId;
-	}
+                if (surfaceData != null) {
+                    surfaceDataImporter.doImport(surfaceData, appearanceId, isLocalAppearance);
+                } else {
+                    String href = property.getHref();
+                    if (href != null && href.length() != 0) {
+                        importer.propagateXlink(new DBXlinkBasic(
+                                TableEnum.APPEAR_TO_SURFACE_DATA.getName(),
+                                appearanceId,
+                                "APPEARANCE_ID",
+                                href,
+                                "SURFACE_DATA_ID"));
+                    }
+                }
+            }
+        }
 
-	protected void importLocalAppearance() throws CityGMLImportException, SQLException {
-		LocalAppearanceHandler handler = importer.getLocalAppearanceHandler();
+        // ADE-specific extensions
+        if (importer.hasADESupport())
+            importer.delegateToADEImporter(appearance, appearanceId, featureType);
 
-		if (handler != null) {
-			if (handler.hasAppearances()) {
-				for (Entry<Long, List<Appearance>> entry : handler.getAppearances().entrySet()) {
-					for (Appearance appearance : entry.getValue())
-						doImport(appearance, entry.getKey(), true);
-				}
-			}
+        importer.updateObjectCounter(appearance, featureType, appearanceId);
+        return appearanceId;
+    }
 
-			// reset appearance handler
-			handler.reset();
-		}
-	}
+    protected void importLocalAppearance() throws CityGMLImportException, SQLException {
+        LocalAppearanceHandler handler = importer.getLocalAppearanceHandler();
 
-	protected void importTexturedSurface(_AbstractAppearance _appearance, AbstractSurface abstractSurface, long parentId, boolean isFront, String target) throws CityGMLImportException, SQLException {
-		texturedSurfaceConverter.convertTexturedSurface(_appearance, abstractSurface, parentId, isFront, target);	
-	}
+        if (handler != null) {
+            if (handler.hasAppearances()) {
+                for (Entry<Long, List<Appearance>> entry : handler.getAppearances().entrySet()) {
+                    for (Appearance appearance : entry.getValue())
+                        doImport(appearance, entry.getKey(), true);
+                }
+            }
 
-	protected void importTexturedSurfaceXlink(String href, long surfaceGeometryId, long parentId) throws CityGMLImportException, SQLException {
-		texturedSurfaceConverter.convertTexturedSurfaceXlink(href, surfaceGeometryId, parentId);
-	}
+            // reset appearance handler
+            handler.reset();
+        }
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		texturedSurfaceConverter.flush();
+    protected void importTexturedSurface(_AbstractAppearance _appearance, AbstractSurface abstractSurface, long parentId, boolean isFront, String target) throws CityGMLImportException, SQLException {
+        texturedSurfaceConverter.convertTexturedSurface(_appearance, abstractSurface, parentId, isFront, target);
+    }
 
-		if (batchCounter > 0) {
-			psAppearance.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    protected void importTexturedSurfaceXlink(String href, long surfaceGeometryId, long parentId) throws CityGMLImportException, SQLException {
+        texturedSurfaceConverter.convertTexturedSurfaceXlink(href, surfaceGeometryId, parentId);
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psAppearance.close();
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        texturedSurfaceConverter.flush();
+
+        if (batchCounter > 0) {
+            psAppearance.executeBatch();
+            batchCounter = 0;
+        }
+    }
+
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psAppearance.close();
+    }
 
 }

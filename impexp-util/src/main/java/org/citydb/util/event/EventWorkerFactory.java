@@ -31,15 +31,15 @@ import org.citydb.util.concurrent.Worker;
 import org.citydb.util.concurrent.WorkerFactory;
 
 public class EventWorkerFactory implements WorkerFactory<Event> {
-	private final EventDispatcher eventDispatcher;
+    private final EventDispatcher eventDispatcher;
 
-	public EventWorkerFactory(EventDispatcher eventDispatcher) {
-		this.eventDispatcher = eventDispatcher;
-	}
+    public EventWorkerFactory(EventDispatcher eventDispatcher) {
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public Worker<Event> createWorker() {
-		return new EventWorker(eventDispatcher);
-	}
+    @Override
+    public Worker<Event> createWorker() {
+        return new EventWorker(eventDispatcher);
+    }
 
 }

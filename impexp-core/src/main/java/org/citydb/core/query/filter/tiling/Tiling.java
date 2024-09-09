@@ -36,112 +36,112 @@ import org.citydb.core.query.filter.FilterException;
 import java.sql.SQLException;
 
 public class Tiling {
-	private final double[] rows;
-	private final double[] columns;
+    private final double[] rows;
+    private final double[] columns;
 
-	private BoundingBox extent;
-	private Tile activeTile;
-	private Object tilingOptions;
+    private BoundingBox extent;
+    private Tile activeTile;
+    private Object tilingOptions;
 
-	public Tiling(BoundingBox extent, int rows, int columns) throws FilterException {
-		if (extent == null) {
-			throw new FilterException("The spatial tiling extent must not be null.");
-		}
+    public Tiling(BoundingBox extent, int rows, int columns) throws FilterException {
+        if (extent == null) {
+            throw new FilterException("The spatial tiling extent must not be null.");
+        }
 
-		if (!extent.isValid()) {
-			throw new FilterException("The bounding box extent is invalid.");
-		}
+        if (!extent.isValid()) {
+            throw new FilterException("The bounding box extent is invalid.");
+        }
 
-		if (extent.getSrs() != null && !extent.getSrs().isSupported()) {
-			throw new FilterException("The reference system " + extent.getSrs().getDescription() +
-					" of the tiling extent is not supported.");
-		}
+        if (extent.getSrs() != null && !extent.getSrs().isSupported()) {
+            throw new FilterException("The reference system " + extent.getSrs().getDescription() +
+                    " of the tiling extent is not supported.");
+        }
 
-		this.extent = extent;
-		this.rows = new double[rows > 0 ? rows + 1 : 2];
-		this.columns = new double[columns > 0 ? columns + 1 : 2];
-		calculateTilingScheme();
-	}
+        this.extent = extent;
+        this.rows = new double[rows > 0 ? rows + 1 : 2];
+        this.columns = new double[columns > 0 ? columns + 1 : 2];
+        calculateTilingScheme();
+    }
 
-	public BoundingBox getExtent() {
-		return extent;
-	}
+    public BoundingBox getExtent() {
+        return extent;
+    }
 
-	public int getRows() {
-		return rows.length - 1;
-	}
+    public int getRows() {
+        return rows.length - 1;
+    }
 
-	public int getColumns() {
-		return columns.length - 1;
-	}
+    public int getColumns() {
+        return columns.length - 1;
+    }
 
-	public Object getTilingOptions() {
-		return tilingOptions;
-	}
-	
-	public boolean isSetTilingOptions() {
-		return tilingOptions != null;
-	}
+    public Object getTilingOptions() {
+        return tilingOptions;
+    }
 
-	public void setTilingOptions(Object tilingOptions) {
-		this.tilingOptions = tilingOptions;
-	}
+    public boolean isSetTilingOptions() {
+        return tilingOptions != null;
+    }
 
-	public void transformExtent(DatabaseSrs targetSrs, AbstractDatabaseAdapter databaseAdapter) throws FilterException {
-		if (!targetSrs.isSupported()) {
-			throw new FilterException("The reference system " + targetSrs.getDescription() + " is not supported.");
-		}
+    public void setTilingOptions(Object tilingOptions) {
+        this.tilingOptions = tilingOptions;
+    }
 
-		DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
-		if (targetSrs.getSrid() == extentSrs.getSrid()) {
-			return;
-		}
+    public void transformExtent(DatabaseSrs targetSrs, AbstractDatabaseAdapter databaseAdapter) throws FilterException {
+        if (!targetSrs.isSupported()) {
+            throw new FilterException("The reference system " + targetSrs.getDescription() + " is not supported.");
+        }
 
-		try {
-			extent = databaseAdapter.getUtil().transform2D(extent, extentSrs, targetSrs);
-		} catch (SQLException e) {
-			throw new FilterException("Failed to transform tiling extent to SRID " + targetSrs.getSrid() + ".", e);
-		}
-		
-		// adapt tiling scheme
-		calculateTilingScheme();
-	}
+        DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
+        if (targetSrs.getSrid() == extentSrs.getSrid()) {
+            return;
+        }
 
-	public Tile getTileAt(int row, int column) throws FilterException {
-		if (row < 0 || column < 0 || row >= getRows() || column >= getColumns()) {
-			throw new FilterException("Tile coordinates are out of bounds.");
-		}
+        try {
+            extent = databaseAdapter.getUtil().transform2D(extent, extentSrs, targetSrs);
+        } catch (SQLException e) {
+            throw new FilterException("Failed to transform tiling extent to SRID " + targetSrs.getSrid() + ".", e);
+        }
 
-		BoundingBox tileExtent = new BoundingBox(
-				new Position(columns[column], rows[row]),
-				new Position(columns[column + 1], rows[row + 1]),
-				extent.getSrs()
-		);
+        // adapt tiling scheme
+        calculateTilingScheme();
+    }
 
-		return new Tile(tileExtent, row, column);
-	}
-	
-	public Tile getActiveTile() {
-		return activeTile;
-	}
+    public Tile getTileAt(int row, int column) throws FilterException {
+        if (row < 0 || column < 0 || row >= getRows() || column >= getColumns()) {
+            throw new FilterException("Tile coordinates are out of bounds.");
+        }
 
-	public void setActiveTile(Tile activeTile) {
-		this.activeTile = activeTile;
-	}
+        BoundingBox tileExtent = new BoundingBox(
+                new Position(columns[column], rows[row]),
+                new Position(columns[column + 1], rows[row + 1]),
+                extent.getSrs()
+        );
 
-	private void calculateTilingScheme() {
-		double tileHeight = (extent.getUpperCorner().getY() - extent.getLowerCorner().getY()) / getRows();
-		rows[0] = extent.getLowerCorner().getY();
-		rows[rows.length - 1] = extent.getUpperCorner().getY();
-		for (int i = 1; i < rows.length - 1; i++) {
-			rows[i] = rows[i - 1] + tileHeight;
-		}
+        return new Tile(tileExtent, row, column);
+    }
 
-		double tileWidth = (extent.getUpperCorner().getX() - extent.getLowerCorner().getX()) / getColumns();
-		columns[0] = extent.getLowerCorner().getX();
-		columns[columns.length - 1] = extent.getUpperCorner().getX();
-		for (int i = 1; i < columns.length - 1; i++) {
-			columns[i] = columns[i - 1] + tileWidth;
-		}
-	}
+    public Tile getActiveTile() {
+        return activeTile;
+    }
+
+    public void setActiveTile(Tile activeTile) {
+        this.activeTile = activeTile;
+    }
+
+    private void calculateTilingScheme() {
+        double tileHeight = (extent.getUpperCorner().getY() - extent.getLowerCorner().getY()) / getRows();
+        rows[0] = extent.getLowerCorner().getY();
+        rows[rows.length - 1] = extent.getUpperCorner().getY();
+        for (int i = 1; i < rows.length - 1; i++) {
+            rows[i] = rows[i - 1] + tileHeight;
+        }
+
+        double tileWidth = (extent.getUpperCorner().getX() - extent.getLowerCorner().getX()) / getColumns();
+        columns[0] = extent.getLowerCorner().getX();
+        columns[columns.length - 1] = extent.getUpperCorner().getX();
+        for (int i = 1; i < columns.length - 1; i++) {
+            columns[i] = columns[i - 1] + tileWidth;
+        }
+    }
 }

@@ -71,422 +71,422 @@ import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ExportPanel extends DefaultViewComponent implements DropTargetListener {
-	private final ReentrantLock mainLock = new ReentrantLock();
-	private final Logger log = Logger.getInstance();
-	private final ViewController viewController;
-	private final DatabaseController databaseController;
-	private final Config config;
-
-	private JTextField browseText;
-	private JButton browseButton;
-	private FilterPanel filterPanel;
-	private JButton exportButton;
-	private JToggleButton simpleFilterButton;
-	private JToggleButton xmlQueryButton;
-
-	public ExportPanel(ViewController viewController, Config config) {
-		this.viewController = viewController;
-		this.config = config;
-
-		databaseController = ObjectRegistry.getInstance().getDatabaseController();
-		initGui();
-	}
-
-	private void initGui() {
-		browseText = new JTextField();
-		browseButton = new JButton();
-		filterPanel = new FilterPanel(viewController, config);
-		exportButton = new JButton();
-		simpleFilterButton = new JToggleButton();
-		xmlQueryButton = new JToggleButton();
-
-		JToolBar toolBar = new JToolBar();
-		toolBar.setBorder(BorderFactory.createEmptyBorder());
-		toolBar.add(simpleFilterButton);
-		toolBar.add(xmlQueryButton);
-
-		ButtonGroup buttonGroup = new ButtonGroup();
-		buttonGroup.add(simpleFilterButton);
-		buttonGroup.add(xmlQueryButton);
-
-		browseButton.addActionListener(e -> saveFile(Language.I18N.getString("main.tabbedPane.export")));
-
-		PopupMenuDecorator.getInstance().decorate(browseText);
-
-		exportButton.addActionListener(e -> new SwingWorker<Void, Void>() {
-			protected Void doInBackground() {
-				doExport();
-				return null;
-			}
-		}.execute());
-
-		setLayout(new GridBagLayout());
-
-		JPanel filePanel = new JPanel();
-		filePanel.setLayout(new GridBagLayout());
-		filePanel.add(browseText, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
-		filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
-
-		JPanel view = new JPanel();
-		view.setLayout(new GridBagLayout());
-		view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.BOTH, 0, 10, 0, 10));
-
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridBagLayout());
-		buttonPanel.add(exportButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
-		buttonPanel.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
-
-		add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
-		add(view, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(buttonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
-
-		DropTarget dropTarget = new DropTarget(browseText, this);
-		browseText.setDropTarget(dropTarget);
-		setDropTarget(dropTarget);
-
-		simpleFilterButton.addActionListener(e -> switchFilterMode());
-		xmlQueryButton.addActionListener(e -> switchFilterMode());
-	}
-
-	private void switchFilterMode() {
-		filterPanel.showFilterDialog(simpleFilterButton.isSelected());
-	}
-
-	@Override
-	public void switchLocale(Locale locale) {
-		browseButton.setText(Language.I18N.getString("common.button.browse"));
-		exportButton.setText(Language.I18N.getString("export.button.export"));
-		simpleFilterButton.setText(Language.I18N.getString("filter.button.mode.simple"));
-		xmlQueryButton.setText(Language.I18N.getString("filter.button.mode.xml"));
-		filterPanel.switchLocale(locale);
-	}
-
-	@Override
-	public void loadSettings() {
-		filterPanel.loadSettings();
-		boolean useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
-		simpleFilterButton.setSelected(useSimpleFilter);
-		xmlQueryButton.setSelected(!useSimpleFilter);
-		filterPanel.showFilterDialog(useSimpleFilter);
-	}
-
-	@Override
-	public void setSettings() {
-		config.getExportConfig().setUseSimpleQuery(simpleFilterButton.isSelected());
-
-		try {
-			Paths.get(browseText.getText());
-		} catch (InvalidPathException e) {
-			log.error("The provided output file '" + browseText.getText() + "' is not a valid file.");
-			browseText.setText("");
-		}
-
-		filterPanel.setSettings();
-	}
-
-	private void doExport() {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-
-		try {
-			viewController.clearConsole();
-			setSettings();
-
-			int tileAmount = 0;
-
-			if (browseText.getText().trim().isEmpty()) {
-				viewController.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
-						Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
-				return;
-			}
-
-			boolean useTiling = false;
-
-			if (config.getExportConfig().isUseSimpleQuery()) {
-				SimpleQuery query = config.getExportConfig().getSimpleQuery();
-
-				// feature version filter
-				if (query.isUseFeatureVersionFilter()) {
-					SimpleFeatureVersionFilter featureVersionFilter = query.getFeatureVersionFilter();
-
-					if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
-							|| featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.TERMINATED_AT) {
-						if (!featureVersionFilter.isSetStartDate()) {
-							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-									Language.I18N.getString("export.dialog.error.featureVersion.date"));
-							return;
-						}
-					} else if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN) {
-						if (!featureVersionFilter.isSetStartDate()) {
-							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-									Language.I18N.getString("export.dialog.error.featureVersion.startDate"));
-							return;
-						} else if (!featureVersionFilter.isSetEndDate()) {
-							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-									Language.I18N.getString("export.dialog.error.featureVersion.endDate"));
-							return;
-						} else if (featureVersionFilter.getStartDate().compare(featureVersionFilter.getEndDate()) != DatatypeConstants.LESSER) {
-							viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-									Language.I18N.getString("export.dialog.error.featureVersion.range"));
-							return;
-						}
-					}
-				}
-
-				// attribute filter
-				if (query.isUseAttributeFilter()) {
-					SimpleAttributeFilter attributeFilter = query.getAttributeFilter();
-					if (!attributeFilter.getResourceIdFilter().isSetResourceIds()
-							&& !attributeFilter.getNameFilter().isSetLiteral()
-							&& !attributeFilter.getLineageFilter().isSetLiteral()) {
-						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-								Language.I18N.getString("common.dialog.error.incorrectData.attributes"));
-						return;
-					}
-				}
-
-				// SQL filter
-				if (query.isUseSQLFilter()
-						&& !query.getSQLFilter().isSetValue()) {
-					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-							Language.I18N.getString("export.dialog.error.incorrectData.sql"));
-					return;
-				}
-
-				// lod filter
-				if (query.isUseLodFilter() && !query.getLodFilter().isSetAnyLod()) {
-					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-							Language.I18N.getString("export.dialog.error.lod.noneSelected"));
-					return;
-				}
-
-				// counter filter
-				if (query.isUseCountFilter()) {
-					CounterFilter counterFilter = query.getCounterFilter();
-					if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
-							|| (counterFilter.isSetCount() && counterFilter.getCount() < 0)
-							|| (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
-						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-								Language.I18N.getString("export.dialog.error.incorrectData.counter"));
-						return;
-					}
-				}
-
-				// tiled bounding box
-				if (query.isUseBboxFilter()) {
-					SimpleTiling bboxFilter = query.getBboxFilter();
-
-					BoundingBox bbox = query.getBboxFilter().getExtent();
-					Double xMin = bbox.getLowerCorner().getX();
-					Double yMin = bbox.getLowerCorner().getY();
-					Double xMax = bbox.getUpperCorner().getX();
-					Double yMax = bbox.getUpperCorner().getY();
-
-					if (xMin == null || yMin == null || xMax == null || yMax == null) {
-						viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-								Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
-						return;
-					}
-
-					if (bboxFilter.getMode() == SimpleTilingMode.TILING) {
-						tileAmount = bboxFilter.getRows() * bboxFilter.getColumns();
-						useTiling = true;
-					}
-				}
-
-				// feature types
-				if (query.isUseTypeNames() && query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
-					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-							Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
-					return;
-				}
-			} else {
-				QueryConfig query = config.getExportConfig().getQuery();
-				if (query.hasLocalProperty("unmarshallingFailed")) {
-					viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
-							Language.I18N.getString("common.dialog.error.incorrectData.xmlQuery"));
-					return;
-				}
-
-				if (query.isSetTiling()) {
-					// copy tiling options if required
-					if (!(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions)) {
-						query.getTiling().setTilingOptions(config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions());
-						tileAmount = query.getTiling().getRows() * query.getTiling().getColumns();
-					}
-
-					useTiling = true;
-				}
-			}
-
-			// affine transformation
-			if (config.getExportConfig().getAffineTransformation().isEnabled()
-					&& config.getGuiConfig().getExportGuiConfig().isShowAffineTransformationWarning()) {
-				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
-						.withParentComponent(viewController.getTopFrame())
-						.withMessageType(JOptionPane.WARNING_MESSAGE)
-						.withOptionType(JOptionPane.YES_NO_OPTION)
-						.withTitle(Language.I18N.getString("common.dialog.warning.title"))
-						.addMessage(Language.I18N.getString("export.dialog.warn.affineTransformation"));
-
-				int result = dialog.show();
-				config.getGuiConfig().getExportGuiConfig().setShowAffineTransformationWarning(dialog.keepShowingDialog());
-				if (result != JOptionPane.YES_OPTION) {
-					return;
-				}
-			}
-
-			Path outputFile = Paths.get(browseText.getText());
-			if (!useTiling
-					&& OutputFileFactory.getOutputFormat(outputFile, config) == OutputFormat.CITYJSON
-					&& config.getGuiConfig().getExportGuiConfig().isShowCityJSONTilingWarning()) {
-				ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
-						.withParentComponent(viewController.getTopFrame())
-						.withMessageType(JOptionPane.WARNING_MESSAGE)
-						.withOptionType(JOptionPane.YES_NO_OPTION)
-						.withTitle(Language.I18N.getString("export.dialog.warn.cityjson.title"))
-						.addMessage(Language.I18N.getString("export.dialog.warn.cityjson.msg"));
-
-				int result = dialog.show();
-				config.getGuiConfig().getExportGuiConfig().setShowCityJSONTilingWarning(dialog.keepShowingDialog());
-				if (result != JOptionPane.YES_OPTION) {
-					return;
-				}
-			}
-
-			if (!databaseController.connect()) {
-				return;
-			}
-
-			viewController.setStatusText(Language.I18N.getString("main.status.export.label"));
-			log.info("Initializing database export...");
-
-			Exporter exporter = new Exporter();
-
-			// initialize event dispatcher
-			EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(),
-					Language.I18N.getString("export.dialog.window"),
-					Language.I18N.getString("export.dialog.msg"),
-					tileAmount > 1);
-
-			SwingUtilities.invokeLater(() -> {
-				exportDialog.setLocationRelativeTo(viewController.getTopFrame());
-				exportDialog.setVisible(true);
-			});
-
-			exportDialog.getCancelButton().addActionListener(e ->
-					SwingUtilities.invokeLater(() -> eventDispatcher.triggerEvent(new InterruptEvent(
-							"User abort of database export.",
-							LogLevel.WARN,
-							exporter.getEventChannel()))));
-
-			boolean success = false;
-			try {
-				success = exporter.doExport(Paths.get(browseText.getText()));
-			} catch (CityGMLExportException e) {
-				log.error(e.getMessage(), e.getCause());
-				if (e.getErrorCode() == ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED) {
-					log.error("Please use the database tab to activate the spatial indexes.");
-				}
-			}
-
-			SwingUtilities.invokeLater(exportDialog::dispose);
-			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
-
-			if (success) {
-				log.info("Database export successfully finished.");
-			} else {
-				log.warn("Database export aborted.");
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	private void saveFile(String title) {
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle(title);
-
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.json, *.zip, *.gz, *.gzip)",
-				"gml", "xml", "json", "zip", "gz", "gzip");
-		chooser.addChoosableFileFilter(filter);
-		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML GML Files (*.gml, *.xml)", "gml", "xml"));
-		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityJSON Files (*.json)", "json"));
-		chooser.addChoosableFileFilter(new FileNameExtensionFilter("ZIP Files (*.zip)", "zip"));
-		chooser.addChoosableFileFilter(new FileNameExtensionFilter("Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
-		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-		chooser.setFileFilter(filter);
-
-		if (browseText.getText().trim().isEmpty()) {
-			chooser.setCurrentDirectory(config.getExportConfig().getPath().isSetLastUsedMode() ?
-					new File(config.getExportConfig().getPath().getLastUsedPath()) :
-					new File(config.getExportConfig().getPath().getStandardPath()));
-		} else {
-			File file = new File(browseText.getText().trim());
-			if (!file.isDirectory())
-				file = file.getParentFile();
-
-			chooser.setCurrentDirectory(file);
-		}
-
-		int result = chooser.showSaveDialog(getTopLevelAncestor());
-		if (result == JFileChooser.CANCEL_OPTION) return;
-		try {
-			String exportString = chooser.getSelectedFile().getAbsolutePath();
-			if (Util.getFileExtension(exportString).isEmpty()) {
-				exportString += ".gml";
-			}
-
-			browseText.setText(exportString);
-			config.getExportConfig().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
-		} catch (Exception e) {
-			//
-		}
-	}
-
-	@Override
-	public void dragEnter(DropTargetDragEvent dtde) {
-		dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
-	}
-
-	@Override
-	public void dragExit(DropTargetEvent dte) {
-		// nothing to do here
-	}
-
-	@Override
-	public void dragOver(DropTargetDragEvent dtde) {
-		// nothing to do here
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public void drop(DropTargetDropEvent dtde) {
-		for (DataFlavor dataFlover : dtde.getCurrentDataFlavors()) {
-			if (dataFlover.isFlavorJavaFileListType()) {
-				try {
-					dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-
-					for (File file : (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor)) {
-						if (file.isFile() && file.canRead()) {
-							browseText.setText(file.getCanonicalPath());
-							break;
-						}
-					}
-
-					dtde.getDropTargetContext().dropComplete(true);	
-				} catch (UnsupportedFlavorException | IOException e) {
-					//
-				}
-			}
-		}
-	}
-
-	@Override
-	public void dropActionChanged(DropTargetDragEvent dtde) {
-		// nothing to do here
-	}
+    private final ReentrantLock mainLock = new ReentrantLock();
+    private final Logger log = Logger.getInstance();
+    private final ViewController viewController;
+    private final DatabaseController databaseController;
+    private final Config config;
+
+    private JTextField browseText;
+    private JButton browseButton;
+    private FilterPanel filterPanel;
+    private JButton exportButton;
+    private JToggleButton simpleFilterButton;
+    private JToggleButton xmlQueryButton;
+
+    public ExportPanel(ViewController viewController, Config config) {
+        this.viewController = viewController;
+        this.config = config;
+
+        databaseController = ObjectRegistry.getInstance().getDatabaseController();
+        initGui();
+    }
+
+    private void initGui() {
+        browseText = new JTextField();
+        browseButton = new JButton();
+        filterPanel = new FilterPanel(viewController, config);
+        exportButton = new JButton();
+        simpleFilterButton = new JToggleButton();
+        xmlQueryButton = new JToggleButton();
+
+        JToolBar toolBar = new JToolBar();
+        toolBar.setBorder(BorderFactory.createEmptyBorder());
+        toolBar.add(simpleFilterButton);
+        toolBar.add(xmlQueryButton);
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(simpleFilterButton);
+        buttonGroup.add(xmlQueryButton);
+
+        browseButton.addActionListener(e -> saveFile(Language.I18N.getString("main.tabbedPane.export")));
+
+        PopupMenuDecorator.getInstance().decorate(browseText);
+
+        exportButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+            protected Void doInBackground() {
+                doExport();
+                return null;
+            }
+        }.execute());
+
+        setLayout(new GridBagLayout());
+
+        JPanel filePanel = new JPanel();
+        filePanel.setLayout(new GridBagLayout());
+        filePanel.add(browseText, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
+        filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
+
+        JPanel view = new JPanel();
+        view.setLayout(new GridBagLayout());
+        view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.BOTH, 0, 10, 0, 10));
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridBagLayout());
+        buttonPanel.add(exportButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
+        buttonPanel.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 0));
+
+        add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
+        add(view, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        add(buttonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
+
+        DropTarget dropTarget = new DropTarget(browseText, this);
+        browseText.setDropTarget(dropTarget);
+        setDropTarget(dropTarget);
+
+        simpleFilterButton.addActionListener(e -> switchFilterMode());
+        xmlQueryButton.addActionListener(e -> switchFilterMode());
+    }
+
+    private void switchFilterMode() {
+        filterPanel.showFilterDialog(simpleFilterButton.isSelected());
+    }
+
+    @Override
+    public void switchLocale(Locale locale) {
+        browseButton.setText(Language.I18N.getString("common.button.browse"));
+        exportButton.setText(Language.I18N.getString("export.button.export"));
+        simpleFilterButton.setText(Language.I18N.getString("filter.button.mode.simple"));
+        xmlQueryButton.setText(Language.I18N.getString("filter.button.mode.xml"));
+        filterPanel.switchLocale(locale);
+    }
+
+    @Override
+    public void loadSettings() {
+        filterPanel.loadSettings();
+        boolean useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
+        simpleFilterButton.setSelected(useSimpleFilter);
+        xmlQueryButton.setSelected(!useSimpleFilter);
+        filterPanel.showFilterDialog(useSimpleFilter);
+    }
+
+    @Override
+    public void setSettings() {
+        config.getExportConfig().setUseSimpleQuery(simpleFilterButton.isSelected());
+
+        try {
+            Paths.get(browseText.getText());
+        } catch (InvalidPathException e) {
+            log.error("The provided output file '" + browseText.getText() + "' is not a valid file.");
+            browseText.setText("");
+        }
+
+        filterPanel.setSettings();
+    }
+
+    private void doExport() {
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
+
+        try {
+            viewController.clearConsole();
+            setSettings();
+
+            int tileAmount = 0;
+
+            if (browseText.getText().trim().isEmpty()) {
+                viewController.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
+                        Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
+                return;
+            }
+
+            boolean useTiling = false;
+
+            if (config.getExportConfig().isUseSimpleQuery()) {
+                SimpleQuery query = config.getExportConfig().getSimpleQuery();
+
+                // feature version filter
+                if (query.isUseFeatureVersionFilter()) {
+                    SimpleFeatureVersionFilter featureVersionFilter = query.getFeatureVersionFilter();
+
+                    if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
+                            || featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.TERMINATED_AT) {
+                        if (!featureVersionFilter.isSetStartDate()) {
+                            viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                                    Language.I18N.getString("export.dialog.error.featureVersion.date"));
+                            return;
+                        }
+                    } else if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN) {
+                        if (!featureVersionFilter.isSetStartDate()) {
+                            viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                                    Language.I18N.getString("export.dialog.error.featureVersion.startDate"));
+                            return;
+                        } else if (!featureVersionFilter.isSetEndDate()) {
+                            viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                                    Language.I18N.getString("export.dialog.error.featureVersion.endDate"));
+                            return;
+                        } else if (featureVersionFilter.getStartDate().compare(featureVersionFilter.getEndDate()) != DatatypeConstants.LESSER) {
+                            viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                                    Language.I18N.getString("export.dialog.error.featureVersion.range"));
+                            return;
+                        }
+                    }
+                }
+
+                // attribute filter
+                if (query.isUseAttributeFilter()) {
+                    SimpleAttributeFilter attributeFilter = query.getAttributeFilter();
+                    if (!attributeFilter.getResourceIdFilter().isSetResourceIds()
+                            && !attributeFilter.getNameFilter().isSetLiteral()
+                            && !attributeFilter.getLineageFilter().isSetLiteral()) {
+                        viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                                Language.I18N.getString("common.dialog.error.incorrectData.attributes"));
+                        return;
+                    }
+                }
+
+                // SQL filter
+                if (query.isUseSQLFilter()
+                        && !query.getSQLFilter().isSetValue()) {
+                    viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                            Language.I18N.getString("export.dialog.error.incorrectData.sql"));
+                    return;
+                }
+
+                // lod filter
+                if (query.isUseLodFilter() && !query.getLodFilter().isSetAnyLod()) {
+                    viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                            Language.I18N.getString("export.dialog.error.lod.noneSelected"));
+                    return;
+                }
+
+                // counter filter
+                if (query.isUseCountFilter()) {
+                    CounterFilter counterFilter = query.getCounterFilter();
+                    if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
+                            || (counterFilter.isSetCount() && counterFilter.getCount() < 0)
+                            || (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
+                        viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                                Language.I18N.getString("export.dialog.error.incorrectData.counter"));
+                        return;
+                    }
+                }
+
+                // tiled bounding box
+                if (query.isUseBboxFilter()) {
+                    SimpleTiling bboxFilter = query.getBboxFilter();
+
+                    BoundingBox bbox = query.getBboxFilter().getExtent();
+                    Double xMin = bbox.getLowerCorner().getX();
+                    Double yMin = bbox.getLowerCorner().getY();
+                    Double xMax = bbox.getUpperCorner().getX();
+                    Double yMax = bbox.getUpperCorner().getY();
+
+                    if (xMin == null || yMin == null || xMax == null || yMax == null) {
+                        viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                                Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
+                        return;
+                    }
+
+                    if (bboxFilter.getMode() == SimpleTilingMode.TILING) {
+                        tileAmount = bboxFilter.getRows() * bboxFilter.getColumns();
+                        useTiling = true;
+                    }
+                }
+
+                // feature types
+                if (query.isUseTypeNames() && query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
+                    viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                            Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
+                    return;
+                }
+            } else {
+                QueryConfig query = config.getExportConfig().getQuery();
+                if (query.hasLocalProperty("unmarshallingFailed")) {
+                    viewController.errorMessage(Language.I18N.getString("common.dialog.error.incorrectFilter"),
+                            Language.I18N.getString("common.dialog.error.incorrectData.xmlQuery"));
+                    return;
+                }
+
+                if (query.isSetTiling()) {
+                    // copy tiling options if required
+                    if (!(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions)) {
+                        query.getTiling().setTilingOptions(config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions());
+                        tileAmount = query.getTiling().getRows() * query.getTiling().getColumns();
+                    }
+
+                    useTiling = true;
+                }
+            }
+
+            // affine transformation
+            if (config.getExportConfig().getAffineTransformation().isEnabled()
+                    && config.getGuiConfig().getExportGuiConfig().isShowAffineTransformationWarning()) {
+                ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
+                        .withParentComponent(viewController.getTopFrame())
+                        .withMessageType(JOptionPane.WARNING_MESSAGE)
+                        .withOptionType(JOptionPane.YES_NO_OPTION)
+                        .withTitle(Language.I18N.getString("common.dialog.warning.title"))
+                        .addMessage(Language.I18N.getString("export.dialog.warn.affineTransformation"));
+
+                int result = dialog.show();
+                config.getGuiConfig().getExportGuiConfig().setShowAffineTransformationWarning(dialog.keepShowingDialog());
+                if (result != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
+
+            Path outputFile = Paths.get(browseText.getText());
+            if (!useTiling
+                    && OutputFileFactory.getOutputFormat(outputFile, config) == OutputFormat.CITYJSON
+                    && config.getGuiConfig().getExportGuiConfig().isShowCityJSONTilingWarning()) {
+                ConfirmationCheckDialog dialog = ConfirmationCheckDialog.defaults()
+                        .withParentComponent(viewController.getTopFrame())
+                        .withMessageType(JOptionPane.WARNING_MESSAGE)
+                        .withOptionType(JOptionPane.YES_NO_OPTION)
+                        .withTitle(Language.I18N.getString("export.dialog.warn.cityjson.title"))
+                        .addMessage(Language.I18N.getString("export.dialog.warn.cityjson.msg"));
+
+                int result = dialog.show();
+                config.getGuiConfig().getExportGuiConfig().setShowCityJSONTilingWarning(dialog.keepShowingDialog());
+                if (result != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
+
+            if (!databaseController.connect()) {
+                return;
+            }
+
+            viewController.setStatusText(Language.I18N.getString("main.status.export.label"));
+            log.info("Initializing database export...");
+
+            Exporter exporter = new Exporter();
+
+            // initialize event dispatcher
+            EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+            ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(),
+                    Language.I18N.getString("export.dialog.window"),
+                    Language.I18N.getString("export.dialog.msg"),
+                    tileAmount > 1);
+
+            SwingUtilities.invokeLater(() -> {
+                exportDialog.setLocationRelativeTo(viewController.getTopFrame());
+                exportDialog.setVisible(true);
+            });
+
+            exportDialog.getCancelButton().addActionListener(e ->
+                    SwingUtilities.invokeLater(() -> eventDispatcher.triggerEvent(new InterruptEvent(
+                            "User abort of database export.",
+                            LogLevel.WARN,
+                            exporter.getEventChannel()))));
+
+            boolean success = false;
+            try {
+                success = exporter.doExport(Paths.get(browseText.getText()));
+            } catch (CityGMLExportException e) {
+                log.error(e.getMessage(), e.getCause());
+                if (e.getErrorCode() == ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED) {
+                    log.error("Please use the database tab to activate the spatial indexes.");
+                }
+            }
+
+            SwingUtilities.invokeLater(exportDialog::dispose);
+            viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
+
+            if (success) {
+                log.info("Database export successfully finished.");
+            } else {
+                log.warn("Database export aborted.");
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void saveFile(String title) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
+
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.json, *.zip, *.gz, *.gzip)",
+                "gml", "xml", "json", "zip", "gz", "gzip");
+        chooser.addChoosableFileFilter(filter);
+        chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML GML Files (*.gml, *.xml)", "gml", "xml"));
+        chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityJSON Files (*.json)", "json"));
+        chooser.addChoosableFileFilter(new FileNameExtensionFilter("ZIP Files (*.zip)", "zip"));
+        chooser.addChoosableFileFilter(new FileNameExtensionFilter("Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
+        chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+        chooser.setFileFilter(filter);
+
+        if (browseText.getText().trim().isEmpty()) {
+            chooser.setCurrentDirectory(config.getExportConfig().getPath().isSetLastUsedMode() ?
+                    new File(config.getExportConfig().getPath().getLastUsedPath()) :
+                    new File(config.getExportConfig().getPath().getStandardPath()));
+        } else {
+            File file = new File(browseText.getText().trim());
+            if (!file.isDirectory())
+                file = file.getParentFile();
+
+            chooser.setCurrentDirectory(file);
+        }
+
+        int result = chooser.showSaveDialog(getTopLevelAncestor());
+        if (result == JFileChooser.CANCEL_OPTION) return;
+        try {
+            String exportString = chooser.getSelectedFile().getAbsolutePath();
+            if (Util.getFileExtension(exportString).isEmpty()) {
+                exportString += ".gml";
+            }
+
+            browseText.setText(exportString);
+            config.getExportConfig().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
+        } catch (Exception e) {
+            //
+        }
+    }
+
+    @Override
+    public void dragEnter(DropTargetDragEvent dtde) {
+        dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
+    }
+
+    @Override
+    public void dragExit(DropTargetEvent dte) {
+        // nothing to do here
+    }
+
+    @Override
+    public void dragOver(DropTargetDragEvent dtde) {
+        // nothing to do here
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void drop(DropTargetDropEvent dtde) {
+        for (DataFlavor dataFlover : dtde.getCurrentDataFlavors()) {
+            if (dataFlover.isFlavorJavaFileListType()) {
+                try {
+                    dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+
+                    for (File file : (List<File>) dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor)) {
+                        if (file.isFile() && file.canRead()) {
+                            browseText.setText(file.getCanonicalPath());
+                            break;
+                        }
+                    }
+
+                    dtde.getDropTargetContext().dropComplete(true);
+                } catch (UnsupportedFlavorException | IOException e) {
+                    //
+                }
+            }
+        }
+    }
+
+    @Override
+    public void dropActionChanged(DropTargetDragEvent dtde) {
+        // nothing to do here
+    }
 }
 
 

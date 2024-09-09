@@ -31,36 +31,36 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ExportTracker {
-	
-	private final ConcurrentHashMap<Long, CityObject4JSON> map;
-	private String currentWorkingDirectoryPath;
-	
-	public ExportTracker() {
-		map = new ConcurrentHashMap<Long, CityObject4JSON>();
-	}
-	
-	public void put(long id, CityObject4JSON json) {
-		map.putIfAbsent(id, json);
-	}
-	
-	public CityObject4JSON get(long id) {
-		return map.get(id);
-	}
-	
-	public void clear() {
-		map.clear();
-	}
-	
-	public Collection<CityObject4JSON> values() {
-		return map.values();
-	}
 
-	public String getCurrentWorkingDirectoryPath() {
-		return currentWorkingDirectoryPath;
-	}
+    private final ConcurrentHashMap<Long, CityObject4JSON> map;
+    private String currentWorkingDirectoryPath;
 
-	public void setCurrentWorkingDirectoryPath(String currentWorkingDirectoryPath) {
-		this.currentWorkingDirectoryPath = currentWorkingDirectoryPath;
-	}
-	
+    public ExportTracker() {
+        map = new ConcurrentHashMap<Long, CityObject4JSON>();
+    }
+
+    public void put(long id, CityObject4JSON json) {
+        map.putIfAbsent(id, json);
+    }
+
+    public CityObject4JSON get(long id) {
+        return map.get(id);
+    }
+
+    public void clear() {
+        map.clear();
+    }
+
+    public Collection<CityObject4JSON> values() {
+        return map.values();
+    }
+
+    public String getCurrentWorkingDirectoryPath() {
+        return currentWorkingDirectoryPath;
+    }
+
+    public void setCurrentWorkingDirectoryPath(String currentWorkingDirectoryPath) {
+        this.currentWorkingDirectoryPath = currentWorkingDirectoryPath;
+    }
+
 }

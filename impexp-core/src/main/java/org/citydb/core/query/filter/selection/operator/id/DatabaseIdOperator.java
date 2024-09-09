@@ -35,51 +35,51 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class DatabaseIdOperator extends AbstractIdOperator {
-	private final Set<Long> databaseIds;
-	
-	public DatabaseIdOperator() {
-		databaseIds = new HashSet<>();
-	}
-	
-	public DatabaseIdOperator(Collection<Long> databaseIds) throws FilterException {
-		if (databaseIds == null)
-			throw new FilterException("List of database ids may not be null.");
-		
-		this.databaseIds = new HashSet<>(databaseIds);
-	}
-	
-	public DatabaseIdOperator(Long... databaseIds) throws FilterException {
-		this(Arrays.asList(databaseIds));
-	}
-	
-	public boolean isEmpty() {
-		return databaseIds.isEmpty();
-	}
-	
-	public void clear() {
-		databaseIds.clear();
-	}
+    private final Set<Long> databaseIds;
 
-	public int numberOfDatabaseIds() {
-		return databaseIds.size();
-	}
-	
-	public boolean addDatabaseId(Long databaseId) {
-		return databaseIds.add(databaseId);
-	}
-	
-	public Set<Long> getDatabaseIds() {
-		return databaseIds;
-	}
-	
-	@Override
-	public IdOperationName getOperatorName() {
-		return IdOperationName.DATABASE_ID;
-	}
+    public DatabaseIdOperator() {
+        databaseIds = new HashSet<>();
+    }
 
-	@Override
-	public DatabaseIdOperator copy() throws FilterException {
-		return new DatabaseIdOperator(databaseIds);
-	}
+    public DatabaseIdOperator(Collection<Long> databaseIds) throws FilterException {
+        if (databaseIds == null)
+            throw new FilterException("List of database ids may not be null.");
+
+        this.databaseIds = new HashSet<>(databaseIds);
+    }
+
+    public DatabaseIdOperator(Long... databaseIds) throws FilterException {
+        this(Arrays.asList(databaseIds));
+    }
+
+    public boolean isEmpty() {
+        return databaseIds.isEmpty();
+    }
+
+    public void clear() {
+        databaseIds.clear();
+    }
+
+    public int numberOfDatabaseIds() {
+        return databaseIds.size();
+    }
+
+    public boolean addDatabaseId(Long databaseId) {
+        return databaseIds.add(databaseId);
+    }
+
+    public Set<Long> getDatabaseIds() {
+        return databaseIds;
+    }
+
+    @Override
+    public IdOperationName getOperatorName() {
+        return IdOperationName.DATABASE_ID;
+    }
+
+    @Override
+    public DatabaseIdOperator copy() throws FilterException {
+        return new DatabaseIdOperator(databaseIds);
+    }
 
 }

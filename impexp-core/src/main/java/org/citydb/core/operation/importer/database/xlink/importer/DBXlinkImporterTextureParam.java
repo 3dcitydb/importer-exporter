@@ -36,58 +36,58 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class DBXlinkImporterTextureParam implements DBXlinkImporter {
-	private final DBXlinkImporterManager xlinkImporterManager;
-	
-	private Connection connection;
-	private PreparedStatement psXlink;
-	private int batchCounter;
+    private final DBXlinkImporterManager xlinkImporterManager;
 
-	public DBXlinkImporterTextureParam(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
-		this.xlinkImporterManager = xlinkImporterManager;
+    private Connection connection;
+    private PreparedStatement psXlink;
+    private int batchCounter;
 
-		connection = tempTable.getConnection();
-		psXlink = connection.prepareStatement("insert into " + tempTable.getTableName() + 
-			" (ID, GMLID, TYPE, IS_TEXTURE_PARAMETERIZATION, TEXPARAM_GMLID, WORLD_TO_TEXTURE) values " +
-			"(?, ?, ?, ?, ?, ?)");
-	}
+    public DBXlinkImporterTextureParam(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+        this.xlinkImporterManager = xlinkImporterManager;
 
-	public boolean insert(DBXlinkTextureParam xlinkEntry) throws SQLException {
-		psXlink.setLong(1, xlinkEntry.getId());
-		psXlink.setString(2, xlinkEntry.getGmlId());
-		psXlink.setInt(3, xlinkEntry.getType().ordinal());
-		psXlink.setInt(4, xlinkEntry.isTextureParameterization() ? 1 : 0);
+        connection = tempTable.getConnection();
+        psXlink = connection.prepareStatement("insert into " + tempTable.getTableName() +
+                " (ID, GMLID, TYPE, IS_TEXTURE_PARAMETERIZATION, TEXPARAM_GMLID, WORLD_TO_TEXTURE) values " +
+                "(?, ?, ?, ?, ?, ?)");
+    }
 
-		if (xlinkEntry.getTexParamGmlId() != null && xlinkEntry.getTexParamGmlId().length() != 0)
-			psXlink.setString(5, xlinkEntry.getTexParamGmlId());
-		else
-			psXlink.setNull(5, Types.VARCHAR);
+    public boolean insert(DBXlinkTextureParam xlinkEntry) throws SQLException {
+        psXlink.setLong(1, xlinkEntry.getId());
+        psXlink.setString(2, xlinkEntry.getGmlId());
+        psXlink.setInt(3, xlinkEntry.getType().ordinal());
+        psXlink.setInt(4, xlinkEntry.isTextureParameterization() ? 1 : 0);
 
-		if (xlinkEntry.getWorldToTexture() != null && xlinkEntry.getWorldToTexture().length() != 0)
-			psXlink.setString(6, xlinkEntry.getWorldToTexture());
-		else
-			psXlink.setNull(6, Types.VARCHAR);
+        if (xlinkEntry.getTexParamGmlId() != null && xlinkEntry.getTexParamGmlId().length() != 0)
+            psXlink.setString(5, xlinkEntry.getTexParamGmlId());
+        else
+            psXlink.setNull(5, Types.VARCHAR);
 
-		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
-			executeBatch();
+        if (xlinkEntry.getWorldToTexture() != null && xlinkEntry.getWorldToTexture().length() != 0)
+            psXlink.setString(6, xlinkEntry.getWorldToTexture());
+        else
+            psXlink.setNull(6, Types.VARCHAR);
 
-		return true;
-	}
+        psXlink.addBatch();
+        if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
+            executeBatch();
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psXlink.executeBatch();
-		batchCounter = 0;
-	}
+        return true;
+    }
 
-	@Override
-	public void close() throws SQLException {
-		psXlink.close();
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psXlink.executeBatch();
+        batchCounter = 0;
+    }
 
-	@Override
-	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.XLINK_TEXTUREPARAM;
-	}
+    @Override
+    public void close() throws SQLException {
+        psXlink.close();
+    }
+
+    @Override
+    public DBXlinkImporterEnum getDBXlinkImporterType() {
+        return DBXlinkImporterEnum.XLINK_TEXTUREPARAM;
+    }
 
 }

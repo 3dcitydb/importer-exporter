@@ -41,32 +41,32 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
-	private final Logger log = Logger.getInstance();
+    private final Logger log = Logger.getInstance();
 
-	private final InternalConfig internalConfig;
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
+    private final InternalConfig internalConfig;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
 
-	public DBExportXlinkWorkerFactory(InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
-		this.internalConfig = internalConfig;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public DBExportXlinkWorkerFactory(InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
+        this.internalConfig = internalConfig;
+        this.config = config;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public Worker<DBXlink> createWorker() {
-		DBExportXlinkWorker dbWorker = null;
+    @Override
+    public Worker<DBXlink> createWorker() {
+        DBExportXlinkWorker dbWorker = null;
 
-		try {
-			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-			Connection connection = DatabaseConnectionPool.getInstance().getConnection();
-			connection.setAutoCommit(false);
+        try {
+            AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+            Connection connection = DatabaseConnectionPool.getInstance().getConnection();
+            connection.setAutoCommit(false);
 
-			dbWorker = new DBExportXlinkWorker(connection, databaseAdapter, internalConfig, config, eventDispatcher);
-		} catch (SQLException e) {
-			log.error("Failed to create XLink export worker.", e);
-		}
+            dbWorker = new DBExportXlinkWorker(connection, databaseAdapter, internalConfig, config, eventDispatcher);
+        } catch (SQLException e) {
+            log.error("Failed to create XLink export worker.", e);
+        }
 
-		return dbWorker;
-	}
+        return dbWorker;
+    }
 }

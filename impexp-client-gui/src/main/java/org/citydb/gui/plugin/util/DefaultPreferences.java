@@ -62,8 +62,8 @@ public class DefaultPreferences implements Preferences {
     private void loadSettings(DefaultPreferencesEntry entry) {
         entry.getViewComponent().loadSettings();
         for (PreferencesEntry child : entry.getChildEntries()) {
-			loadSettings((DefaultPreferencesEntry) child);
-		}
+            loadSettings((DefaultPreferencesEntry) child);
+        }
     }
 
     public void setSettings() {
@@ -73,7 +73,7 @@ public class DefaultPreferences implements Preferences {
     private void setSettings(DefaultPreferencesEntry entry) {
         entry.getViewComponent().setSettings();
         for (PreferencesEntry child : entry.getChildEntries()) {
-			setSettings((DefaultPreferencesEntry) child);
-		}
+            setSettings((DefaultPreferencesEntry) child);
+        }
     }
 }

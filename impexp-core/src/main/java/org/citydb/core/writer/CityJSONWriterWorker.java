@@ -38,55 +38,55 @@ import org.citygml4j.cityjson.feature.AbstractCityObjectType;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class CityJSONWriterWorker extends Worker<AbstractCityObjectType> {
-	private final ReentrantLock runLock = new ReentrantLock();	
-	private volatile boolean shouldRun = true;
-	private volatile boolean shouldWork = true;
+    private final ReentrantLock runLock = new ReentrantLock();
+    private volatile boolean shouldRun = true;
+    private volatile boolean shouldWork = true;
 
-	private final CityJSONChunkWriter writer;
-	private final EventDispatcher eventDispatcher;
+    private final CityJSONChunkWriter writer;
+    private final EventDispatcher eventDispatcher;
 
-	public CityJSONWriterWorker(CityJSONChunkWriter writer, EventDispatcher eventDispatcher) {
-		this.writer = writer;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public CityJSONWriterWorker(CityJSONChunkWriter writer, EventDispatcher eventDispatcher) {
+        this.writer = writer;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public void interrupt() {
-		shouldRun = false;
-	}
+    @Override
+    public void interrupt() {
+        shouldRun = false;
+    }
 
-	@Override
-	public void run() {
-		if (firstWork != null) {
-			doWork(firstWork);
-			firstWork = null;
-		}
+    @Override
+    public void run() {
+        if (firstWork != null) {
+            doWork(firstWork);
+            firstWork = null;
+        }
 
-		while (shouldRun) {
-			try {
-				AbstractCityObjectType work = workQueue.take();
-				doWork(work);
-			} catch (InterruptedException ie) {
-				// re-check state
-			}
-		}
-	}
+        while (shouldRun) {
+            try {
+                AbstractCityObjectType work = workQueue.take();
+                doWork(work);
+            } catch (InterruptedException ie) {
+                // re-check state
+            }
+        }
+    }
 
-	private void doWork(AbstractCityObjectType work) {
-		final ReentrantLock runLock = this.runLock;
-		runLock.lock();
+    private void doWork(AbstractCityObjectType work) {
+        final ReentrantLock runLock = this.runLock;
+        runLock.lock();
 
-		try {
-			if (!shouldWork)
-				return;
-			
-			writer.writeCityObject(work);
-		} catch (CityJSONWriteException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write CityJSON content.", LogLevel.ERROR, e, eventChannel));
-			shouldWork = false;
-		} finally {
-			runLock.unlock();
-		}
-	}
-	
+        try {
+            if (!shouldWork)
+                return;
+
+            writer.writeCityObject(work);
+        } catch (CityJSONWriteException e) {
+            eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write CityJSON content.", LogLevel.ERROR, e, eventChannel));
+            shouldWork = false;
+        } finally {
+            runLock.unlock();
+        }
+    }
+
 }

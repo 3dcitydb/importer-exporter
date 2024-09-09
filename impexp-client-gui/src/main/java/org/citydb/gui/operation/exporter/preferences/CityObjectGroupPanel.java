@@ -39,65 +39,65 @@ import java.awt.*;
 import java.util.Locale;
 
 public class CityObjectGroupPanel extends InternalPreferencesComponent {
-	private TitledPanel exportGroupPanel;
-	private JCheckBox exportMemberAsXLink;
-	private JLabel exportMemberAsXLinkDescr;
+    private TitledPanel exportGroupPanel;
+    private JCheckBox exportMemberAsXLink;
+    private JLabel exportMemberAsXLinkDescr;
 
-	public CityObjectGroupPanel(Config config) {
-		super(config);
-		initGui();
-	}
+    public CityObjectGroupPanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-	@Override
-	public boolean isModified() {
-		ExportCityObjectGroup group = config.getExportConfig().getCityObjectGroup();
-		if (exportMemberAsXLink.isSelected() != group.isExportMemberAsXLinks()) return true;
-		return false;
-	}
+    @Override
+    public boolean isModified() {
+        ExportCityObjectGroup group = config.getExportConfig().getCityObjectGroup();
+        if (exportMemberAsXLink.isSelected() != group.isExportMemberAsXLinks()) return true;
+        return false;
+    }
 
-	private void initGui() {
-		exportMemberAsXLink = new JCheckBox();
-		exportMemberAsXLinkDescr = new JLabel();
-		exportMemberAsXLinkDescr.setFont(exportMemberAsXLinkDescr.getFont().deriveFont(Font.ITALIC));
+    private void initGui() {
+        exportMemberAsXLink = new JCheckBox();
+        exportMemberAsXLinkDescr = new JLabel();
+        exportMemberAsXLinkDescr.setFont(exportMemberAsXLinkDescr.getFont().deriveFont(Font.ITALIC));
 
-		setLayout(new GridBagLayout());
-		exportGroupPanel = new TitledPanel()
-				.withToggleButton(exportMemberAsXLink)
-				.showSeparator(false)
-				.build(exportMemberAsXLinkDescr);
+        setLayout(new GridBagLayout());
+        exportGroupPanel = new TitledPanel()
+                .withToggleButton(exportMemberAsXLink)
+                .showSeparator(false)
+                .build(exportMemberAsXLinkDescr);
 
-		add(exportGroupPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        add(exportGroupPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		exportMemberAsXLink.addActionListener(e -> setEnabledHint());
-	}
+        exportMemberAsXLink.addActionListener(e -> setEnabledHint());
+    }
 
-	private void setEnabledHint() {
-		exportMemberAsXLinkDescr.setEnabled(exportMemberAsXLink.isSelected());
-	}
+    private void setEnabledHint() {
+        exportMemberAsXLinkDescr.setEnabled(exportMemberAsXLink.isSelected());
+    }
 
-	@Override
-	public void loadSettings() {
-		ExportCityObjectGroup group = config.getExportConfig().getCityObjectGroup();
-		exportMemberAsXLink.setSelected(group.isExportMemberAsXLinks());
+    @Override
+    public void loadSettings() {
+        ExportCityObjectGroup group = config.getExportConfig().getCityObjectGroup();
+        exportMemberAsXLink.setSelected(group.isExportMemberAsXLinks());
 
-		setEnabledHint();
-	}
+        setEnabledHint();
+    }
 
-	@Override
-	public void setSettings() {
-		ExportCityObjectGroup group = config.getExportConfig().getCityObjectGroup();
-		group.setExportMemberAsXLinks(exportMemberAsXLink.isSelected());
-	}
+    @Override
+    public void setSettings() {
+        ExportCityObjectGroup group = config.getExportConfig().getCityObjectGroup();
+        group.setExportMemberAsXLinks(exportMemberAsXLink.isSelected());
+    }
 
-	@Override
-	public void switchLocale(Locale locale) {
-		exportGroupPanel.setTitle(Language.I18N.getString("pref.export.group.label.exportMember"));
-		exportMemberAsXLinkDescr.setText(Language.I18N.getString("pref.export.group.label.exportMember.description"));
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        exportGroupPanel.setTitle(Language.I18N.getString("pref.export.group.label.exportMember"));
+        exportMemberAsXLinkDescr.setText(Language.I18N.getString("pref.export.group.label.exportMember.description"));
+    }
 
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.export.group");
-	}
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.export.group");
+    }
 
 }

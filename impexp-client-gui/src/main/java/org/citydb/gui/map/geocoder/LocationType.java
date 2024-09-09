@@ -28,7 +28,7 @@
 package org.citydb.gui.map.geocoder;
 
 public enum LocationType {
-	PRECISE,
-	APPROXIMATE,
-	UNKNOWN
+    PRECISE,
+    APPROXIMATE,
+    UNKNOWN
 }

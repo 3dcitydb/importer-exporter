@@ -33,56 +33,56 @@ import org.citydb.core.operation.importer.filter.selection.counter.CounterFilter
 import org.citydb.core.operation.importer.filter.type.FeatureTypeFilter;
 
 public class CityGMLFilter {
-	private FeatureTypeFilter featureTypeFilter;
-	private SelectionFilter selectionFilter;
-	private CounterFilter counterFilter;
-	
-	public CityGMLFilter(SchemaMapping schemaMapping) {
-		featureTypeFilter = new FeatureTypeFilter(schemaMapping);
-		selectionFilter = new SelectionFilter();
-	}
+    private FeatureTypeFilter featureTypeFilter;
+    private SelectionFilter selectionFilter;
+    private CounterFilter counterFilter;
 
-	public FeatureTypeFilter getFeatureTypeFilter() {
-		return featureTypeFilter;
-	}
-	
-	public boolean isSetFeatureTypeFilter() {
-		return featureTypeFilter != null;
-	}
-	
-	public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
-		if (featureTypeFilter != null)
-			this.featureTypeFilter = featureTypeFilter;
-	}
+    public CityGMLFilter(SchemaMapping schemaMapping) {
+        featureTypeFilter = new FeatureTypeFilter(schemaMapping);
+        selectionFilter = new SelectionFilter();
+    }
 
-	public SelectionFilter getSelectionFilter() {
-		return selectionFilter;
-	}
-	
-	public boolean isSetSelectionFilter() {
-		return selectionFilter != null;
-	}
+    public FeatureTypeFilter getFeatureTypeFilter() {
+        return featureTypeFilter;
+    }
 
-	public void setSelectionFilter(SelectionFilter selectionFilter) {
-		if (selectionFilter != null)
-			this.selectionFilter = selectionFilter;
-	}
+    public boolean isSetFeatureTypeFilter() {
+        return featureTypeFilter != null;
+    }
 
-	public CounterFilter getCounterFilter() {
-		return counterFilter;
-	}
-	
-	public boolean isSetCounterFilter() {
-		return counterFilter != null;
-	}
+    public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
+        if (featureTypeFilter != null)
+            this.featureTypeFilter = featureTypeFilter;
+    }
 
-	public void setCounterFilter(CounterFilter counterFilter) {
-		this.counterFilter = counterFilter;
-	}
+    public SelectionFilter getSelectionFilter() {
+        return selectionFilter;
+    }
 
-	public void reset() {
-		if (counterFilter != null) {
-			counterFilter.reset();
-		}
-	}
+    public boolean isSetSelectionFilter() {
+        return selectionFilter != null;
+    }
+
+    public void setSelectionFilter(SelectionFilter selectionFilter) {
+        if (selectionFilter != null)
+            this.selectionFilter = selectionFilter;
+    }
+
+    public CounterFilter getCounterFilter() {
+        return counterFilter;
+    }
+
+    public boolean isSetCounterFilter() {
+        return counterFilter != null;
+    }
+
+    public void setCounterFilter(CounterFilter counterFilter) {
+        this.counterFilter = counterFilter;
+    }
+
+    public void reset() {
+        if (counterFilter != null) {
+            counterFilter.reset();
+        }
+    }
 }

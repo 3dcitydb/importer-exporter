@@ -34,45 +34,45 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBXlinkImporterGroupToCityObject implements DBXlinkImporter {
-	private final DBXlinkImporterManager xlinkImporterManager;
-	private PreparedStatement psXlink;
-	private int batchCounter;
+    private final DBXlinkImporterManager xlinkImporterManager;
+    private PreparedStatement psXlink;
+    private int batchCounter;
 
-	public DBXlinkImporterGroupToCityObject(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
-		this.xlinkImporterManager = xlinkImporterManager;
+    public DBXlinkImporterGroupToCityObject(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+        this.xlinkImporterManager = xlinkImporterManager;
 
-		psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (GROUP_ID, GMLID, IS_PARENT, ROLE) values " +
-			"(?, ?, ?, ?)");
-	}
-	
-	public boolean insert(DBXlinkGroupToCityObject xlinkEntry) throws SQLException {
-		psXlink.setLong(1, xlinkEntry.getGroupId());
-		psXlink.setString(2, xlinkEntry.getGmlId());		
-		psXlink.setInt(3, xlinkEntry.isParent() ? 1 : 0);		
-		psXlink.setString(4, xlinkEntry.getRole());
+        psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() +
+                " (GROUP_ID, GMLID, IS_PARENT, ROLE) values " +
+                "(?, ?, ?, ?)");
+    }
 
-		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
-			executeBatch();
+    public boolean insert(DBXlinkGroupToCityObject xlinkEntry) throws SQLException {
+        psXlink.setLong(1, xlinkEntry.getGroupId());
+        psXlink.setString(2, xlinkEntry.getGmlId());
+        psXlink.setInt(3, xlinkEntry.isParent() ? 1 : 0);
+        psXlink.setString(4, xlinkEntry.getRole());
 
-		return true;
-	}
-	
-	@Override
-	public void executeBatch() throws SQLException {
-		psXlink.executeBatch();
-		batchCounter = 0;
-	}
+        psXlink.addBatch();
+        if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
+            executeBatch();
 
-	@Override
-	public void close() throws SQLException {
-		psXlink.close();
-	}
+        return true;
+    }
 
-	@Override
-	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.GROUP_TO_CITYOBJECT;
-	}
+    @Override
+    public void executeBatch() throws SQLException {
+        psXlink.executeBatch();
+        batchCounter = 0;
+    }
+
+    @Override
+    public void close() throws SQLException {
+        psXlink.close();
+    }
+
+    @Override
+    public DBXlinkImporterEnum getDBXlinkImporterType() {
+        return DBXlinkImporterEnum.GROUP_TO_CITYOBJECT;
+    }
 
 }

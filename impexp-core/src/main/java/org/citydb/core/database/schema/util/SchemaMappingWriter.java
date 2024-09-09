@@ -38,23 +38,23 @@ import java.io.IOException;
 
 public class SchemaMappingWriter {
 
-	public static void main(String[] args) throws Exception {
-		final File file = new File("src/main/resources/org/citydb/core/database/schema/3dcitydb-schema.xsd");
-		System.out.print("Generting XML schema in " + file.getAbsolutePath() + "... ");
-		
-		JAXBContext ctx = JAXBContext.newInstance(SchemaMapping.class);
-		ctx.generateSchema(new SchemaOutputResolver() {
-			
-			@Override
-			public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {				
-				StreamResult res = new StreamResult(file);
-				res.setSystemId(file.toURI().toString());
-				return res;
-			}
-			
-		});
-		
-		System.out.println("finished.");
-	}
+    public static void main(String[] args) throws Exception {
+        final File file = new File("src/main/resources/org/citydb/core/database/schema/3dcitydb-schema.xsd");
+        System.out.print("Generting XML schema in " + file.getAbsolutePath() + "... ");
+
+        JAXBContext ctx = JAXBContext.newInstance(SchemaMapping.class);
+        ctx.generateSchema(new SchemaOutputResolver() {
+
+            @Override
+            public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
+                StreamResult res = new StreamResult(file);
+                res.setSystemId(file.toURI().toString());
+                return res;
+            }
+
+        });
+
+        System.out.println("finished.");
+    }
 
 }

@@ -33,13 +33,13 @@ import org.citydb.gui.plugin.util.EmptyPreferencesComponent;
 
 public class VisExportEntry extends DefaultPreferencesEntry {
 
-	public VisExportEntry() {
-		super(EmptyPreferencesComponent.getInstance());
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.visExport");
-	}
+    public VisExportEntry() {
+        super(EmptyPreferencesComponent.getInstance());
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.visExport");
+    }
 
 }

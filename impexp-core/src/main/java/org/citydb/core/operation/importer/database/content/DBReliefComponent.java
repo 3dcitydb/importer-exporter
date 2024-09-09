@@ -45,273 +45,269 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class DBReliefComponent implements DBImporter {
-	private final Connection batchConn;
-	private final CityGMLImportManager importer;
+    private final Connection batchConn;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psReliefComponent;
-	private PreparedStatement psTinRelief;
-	private PreparedStatement psMassPointRelief;
-	private PreparedStatement psBreaklineRelief;
-	private DBCityObject cityObjectImporter;
-	private DBReliefFeatToRelComp reliefFeatToRelComp;
-	private DBSurfaceGeometry surfaceGeometryImporter;
-	private GeometryConverter geometryConverter;
+    private PreparedStatement psReliefComponent;
+    private PreparedStatement psTinRelief;
+    private PreparedStatement psMassPointRelief;
+    private PreparedStatement psBreaklineRelief;
+    private DBCityObject cityObjectImporter;
+    private DBReliefFeatToRelComp reliefFeatToRelComp;
+    private DBSurfaceGeometry surfaceGeometryImporter;
+    private GeometryConverter geometryConverter;
 
-	private boolean hasObjectClassIdColumn;
-	private int batchCounter;
-	private int nullGeometryType;
-	private String nullGeometryTypeName;
+    private boolean hasObjectClassIdColumn;
+    private int batchCounter;
+    private int nullGeometryType;
+    private String nullGeometryTypeName;
 
-	public DBReliefComponent(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
-		this.batchConn = batchConn;
-		this.importer = importer;
+    public DBReliefComponent(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
+        this.batchConn = batchConn;
+        this.importer = importer;
 
-		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
-		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+        nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
+        nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		String componentStmt = "insert into " + schema + ".relief_component (id, objectclass_id, lod, extent) values " +
-				"(?, ?, ?, ?)";
-		psReliefComponent = batchConn.prepareStatement(componentStmt);
+        String componentStmt = "insert into " + schema + ".relief_component (id, objectclass_id, lod, extent) values " +
+                "(?, ?, ?, ?)";
+        psReliefComponent = batchConn.prepareStatement(componentStmt);
 
-		String tinStmt = "insert into " + schema + ".tin_relief (id, max_length, max_length_unit, stop_lines, break_lines, control_points, surface_geometry_id" +
-				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
-				"values (?, ?, ?, ?, ?, ?, ?" +
-				(hasObjectClassIdColumn ? ", ?)" : ")");
-		psTinRelief = batchConn.prepareStatement(tinStmt);
+        String tinStmt = "insert into " + schema + ".tin_relief (id, max_length, max_length_unit, stop_lines, break_lines, control_points, surface_geometry_id" +
+                (hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+                "values (?, ?, ?, ?, ?, ?, ?" +
+                (hasObjectClassIdColumn ? ", ?)" : ")");
+        psTinRelief = batchConn.prepareStatement(tinStmt);
 
-		String masspointStmt = "insert into " + schema + ".masspoint_relief (id, relief_points" +
-				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
-				"values (?, ?" +
-				(hasObjectClassIdColumn ? ", ?)" : ")");
-		psMassPointRelief = batchConn.prepareStatement(masspointStmt);
+        String masspointStmt = "insert into " + schema + ".masspoint_relief (id, relief_points" +
+                (hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+                "values (?, ?" +
+                (hasObjectClassIdColumn ? ", ?)" : ")");
+        psMassPointRelief = batchConn.prepareStatement(masspointStmt);
 
-		String breaklineStmt = "insert into " + schema + ".breakline_relief (id, ridge_or_valley_lines, break_lines" +
-				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
-				"values (?, ?, ?" +
-				(hasObjectClassIdColumn ? ", ?)" : ")");
-		psBreaklineRelief = batchConn.prepareStatement(breaklineStmt);
+        String breaklineStmt = "insert into " + schema + ".breakline_relief (id, ridge_or_valley_lines, break_lines" +
+                (hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+                "values (?, ?, ?" +
+                (hasObjectClassIdColumn ? ", ?)" : ")");
+        psBreaklineRelief = batchConn.prepareStatement(breaklineStmt);
 
-		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
-		cityObjectImporter = importer.getImporter(DBCityObject.class);
-		reliefFeatToRelComp = importer.getImporter(DBReliefFeatToRelComp.class);
-		geometryConverter = importer.getGeometryConverter();
-	}
+        surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
+        cityObjectImporter = importer.getImporter(DBCityObject.class);
+        reliefFeatToRelComp = importer.getImporter(DBReliefFeatToRelComp.class);
+        geometryConverter = importer.getGeometryConverter();
+    }
 
-	protected long doImport(AbstractReliefComponent reliefComponent) throws CityGMLImportException, SQLException {
-		return doImport(reliefComponent, null, 0);
-	}
+    protected long doImport(AbstractReliefComponent reliefComponent) throws CityGMLImportException, SQLException {
+        return doImport(reliefComponent, null, 0);
+    }
 
-	public long doImport(AbstractReliefComponent reliefComponent, AbstractCityObject parent, long parentId) throws CityGMLImportException, SQLException {
-		FeatureType featureType = importer.getFeatureType(reliefComponent);
-		if (featureType == null)
-			throw new SQLException("Failed to retrieve feature type.");
+    public long doImport(AbstractReliefComponent reliefComponent, AbstractCityObject parent, long parentId) throws CityGMLImportException, SQLException {
+        FeatureType featureType = importer.getFeatureType(reliefComponent);
+        if (featureType == null)
+            throw new SQLException("Failed to retrieve feature type.");
 
-		// import city object information
-		long reliefComponentId = cityObjectImporter.doImport(reliefComponent, featureType);
+        // import city object information
+        long reliefComponentId = cityObjectImporter.doImport(reliefComponent, featureType);
 
-		// import relief component information
-		// primary id
-		psReliefComponent.setLong(1, reliefComponentId);
+        // import relief component information
+        // primary id
+        psReliefComponent.setLong(1, reliefComponentId);
 
-		// objectclass id
-		psReliefComponent.setLong(2, featureType.getObjectClassId());
+        // objectclass id
+        psReliefComponent.setLong(2, featureType.getObjectClassId());
 
-		// dem:lod
-		psReliefComponent.setInt(3, reliefComponent.getLod());
+        // dem:lod
+        psReliefComponent.setInt(3, reliefComponent.getLod());
 
-		// dem:extent
-		GeometryObject extent = null;
-		if (reliefComponent.isSetExtent())
-			extent = geometryConverter.get2DPolygon(reliefComponent.getExtent());
+        // dem:extent
+        GeometryObject extent = null;
+        if (reliefComponent.isSetExtent())
+            extent = geometryConverter.get2DPolygon(reliefComponent.getExtent());
 
-		if (extent != null)
-			psReliefComponent.setObject(4, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(extent, batchConn));
-		else
-			psReliefComponent.setNull(4, nullGeometryType, nullGeometryTypeName);
+        if (extent != null)
+            psReliefComponent.setObject(4, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(extent, batchConn));
+        else
+            psReliefComponent.setNull(4, nullGeometryType, nullGeometryTypeName);
 
-		psReliefComponent.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.RELIEF_COMPONENT);
+        psReliefComponent.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.RELIEF_COMPONENT);
 
-		// fill sub-tables according to relief component type
-		if (reliefComponent instanceof TINRelief) {
-			TINRelief tinRelief = (TINRelief)reliefComponent;
+        // fill sub-tables according to relief component type
+        if (reliefComponent instanceof TINRelief) {
+            TINRelief tinRelief = (TINRelief) reliefComponent;
 
-			// primary id
-			psTinRelief.setLong(1, reliefComponentId);
+            // primary id
+            psTinRelief.setLong(1, reliefComponentId);
 
-			double maxLength = -Double.MAX_VALUE;
-			String maxLengthUnit = null;
-			GeometryObject stopLines, breakLines, controlPoints;
-			stopLines = breakLines = controlPoints = null;
-			long geometryId = 0;
+            double maxLength = -Double.MAX_VALUE;
+            String maxLengthUnit = null;
+            GeometryObject stopLines, breakLines, controlPoints;
+            stopLines = breakLines = controlPoints = null;
+            long geometryId = 0;
 
-			// gml:TriangulatedSurface
-			if (tinRelief.isSetTin()) {
-				TinProperty tinProperty = tinRelief.getTin();
-				TriangulatedSurface triangulatedSurface = tinProperty.getObject();
+            // gml:TriangulatedSurface
+            if (tinRelief.isSetTin()) {
+                TinProperty tinProperty = tinRelief.getTin();
+                TriangulatedSurface triangulatedSurface = tinProperty.getObject();
 
-				if (triangulatedSurface != null) {
-					geometryId = surfaceGeometryImporter.doImport(triangulatedSurface, reliefComponentId);
+                if (triangulatedSurface != null) {
+                    geometryId = surfaceGeometryImporter.doImport(triangulatedSurface, reliefComponentId);
 
-					// gml:Tin
-					if (triangulatedSurface.getGMLClass() == GMLClass.TIN) {
-						Tin tin = (Tin)triangulatedSurface;
+                    // gml:Tin
+                    if (triangulatedSurface.getGMLClass() == GMLClass.TIN) {
+                        Tin tin = (Tin) triangulatedSurface;
 
-						// maxLength
-						if (tin.isSetMaxLength()) {
-							maxLength = tin.getMaxLength().getValue();
-							maxLengthUnit = tin.getMaxLength().getUom();
-						}
+                        // maxLength
+                        if (tin.isSetMaxLength()) {
+                            maxLength = tin.getMaxLength().getValue();
+                            maxLengthUnit = tin.getMaxLength().getUom();
+                        }
 
-						// stopLines
-						if (tin.isSetStopLines())
-							stopLines = geometryConverter.getMultiCurve(tin.getStopLines());
+                        // stopLines
+                        if (tin.isSetStopLines())
+                            stopLines = geometryConverter.getMultiCurve(tin.getStopLines());
 
-						// breakLines
-						if (tin.isSetBreakLines())
-							breakLines = geometryConverter.getMultiCurve(tin.getBreakLines());
+                        // breakLines
+                        if (tin.isSetBreakLines())
+                            breakLines = geometryConverter.getMultiCurve(tin.getBreakLines());
 
-						// controlPoints
-						if (tin.isSetControlPoint())
-							controlPoints = geometryConverter.getMultiPoint(tin.getControlPoint());
-					}
-				} else {
-					String href = tinProperty.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(tinRelief, TriangulatedSurface.class, href);
-				}
-			}
+                        // controlPoints
+                        if (tin.isSetControlPoint())
+                            controlPoints = geometryConverter.getMultiPoint(tin.getControlPoint());
+                    }
+                } else {
+                    String href = tinProperty.getHref();
+                    if (href != null && href.length() != 0)
+                        importer.logOrThrowUnsupportedXLinkMessage(tinRelief, TriangulatedSurface.class, href);
+                }
+            }
 
-			// maxLength
-			if (maxLength != -Double.MAX_VALUE) {
-				psTinRelief.setDouble(2, maxLength);
-				psTinRelief.setString(3, maxLengthUnit);
-			} else {
-				psTinRelief.setNull(2, Types.DOUBLE);
-				psTinRelief.setNull(3, Types.VARCHAR);
-			}
+            // maxLength
+            if (maxLength != -Double.MAX_VALUE) {
+                psTinRelief.setDouble(2, maxLength);
+                psTinRelief.setString(3, maxLengthUnit);
+            } else {
+                psTinRelief.setNull(2, Types.DOUBLE);
+                psTinRelief.setNull(3, Types.VARCHAR);
+            }
 
-			// stopLines
-			if (stopLines != null)
-				psTinRelief.setObject(4, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(stopLines, batchConn));
-			else
-				psTinRelief.setNull(4, nullGeometryType, nullGeometryTypeName);
+            // stopLines
+            if (stopLines != null)
+                psTinRelief.setObject(4, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(stopLines, batchConn));
+            else
+                psTinRelief.setNull(4, nullGeometryType, nullGeometryTypeName);
 
-			// breakLines
-			if (breakLines != null)
-				psTinRelief.setObject(5, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn));
-			else
-				psTinRelief.setNull(5, nullGeometryType, nullGeometryTypeName);
+            // breakLines
+            if (breakLines != null)
+                psTinRelief.setObject(5, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn));
+            else
+                psTinRelief.setNull(5, nullGeometryType, nullGeometryTypeName);
 
-			// controlPoints
-			if (controlPoints != null)
-				psTinRelief.setObject(6, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(controlPoints, batchConn));
-			else
-				psTinRelief.setNull(6, nullGeometryType, nullGeometryTypeName);
+            // controlPoints
+            if (controlPoints != null)
+                psTinRelief.setObject(6, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(controlPoints, batchConn));
+            else
+                psTinRelief.setNull(6, nullGeometryType, nullGeometryTypeName);
 
-			// triangle patches
-			if (geometryId != 0)
-				psTinRelief.setLong(7, geometryId);
-			else
-				psTinRelief.setNull(7, 0);
+            // triangle patches
+            if (geometryId != 0)
+                psTinRelief.setLong(7, geometryId);
+            else
+                psTinRelief.setNull(7, 0);
 
-			// objectclass id
-			if (hasObjectClassIdColumn)
-				psTinRelief.setLong(8, featureType.getObjectClassId());
+            // objectclass id
+            if (hasObjectClassIdColumn)
+                psTinRelief.setLong(8, featureType.getObjectClassId());
 
-			psTinRelief.addBatch();
-		}
+            psTinRelief.addBatch();
+        } else if (reliefComponent instanceof MassPointRelief) {
+            MassPointRelief massPointRelief = (MassPointRelief) reliefComponent;
 
-		else if (reliefComponent instanceof MassPointRelief) {
-			MassPointRelief massPointRelief = (MassPointRelief)reliefComponent;
+            // primary id
+            psMassPointRelief.setLong(1, reliefComponentId);
 
-			// primary id
-			psMassPointRelief.setLong(1, reliefComponentId);
+            // dem:reliefPoints
+            GeometryObject reliefPoints = null;
+            if (massPointRelief.isSetReliefPoints()) {
+                reliefPoints = geometryConverter.getMultiPoint(massPointRelief.getReliefPoints());
+            }
 
-			// dem:reliefPoints
-			GeometryObject reliefPoints = null;
-			if (massPointRelief.isSetReliefPoints()) {
-				reliefPoints = geometryConverter.getMultiPoint(massPointRelief.getReliefPoints());
-			}
+            if (reliefPoints != null)
+                psMassPointRelief.setObject(2, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(reliefPoints, batchConn));
+            else
+                psMassPointRelief.setNull(2, nullGeometryType, nullGeometryTypeName);
 
-			if (reliefPoints != null)
-				psMassPointRelief.setObject(2, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(reliefPoints, batchConn));
-			else
-				psMassPointRelief.setNull(2, nullGeometryType, nullGeometryTypeName);
+            // objectclass id
+            if (hasObjectClassIdColumn)
+                psMassPointRelief.setLong(3, featureType.getObjectClassId());
 
-			// objectclass id
-			if (hasObjectClassIdColumn)
-				psMassPointRelief.setLong(3, featureType.getObjectClassId());
+            psMassPointRelief.addBatch();
+        } else if (reliefComponent instanceof BreaklineRelief) {
+            BreaklineRelief breakLineRelief = (BreaklineRelief) reliefComponent;
 
-			psMassPointRelief.addBatch();
-		}
+            // primary id
+            psBreaklineRelief.setLong(1, reliefComponentId);
 
-		else if (reliefComponent instanceof BreaklineRelief) {
-			BreaklineRelief breakLineRelief = (BreaklineRelief)reliefComponent;
+            // dem:ridgeOrValleyLines and dem:breakLines
+            GeometryObject ridgeOrValleyLines, breakLines;
+            ridgeOrValleyLines = breakLines = null;
 
-			// primary id
-			psBreaklineRelief.setLong(1, reliefComponentId);
+            if (breakLineRelief.isSetRidgeOrValleyLines()) {
+                ridgeOrValleyLines = geometryConverter.getMultiCurve(breakLineRelief.getRidgeOrValleyLines());
+            }
 
-			// dem:ridgeOrValleyLines and dem:breakLines
-			GeometryObject ridgeOrValleyLines, breakLines;
-			ridgeOrValleyLines = breakLines = null;
+            if (breakLineRelief.isSetBreaklines()) {
+                breakLines = geometryConverter.getMultiCurve(breakLineRelief.getBreaklines());
+            }
 
-			if (breakLineRelief.isSetRidgeOrValleyLines()) {
-				ridgeOrValleyLines = geometryConverter.getMultiCurve(breakLineRelief.getRidgeOrValleyLines());
-			}
+            if (ridgeOrValleyLines != null)
+                psBreaklineRelief.setObject(2, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(ridgeOrValleyLines, batchConn));
+            else
+                psBreaklineRelief.setNull(2, nullGeometryType, nullGeometryTypeName);
 
-			if (breakLineRelief.isSetBreaklines()) {
-				breakLines = geometryConverter.getMultiCurve(breakLineRelief.getBreaklines());
-			}
+            if (breakLines != null)
+                psBreaklineRelief.setObject(3, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn));
+            else
+                psBreaklineRelief.setNull(3, nullGeometryType, nullGeometryTypeName);
 
-			if (ridgeOrValleyLines != null)
-				psBreaklineRelief.setObject(2, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(ridgeOrValleyLines, batchConn));
-			else
-				psBreaklineRelief.setNull(2, nullGeometryType, nullGeometryTypeName);
+            // objectclass id
+            if (hasObjectClassIdColumn)
+                psBreaklineRelief.setLong(4, featureType.getObjectClassId());
 
-			if (breakLines != null)
-				psBreaklineRelief.setObject(3, importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn));
-			else
-				psBreaklineRelief.setNull(3, nullGeometryType, nullGeometryTypeName);
+            psBreaklineRelief.addBatch();
+        }
 
-			// objectclass id
-			if (hasObjectClassIdColumn)
-				psBreaklineRelief.setLong(4, featureType.getObjectClassId());
+        // relief component to relief feature
+        if (parent instanceof ReliefFeature)
+            reliefFeatToRelComp.doImport(reliefComponentId, parentId);
 
-			psBreaklineRelief.addBatch();
-		}
+        // ADE-specific extensions
+        if (importer.hasADESupport())
+            importer.delegateToADEImporter(reliefComponent, reliefComponentId, featureType);
 
-		// relief component to relief feature
-		if (parent instanceof ReliefFeature)
-			reliefFeatToRelComp.doImport(reliefComponentId, parentId);
-		
-		// ADE-specific extensions
-		if (importer.hasADESupport())
-			importer.delegateToADEImporter(reliefComponent, reliefComponentId, featureType);
+        return reliefComponentId;
+    }
 
-		return reliefComponentId;
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psReliefComponent.executeBatch();
+            psTinRelief.executeBatch();
+            psMassPointRelief.executeBatch();
+            psBreaklineRelief.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psReliefComponent.executeBatch();
-			psTinRelief.executeBatch();
-			psMassPointRelief.executeBatch();
-			psBreaklineRelief.executeBatch();		
-			batchCounter = 0;
-		}
-	}
-
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psReliefComponent.close();
-		psTinRelief.close();
-		psMassPointRelief.close();
-		psBreaklineRelief.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psReliefComponent.close();
+        psTinRelief.close();
+        psMassPointRelief.close();
+        psBreaklineRelief.close();
+    }
 
 }

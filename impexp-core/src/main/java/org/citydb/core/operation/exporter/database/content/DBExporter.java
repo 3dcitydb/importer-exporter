@@ -29,6 +29,6 @@ package org.citydb.core.operation.exporter.database.content;
 
 import java.sql.SQLException;
 
-public interface DBExporter {	
-	public void close() throws SQLException;
+public interface DBExporter {
+    public void close() throws SQLException;
 }

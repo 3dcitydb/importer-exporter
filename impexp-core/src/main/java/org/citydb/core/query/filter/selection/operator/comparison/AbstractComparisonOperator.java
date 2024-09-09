@@ -32,12 +32,12 @@ import org.citydb.core.query.filter.selection.operator.Operator;
 
 public abstract class AbstractComparisonOperator implements Operator {
 
-	@Override
-	public PredicateName getPredicateName() {
-		return PredicateName.COMPARISON_OPERATOR;
-	}
+    @Override
+    public PredicateName getPredicateName() {
+        return PredicateName.COMPARISON_OPERATOR;
+    }
 
-	@Override
-	public abstract ComparisonOperatorName getOperatorName();
-	
+    @Override
+    public abstract ComparisonOperatorName getOperatorName();
+
 }

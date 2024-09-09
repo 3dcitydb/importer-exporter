@@ -28,6 +28,6 @@
 package org.citydb.core.query.filter.projection;
 
 public enum ProjectionMode {
-	KEEP,
-	REMOVE
+    KEEP,
+    REMOVE
 }

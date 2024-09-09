@@ -28,5 +28,5 @@
 package org.citydb.core.database.schema.path.predicate;
 
 public interface PredicateName {
-	public String getSymbol();
+    public String getSymbol();
 }

@@ -30,10 +30,10 @@ package org.citydb.util.concurrent;
 import org.citydb.util.concurrent.WorkerPool.WorkQueue;
 
 public abstract class Worker<T> implements Runnable {
-	protected WorkQueue<T> workQueue;
-	protected Thread workerThread;
-	protected T firstWork;
-	protected Object eventChannel;
-	
-	public abstract void interrupt();
+    protected WorkQueue<T> workQueue;
+    protected Thread workerThread;
+    protected T firstWork;
+    protected Object eventChannel;
+
+    public abstract void interrupt();
 }

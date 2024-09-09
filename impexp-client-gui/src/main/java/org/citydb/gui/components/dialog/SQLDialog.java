@@ -48,88 +48,88 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 public class SQLDialog extends JDialog {
-	private final Logger log = Logger.getInstance();
-	private final String sql;
+    private final Logger log = Logger.getInstance();
+    private final String sql;
 
-	public SQLDialog(String sql, JFrame frame) {
-		super(frame, Language.I18N.getString("common.dialog.sql.title"), true);
-		this.sql = sql;
+    public SQLDialog(String sql, JFrame frame) {
+        super(frame, Language.I18N.getString("common.dialog.sql.title"), true);
+        this.sql = sql;
 
-		initGUI();
-	}
+        initGUI();
+    }
 
-	private void initGUI() {
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    private void initGUI() {
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-		setLayout(new GridBagLayout());
-		JPanel main = new JPanel();
-		main.setLayout(new GridBagLayout());
-		{
-			RSyntaxTextArea sqlText = new RSyntaxTextArea(sql);
-			sqlText.setEditable(false);
-			sqlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
-			sqlText.setColumns(80);
-			sqlText.setRows(20);
-			sqlText.setCaretPosition(0);
-			sqlText.setHighlightCurrentLine(false);
+        setLayout(new GridBagLayout());
+        JPanel main = new JPanel();
+        main.setLayout(new GridBagLayout());
+        {
+            RSyntaxTextArea sqlText = new RSyntaxTextArea(sql);
+            sqlText.setEditable(false);
+            sqlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+            sqlText.setColumns(80);
+            sqlText.setRows(20);
+            sqlText.setCaretPosition(0);
+            sqlText.setHighlightCurrentLine(false);
 
-			RTextScrollPane scrollPane = new RTextScrollPane(sqlText);
-			scrollPane.setAutoscrolls(true);
+            RTextScrollPane scrollPane = new RTextScrollPane(sqlText);
+            scrollPane.setAutoscrolls(true);
 
-			main.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            main.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-			RSyntaxTextAreaHelper.installDefaultTheme(sqlText);
-			PopupMenuDecorator.getInstance().decorate(sqlText);
-		}
+            RSyntaxTextAreaHelper.installDefaultTheme(sqlText);
+            PopupMenuDecorator.getInstance().decorate(sqlText);
+        }
 
-		JButton save = new JButton(Language.I18N.getString("common.dialog.sql.button.saveFile"));
-		JButton ok = new JButton(Language.I18N.getString("common.button.ok"));
-		Box buttonsPanel = Box.createHorizontalBox();
-		buttonsPanel.add(save);
-		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-		buttonsPanel.add(ok);
+        JButton save = new JButton(Language.I18N.getString("common.dialog.sql.button.saveFile"));
+        JButton ok = new JButton(Language.I18N.getString("common.button.ok"));
+        Box buttonsPanel = Box.createHorizontalBox();
+        buttonsPanel.add(save);
+        buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        buttonsPanel.add(ok);
 
-		add(main, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 10, 0, 10));
-		add(buttonsPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 15, 10, 10, 10));
+        add(main, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 10, 0, 10));
+        add(buttonsPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 15, 10, 10, 10));
 
-		pack();
+        pack();
 
-		save.addActionListener(e -> saveFile());
-		ok.addActionListener(e -> dispose());
-	}
+        save.addActionListener(e -> saveFile());
+        ok.addActionListener(e -> dispose());
+    }
 
-	private void saveFile() {
-		ExportGuiConfig config = ObjectRegistry.getInstance().getConfig().getGuiConfig().getExportGuiConfig();
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle(Language.I18N.getString("common.dialog.sql.saveAs.label"));
+    private void saveFile() {
+        ExportGuiConfig config = ObjectRegistry.getInstance().getConfig().getGuiConfig().getExportGuiConfig();
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(Language.I18N.getString("common.dialog.sql.saveAs.label"));
 
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("SQL Files (*.sql)", "sql");
-		chooser.addChoosableFileFilter(filter);
-		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-		chooser.setFileFilter(filter);
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("SQL Files (*.sql)", "sql");
+        chooser.addChoosableFileFilter(filter);
+        chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+        chooser.setFileFilter(filter);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-		String savePath = config.getSQLFile();
-		if (savePath != null) {
-			chooser.setCurrentDirectory(new File(savePath));
-		}
+        String savePath = config.getSQLFile();
+        if (savePath != null) {
+            chooser.setCurrentDirectory(new File(savePath));
+        }
 
-		int result = chooser.showSaveDialog(getOwner());
-		if (result == JFileChooser.CANCEL_OPTION) {
-			return;
-		}
+        int result = chooser.showSaveDialog(getOwner());
+        if (result == JFileChooser.CANCEL_OPTION) {
+            return;
+        }
 
-		File file = chooser.getSelectedFile();
-		if (!file.getName().contains(".")) {
-			file = new File(file + ".sql");
-		}
+        File file = chooser.getSelectedFile();
+        if (!file.getName().contains(".")) {
+            file = new File(file + ".sql");
+        }
 
-		config.setSQLFile(chooser.getCurrentDirectory().getAbsolutePath());
-		try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)){
-			writer.write(sql);
-			log.info("SQL successfully saved to file: '" + file.getAbsolutePath() + "'.");
-		} catch (IOException e) {
-			log.error("Failed to write SQL file.", e);
-		}
-	}
+        config.setSQLFile(chooser.getCurrentDirectory().getAbsolutePath());
+        try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
+            writer.write(sql);
+            log.info("SQL successfully saved to file: '" + file.getAbsolutePath() + "'.");
+        } catch (IOException e) {
+            log.error("Failed to write SQL file.", e);
+        }
+    }
 }

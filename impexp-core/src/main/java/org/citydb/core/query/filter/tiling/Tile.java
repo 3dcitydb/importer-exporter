@@ -40,84 +40,84 @@ import org.citydb.core.query.filter.selection.operator.spatial.SpatialOperationF
 import java.sql.SQLException;
 
 public class Tile {
-	private final BoundingBox extent;
-	private final int row;
-	private final int column;
+    private final BoundingBox extent;
+    private final int row;
+    private final int column;
 
-	private GeometryObject filterGeometry;
-	
-	public Tile(BoundingBox extent, int row, int column) {
-		this.extent = extent;
-		this.row = row;
-		this.column = column;
-	}
+    private GeometryObject filterGeometry;
 
-	public BoundingBox getExtent() {
-		return extent;
-	}
+    public Tile(BoundingBox extent, int row, int column) {
+        this.extent = extent;
+        this.row = row;
+        this.column = column;
+    }
 
-	public int getRow() {
-		return row;
-	}
+    public BoundingBox getExtent() {
+        return extent;
+    }
 
-	public int getColumn() {
-		return column;
-	}
-	
-	public GeometryObject getFilterGeometry(AbstractDatabaseAdapter databaseAdapter) throws FilterException {
-		if (filterGeometry != null)
-			return filterGeometry;
-			
-		DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
-		DatabaseSrs dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
+    public int getRow() {
+        return row;
+    }
 
-		BoundingBox envelope;
-		if (extentSrs.getSrid() != dbSrs.getSrid()) {
-			try {
-				envelope = databaseAdapter.getUtil().transform2D(extent, extentSrs, dbSrs);
-			} catch (SQLException e) {
-				throw new FilterException("Failed to transform tiling extent to SRID " + dbSrs.getSrid() + ".", e);
-			}
-		} else {
-			envelope = new BoundingBox(extent);
-		}
-		
-		filterGeometry = GeometryObject.createEnvelope(new double[]{
-				envelope.getLowerCorner().getX(), envelope.getLowerCorner().getY(),
-				envelope.getUpperCorner().getX(), envelope.getUpperCorner().getY()
-		}, 2, dbSrs.getSrid());
-		
-		return filterGeometry;
-	}
-	
-	public BinarySpatialOperator getFilterPredicate(AbstractDatabaseAdapter databaseAdapter) throws FilterException {
-		return SpatialOperationFactory.bbox(getFilterGeometry(databaseAdapter));		
-	}
-	
-	public boolean isOnTile(Point point, AbstractDatabaseAdapter databaseAdapter) throws FilterException {
-		DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
-		DatabaseSrs pointSrs = point.isSetSrs() ? point.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
-		
-		if (!pointSrs.isSupported())
-			throw new FilterException("The reference system " + pointSrs.getDescription() + " is not supported.");
-		
-		Position pos;
-		if (pointSrs.getSrid() != extentSrs.getSrid()) {			
-			try {
-				GeometryObject transformed = databaseAdapter.getUtil().transform(GeometryObject.createPoint(
-						new double[]{point.getX(), point.getY()}, 2, pointSrs.getSrid()), extentSrs);
-				pos = new Position(transformed.getCoordinates(0)[0], transformed.getCoordinates(0)[1]);
-			} catch (SQLException e) {
-				throw new FilterException("Failed to convert input geometry to tile SRS.", e);
-			}
-		} else {
-			pos = point.getPos();
-		}
-		
-		return pos.getX() > extent.getLowerCorner().getX() 
-				&& pos.getX() <= extent.getUpperCorner().getX() 
-				&& pos.getY() > extent.getLowerCorner().getY() 
-				&& pos.getY() <= extent.getUpperCorner().getY();
-	}
+    public int getColumn() {
+        return column;
+    }
+
+    public GeometryObject getFilterGeometry(AbstractDatabaseAdapter databaseAdapter) throws FilterException {
+        if (filterGeometry != null)
+            return filterGeometry;
+
+        DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
+        DatabaseSrs dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
+
+        BoundingBox envelope;
+        if (extentSrs.getSrid() != dbSrs.getSrid()) {
+            try {
+                envelope = databaseAdapter.getUtil().transform2D(extent, extentSrs, dbSrs);
+            } catch (SQLException e) {
+                throw new FilterException("Failed to transform tiling extent to SRID " + dbSrs.getSrid() + ".", e);
+            }
+        } else {
+            envelope = new BoundingBox(extent);
+        }
+
+        filterGeometry = GeometryObject.createEnvelope(new double[]{
+                envelope.getLowerCorner().getX(), envelope.getLowerCorner().getY(),
+                envelope.getUpperCorner().getX(), envelope.getUpperCorner().getY()
+        }, 2, dbSrs.getSrid());
+
+        return filterGeometry;
+    }
+
+    public BinarySpatialOperator getFilterPredicate(AbstractDatabaseAdapter databaseAdapter) throws FilterException {
+        return SpatialOperationFactory.bbox(getFilterGeometry(databaseAdapter));
+    }
+
+    public boolean isOnTile(Point point, AbstractDatabaseAdapter databaseAdapter) throws FilterException {
+        DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
+        DatabaseSrs pointSrs = point.isSetSrs() ? point.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
+
+        if (!pointSrs.isSupported())
+            throw new FilterException("The reference system " + pointSrs.getDescription() + " is not supported.");
+
+        Position pos;
+        if (pointSrs.getSrid() != extentSrs.getSrid()) {
+            try {
+                GeometryObject transformed = databaseAdapter.getUtil().transform(GeometryObject.createPoint(
+                        new double[]{point.getX(), point.getY()}, 2, pointSrs.getSrid()), extentSrs);
+                pos = new Position(transformed.getCoordinates(0)[0], transformed.getCoordinates(0)[1]);
+            } catch (SQLException e) {
+                throw new FilterException("Failed to convert input geometry to tile SRS.", e);
+            }
+        } else {
+            pos = point.getPos();
+        }
+
+        return pos.getX() > extent.getLowerCorner().getX()
+                && pos.getX() <= extent.getUpperCorner().getX()
+                && pos.getY() > extent.getLowerCorner().getY()
+                && pos.getY() <= extent.getUpperCorner().getY();
+    }
 
 }

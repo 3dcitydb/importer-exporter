@@ -31,32 +31,32 @@ import org.citydb.core.query.filter.FilterException;
 import org.citydb.core.query.filter.selection.Predicate;
 
 public class NotOperator extends AbstractLogicalOperator {
-	private Predicate operand;
+    private Predicate operand;
 
-	public NotOperator(Predicate operand) {
-		this.operand = operand;
-	}
-	
-	public boolean isSetOperand() {
-		return operand != null;
-	}
-		
-	public Predicate getOperand() {
-		return operand;
-	}
+    public NotOperator(Predicate operand) {
+        this.operand = operand;
+    }
 
-	public void setOperand(Predicate operand) {
-		this.operand = operand;
-	}
+    public boolean isSetOperand() {
+        return operand != null;
+    }
 
-	@Override
-	public LogicalOperatorName getOperatorName() {
-		return LogicalOperatorName.NOT;
-	}
+    public Predicate getOperand() {
+        return operand;
+    }
 
-	@Override
-	public NotOperator copy() throws FilterException {
-		return new NotOperator(operand);
-	}
-	
+    public void setOperand(Predicate operand) {
+        this.operand = operand;
+    }
+
+    @Override
+    public LogicalOperatorName getOperatorName() {
+        return LogicalOperatorName.NOT;
+    }
+
+    @Override
+    public NotOperator copy() throws FilterException {
+        return new NotOperator(operand);
+    }
+
 }

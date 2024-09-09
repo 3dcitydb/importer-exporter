@@ -34,34 +34,33 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 
-
 public class CacheTableTextureFileId extends AbstractCacheTableModel {
-	public static CacheTableTextureFileId instance = null;
-	
-	public synchronized static CacheTableTextureFileId getInstance() {
-		if (instance == null)
-			instance = new CacheTableTextureFileId();
-		
-		return instance;
-	}
-	
-	@Override
-	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		try (Statement stmt = conn.createStatement()) {
-			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (FILE_URI) " + properties);
-		}
-	}
+    public static CacheTableTextureFileId instance = null;
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.TEXTURE_FILE_ID;
-	}
-	
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"FILE_URI " + sqlAdapter.getCharacterVarying(32) + ", " +
-				"ID " + sqlAdapter.getBigInt() +
-				")";
-	}
+    public synchronized static CacheTableTextureFileId getInstance() {
+        if (instance == null)
+            instance = new CacheTableTextureFileId();
+
+        return instance;
+    }
+
+    @Override
+    public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (FILE_URI) " + properties);
+        }
+    }
+
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.TEXTURE_FILE_ID;
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "FILE_URI " + sqlAdapter.getCharacterVarying(32) + ", " +
+                "ID " + sqlAdapter.getBigInt() +
+                ")";
+    }
 }

@@ -35,58 +35,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
-	private final String defaultSchema = "citydb";
+    private final String defaultSchema = "citydb";
 
-	protected SchemaManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		super(databaseAdapter);
-	}
+    protected SchemaManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
+        super(databaseAdapter);
+    }
 
-	@Override
-	public String getDefaultSchema() {
-		return defaultSchema;
-	}
+    @Override
+    public String getDefaultSchema() {
+        return defaultSchema;
+    }
 
-	@Override
-	public boolean equalsDefaultSchema(String schema) {
-		return schema == null || schema.trim().isEmpty() || defaultSchema.equals(schema);
-	}
+    @Override
+    public boolean equalsDefaultSchema(String schema) {
+        return schema == null || schema.trim().isEmpty() || defaultSchema.equals(schema);
+    }
 
-	@Override
-	public boolean existsSchema(Connection connection, String schema) {
-		if (schema == null)
-			throw new IllegalArgumentException("Schema name may not be null.");
+    @Override
+    public boolean existsSchema(Connection connection, String schema) {
+        if (schema == null)
+            throw new IllegalArgumentException("Schema name may not be null.");
 
-		if (schema.trim().isEmpty())
-			schema = defaultSchema;
+        if (schema.trim().isEmpty())
+            schema = defaultSchema;
 
-		try (PreparedStatement stmt = connection.prepareStatement("select exists(select schema_name from information_schema.schemata where schema_name = ?)")) {
-			stmt.setString(1, schema);
-			try (ResultSet rs = stmt.executeQuery()) {
-				return rs.next() && rs.getBoolean(1);
-			}
-		} catch (SQLException e) {
-			return false;
-		}
-	}
+        try (PreparedStatement stmt = connection.prepareStatement("select exists(select schema_name from information_schema.schemata where schema_name = ?)")) {
+            stmt.setString(1, schema);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getBoolean(1);
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+    }
 
-	@Override
-	public List<String> fetchSchemasFromDatabase(Connection connection) throws SQLException {
-		try (Statement stmt = connection.createStatement();
-				ResultSet rs = stmt.executeQuery("select s.schema_name from information_schema.schemata s " +
-						"where exists (select 1 from information_schema.tables t " +
-						"where t.table_name='database_srs' and t.table_schema=s.schema_name) " +
-						"order by s.schema_name")) {
-			List<String> schemas = new ArrayList<>();
-			while (rs.next())
-				schemas.add(rs.getString(1));
+    @Override
+    public List<String> fetchSchemasFromDatabase(Connection connection) throws SQLException {
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery("select s.schema_name from information_schema.schemata s " +
+                     "where exists (select 1 from information_schema.tables t " +
+                     "where t.table_name='database_srs' and t.table_schema=s.schema_name) " +
+                     "order by s.schema_name")) {
+            List<String> schemas = new ArrayList<>();
+            while (rs.next())
+                schemas.add(rs.getString(1));
 
-			return schemas;
-		}
-	}
+            return schemas;
+        }
+    }
 
-	@Override
-	public String formatSchema(String schema) {
-		return schema;
-	}
+    @Override
+    public String formatSchema(String schema) {
+        return schema;
+    }
 
 }

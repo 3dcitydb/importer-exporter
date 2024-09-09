@@ -28,5 +28,5 @@
 package org.citydb.core.query.filter.selection.expression;
 
 public interface Expression {
-	public ExpressionName getExpressionName();
+    public ExpressionName getExpressionName();
 }

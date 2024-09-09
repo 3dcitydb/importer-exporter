@@ -28,6 +28,7 @@
 package org.citydb.gui.plugin.view;
 
 public interface ViewListener {
-	void viewActivated(ViewEvent e);
-	void viewDeactivated(ViewEvent e);
+    void viewActivated(ViewEvent e);
+
+    void viewDeactivated(ViewEvent e);
 }

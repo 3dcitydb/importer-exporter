@@ -33,10 +33,15 @@ import org.citydb.core.database.version.DatabaseVersionException;
 import java.sql.SQLException;
 
 public interface ConnectionViewHandler {
-	void commitConnectionDetails();
-	void showConnectionStatus(ConnectionState state);
-	void showError(DatabaseConfigurationException e);
-	void showError(DatabaseVersionException e);
-	void showError(SQLException e);
-	boolean showWarning(DatabaseConnectionWarning warning);
+    void commitConnectionDetails();
+
+    void showConnectionStatus(ConnectionState state);
+
+    void showError(DatabaseConfigurationException e);
+
+    void showError(DatabaseVersionException e);
+
+    void showError(SQLException e);
+
+    boolean showWarning(DatabaseConnectionWarning warning);
 }

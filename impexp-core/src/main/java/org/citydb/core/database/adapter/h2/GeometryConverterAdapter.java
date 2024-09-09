@@ -37,183 +37,183 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
-	// Note: This is a very limited implementation only aiming at
-	// supporting the storage of polygons which are required for 
-	// representing texture coordinates in cache tables
+    // Note: This is a very limited implementation only aiming at
+    // supporting the storage of polygons which are required for
+    // representing texture coordinates in cache tables
 
-	private final GeometryFactory factory;
+    private final GeometryFactory factory;
 
-	protected GeometryConverterAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		super(databaseAdapter);
-		factory = new GeometryFactory();
-	}
+    protected GeometryConverterAdapter(AbstractDatabaseAdapter databaseAdapter) {
+        super(databaseAdapter);
+        factory = new GeometryFactory();
+    }
 
-	@Override
-	public int getNullGeometryType() {
-		return Types.OTHER;
-	}
+    @Override
+    public int getNullGeometryType() {
+        return Types.OTHER;
+    }
 
-	@Override
-	public String getNullGeometryTypeName() {
-		return "GEOMETRY";
-	}
+    @Override
+    public String getNullGeometryTypeName() {
+        return "GEOMETRY";
+    }
 
-	@Override
-	public GeometryObject getEnvelope(Object geomObj) throws SQLException {
-		return null;
-	}
+    @Override
+    public GeometryObject getEnvelope(Object geomObj) throws SQLException {
+        return null;
+    }
 
-	@Override
-	public GeometryObject getPoint(Object geomObj) throws SQLException {
-		return null;
-	}
+    @Override
+    public GeometryObject getPoint(Object geomObj) throws SQLException {
+        return null;
+    }
 
-	@Override
-	public GeometryObject getMultiPoint(Object geomObj) throws SQLException {
-		return null;
-	}
+    @Override
+    public GeometryObject getMultiPoint(Object geomObj) throws SQLException {
+        return null;
+    }
 
-	@Override
-	public GeometryObject getCurve(Object geomObj) throws SQLException {
-		return null;
-	}
+    @Override
+    public GeometryObject getCurve(Object geomObj) throws SQLException {
+        return null;
+    }
 
-	@Override
-	public GeometryObject getMultiCurve(Object geomObj) throws SQLException {
-		return null;
-	}
+    @Override
+    public GeometryObject getMultiCurve(Object geomObj) throws SQLException {
+        return null;
+    }
 
-	@Override
-	public GeometryObject getPolygon(Object geomObj) throws SQLException {
-		GeometryObject polygon = null;
+    @Override
+    public GeometryObject getPolygon(Object geomObj) throws SQLException {
+        GeometryObject polygon = null;
 
-		if (geomObj instanceof Polygon)
-			polygon = getPolygon((Polygon)geomObj);
+        if (geomObj instanceof Polygon)
+            polygon = getPolygon((Polygon) geomObj);
 
-		return polygon;
-	}
+        return polygon;
+    }
 
-	private GeometryObject getPolygon(Polygon polygon) {
-		return GeometryObject.createPolygon(getPolygonCoordinates(polygon), polygon.getDimension(), polygon.getSRID());
-	}
+    private GeometryObject getPolygon(Polygon polygon) {
+        return GeometryObject.createPolygon(getPolygonCoordinates(polygon), polygon.getDimension(), polygon.getSRID());
+    }
 
-	private double[][] getPolygonCoordinates(Polygon polygon) {
-		double[][] coordinates = new double[polygon.getNumGeometries()][];
-		int dimension = polygon.getDimension();
+    private double[][] getPolygonCoordinates(Polygon polygon) {
+        double[][] coordinates = new double[polygon.getNumGeometries()][];
+        int dimension = polygon.getDimension();
 
-		LineString exterior = polygon.getExteriorRing();
-		coordinates[0] = new double[exterior.getNumPoints() * dimension];
-		int element = 0;
+        LineString exterior = polygon.getExteriorRing();
+        coordinates[0] = new double[exterior.getNumPoints() * dimension];
+        int element = 0;
 
-		if (dimension == 3) {
-			for (int i = 0; i < exterior.getNumPoints(); i++) {
-				Coordinate coordinate = exterior.getPointN(i).getCoordinate();
-				coordinates[0][element++] = coordinate.getX();
-				coordinates[0][element++] = coordinate.getY();
-				coordinates[0][element++] = coordinate.getZ();
-			}
-		} else {
-			for (int i = 0; i < exterior.getNumPoints(); i++) {
-				Coordinate coordinate = exterior.getPointN(i).getCoordinate();
-				coordinates[0][element++] = coordinate.getX();
-				coordinates[0][element++] = coordinate.getY();
-			}
-		}
+        if (dimension == 3) {
+            for (int i = 0; i < exterior.getNumPoints(); i++) {
+                Coordinate coordinate = exterior.getPointN(i).getCoordinate();
+                coordinates[0][element++] = coordinate.getX();
+                coordinates[0][element++] = coordinate.getY();
+                coordinates[0][element++] = coordinate.getZ();
+            }
+        } else {
+            for (int i = 0; i < exterior.getNumPoints(); i++) {
+                Coordinate coordinate = exterior.getPointN(i).getCoordinate();
+                coordinates[0][element++] = coordinate.getX();
+                coordinates[0][element++] = coordinate.getY();
+            }
+        }
 
-		for (int i = 0; i < polygon.getNumInteriorRing(); i++) {
-			LineString interior = polygon.getInteriorRingN(i);
-			element = 0;
+        for (int i = 0; i < polygon.getNumInteriorRing(); i++) {
+            LineString interior = polygon.getInteriorRingN(i);
+            element = 0;
 
-			if (dimension == 3) {
-				for (int j = 0; j < interior.getNumPoints(); j++) {
-					Coordinate coordinate = exterior.getPointN(j).getCoordinate();
-					coordinates[i + 1][element++] = coordinate.getX();
-					coordinates[i + 1][element++] = coordinate.getY();
-					coordinates[i + 1][element++] = coordinate.getZ();
-				}
-			} else {
-				for (int j = 0; j < interior.getNumPoints(); j++) {
-					Coordinate coordinate = exterior.getPointN(j).getCoordinate();
-					coordinates[i + 1][element++] = coordinate.getX();
-					coordinates[i + 1][element++] = coordinate.getY();
-				}
-			}
-		}
+            if (dimension == 3) {
+                for (int j = 0; j < interior.getNumPoints(); j++) {
+                    Coordinate coordinate = exterior.getPointN(j).getCoordinate();
+                    coordinates[i + 1][element++] = coordinate.getX();
+                    coordinates[i + 1][element++] = coordinate.getY();
+                    coordinates[i + 1][element++] = coordinate.getZ();
+                }
+            } else {
+                for (int j = 0; j < interior.getNumPoints(); j++) {
+                    Coordinate coordinate = exterior.getPointN(j).getCoordinate();
+                    coordinates[i + 1][element++] = coordinate.getX();
+                    coordinates[i + 1][element++] = coordinate.getY();
+                }
+            }
+        }
 
-		return coordinates;
-	}
+        return coordinates;
+    }
 
-	@Override
-	public GeometryObject getMultiPolygon(Object geomObj) throws SQLException {
-		return null;
-	}
+    @Override
+    public GeometryObject getMultiPolygon(Object geomObj) throws SQLException {
+        return null;
+    }
 
-	@Override
-	public GeometryObject getGeometry(Object geomObj) throws SQLException {
-		return null;
-	}
+    @Override
+    public GeometryObject getGeometry(Object geomObj) throws SQLException {
+        return null;
+    }
 
-	@Override
-	public Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException {
-		Geometry geometry = null;
+    @Override
+    public Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException {
+        Geometry geometry = null;
 
-		switch (geomObj.getGeometryType()) {
-		case POLYGON:
-			geometry = convertPolygonToJTS(geomObj);
-			break;
-		case LINE_STRING:
-		case POINT:
-		case MULTI_LINE_STRING:
-		case MULTI_POINT:
-		case ENVELOPE:
-		case MULTI_POLYGON:
-		case SOLID:
-		case COMPOSITE_SOLID:
-			break;
-		}
+        switch (geomObj.getGeometryType()) {
+            case POLYGON:
+                geometry = convertPolygonToJTS(geomObj);
+                break;
+            case LINE_STRING:
+            case POINT:
+            case MULTI_LINE_STRING:
+            case MULTI_POINT:
+            case ENVELOPE:
+            case MULTI_POLYGON:
+            case SOLID:
+            case COMPOSITE_SOLID:
+                break;
+        }
 
-		if (geometry == null)
-			throw new SQLException("Failed to convert geometry to internal database representation.");
+        if (geometry == null)
+            throw new SQLException("Failed to convert geometry to internal database representation.");
 
-		return geometry;		
-	}
+        return geometry;
+    }
 
-	@Override
-	public String getDatabaseObjectConstructor(GeometryObject geomObj) {
-		return null;
-	}
+    @Override
+    public String getDatabaseObjectConstructor(GeometryObject geomObj) {
+        return null;
+    }
 
-	private Polygon convertPolygonToJTS(GeometryObject geomObj) {
-		double[][] coordinates = geomObj.getCoordinates();
-		int dimension = geomObj.getDimension();
+    private Polygon convertPolygonToJTS(GeometryObject geomObj) {
+        double[][] coordinates = geomObj.getCoordinates();
+        int dimension = geomObj.getDimension();
 
-		LinearRing shell = null;
-		LinearRing[] holes = geomObj.getNumElements() - 1 > 0 ? new LinearRing[geomObj.getNumElements() - 1] : null;
+        LinearRing shell = null;
+        LinearRing[] holes = geomObj.getNumElements() - 1 > 0 ? new LinearRing[geomObj.getNumElements() - 1] : null;
 
-		for (int i = 0; i < coordinates.length; i++) {
-			LinearRing ring = factory.createLinearRing(getCoordinatesArray(coordinates[i], dimension));
+        for (int i = 0; i < coordinates.length; i++) {
+            LinearRing ring = factory.createLinearRing(getCoordinatesArray(coordinates[i], dimension));
 
-			if (i == 0)
-				shell = ring;
-			else
-				holes[i - 1] = ring;
-		}
+            if (i == 0)
+                shell = ring;
+            else
+                holes[i - 1] = ring;
+        }
 
-		return factory.createPolygon(shell, holes);
-	}
-	
-	private Coordinate[] getCoordinatesArray(double[] coordinates, int dimension) {
-		Coordinate[] result = new Coordinate[coordinates.length / dimension];
+        return factory.createPolygon(shell, holes);
+    }
 
-		for (int j = 0, element = 0; j < coordinates.length; j += dimension) {
-			Coordinate coordinate = new Coordinate();
-			for (int k = 0; k < dimension; k++)
-				coordinate.setOrdinate(k, coordinates[j + k]);
-			
-			result[element++] = coordinate;
-		}
-		
-		return result;
-	}
+    private Coordinate[] getCoordinatesArray(double[] coordinates, int dimension) {
+        Coordinate[] result = new Coordinate[coordinates.length / dimension];
+
+        for (int j = 0, element = 0; j < coordinates.length; j += dimension) {
+            Coordinate coordinate = new Coordinate();
+            for (int k = 0; k < dimension; k++)
+                coordinate.setOrdinate(k, coordinates[j + k]);
+
+            result[element++] = coordinate;
+        }
+
+        return result;
+    }
 
 }

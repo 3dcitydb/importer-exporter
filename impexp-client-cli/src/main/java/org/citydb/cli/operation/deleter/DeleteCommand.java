@@ -50,7 +50,9 @@ import java.nio.file.Path;
         description = "Deletes top-level city objects from the database."
 )
 public class DeleteCommand extends CliCommand {
-    enum Mode {delete, terminate};
+    enum Mode {delete, terminate}
+
+    ;
 
     @CommandLine.Option(names = {"-m", "--delete-mode"}, paramLabel = "<mode>", defaultValue = "delete",
             description = "Delete mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")

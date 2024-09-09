@@ -33,7 +33,7 @@ import org.citydb.config.project.common.ComputeNumberMatched;
 import javax.xml.bind.annotation.XmlType;
 import java.nio.charset.StandardCharsets;
 
-@XmlType(name="GeneralExportOptionsType", propOrder={})
+@XmlType(name = "GeneralExportOptionsType", propOrder = {})
 public class GeneralOptions {
     private Boolean failFastOnErrors = true;
     private ComputeNumberMatched computeNumberMatched;

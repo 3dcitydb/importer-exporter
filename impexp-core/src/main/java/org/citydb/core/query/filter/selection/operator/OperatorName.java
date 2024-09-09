@@ -28,5 +28,5 @@
 package org.citydb.core.query.filter.selection.operator;
 
 public interface OperatorName {
-	public String getSymbol();
+    public String getSymbol();
 }

@@ -35,57 +35,57 @@ import org.citydb.core.database.schema.path.predicate.logical.BinaryLogicalPredi
 
 public final class SimpleAttributeNode extends AbstractNode<SimpleAttribute> {
 
-	protected SimpleAttributeNode(SimpleAttribute attribute) {
-		super(attribute);
-	}
-	
-	protected SimpleAttributeNode(SimpleAttributeNode other) {
-		super(other);
-	}
+    protected SimpleAttributeNode(SimpleAttribute attribute) {
+        super(attribute);
+    }
 
-	@Override
-	protected boolean isValidChild(AbstractPathElement candidate) {
-		return false;
-	}
+    protected SimpleAttributeNode(SimpleAttributeNode other) {
+        super(other);
+    }
 
-	@Override
-	protected boolean isValidPredicate(AbstractNodePredicate candidate) {
-		if (candidate.getPredicateName() == ComparisonPredicateName.EQUAL_TO)
-			return ((EqualToPredicate)candidate).getLeftOperand() == this.pathElement;
+    @Override
+    protected boolean isValidChild(AbstractPathElement candidate) {
+        return false;
+    }
 
-		else {
-			BinaryLogicalPredicate predicate = (BinaryLogicalPredicate)candidate;
-			if (isValidPredicate(predicate.getLeftOperand()))
-				return isValidPredicate(predicate.getRightOperand());			
-		}
+    @Override
+    protected boolean isValidPredicate(AbstractNodePredicate candidate) {
+        if (candidate.getPredicateName() == ComparisonPredicateName.EQUAL_TO)
+            return ((EqualToPredicate) candidate).getLeftOperand() == this.pathElement;
 
-		return false;
-	}
+        else {
+            BinaryLogicalPredicate predicate = (BinaryLogicalPredicate) candidate;
+            if (isValidPredicate(predicate.getLeftOperand()))
+                return isValidPredicate(predicate.getRightOperand());
+        }
 
-	@Override
-	protected SimpleAttributeNode copy() {
-		return new SimpleAttributeNode(this);
-	}
+        return false;
+    }
 
-	public String toString(boolean removeAttributePrefixes) {
-		StringBuilder builder = new StringBuilder();
+    @Override
+    protected SimpleAttributeNode copy() {
+        return new SimpleAttributeNode(this);
+    }
 
-		String name = pathElement.getName();
-		boolean usePrefix = true;
+    public String toString(boolean removeAttributePrefixes) {
+        StringBuilder builder = new StringBuilder();
 
-		if (pathElement.getPath().startsWith("@")) {
-			builder.append("@");
-			usePrefix = !removeAttributePrefixes || pathElement.requiresPrefix();
-		}
+        String name = pathElement.getName();
+        boolean usePrefix = true;
 
-		if (usePrefix)
-			builder.append(pathElement.getSchema().isSetXMLPrefix() ? pathElement.getSchema().getXMLPrefix() : pathElement.getSchema().getId()).append(":");
+        if (pathElement.getPath().startsWith("@")) {
+            builder.append("@");
+            usePrefix = !removeAttributePrefixes || pathElement.requiresPrefix();
+        }
 
-		return builder.append(name).toString();
-	}
+        if (usePrefix)
+            builder.append(pathElement.getSchema().isSetXMLPrefix() ? pathElement.getSchema().getXMLPrefix() : pathElement.getSchema().getId()).append(":");
 
-	@Override
-	public String toString() {
-		return toString(false);
-	}
+        return builder.append(name).toString();
+    }
+
+    @Override
+    public String toString() {
+        return toString(false);
+    }
 }

@@ -35,91 +35,91 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EventHandlerContainerQueue {
-	private final ConcurrentLinkedQueue<EventHandlerContainer> containerQueue;
+    private final ConcurrentLinkedQueue<EventHandlerContainer> containerQueue;
 
-	public EventHandlerContainerQueue() {
-		containerQueue = new ConcurrentLinkedQueue<>();
-	}
+    public EventHandlerContainerQueue() {
+        containerQueue = new ConcurrentLinkedQueue<>();
+    }
 
-	public void addEventHandler(EventHandler handler, boolean autoRemove) {
-		EventHandlerContainer container = new EventHandlerContainer(handler, autoRemove);
-		containerQueue.add(container);
-	}
+    public void addEventHandler(EventHandler handler, boolean autoRemove) {
+        EventHandlerContainer container = new EventHandlerContainer(handler, autoRemove);
+        containerQueue.add(container);
+    }
 
-	public void addEventHandler(EventHandler handler) {
-		addEventHandler(handler, false);
-	}
+    public void addEventHandler(EventHandler handler) {
+        addEventHandler(handler, false);
+    }
 
-	public boolean removeEventHandler(EventHandler handler) {
-		if (handler != null) {
-			for (EventHandlerContainer container : containerQueue) {
-				if (handler == container.getEventHandler()) {
-					containerQueue.remove(container);
-					return true;
-				}
-			}
-		}
+    public boolean removeEventHandler(EventHandler handler) {
+        if (handler != null) {
+            for (EventHandlerContainer container : containerQueue) {
+                if (handler == container.getEventHandler()) {
+                    containerQueue.remove(container);
+                    return true;
+                }
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	protected Event propagate(Event event) {
-		Iterator<EventHandlerContainer> iter = containerQueue.iterator();
-		
-		while (iter.hasNext()) {
-			EventHandlerContainer container = iter.next();
-			EventHandler handler = container.getEventHandler();
-			
-			// since we deal with weak references, check whether
-			// handler is null and remove its container in this case
-			if (handler == null) {
-				iter.remove();
-				continue;
-			}
-			
-			try {
-				handler.handleEvent(event);
-			} catch (Exception e) {
-				Logger.getInstance().error("Failed to propagate event.", e);
-				break;
-			}
-			
-			if (container.isAutoRemove())
-				iter.remove();
-			
-			if (event.isCancelled())
-				break;
-		}
+    protected Event propagate(Event event) {
+        Iterator<EventHandlerContainer> iter = containerQueue.iterator();
 
-		return event;
-	}
+        while (iter.hasNext()) {
+            EventHandlerContainer container = iter.next();
+            EventHandler handler = container.getEventHandler();
 
-	public void clear() {
-		containerQueue.clear();
-	}
+            // since we deal with weak references, check whether
+            // handler is null and remove its container in this case
+            if (handler == null) {
+                iter.remove();
+                continue;
+            }
 
-	public Iterator<EventHandlerContainer> iterator() {
-		return containerQueue.iterator();
-	}
-	
-	public List<EventHandler> getHandlers() {
-		List<EventHandler> handlers = new ArrayList<>();
-		Iterator<EventHandlerContainer> iter = containerQueue.iterator();
-		
-		while (iter.hasNext()) {
-			EventHandlerContainer container = iter.next();
-			EventHandler handler = container.getEventHandler();
-			
-			// since we deal with weak references, check whether
-			// handler is null and remove its container in this case
-			if (handler == null) {
-				iter.remove();
-				continue;
-			}
-			
-			handlers.add(handler);
-		}
+            try {
+                handler.handleEvent(event);
+            } catch (Exception e) {
+                Logger.getInstance().error("Failed to propagate event.", e);
+                break;
+            }
 
-		return handlers;
-	}
+            if (container.isAutoRemove())
+                iter.remove();
+
+            if (event.isCancelled())
+                break;
+        }
+
+        return event;
+    }
+
+    public void clear() {
+        containerQueue.clear();
+    }
+
+    public Iterator<EventHandlerContainer> iterator() {
+        return containerQueue.iterator();
+    }
+
+    public List<EventHandler> getHandlers() {
+        List<EventHandler> handlers = new ArrayList<>();
+        Iterator<EventHandlerContainer> iter = containerQueue.iterator();
+
+        while (iter.hasNext()) {
+            EventHandlerContainer container = iter.next();
+            EventHandler handler = container.getEventHandler();
+
+            // since we deal with weak references, check whether
+            // handler is null and remove its container in this case
+            if (handler == null) {
+                iter.remove();
+                continue;
+            }
+
+            handlers.add(handler);
+        }
+
+        return handlers;
+    }
 }

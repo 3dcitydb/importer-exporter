@@ -38,97 +38,97 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class XlinkGroupToCityObject implements DBXlinkResolver {
-	private final DBXlinkResolverManager manager;
-	private final PreparedStatement psSelectTmp;
-	private final PreparedStatement psGroupMemberToCityObject;
-	private final PreparedStatement psGroupParentToCityObject;
-	private final FeatureType cityObjectGroupType;
+    private final DBXlinkResolverManager manager;
+    private final PreparedStatement psSelectTmp;
+    private final PreparedStatement psGroupMemberToCityObject;
+    private final PreparedStatement psGroupParentToCityObject;
+    private final FeatureType cityObjectGroupType;
 
-	private int parentBatchCounter;
-	private int memberBatchCounter;
+    private int parentBatchCounter;
+    private int memberBatchCounter;
 
-	public XlinkGroupToCityObject(Connection connection, CacheTable cacheTable, DBXlinkResolverManager manager) throws SQLException {
-		this.manager = manager;
+    public XlinkGroupToCityObject(Connection connection, CacheTable cacheTable, DBXlinkResolverManager manager) throws SQLException {
+        this.manager = manager;
 
-		String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
-		cityObjectGroupType = manager.getFeatureType(23);
+        String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+        cityObjectGroupType = manager.getFeatureType(23);
 
-		psSelectTmp = cacheTable.getConnection().prepareStatement("select GROUP_ID from " + cacheTable.getTableName()
-				+ " where GROUP_ID=? and IS_PARENT=?");
+        psSelectTmp = cacheTable.getConnection().prepareStatement("select GROUP_ID from " + cacheTable.getTableName()
+                + " where GROUP_ID=? and IS_PARENT=?");
 
-		psGroupMemberToCityObject = connection.prepareStatement("insert into " + schema + ".GROUP_TO_CITYOBJECT " +
-				"(CITYOBJECT_ID, CITYOBJECTGROUP_ID, ROLE) " +
-				"values (?, ?, ?)");
+        psGroupMemberToCityObject = connection.prepareStatement("insert into " + schema + ".GROUP_TO_CITYOBJECT " +
+                "(CITYOBJECT_ID, CITYOBJECTGROUP_ID, ROLE) " +
+                "values (?, ?, ?)");
 
-		psGroupParentToCityObject = connection.prepareStatement("update " + schema + ".CITYOBJECTGROUP " +
-				"set PARENT_CITYOBJECT_ID=? where ID=?");
-	}
+        psGroupParentToCityObject = connection.prepareStatement("update " + schema + ".CITYOBJECTGROUP " +
+                "set PARENT_CITYOBJECT_ID=? where ID=?");
+    }
 
-	public boolean insert(DBXlinkGroupToCityObject xlink) throws SQLException {
-		// for groupMembers, we do not only lookup gml:ids within the document
-		// but within the whole database
-		IdCacheEntry cityObjectEntry = manager.getObjectId(xlink.getGmlId(), true);
-		if (cityObjectEntry == null || cityObjectEntry.getId() == -1)
-			return false;		
-		
-		FeatureType featureType = manager.getFeatureType(cityObjectEntry.getObjectClassId());
-		if (featureType == null)
-			return false;
+    public boolean insert(DBXlinkGroupToCityObject xlink) throws SQLException {
+        // for groupMembers, we do not only lookup gml:ids within the document
+        // but within the whole database
+        IdCacheEntry cityObjectEntry = manager.getObjectId(xlink.getGmlId(), true);
+        if (cityObjectEntry == null || cityObjectEntry.getId() == -1)
+            return false;
 
-		// be careful with cyclic groupings
-		if (featureType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
-			psSelectTmp.setLong(1, cityObjectEntry.getId());
-			psSelectTmp.setLong(2, xlink.isParent() ? 1 : 0);
+        FeatureType featureType = manager.getFeatureType(cityObjectEntry.getObjectClassId());
+        if (featureType == null)
+            return false;
 
-			try (ResultSet rs = psSelectTmp.executeQuery()) {
-				if (rs.next()) {
-					manager.propagateXlink(xlink);
-					return true;
-				}
-			}
-		}
+        // be careful with cyclic groupings
+        if (featureType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
+            psSelectTmp.setLong(1, cityObjectEntry.getId());
+            psSelectTmp.setLong(2, xlink.isParent() ? 1 : 0);
 
-		if (xlink.isParent()) {
-			psGroupParentToCityObject.setLong(1, cityObjectEntry.getId());
-			psGroupParentToCityObject.setLong(2, xlink.getGroupId());
-			
-			psGroupParentToCityObject.addBatch();
-			if (++parentBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
-				manager.executeBatchWithLock(psGroupParentToCityObject, this);
-				parentBatchCounter = 0;
-			}
-		} else {
-			psGroupMemberToCityObject.setLong(1, cityObjectEntry.getId());
-			psGroupMemberToCityObject.setLong(2, xlink.getGroupId());
-			psGroupMemberToCityObject.setString(3, xlink.getRole());
+            try (ResultSet rs = psSelectTmp.executeQuery()) {
+                if (rs.next()) {
+                    manager.propagateXlink(xlink);
+                    return true;
+                }
+            }
+        }
 
-			psGroupMemberToCityObject.addBatch();
-			if (++memberBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
-				manager.executeBatchWithLock(psGroupMemberToCityObject, this);
-				memberBatchCounter = 0;
-			}
-		}
-		
-		return true;
-	}
+        if (xlink.isParent()) {
+            psGroupParentToCityObject.setLong(1, cityObjectEntry.getId());
+            psGroupParentToCityObject.setLong(2, xlink.getGroupId());
 
-	@Override
-	public void executeBatch() throws SQLException {
-		psGroupMemberToCityObject.executeBatch();
-		psGroupParentToCityObject.executeBatch();		
-		parentBatchCounter = 0;
-		memberBatchCounter = 0;
-	}
+            psGroupParentToCityObject.addBatch();
+            if (++parentBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
+                manager.executeBatchWithLock(psGroupParentToCityObject, this);
+                parentBatchCounter = 0;
+            }
+        } else {
+            psGroupMemberToCityObject.setLong(1, cityObjectEntry.getId());
+            psGroupMemberToCityObject.setLong(2, xlink.getGroupId());
+            psGroupMemberToCityObject.setString(3, xlink.getRole());
 
-	@Override
-	public void close() throws SQLException {
-		psGroupMemberToCityObject.close();
-		psGroupParentToCityObject.close();
-		psSelectTmp.close();
-	}
+            psGroupMemberToCityObject.addBatch();
+            if (++memberBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
+                manager.executeBatchWithLock(psGroupMemberToCityObject, this);
+                memberBatchCounter = 0;
+            }
+        }
 
-	@Override
-	public DBXlinkResolverEnum getDBXlinkResolverType() {
-		return DBXlinkResolverEnum.GROUP_TO_CITYOBJECT;
-	}
+        return true;
+    }
+
+    @Override
+    public void executeBatch() throws SQLException {
+        psGroupMemberToCityObject.executeBatch();
+        psGroupParentToCityObject.executeBatch();
+        parentBatchCounter = 0;
+        memberBatchCounter = 0;
+    }
+
+    @Override
+    public void close() throws SQLException {
+        psGroupMemberToCityObject.close();
+        psGroupParentToCityObject.close();
+        psSelectTmp.close();
+    }
+
+    @Override
+    public DBXlinkResolverEnum getDBXlinkResolverType() {
+        return DBXlinkResolverEnum.GROUP_TO_CITYOBJECT;
+    }
 }

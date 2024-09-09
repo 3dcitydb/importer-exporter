@@ -31,14 +31,14 @@ import org.citydb.util.event.Event;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 
 public class BoundingBoxSelectionEvent extends Event {
-	private final GeoPosition[] boundingBox;
-	
-	public BoundingBoxSelectionEvent(GeoPosition[] boundingBox) {
-		super(MapEvents.BOUNDING_BOX_SELECTION, GLOBAL_CHANNEL);
-		this.boundingBox = boundingBox;
-	}
+    private final GeoPosition[] boundingBox;
 
-	public GeoPosition[] getBoundingBox() {
-		return boundingBox;
-	}
+    public BoundingBoxSelectionEvent(GeoPosition[] boundingBox) {
+        super(MapEvents.BOUNDING_BOX_SELECTION, GLOBAL_CHANNEL);
+        this.boundingBox = boundingBox;
+    }
+
+    public GeoPosition[] getBoundingBox() {
+        return boundingBox;
+    }
 }

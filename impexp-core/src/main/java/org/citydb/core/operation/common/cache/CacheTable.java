@@ -35,289 +35,289 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class CacheTable extends AbstractCacheTable {	
-	private final AbstractCacheTableModel model;
-	private final ReentrantLock mainLock = new ReentrantLock();
-	private final String tableName;
-	private final boolean isStandAlone;
+public class CacheTable extends AbstractCacheTable {
+    private final AbstractCacheTableModel model;
+    private final ReentrantLock mainLock = new ReentrantLock();
+    private final String tableName;
+    private final boolean isStandAlone;
 
-	private CacheTable mirrorTable;
-	private volatile boolean isCreated = false;
-	private volatile boolean isIndexed = false;
+    private CacheTable mirrorTable;
+    private volatile boolean isCreated = false;
+    private volatile boolean isIndexed = false;
 
-	protected CacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter, boolean isStandAlone) {
-		super(connection, sqlAdapter);
+    protected CacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter, boolean isStandAlone) {
+        super(connection, sqlAdapter);
 
-		switch (model) {
-			case BASIC:
-				this.model = CacheTableBasic.getInstance();
-				break;
-			case DEPRECATED_MATERIAL:
-				this.model = CacheTableDeprecatedMaterial.getInstance();
-				break;
-			case TEXTURE_FILE:
-				this.model = CacheTableTextureFile.getInstance();
-				break;
-			case TEXTURE_FILE_ID:
-				this.model = CacheTableTextureFileId.getInstance();
-				break;
-			case LIBRARY_OBJECT:
-				this.model = CacheTableLibraryObject.getInstance();
-				break;
-			case OBJECT_GMLID:
-				this.model = CacheTableObjectGmlId.getInstance();
-				break;
-			case GEOMETRY_GMLID:
-				this.model = CacheTableGeometryGmlId.getInstance();
-				break;
-			case GROUP_TO_CITYOBJECT:
-				this.model = CacheTableGroupToCityObject.getInstance();
-				break;
-			case SURFACE_GEOMETRY:
-				this.model = CacheTableSurfaceGeometry.getInstance();
-				break;
-			case SOLID_GEOMETRY:
-				this.model = CacheTableSolidGeometry.getInstance();
-				break;
-			case LINEAR_RING:
-				this.model = CacheTableLinearRing.getInstance();
-				break;
-			case TEXTUREASSOCIATION:
-				this.model = CacheTableTextureAssociation.getInstance();
-				break;
-			case TEXTUREASSOCIATION_TARGET:
-				this.model = CacheTableTextureAssociationTarget.getInstance();
-				break;
-			case TEXTURE_COORD_LIST:
-				this.model = CacheTableTextureCoordList.getInstance();
-				break;
-			case TEXTUREPARAM:
-				this.model = CacheTableTextureParam.getInstance();
-				break;
-			case SURFACE_DATA_TO_TEX_IMAGE:
-				this.model = CacheTableSurfaceDataToTexImage.getInstance();
-				break;
-			case GLOBAL_APPEARANCE:
-				this.model = CacheTableGlobalAppearance.getInstance();
-				break;
-			case ID_LIST:
-				this.model = CacheTableIdList.getInstance();
-				break;
-			case DUPLICATE_LIST:
-				this.model = CacheTableDuplicateList.getInstance();
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported cache table type " + model);
-		}
+        switch (model) {
+            case BASIC:
+                this.model = CacheTableBasic.getInstance();
+                break;
+            case DEPRECATED_MATERIAL:
+                this.model = CacheTableDeprecatedMaterial.getInstance();
+                break;
+            case TEXTURE_FILE:
+                this.model = CacheTableTextureFile.getInstance();
+                break;
+            case TEXTURE_FILE_ID:
+                this.model = CacheTableTextureFileId.getInstance();
+                break;
+            case LIBRARY_OBJECT:
+                this.model = CacheTableLibraryObject.getInstance();
+                break;
+            case OBJECT_GMLID:
+                this.model = CacheTableObjectGmlId.getInstance();
+                break;
+            case GEOMETRY_GMLID:
+                this.model = CacheTableGeometryGmlId.getInstance();
+                break;
+            case GROUP_TO_CITYOBJECT:
+                this.model = CacheTableGroupToCityObject.getInstance();
+                break;
+            case SURFACE_GEOMETRY:
+                this.model = CacheTableSurfaceGeometry.getInstance();
+                break;
+            case SOLID_GEOMETRY:
+                this.model = CacheTableSolidGeometry.getInstance();
+                break;
+            case LINEAR_RING:
+                this.model = CacheTableLinearRing.getInstance();
+                break;
+            case TEXTUREASSOCIATION:
+                this.model = CacheTableTextureAssociation.getInstance();
+                break;
+            case TEXTUREASSOCIATION_TARGET:
+                this.model = CacheTableTextureAssociationTarget.getInstance();
+                break;
+            case TEXTURE_COORD_LIST:
+                this.model = CacheTableTextureCoordList.getInstance();
+                break;
+            case TEXTUREPARAM:
+                this.model = CacheTableTextureParam.getInstance();
+                break;
+            case SURFACE_DATA_TO_TEX_IMAGE:
+                this.model = CacheTableSurfaceDataToTexImage.getInstance();
+                break;
+            case GLOBAL_APPEARANCE:
+                this.model = CacheTableGlobalAppearance.getInstance();
+                break;
+            case ID_LIST:
+                this.model = CacheTableIdList.getInstance();
+                break;
+            case DUPLICATE_LIST:
+                this.model = CacheTableDuplicateList.getInstance();
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported cache table type " + model);
+        }
 
-		this.isStandAlone = isStandAlone;
-		tableName = generateUniqueTableName();
-	}
+        this.isStandAlone = isStandAlone;
+        tableName = generateUniqueTableName();
+    }
 
-	protected CacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
-		this(model, connection, sqlAdapter, true);
-	}
-	
-	@Override
-	protected void create() throws SQLException {		
-		if (isCreated)
-			return;
+    protected CacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
+        this(model, connection, sqlAdapter, true);
+    }
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+    @Override
+    protected void create() throws SQLException {
+        if (isCreated)
+            return;
 
-		try {
-			if (!isCreated) {
-				model.create(connection, tableName, sqlAdapter);
-				isCreated = true;
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
-	
-	protected void createAsSelect(String select) throws SQLException {
-		if (isCreated)
-			return;
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+        try {
+            if (!isCreated) {
+                model.create(connection, tableName, sqlAdapter);
+                isCreated = true;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-		try {
-			if (!isCreated) {
-				model.createAsSelect(connection, tableName, select, sqlAdapter);
-				isCreated = true;
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
-	
-	@Override
-	protected void createAndIndex() throws SQLException {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+    protected void createAsSelect(String select) throws SQLException {
+        if (isCreated)
+            return;
 
-		try {
-			create();			
-			createIndexes();
-		} finally {
-			lock.unlock();
-		}
-	}
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-	public void createIndexes() throws SQLException {
-		if (!isCreated || isIndexed)
-			return;
+        try {
+            if (!isCreated) {
+                model.createAsSelect(connection, tableName, select, sqlAdapter);
+                isCreated = true;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+    @Override
+    protected void createAndIndex() throws SQLException {
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			if (!isIndexed) {
-				model.createIndexes(connection, tableName, sqlAdapter.getUnloggedIndexProperty());
-				isIndexed = true;
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
+        try {
+            create();
+            createIndexes();
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	public void truncate() throws SQLException {
-		if (!isCreated)
-			return;
+    public void createIndexes() throws SQLException {
+        if (!isCreated || isIndexed)
+            return;
 
-		model.truncate(connection, tableName);
-	}
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-	public long size() throws SQLException {
-		if (!isCreated)
-			return -1;
+        try {
+            if (!isIndexed) {
+                model.createIndexes(connection, tableName, sqlAdapter.getUnloggedIndexProperty());
+                isIndexed = true;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-		return model.size(connection, tableName);
-	}
+    public void truncate() throws SQLException {
+        if (!isCreated)
+            return;
 
-	public String getTableName() {
-		return tableName;
-	}
+        model.truncate(connection, tableName);
+    }
 
-	@Override
-	public boolean isCreated() {
-		return isCreated;
-	}
+    public long size() throws SQLException {
+        if (!isCreated)
+            return -1;
 
-	public boolean isIndexed() {
-		return isIndexed;
-	}
+        return model.size(connection, tableName);
+    }
 
-	public boolean isStandAlone() {
-		return isStandAlone;
-	}
+    public String getTableName() {
+        return tableName;
+    }
 
-	public CacheTable mirror() throws SQLException {
-		if (!isCreated)
-			return null;
+    @Override
+    public boolean isCreated() {
+        return isCreated;
+    }
 
-		if (mirrorTable != null)
-			return mirrorTable;
+    public boolean isIndexed() {
+        return isIndexed;
+    }
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+    public boolean isStandAlone() {
+        return isStandAlone;
+    }
 
-		try {
-			if (isCreated && mirrorTable == null) {
-				mirrorTable = new CacheTable(model.getType(), connection, sqlAdapter, false);
-				mirrorTable.createAsSelect("select * from " + tableName);
-			}
+    public CacheTable mirror() throws SQLException {
+        if (!isCreated)
+            return null;
 
-			return mirrorTable;
-		} finally {
-			lock.unlock();
-		}
-	}
-	
-	public CacheTable mirrorAndIndex() throws SQLException {
-		if (!isCreated)
-			return null;
+        if (mirrorTable != null)
+            return mirrorTable;
 
-		if (mirrorTable != null)
-			return mirrorTable;
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+        try {
+            if (isCreated && mirrorTable == null) {
+                mirrorTable = new CacheTable(model.getType(), connection, sqlAdapter, false);
+                mirrorTable.createAsSelect("select * from " + tableName);
+            }
 
-		try {
-			if (isCreated && mirrorTable == null) {
-				mirror();			
-				mirrorTable.createIndexes();
-			}
+            return mirrorTable;
+        } finally {
+            lock.unlock();
+        }
+    }
 
-			return mirrorTable;
-		} finally {
-			lock.unlock();
-		}
-	}
-	
-	public void dropMirrorTable() throws SQLException {
-		if (mirrorTable == null)
-			return;
+    public CacheTable mirrorAndIndex() throws SQLException {
+        if (!isCreated)
+            return null;
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+        if (mirrorTable != null)
+            return mirrorTable;
 
-		try {
-			if (mirrorTable != null) {
-				mirrorTable.dropInternal();
-				mirrorTable = null;
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-	public CacheTable getMirrorTable() {
-		return mirrorTable;
-	}
-	
-	@Override
-	protected void drop() throws SQLException {
-		if (!isStandAlone)
-			throw new IllegalStateException("Drop may not be called on a child of a compound table.");
+        try {
+            if (isCreated && mirrorTable == null) {
+                mirror();
+                mirrorTable.createIndexes();
+            }
 
-		dropInternal();
-	}
+            return mirrorTable;
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	protected void dropInternal() throws SQLException {
-		if (!isCreated)
-			return;
+    public void dropMirrorTable() throws SQLException {
+        if (mirrorTable == null)
+            return;
 
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			if (isCreated) {			
-				model.drop(connection, tableName);
-				
-				if (mirrorTable != null)
-					dropMirrorTable();
-				
-				isCreated = false;
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
+        try {
+            if (mirrorTable != null) {
+                mirrorTable.dropInternal();
+                mirrorTable = null;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	@Override
-	public CacheTableModel getModelType() {
-		return model.getType();
-	}
-	
-	private String generateUniqueTableName() {		
-		String name = "TMP_" + model.getType().value() + ID + Math.abs(DefaultGMLIdManager.getInstance().generateUUID().hashCode());
-		if (name.length() > 28)
-			name = name.substring(0, 28);
+    public CacheTable getMirrorTable() {
+        return mirrorTable;
+    }
 
-		return name;
-	}
+    @Override
+    protected void drop() throws SQLException {
+        if (!isStandAlone)
+            throw new IllegalStateException("Drop may not be called on a child of a compound table.");
+
+        dropInternal();
+    }
+
+    protected void dropInternal() throws SQLException {
+        if (!isCreated)
+            return;
+
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
+
+        try {
+            if (isCreated) {
+                model.drop(connection, tableName);
+
+                if (mirrorTable != null)
+                    dropMirrorTable();
+
+                isCreated = false;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public CacheTableModel getModelType() {
+        return model.getType();
+    }
+
+    private String generateUniqueTableName() {
+        String name = "TMP_" + model.getType().value() + ID + Math.abs(DefaultGMLIdManager.getInstance().generateUUID().hashCode());
+        if (name.length() > 28)
+            name = name.substring(0, 28);
+
+        return name;
+    }
 }

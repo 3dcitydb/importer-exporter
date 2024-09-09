@@ -28,36 +28,36 @@
 package org.citydb.core.operation.common.xlink;
 
 public class DBXlinkTextureFile implements DBXlink {
-	private final long id;
-	private final String fileURI;
+    private final long id;
+    private final String fileURI;
 
-	public DBXlinkTextureFile(long id, String fileURI) {
-		this.id = id;
-		this.fileURI = fileURI;
-	}
+    public DBXlinkTextureFile(long id, String fileURI) {
+        this.id = id;
+        this.fileURI = fileURI;
+    }
 
-	public long getId() {
-		return id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public String getFileURI() {
-		return fileURI;
-	}
+    public String getFileURI() {
+        return fileURI;
+    }
 
-	@Override
-	public String getGmlId() {
-		// we do not have a gml:id, but fileURI is our identifier
-		return fileURI;
-	}
+    @Override
+    public String getGmlId() {
+        // we do not have a gml:id, but fileURI is our identifier
+        return fileURI;
+    }
 
-	@Override
-	public void setGmlId(String gmlid) {
-		// we do not need this here since we are not relying on gml:ids
-	}
+    @Override
+    public void setGmlId(String gmlid) {
+        // we do not need this here since we are not relying on gml:ids
+    }
 
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.TEXTURE_FILE;
-	}
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.TEXTURE_FILE;
+    }
 
 }

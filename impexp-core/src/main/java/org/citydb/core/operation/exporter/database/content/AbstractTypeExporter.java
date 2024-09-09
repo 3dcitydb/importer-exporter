@@ -40,45 +40,45 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class AbstractTypeExporter implements DBExporter {
-	protected final CityGMLExportManager exporter;	
-	protected Table table;
-	protected Select select;
-	
-	public AbstractTypeExporter(CityGMLExportManager exporter) {
-		this.exporter = exporter;
-	}
-	
-	protected List<Table> addJoinsToADEHookTables(TableEnum type, Table fromTable) {
-		List<Table> tables = null;
-		if (exporter.hasADESupport()) {
-			Set<String> tableNames = exporter.getADEHookTables(type);
-			if (!tableNames.isEmpty()) {
-				tables = new ArrayList<>();
-				for (String tableName : tableNames) {
-					Table table = new Table(tableName, exporter.getDatabaseAdapter().getConnectionDetails().getSchema());
-					tables.add(table);
-					select.addProjection(table.getColumn("id", table.getAlias() + table.getName()))
-							.addJoin(JoinFactory.left(table, "id", ComparisonName.EQUAL_TO, fromTable.getColumn("id")));
-				}
-			}
-		}
+    protected final CityGMLExportManager exporter;
+    protected Table table;
+    protected Select select;
 
-		return tables;
-	}
-	
-	protected List<String> retrieveADEHookTables(List<Table> tables, ResultSet rs) throws SQLException {
-		List<String> tableNames = null;
-		for (Table table : tables) {
-			rs.getLong(table.getAlias() + table.getName());
-			if (!rs.wasNull()) {
-				if (tableNames == null)
-					tableNames = new ArrayList<>();
-				
-				tableNames.add(table.getName());
-			}
-		}
-		
-		return tableNames;
-	}
-	
+    public AbstractTypeExporter(CityGMLExportManager exporter) {
+        this.exporter = exporter;
+    }
+
+    protected List<Table> addJoinsToADEHookTables(TableEnum type, Table fromTable) {
+        List<Table> tables = null;
+        if (exporter.hasADESupport()) {
+            Set<String> tableNames = exporter.getADEHookTables(type);
+            if (!tableNames.isEmpty()) {
+                tables = new ArrayList<>();
+                for (String tableName : tableNames) {
+                    Table table = new Table(tableName, exporter.getDatabaseAdapter().getConnectionDetails().getSchema());
+                    tables.add(table);
+                    select.addProjection(table.getColumn("id", table.getAlias() + table.getName()))
+                            .addJoin(JoinFactory.left(table, "id", ComparisonName.EQUAL_TO, fromTable.getColumn("id")));
+                }
+            }
+        }
+
+        return tables;
+    }
+
+    protected List<String> retrieveADEHookTables(List<Table> tables, ResultSet rs) throws SQLException {
+        List<String> tableNames = null;
+        for (Table table : tables) {
+            rs.getLong(table.getAlias() + table.getName());
+            if (!rs.wasNull()) {
+                if (tableNames == null)
+                    tableNames = new ArrayList<>();
+
+                tableNames.add(table.getName());
+            }
+        }
+
+        return tableNames;
+    }
+
 }

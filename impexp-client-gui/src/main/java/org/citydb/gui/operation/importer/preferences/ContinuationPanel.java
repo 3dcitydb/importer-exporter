@@ -44,233 +44,233 @@ import java.awt.event.ActionListener;
 import java.util.Locale;
 
 public class ContinuationPanel extends InternalPreferencesComponent {
-	private TitledPanel metadataPanel;
-	private TitledPanel personPanel;
-	private TitledPanel creationDatePanel;
-	private TitledPanel terminationDatePanel;
-	
-	private JTextField lineageText;
-	private JLabel lineageLabel;
-	private JTextField reasonForUpdateText;
-	private JLabel reasonForUpdateLabel;
-	private JRadioButton updatingPersonDBAccount;
-	private JRadioButton updatingPersonUser;
-	private JTextField updatingPersonText;
-	
-	private JRadioButton creDateRadioInherit;
-	private JRadioButton creDateRadioOnlyMissing;
-	private JRadioButton creDateRadioAll;
-	private JRadioButton termDateRadioInherit;
-	private JRadioButton termDateRadioOnlyMissing;
-	private JRadioButton termDateRadioAll;
-	
-	public ContinuationPanel(Config config) {
-		super(config);
-		initGui();
-	}
-	
-	@Override
-	public boolean isModified() {
-		Continuation continuation = config.getImportConfig().getContinuation();
+    private TitledPanel metadataPanel;
+    private TitledPanel personPanel;
+    private TitledPanel creationDatePanel;
+    private TitledPanel terminationDatePanel;
 
-		if (!lineageText.getText().equals(continuation.getLineage())) return true;
-		if (!reasonForUpdateText.getText().equals(continuation.getReasonForUpdate())) return true;
-		if (!updatingPersonText.getText().equals(continuation.getUpdatingPerson())) return true;
-		if (updatingPersonDBAccount.isSelected() != continuation.isUpdatingPersonModeDatabase()) return true;
-		if (updatingPersonUser.isSelected() != continuation.isUpdatingPersonModeUser()) return true;
-		if (creDateRadioInherit.isSelected() != continuation.isCreationDateModeInherit()) return true;
-		if (creDateRadioOnlyMissing.isSelected() != continuation.isCreationDateModeComplement()) return true;
-		if (creDateRadioAll.isSelected() != continuation.isCreationDateModeReplace()) return true;
-		if (termDateRadioInherit.isSelected() != continuation.isTerminationDateModeInherit()) return true;
-		if (termDateRadioOnlyMissing.isSelected() != continuation.isTerminationDateModeComplement()) return true;
-		if (termDateRadioAll.isSelected() != continuation.isTerminationDateModeReplace()) return true;
-    
-		return false;
-	}
-	
-	private void initGui() {
-		lineageText = new JTextField();
-		lineageLabel = new JLabel();
-		reasonForUpdateText = new JTextField();
-		reasonForUpdateLabel = new JLabel();
-		
-		updatingPersonDBAccount = new JRadioButton();
-		updatingPersonUser = new JRadioButton();
-		ButtonGroup updatingPerson = new ButtonGroup();
-		updatingPerson.add(updatingPersonDBAccount);
-		updatingPerson.add(updatingPersonUser);
-		updatingPersonText = new JTextField();
-		
-		creDateRadioInherit = new JRadioButton();
-		creDateRadioOnlyMissing = new JRadioButton();
-		creDateRadioAll = new JRadioButton();
-		ButtonGroup creDateRadio = new ButtonGroup();
-		creDateRadio.add(creDateRadioInherit);
-		creDateRadio.add(creDateRadioOnlyMissing);
-		creDateRadio.add(creDateRadioAll);
-    
-		termDateRadioInherit = new JRadioButton();
-		termDateRadioOnlyMissing = new JRadioButton();
-		termDateRadioAll = new JRadioButton();
-		ButtonGroup trmDateRadio = new ButtonGroup();
-		trmDateRadio.add(termDateRadioInherit);
-		trmDateRadio.add(termDateRadioOnlyMissing);
-		trmDateRadio.add(termDateRadioAll);
-    
-		PopupMenuDecorator.getInstance().decorate(lineageText, reasonForUpdateText, updatingPersonText);
-		
-		setLayout(new GridBagLayout());
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(lineageLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
-				content.add(lineageText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 0));
-				content.add(reasonForUpdateLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
-				content.add(reasonForUpdateText, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
-			}
+    private JTextField lineageText;
+    private JLabel lineageLabel;
+    private JTextField reasonForUpdateText;
+    private JLabel reasonForUpdateLabel;
+    private JRadioButton updatingPersonDBAccount;
+    private JRadioButton updatingPersonUser;
+    private JTextField updatingPersonText;
 
-			metadataPanel = new TitledPanel().build(content);
-		}
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(updatingPersonDBAccount, GuiUtil.setConstraints(0, 0, 2, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				content.add(updatingPersonUser, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
-				content.add(updatingPersonText, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 5, 5, 0, 0));
-			}
+    private JRadioButton creDateRadioInherit;
+    private JRadioButton creDateRadioOnlyMissing;
+    private JRadioButton creDateRadioAll;
+    private JRadioButton termDateRadioInherit;
+    private JRadioButton termDateRadioOnlyMissing;
+    private JRadioButton termDateRadioAll;
 
-			personPanel = new TitledPanel().build(content);
-		}
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(creDateRadioInherit, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				content.add(creDateRadioOnlyMissing, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
-				content.add(creDateRadioAll, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			}
+    public ContinuationPanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-			creationDatePanel = new TitledPanel().build(content);
-		}
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(termDateRadioInherit, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				content.add(termDateRadioOnlyMissing, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
-				content.add(termDateRadioAll, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			}
+    @Override
+    public boolean isModified() {
+        Continuation continuation = config.getImportConfig().getContinuation();
 
-			terminationDatePanel = new TitledPanel().build(content);
-		}
+        if (!lineageText.getText().equals(continuation.getLineage())) return true;
+        if (!reasonForUpdateText.getText().equals(continuation.getReasonForUpdate())) return true;
+        if (!updatingPersonText.getText().equals(continuation.getUpdatingPerson())) return true;
+        if (updatingPersonDBAccount.isSelected() != continuation.isUpdatingPersonModeDatabase()) return true;
+        if (updatingPersonUser.isSelected() != continuation.isUpdatingPersonModeUser()) return true;
+        if (creDateRadioInherit.isSelected() != continuation.isCreationDateModeInherit()) return true;
+        if (creDateRadioOnlyMissing.isSelected() != continuation.isCreationDateModeComplement()) return true;
+        if (creDateRadioAll.isSelected() != continuation.isCreationDateModeReplace()) return true;
+        if (termDateRadioInherit.isSelected() != continuation.isTerminationDateModeInherit()) return true;
+        if (termDateRadioOnlyMissing.isSelected() != continuation.isTerminationDateModeComplement()) return true;
+        if (termDateRadioAll.isSelected() != continuation.isTerminationDateModeReplace()) return true;
 
-		add(metadataPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(personPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(creationDatePanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(terminationDatePanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        return false;
+    }
 
-		ActionListener updatingPersonListener = e -> setEnabledUpdatingPerson();
-		updatingPersonDBAccount.addActionListener(updatingPersonListener);
-		updatingPersonUser.addActionListener(updatingPersonListener);
-	}
-	
-	private void setEnabledUpdatingPerson() {
-		updatingPersonText.setEnabled(updatingPersonUser.isSelected());
-	}
-	
-	@Override
-	public void switchLocale(Locale locale) {
-		metadataPanel.setTitle(Language.I18N.getString("pref.import.continuation.border.lineage"));
-		personPanel.setTitle(Language.I18N.getString("pref.import.continuation.border.updatingPerson"));
-		creationDatePanel.setTitle(Language.I18N.getString("pref.import.continuation.border.creationDate"));
-		terminationDatePanel.setTitle(Language.I18N.getString("pref.import.continuation.border.terminationDate"));
+    private void initGui() {
+        lineageText = new JTextField();
+        lineageLabel = new JLabel();
+        reasonForUpdateText = new JTextField();
+        reasonForUpdateLabel = new JLabel();
 
-		lineageLabel.setText(Language.I18N.getString("pref.import.continuation.label.lineage"));
-		reasonForUpdateLabel.setText(Language.I18N.getString("pref.import.continuation.label.reasonForUpdate"));
+        updatingPersonDBAccount = new JRadioButton();
+        updatingPersonUser = new JRadioButton();
+        ButtonGroup updatingPerson = new ButtonGroup();
+        updatingPerson.add(updatingPersonDBAccount);
+        updatingPerson.add(updatingPersonUser);
+        updatingPersonText = new JTextField();
 
-		updatingPersonDBAccount.setText(Language.I18N.getString("pref.import.continuation.label.updatingPerson.database"));
-		updatingPersonUser.setText(Language.I18N.getString("pref.import.continuation.label.updatingPerson.user"));		
+        creDateRadioInherit = new JRadioButton();
+        creDateRadioOnlyMissing = new JRadioButton();
+        creDateRadioAll = new JRadioButton();
+        ButtonGroup creDateRadio = new ButtonGroup();
+        creDateRadio.add(creDateRadioInherit);
+        creDateRadio.add(creDateRadioOnlyMissing);
+        creDateRadio.add(creDateRadioAll);
 
-		creDateRadioInherit.setText(Language.I18N.getString("pref.import.continuation.label.creationDate.inherit"));
-		creDateRadioOnlyMissing.setText(Language.I18N.getString("pref.import.continuation.label.creationDate.onlyMissing"));
-		creDateRadioAll.setText(Language.I18N.getString("pref.import.continuation.label.creationDate.all"));
-    
-		termDateRadioInherit.setText(Language.I18N.getString("pref.import.continuation.label.terminationDate.inherit"));
-		termDateRadioOnlyMissing.setText(Language.I18N.getString("pref.import.continuation.label.terminationDate.onlyMissing"));
-		termDateRadioAll.setText(Language.I18N.getString("pref.import.continuation.label.terminationDate.all"));
-	}
+        termDateRadioInherit = new JRadioButton();
+        termDateRadioOnlyMissing = new JRadioButton();
+        termDateRadioAll = new JRadioButton();
+        ButtonGroup trmDateRadio = new ButtonGroup();
+        trmDateRadio.add(termDateRadioInherit);
+        trmDateRadio.add(termDateRadioOnlyMissing);
+        trmDateRadio.add(termDateRadioAll);
 
-	@Override
-	public void loadSettings() {
-		Continuation continuation = config.getImportConfig().getContinuation();
-		
-		lineageText.setText(continuation.getLineage());
-		reasonForUpdateText.setText(continuation.getReasonForUpdate());
-		updatingPersonText.setText(continuation.getUpdatingPerson());
-		
-		if (continuation.isUpdatingPersonModeDatabase())
-			updatingPersonDBAccount.setSelected(true);
-		else
-			updatingPersonUser.setSelected(true);
-		
-		setEnabledUpdatingPerson();
-    
-		if (continuation.isCreationDateModeInherit())
-			creDateRadioInherit.setSelected(true);
-		else if (continuation.isCreationDateModeComplement())
-			creDateRadioOnlyMissing.setSelected(true);
-		else
-			creDateRadioAll.setSelected(true);
-    
-		if (continuation.isTerminationDateModeInherit())
-			termDateRadioInherit.setSelected(true);
-		else if (continuation.isTerminationDateModeComplement())
-			termDateRadioOnlyMissing.setSelected(true);
-		else
-			termDateRadioAll.setSelected(true);
-	}
+        PopupMenuDecorator.getInstance().decorate(lineageText, reasonForUpdateText, updatingPersonText);
 
-	@Override
-	public void setSettings() {
-		Continuation continuation = config.getImportConfig().getContinuation();
+        setLayout(new GridBagLayout());
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(lineageLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+                content.add(lineageText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 0));
+                content.add(reasonForUpdateLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+                content.add(reasonForUpdateText, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
+            }
 
-		String lineage = lineageText.getText().trim();
-		continuation.setLineage(lineage);
-		lineageText.setText(lineage);
+            metadataPanel = new TitledPanel().build(content);
+        }
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(updatingPersonDBAccount, GuiUtil.setConstraints(0, 0, 2, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(updatingPersonUser, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
+                content.add(updatingPersonText, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 5, 5, 0, 0));
+            }
 
-		String reasonForUpdate = reasonForUpdateText.getText().trim();
-		continuation.setReasonForUpdate(reasonForUpdate);
-		reasonForUpdateText.setText(reasonForUpdate);
+            personPanel = new TitledPanel().build(content);
+        }
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(creDateRadioInherit, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(creDateRadioOnlyMissing, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+                content.add(creDateRadioAll, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            }
 
-		String updatingPerson = updatingPersonText.getText().trim();
-		continuation.setUpdatingPerson(updatingPerson);
-		updatingPersonText.setText(updatingPerson);
-		
-		if (updatingPersonDBAccount.isSelected())
-			continuation.setUpdatingPersonMode(UpdatingPersonMode.DATABASE);
-		else
-			continuation.setUpdatingPersonMode(UpdatingPersonMode.USER);
-    
-		if (creDateRadioInherit.isSelected())
-			continuation.setCreationDateMode(CreationDateMode.INHERIT);
-		else if (creDateRadioOnlyMissing.isSelected())
-			continuation.setCreationDateMode(CreationDateMode.COMPLEMENT);
-		else
-			continuation.setCreationDateMode(CreationDateMode.REPLACE);
-    
-		if (termDateRadioInherit.isSelected())
-			continuation.setTerminationDateMode(TerminationDateMode.INHERIT);
-		else if (termDateRadioOnlyMissing.isSelected())
-			continuation.setTerminationDateMode(TerminationDateMode.COMPLEMENT);
-		else
-			continuation.setTerminationDateMode(TerminationDateMode.REPLACE);
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.import.continuation");
-	}
+            creationDatePanel = new TitledPanel().build(content);
+        }
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(termDateRadioInherit, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(termDateRadioOnlyMissing, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+                content.add(termDateRadioAll, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            }
+
+            terminationDatePanel = new TitledPanel().build(content);
+        }
+
+        add(metadataPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        add(personPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        add(creationDatePanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        add(terminationDatePanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+        ActionListener updatingPersonListener = e -> setEnabledUpdatingPerson();
+        updatingPersonDBAccount.addActionListener(updatingPersonListener);
+        updatingPersonUser.addActionListener(updatingPersonListener);
+    }
+
+    private void setEnabledUpdatingPerson() {
+        updatingPersonText.setEnabled(updatingPersonUser.isSelected());
+    }
+
+    @Override
+    public void switchLocale(Locale locale) {
+        metadataPanel.setTitle(Language.I18N.getString("pref.import.continuation.border.lineage"));
+        personPanel.setTitle(Language.I18N.getString("pref.import.continuation.border.updatingPerson"));
+        creationDatePanel.setTitle(Language.I18N.getString("pref.import.continuation.border.creationDate"));
+        terminationDatePanel.setTitle(Language.I18N.getString("pref.import.continuation.border.terminationDate"));
+
+        lineageLabel.setText(Language.I18N.getString("pref.import.continuation.label.lineage"));
+        reasonForUpdateLabel.setText(Language.I18N.getString("pref.import.continuation.label.reasonForUpdate"));
+
+        updatingPersonDBAccount.setText(Language.I18N.getString("pref.import.continuation.label.updatingPerson.database"));
+        updatingPersonUser.setText(Language.I18N.getString("pref.import.continuation.label.updatingPerson.user"));
+
+        creDateRadioInherit.setText(Language.I18N.getString("pref.import.continuation.label.creationDate.inherit"));
+        creDateRadioOnlyMissing.setText(Language.I18N.getString("pref.import.continuation.label.creationDate.onlyMissing"));
+        creDateRadioAll.setText(Language.I18N.getString("pref.import.continuation.label.creationDate.all"));
+
+        termDateRadioInherit.setText(Language.I18N.getString("pref.import.continuation.label.terminationDate.inherit"));
+        termDateRadioOnlyMissing.setText(Language.I18N.getString("pref.import.continuation.label.terminationDate.onlyMissing"));
+        termDateRadioAll.setText(Language.I18N.getString("pref.import.continuation.label.terminationDate.all"));
+    }
+
+    @Override
+    public void loadSettings() {
+        Continuation continuation = config.getImportConfig().getContinuation();
+
+        lineageText.setText(continuation.getLineage());
+        reasonForUpdateText.setText(continuation.getReasonForUpdate());
+        updatingPersonText.setText(continuation.getUpdatingPerson());
+
+        if (continuation.isUpdatingPersonModeDatabase())
+            updatingPersonDBAccount.setSelected(true);
+        else
+            updatingPersonUser.setSelected(true);
+
+        setEnabledUpdatingPerson();
+
+        if (continuation.isCreationDateModeInherit())
+            creDateRadioInherit.setSelected(true);
+        else if (continuation.isCreationDateModeComplement())
+            creDateRadioOnlyMissing.setSelected(true);
+        else
+            creDateRadioAll.setSelected(true);
+
+        if (continuation.isTerminationDateModeInherit())
+            termDateRadioInherit.setSelected(true);
+        else if (continuation.isTerminationDateModeComplement())
+            termDateRadioOnlyMissing.setSelected(true);
+        else
+            termDateRadioAll.setSelected(true);
+    }
+
+    @Override
+    public void setSettings() {
+        Continuation continuation = config.getImportConfig().getContinuation();
+
+        String lineage = lineageText.getText().trim();
+        continuation.setLineage(lineage);
+        lineageText.setText(lineage);
+
+        String reasonForUpdate = reasonForUpdateText.getText().trim();
+        continuation.setReasonForUpdate(reasonForUpdate);
+        reasonForUpdateText.setText(reasonForUpdate);
+
+        String updatingPerson = updatingPersonText.getText().trim();
+        continuation.setUpdatingPerson(updatingPerson);
+        updatingPersonText.setText(updatingPerson);
+
+        if (updatingPersonDBAccount.isSelected())
+            continuation.setUpdatingPersonMode(UpdatingPersonMode.DATABASE);
+        else
+            continuation.setUpdatingPersonMode(UpdatingPersonMode.USER);
+
+        if (creDateRadioInherit.isSelected())
+            continuation.setCreationDateMode(CreationDateMode.INHERIT);
+        else if (creDateRadioOnlyMissing.isSelected())
+            continuation.setCreationDateMode(CreationDateMode.COMPLEMENT);
+        else
+            continuation.setCreationDateMode(CreationDateMode.REPLACE);
+
+        if (termDateRadioInherit.isSelected())
+            continuation.setTerminationDateMode(TerminationDateMode.INHERIT);
+        else if (termDateRadioOnlyMissing.isSelected())
+            continuation.setTerminationDateMode(TerminationDateMode.COMPLEMENT);
+        else
+            continuation.setTerminationDateMode(TerminationDateMode.REPLACE);
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.import.continuation");
+    }
 
 }

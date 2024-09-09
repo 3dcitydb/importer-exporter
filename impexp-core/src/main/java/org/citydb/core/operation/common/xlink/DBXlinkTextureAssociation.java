@@ -28,44 +28,44 @@
 package org.citydb.core.operation.common.xlink;
 
 public class DBXlinkTextureAssociation implements DBXlink {
-	private long id;
-	private String gmlId;
-	private String targetURI;
+    private long id;
+    private String gmlId;
+    private String targetURI;
 
-	public DBXlinkTextureAssociation(long id, String gmlId, String targetURI) {
-		this.id = id;
-		this.gmlId = gmlId;
-		this.targetURI = targetURI;
-	}
+    public DBXlinkTextureAssociation(long id, String gmlId, String targetURI) {
+        this.id = id;
+        this.gmlId = gmlId;
+        this.targetURI = targetURI;
+    }
 
-	public long getId() {
-		return id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public void setId(long id) {
-		this.id = id;
-	}
-	
-	@Override
-	public String getGmlId() {
-		return gmlId;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	@Override
-	public void setGmlId(String gmlId) {
-		this.gmlId = gmlId;
-	}
+    @Override
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public String getTargetURI() {
-		return targetURI;
-	}
+    @Override
+    public void setGmlId(String gmlId) {
+        this.gmlId = gmlId;
+    }
 
-	public void setTargetURI(String targetURI) {
-		this.targetURI = targetURI;
-	}
+    public String getTargetURI() {
+        return targetURI;
+    }
 
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.TEXTUREASSOCIATION;
-	}
+    public void setTargetURI(String targetURI) {
+        this.targetURI = targetURI;
+    }
+
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.TEXTUREASSOCIATION;
+    }
 }

@@ -41,26 +41,26 @@ import java.nio.file.Paths;
 
 public class QuerySchemaWriter {
 
-	public static void main(String[] args) throws Exception {
-		Path configFile = Paths.get("src/main/resources/org/citydb/config/schema/query.xsd");
-		System.out.print("Generating XML schema in " + configFile.toAbsolutePath() + "... ");
+    public static void main(String[] args) throws Exception {
+        Path configFile = Paths.get("src/main/resources/org/citydb/config/schema/query.xsd");
+        System.out.print("Generating XML schema in " + configFile.toAbsolutePath() + "... ");
 
-		JAXBContext context = JAXBContext.newInstance(QueryWrapper.class);
-		context.generateSchema(new SchemaOutputResolver() {
-			@Override
-			public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
-				if (ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI.equals(namespaceUri)) {
-					Files.createDirectories(configFile.getParent());
-					StreamResult res = new StreamResult();
-					res.setSystemId(configFile.toUri().toString());
+        JAXBContext context = JAXBContext.newInstance(QueryWrapper.class);
+        context.generateSchema(new SchemaOutputResolver() {
+            @Override
+            public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
+                if (ConfigConstants.CITYDB_CONFIG_NAMESPACE_URI.equals(namespaceUri)) {
+                    Files.createDirectories(configFile.getParent());
+                    StreamResult res = new StreamResult();
+                    res.setSystemId(configFile.toUri().toString());
 
-					return res;
-				} else
-					return null;
-			}
-		});
+                    return res;
+                } else
+                    return null;
+            }
+        });
 
-		System.out.println("finished.");
-	}
+        System.out.println("finished.");
+    }
 
 }

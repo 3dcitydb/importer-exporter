@@ -43,102 +43,102 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class ImportLogger {
-	private final LocalDateTime date = LocalDateTime.now();
-	private final BufferedWriter writer;
-	private Path logFile;
-	private String inputFile = "";
+    private final LocalDateTime date = LocalDateTime.now();
+    private final BufferedWriter writer;
+    private Path logFile;
+    private String inputFile = "";
 
-	public ImportLogger(ImportLog importLog, DatabaseConnection connection) throws IOException {
-		Path defaultLogDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
-		if (importLog.isSetLogFile()) {
-			logFile = Paths.get(importLog.getLogFile());
-			if (logFile.equals(defaultLogDir)) {
-				logFile = logFile.resolve("imported-features.log");
-			}
-		} else {
-			logFile = defaultLogDir.resolve("imported-features.log");
-		}
+    public ImportLogger(ImportLog importLog, DatabaseConnection connection) throws IOException {
+        Path defaultLogDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
+        if (importLog.isSetLogFile()) {
+            logFile = Paths.get(importLog.getLogFile());
+            if (logFile.equals(defaultLogDir)) {
+                logFile = logFile.resolve("imported-features.log");
+            }
+        } else {
+            logFile = defaultLogDir.resolve("imported-features.log");
+        }
 
-		if (importLog.getLogFileMode() == ImportLogFileMode.UNIQUE) {
-			logFile = logFile.resolveSibling(getUniqueFileName(logFile.getFileName().toString()));
-		}
+        if (importLog.getLogFileMode() == ImportLogFileMode.UNIQUE) {
+            logFile = logFile.resolveSibling(getUniqueFileName(logFile.getFileName().toString()));
+        }
 
-		boolean writeHeaderLine = true;
-		if (!Files.exists(logFile.getParent())) {
-			Files.createDirectories(logFile.getParent());
-		} else if (importLog.getLogFileMode() == ImportLogFileMode.APPEND) {
-			writeHeaderLine = !Files.exists(logFile);
-		}
+        boolean writeHeaderLine = true;
+        if (!Files.exists(logFile.getParent())) {
+            Files.createDirectories(logFile.getParent());
+        } else if (importLog.getLogFileMode() == ImportLogFileMode.APPEND) {
+            writeHeaderLine = !Files.exists(logFile);
+        }
 
-		writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
-				StandardOpenOption.CREATE, StandardOpenOption.WRITE,
-				importLog.getLogFileMode() == ImportLogFileMode.TRUNCATE ?
-						StandardOpenOption.TRUNCATE_EXISTING :
-						StandardOpenOption.APPEND);
+        writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+                importLog.getLogFileMode() == ImportLogFileMode.TRUNCATE ?
+                        StandardOpenOption.TRUNCATE_EXISTING :
+                        StandardOpenOption.APPEND);
 
-		writeHeader(connection, writeHeaderLine);
-	}
+        writeHeader(connection, writeHeaderLine);
+    }
 
-	public Path getLogFilePath() {
-		return logFile;
-	}
+    public Path getLogFilePath() {
+        return logFile;
+    }
 
-	public void setInputFile(Path inputFile) {
-		this.inputFile = inputFile != null ? inputFile.toAbsolutePath().toString() : "";
-	}
+    public void setInputFile(Path inputFile) {
+        this.inputFile = inputFile != null ? inputFile.toAbsolutePath().toString() : "";
+    }
 
-	private void writeHeader(DatabaseConnection connection, boolean writeHeaderLine) throws IOException {
-		writer.write('#' + getClass().getPackage().getImplementationTitle() +
-				", version \"" + getClass().getPackage().getImplementationVersion() + "\"");
-		writer.newLine();
-		writer.write("#Database connection: ");
-		writer.write(connection.toConnectString());
-		writer.newLine();
-		writer.write("#Timestamp: ");
-		writer.write(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-		writer.newLine();
+    private void writeHeader(DatabaseConnection connection, boolean writeHeaderLine) throws IOException {
+        writer.write('#' + getClass().getPackage().getImplementationTitle() +
+                ", version \"" + getClass().getPackage().getImplementationVersion() + "\"");
+        writer.newLine();
+        writer.write("#Database connection: ");
+        writer.write(connection.toConnectString());
+        writer.newLine();
+        writer.write("#Timestamp: ");
+        writer.write(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        writer.newLine();
 
-		if (writeHeaderLine) {
-			writer.write("FEATURE_TYPE,CITYOBJECT_ID,GMLID_IN_FILE,INPUT_FILE");
-			writer.newLine();
-		}
-	}
+        if (writeHeaderLine) {
+            writer.write("FEATURE_TYPE,CITYOBJECT_ID,GMLID_IN_FILE,INPUT_FILE");
+            writer.newLine();
+        }
+    }
 
-	private void writeFooter(boolean success) throws IOException {
-		writer.write(success ? "#Import successfully finished." : "#Import aborted.");
-		writer.newLine();
-	}
-	
-	public void write(ImportLogEntry entry) throws IOException {
-		writer.write(entry.type + "," + entry.id + "," + entry.gmlId + "," + inputFile + System.lineSeparator());
-	}
+    private void writeFooter(boolean success) throws IOException {
+        writer.write(success ? "#Import successfully finished." : "#Import aborted.");
+        writer.newLine();
+    }
 
-	private String getUniqueFileName(String fileName) {
-		String suffix = date.format(DateTimeFormatter.ofPattern("-yyyy-MM-dd_HH-mm-ss-SSS"));
-		int index = fileName.lastIndexOf('.');
-		return index != -1 ?
-				fileName.substring(0, index) + suffix + fileName.substring(index) :
-				fileName + suffix;
-	}
+    public void write(ImportLogEntry entry) throws IOException {
+        writer.write(entry.type + "," + entry.id + "," + entry.gmlId + "," + inputFile + System.lineSeparator());
+    }
 
-	public void close(boolean success) throws IOException {
-		writeFooter(success);
-		writer.close();
-	}
+    private String getUniqueFileName(String fileName) {
+        String suffix = date.format(DateTimeFormatter.ofPattern("-yyyy-MM-dd_HH-mm-ss-SSS"));
+        int index = fileName.lastIndexOf('.');
+        return index != -1 ?
+                fileName.substring(0, index) + suffix + fileName.substring(index) :
+                fileName + suffix;
+    }
 
-	public static class ImportLogEntry {
-		private final String type;
-		private final long id;
-		private final String gmlId;
+    public void close(boolean success) throws IOException {
+        writeFooter(success);
+        writer.close();
+    }
 
-		private ImportLogEntry(String type, long id, String gmlId) {
-			this.type = type;
-			this.id = id;
-			this.gmlId = gmlId != null ? gmlId : "";
-		}
+    public static class ImportLogEntry {
+        private final String type;
+        private final long id;
+        private final String gmlId;
 
-		public static ImportLogEntry of(String type, long id, String gmlId) {
-			return new ImportLogEntry(type, id, gmlId);
-		}
-	}
+        private ImportLogEntry(String type, long id, String gmlId) {
+            this.type = type;
+            this.id = id;
+            this.gmlId = gmlId != null ? gmlId : "";
+        }
+
+        public static ImportLogEntry of(String type, long id, String gmlId) {
+            return new ImportLogEntry(type, id, gmlId);
+        }
+    }
 }

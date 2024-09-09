@@ -48,81 +48,81 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ConfigUtil {
-	private static ConfigUtil instance;
+    private static ConfigUtil instance;
 
-	private final Set<Class<?>> configClasses = new HashSet<>();
-	private JAXBContext context;
+    private final Set<Class<?>> configClasses = new HashSet<>();
+    private JAXBContext context;
 
-	public static synchronized ConfigUtil getInstance() {
-		if (instance == null) {
-			instance = new ConfigUtil().withConfigClasses(ProjectConfig.class, GuiConfig.class, QueryWrapper.class);
-		}
+    public static synchronized ConfigUtil getInstance() {
+        if (instance == null) {
+            instance = new ConfigUtil().withConfigClasses(ProjectConfig.class, GuiConfig.class, QueryWrapper.class);
+        }
 
-		return instance;
-	}
+        return instance;
+    }
 
-	public ConfigUtil withConfigClass(Class<?> configClass) {
-		configClasses.add(configClass);
-		context = null;
-		return this;
-	}
+    public ConfigUtil withConfigClass(Class<?> configClass) {
+        configClasses.add(configClass);
+        context = null;
+        return this;
+    }
 
-	public ConfigUtil withConfigClasses(Class<?>... configClasses) {
-		Arrays.stream(configClasses).forEach(this::withConfigClass);
-		return this;
-	}
+    public ConfigUtil withConfigClasses(Class<?>... configClasses) {
+        Arrays.stream(configClasses).forEach(this::withConfigClass);
+        return this;
+    }
 
-	private ConfigUtil createJAXBContext() throws JAXBException {
-		if (context == null) {
-			context = JAXBContext.newInstance(configClasses.toArray(new Class[]{}));
-		}
+    private ConfigUtil createJAXBContext() throws JAXBException {
+        if (context == null) {
+            context = JAXBContext.newInstance(configClasses.toArray(new Class[]{}));
+        }
 
-		return this;
-	}
+        return this;
+    }
 
-	public void marshal(Object object, File file) throws JAXBException {
-		Marshaller marshaller = createJAXBContext().context.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-		marshaller.marshal(object, file);
-	}
+    public void marshal(Object object, File file) throws JAXBException {
+        Marshaller marshaller = createJAXBContext().context.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+        marshaller.marshal(object, file);
+    }
 
-	public Object unmarshal(File file) throws JAXBException, IOException {
-		try (FileInputStream inputStream = new FileInputStream(file)) {
-			return unmarshal(inputStream);
-		}
-	}
-	
-	public Object unmarshal(InputStream inputStream) throws JAXBException, IOException {
-		Unmarshaller unmarshaller = createJAXBContext().context.createUnmarshaller();
-		UnmarshallerHandler handler = unmarshaller.getUnmarshallerHandler();
+    public Object unmarshal(File file) throws JAXBException, IOException {
+        try (FileInputStream inputStream = new FileInputStream(file)) {
+            return unmarshal(inputStream);
+        }
+    }
 
-		ConfigNamespaceFilter namespaceFilter;
-		try {
-			SAXParserFactory factory = SecureXMLProcessors.newSAXParserFactory();
-			factory.setNamespaceAware(true);
-			XMLReader reader = factory.newSAXParser().getXMLReader();
-			namespaceFilter = new ConfigNamespaceFilter(reader);	
-			namespaceFilter.setContentHandler(handler);
-			namespaceFilter.parse(new InputSource(inputStream));			
-		} catch (SAXException e) {
-			throw new JAXBException(e.getMessage());
-		} catch (ParserConfigurationException e) {
-			throw new IOException("Failed to create secure XML reader.", e);
-		}
+    public Object unmarshal(InputStream inputStream) throws JAXBException, IOException {
+        Unmarshaller unmarshaller = createJAXBContext().context.createUnmarshaller();
+        UnmarshallerHandler handler = unmarshaller.getUnmarshallerHandler();
 
-		Object result = handler.getResult();
-		if (result instanceof ProjectConfig)
-			((ProjectConfig) result).setNamespaceFilter(namespaceFilter);
+        ConfigNamespaceFilter namespaceFilter;
+        try {
+            SAXParserFactory factory = SecureXMLProcessors.newSAXParserFactory();
+            factory.setNamespaceAware(true);
+            XMLReader reader = factory.newSAXParser().getXMLReader();
+            namespaceFilter = new ConfigNamespaceFilter(reader);
+            namespaceFilter.setContentHandler(handler);
+            namespaceFilter.parse(new InputSource(inputStream));
+        } catch (SAXException e) {
+            throw new JAXBException(e.getMessage());
+        } catch (ParserConfigurationException e) {
+            throw new IOException("Failed to create secure XML reader.", e);
+        }
 
-		return result;
-	}
+        Object result = handler.getResult();
+        if (result instanceof ProjectConfig)
+            ((ProjectConfig) result).setNamespaceFilter(namespaceFilter);
 
-	public void generateSchema(File file) throws JAXBException, IOException {
-		createJAXBContext().context.generateSchema(new ProjectSchemaWriter(file));
-	}
+        return result;
+    }
 
-	public JAXBContext getJAXBContext() throws JAXBException {
-		return createJAXBContext().context;
-	}
+    public void generateSchema(File file) throws JAXBException, IOException {
+        createJAXBContext().context.generateSchema(new ProjectSchemaWriter(file));
+    }
+
+    public JAXBContext getJAXBContext() throws JAXBException {
+        return createJAXBContext().context;
+    }
 }

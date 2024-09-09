@@ -38,50 +38,50 @@ import java.awt.*;
 import java.util.Locale;
 
 public class AddressPanel extends InternalPreferencesComponent {
-	private TitledPanel importXALPanel;
-	private JCheckBox importXAL;
+    private TitledPanel importXALPanel;
+    private JCheckBox importXAL;
 
-	public AddressPanel(Config config) {
-		super(config);
-		initGui();
-	}
+    public AddressPanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-	@Override
-	public boolean isModified() {
-		if (importXAL.isSelected() != config.getImportConfig().getCityGMLOptions().isImportXalAddress()) return true;
-		return false;
-	}
+    @Override
+    public boolean isModified() {
+        if (importXAL.isSelected() != config.getImportConfig().getCityGMLOptions().isImportXalAddress()) return true;
+        return false;
+    }
 
-	private void initGui() {
-		importXAL = new JCheckBox();
+    private void initGui() {
+        importXAL = new JCheckBox();
 
-		setLayout(new GridBagLayout());
-		importXALPanel = new TitledPanel()
-				.withToggleButton(importXAL)
-				.showSeparator(false)
-				.buildWithoutContent();
+        setLayout(new GridBagLayout());
+        importXALPanel = new TitledPanel()
+                .withToggleButton(importXAL)
+                .showSeparator(false)
+                .buildWithoutContent();
 
-		add(importXALPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-	}
-	
-	@Override
-	public void loadSettings() {
-		importXAL.setSelected(config.getImportConfig().getCityGMLOptions().isImportXalAddress());
-	}
+        add(importXALPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+    }
 
-	@Override
-	public void setSettings() {
-		config.getImportConfig().getCityGMLOptions().setImportXalAddress(importXAL.isSelected());
-	}
+    @Override
+    public void loadSettings() {
+        importXAL.setSelected(config.getImportConfig().getCityGMLOptions().isImportXalAddress());
+    }
 
-	@Override
-	public void switchLocale(Locale locale) {
-		importXALPanel.setTitle(Language.I18N.getString("pref.import.address.label.importXAL"));
-	}
+    @Override
+    public void setSettings() {
+        config.getImportConfig().getCityGMLOptions().setImportXalAddress(importXAL.isSelected());
+    }
 
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.import.address");
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        importXALPanel.setTitle(Language.I18N.getString("pref.import.address.label.importXAL"));
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.import.address");
+    }
 
 }

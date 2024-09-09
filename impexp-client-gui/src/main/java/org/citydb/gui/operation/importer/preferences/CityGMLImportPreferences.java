@@ -34,30 +34,30 @@ import org.citydb.gui.plugin.util.DefaultPreferences;
 import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
 
 public class CityGMLImportPreferences extends DefaultPreferences {
-	
-	public CityGMLImportPreferences(Config config) {
-		super(new CityGMLImportEntry());
 
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ContinuationPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourceIdPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(
-				() -> config.getImportConfig().getAffineTransformation(),
-				config)));
+    public CityGMLImportPreferences(Config config) {
+        super(new CityGMLImportEntry());
 
-		DefaultPreferencesEntry cityGMLOptions = new CityGMLOptionsPanel();
-		rootEntry.addChildEntry(cityGMLOptions);
-		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
-		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XMLValidationPanel(config)));
-		cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(
-				() -> config.getImportConfig().getCityGMLOptions().getXSLTransformation(),
-				config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new ContinuationPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourceIdPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(
+                () -> config.getImportConfig().getAffineTransformation(),
+                config)));
 
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ImportLogsPanel(config)));
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
-	}
+        DefaultPreferencesEntry cityGMLOptions = new CityGMLOptionsPanel();
+        rootEntry.addChildEntry(cityGMLOptions);
+        cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
+        cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XMLValidationPanel(config)));
+        cityGMLOptions.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(
+                () -> config.getImportConfig().getCityGMLOptions().getXSLTransformation(),
+                config)));
+
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new CityJSONOptionsPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new ImportLogsPanel(config)));
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
+    }
 
 }

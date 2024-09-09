@@ -38,74 +38,73 @@ import org.citydb.util.log.Logger;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 
 public class MenuHelp extends JMenu {
-	private final Logger log = Logger.getInstance();
-	private final Config config;
-	private final ImpExpGui mainView;
-	private JMenuItem doc;
-	private JMenuItem info;
-	private JMenuItem readMe;
-	
-	public MenuHelp(ImpExpGui mainView, Config config) {
-		this.config = config;
-		this.mainView = mainView;
-		init();
-	}
-	
-	private void init() {
-		doc = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/manual.svg"));
-		readMe = new JMenuItem();
-		info = new JMenuItem();
+    private final Logger log = Logger.getInstance();
+    private final Config config;
+    private final ImpExpGui mainView;
+    private JMenuItem doc;
+    private JMenuItem info;
+    private JMenuItem readMe;
 
-		doc.addActionListener(e -> openOnlineDoc());
-		readMe.addActionListener(e -> printReadMe());
-		info.addActionListener(e -> printInfo());
+    public MenuHelp(ImpExpGui mainView, Config config) {
+        this.config = config;
+        this.mainView = mainView;
+        init();
+    }
 
-		add(doc);
-		add(readMe);
-		addSeparator();
-		add(info);
-	}
-	
-	public void switchLocale() {
-		doc.setText(Language.I18N.getString("menu.help.doc.citydb.label"));
-		readMe.setText(Language.I18N.getString("menu.help.readMe.label"));
-		info.setText(Language.I18N.getString("menu.help.info.label"));
+    private void init() {
+        doc = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/manual.svg"));
+        readMe = new JMenuItem();
+        info = new JMenuItem();
 
-		GuiUtil.setMnemonic(doc, "menu.help.doc.citydb.label", "menu.help.doc.citydb.label.mnemonic");
-		GuiUtil.setMnemonic(readMe, "menu.help.readMe.label", "menu.help.readMe.label.mnemonic");
-		GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
-	}
+        doc.addActionListener(e -> openOnlineDoc());
+        readMe.addActionListener(e -> printReadMe());
+        info.addActionListener(e -> printInfo());
 
-	public void openOnlineDoc() {
-		Properties appProperties = new Properties();
+        add(doc);
+        add(readMe);
+        addSeparator();
+        add(info);
+    }
+
+    public void switchLocale() {
+        doc.setText(Language.I18N.getString("menu.help.doc.citydb.label"));
+        readMe.setText(Language.I18N.getString("menu.help.readMe.label"));
+        info.setText(Language.I18N.getString("menu.help.info.label"));
+
+        GuiUtil.setMnemonic(doc, "menu.help.doc.citydb.label", "menu.help.doc.citydb.label.mnemonic");
+        GuiUtil.setMnemonic(readMe, "menu.help.readMe.label", "menu.help.readMe.label.mnemonic");
+        GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
+    }
+
+    public void openOnlineDoc() {
+        Properties appProperties = new Properties();
         try {
-			appProperties.load(getClass().getResourceAsStream("/org/citydb/gui/application.properties"));
-			Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
-		} catch (Exception e) {
-			log.error("Failed to open the 3DCityDB online documentation.", e);
-			log.error("Open the URL '" + appProperties.getProperty("docUrl") +
-					"' in your favorite web browser instead.");
-		}
-	}
-	
-	private void printReadMe() {		
-		final ReadMeDialog readMeDialog = new ReadMeDialog(mainView);
-		SwingUtilities.invokeLater(() -> {
-			readMeDialog.setLocationRelativeTo(getTopLevelAncestor());
-			readMeDialog.setVisible(true);
-		});
-	}
+            appProperties.load(getClass().getResourceAsStream("/org/citydb/gui/application.properties"));
+            Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
+        } catch (Exception e) {
+            log.error("Failed to open the 3DCityDB online documentation.", e);
+            log.error("Open the URL '" + appProperties.getProperty("docUrl") +
+                    "' in your favorite web browser instead.");
+        }
+    }
 
-	public void printInfo() {
-		final InfoDialog infoDialog = new InfoDialog(config, mainView);
-		SwingUtilities.invokeLater(() -> {
-			infoDialog.setLocationRelativeTo(getTopLevelAncestor());
-			infoDialog.setVisible(true);
-		});
-	}
+    private void printReadMe() {
+        final ReadMeDialog readMeDialog = new ReadMeDialog(mainView);
+        SwingUtilities.invokeLater(() -> {
+            readMeDialog.setLocationRelativeTo(getTopLevelAncestor());
+            readMeDialog.setVisible(true);
+        });
+    }
+
+    public void printInfo() {
+        final InfoDialog infoDialog = new InfoDialog(config, mainView);
+        SwingUtilities.invokeLater(() -> {
+            infoDialog.setLocationRelativeTo(getTopLevelAncestor());
+            infoDialog.setVisible(true);
+        });
+    }
 }

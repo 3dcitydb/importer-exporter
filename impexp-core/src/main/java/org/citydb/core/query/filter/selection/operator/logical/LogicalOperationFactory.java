@@ -34,24 +34,24 @@ import java.util.List;
 
 public class LogicalOperationFactory {
 
-	public static BinaryLogicalOperator AND(List<Predicate> operands) throws FilterException {
-		return new BinaryLogicalOperator(LogicalOperatorName.AND, operands);
-	}
-	
-	public static BinaryLogicalOperator AND(Predicate... operands) throws FilterException {
-		return new BinaryLogicalOperator(LogicalOperatorName.AND, operands);
-	}
-	
-	public static BinaryLogicalOperator OR(List<Predicate> operands) throws FilterException {
-		return new BinaryLogicalOperator(LogicalOperatorName.OR, operands);
-	}
-	
-	public static BinaryLogicalOperator OR(Predicate... operands) throws FilterException {
-		return new BinaryLogicalOperator(LogicalOperatorName.OR, operands);
-	}
-	
-	public static NotOperator NOT(Predicate operand) {
-		return new NotOperator(operand);
-	}
-	
+    public static BinaryLogicalOperator AND(List<Predicate> operands) throws FilterException {
+        return new BinaryLogicalOperator(LogicalOperatorName.AND, operands);
+    }
+
+    public static BinaryLogicalOperator AND(Predicate... operands) throws FilterException {
+        return new BinaryLogicalOperator(LogicalOperatorName.AND, operands);
+    }
+
+    public static BinaryLogicalOperator OR(List<Predicate> operands) throws FilterException {
+        return new BinaryLogicalOperator(LogicalOperatorName.OR, operands);
+    }
+
+    public static BinaryLogicalOperator OR(Predicate... operands) throws FilterException {
+        return new BinaryLogicalOperator(LogicalOperatorName.OR, operands);
+    }
+
+    public static NotOperator NOT(Predicate operand) {
+        return new NotOperator(operand);
+    }
+
 }

@@ -30,26 +30,26 @@ package org.citydb.core.operation.common.cache.model;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 
 public class CacheTableDeprecatedMaterial extends AbstractCacheTableModel {
-	public static CacheTableDeprecatedMaterial instance = null;
-	
-	public synchronized static CacheTableDeprecatedMaterial getInstance() {
-		if (instance == null)
-			instance = new CacheTableDeprecatedMaterial();
-		
-		return instance;
-	}
+    public static CacheTableDeprecatedMaterial instance = null;
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.DEPRECATED_MATERIAL;
-	}
-	
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"ID " + sqlAdapter.getBigInt() + ", " +
-				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"SURFACE_GEOMETRY_ID " + sqlAdapter.getBigInt() +
-				")";
-	}
+    public synchronized static CacheTableDeprecatedMaterial getInstance() {
+        if (instance == null)
+            instance = new CacheTableDeprecatedMaterial();
+
+        return instance;
+    }
+
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.DEPRECATED_MATERIAL;
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "ID " + sqlAdapter.getBigInt() + ", " +
+                "GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+                "SURFACE_GEOMETRY_ID " + sqlAdapter.getBigInt() +
+                ")";
+    }
 }

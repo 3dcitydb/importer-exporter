@@ -70,36 +70,36 @@ public class UtilAdapter extends AbstractUtilAdapter {
             throw new SQLException("Failed to retrieve version information from the 3D City Database instance.", e);
         }
     }
-    
-	@Override
-	protected void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
+
+    @Override
+    protected void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
         StringBuilder query = new StringBuilder("select * from table(").append(schema).append(".")
                 .append(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata"));
         boolean requiresSchema = metaData.getCityDBVersion().compareTo(4, 0, 0) < 0;
         query.append(requiresSchema ? "())" : "(?))");
 
-		try (PreparedStatement psQuery = connection.prepareStatement(query.toString())) {
+        try (PreparedStatement psQuery = connection.prepareStatement(query.toString())) {
             if (!requiresSchema)
                 psQuery.setString(1, databaseAdapter.getConnectionDetails().getSchema());
-			
-			try (ResultSet rs = psQuery.executeQuery()) {
-				if (rs.next()) {
-					DatabaseSrs srs = metaData.getReferenceSystem();
-					srs.setSrid(rs.getInt("SCHEMA_SRID"));
-					srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
-					srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
-					srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
-					srs.setWkText(fixWKT(rs.getString("WKTEXT")));
-					srs.setSupported(true);
 
-					metaData.setVersioning(Versioning.fromValue(rs.getString("VERSIONING")));
-				} else
-					throw new SQLException("Failed to retrieve metadata information from database.");
-			} catch (SQLException e) {
-				throw new SQLException("No 3DCityDB instance found in database schema '" + schema + "'.", e);
-			}
-		}
-	}
+            try (ResultSet rs = psQuery.executeQuery()) {
+                if (rs.next()) {
+                    DatabaseSrs srs = metaData.getReferenceSystem();
+                    srs.setSrid(rs.getInt("SCHEMA_SRID"));
+                    srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
+                    srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
+                    srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
+                    srs.setWkText(fixWKT(rs.getString("WKTEXT")));
+                    srs.setSupported(true);
+
+                    metaData.setVersioning(Versioning.fromValue(rs.getString("VERSIONING")));
+                } else
+                    throw new SQLException("Failed to retrieve metadata information from database.");
+            } catch (SQLException e) {
+                throw new SQLException("No 3DCityDB instance found in database schema '" + schema + "'.", e);
+            }
+        }
+    }
 
 
     @Override

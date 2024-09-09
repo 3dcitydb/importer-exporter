@@ -32,28 +32,28 @@ import org.citydb.sqlbuilder.expression.PlaceHolder;
 
 public class StringLiteral extends AbstractLiteral<String> {
 
-	public StringLiteral(String value) {
-		super(value);
-	}
+    public StringLiteral(String value) {
+        super(value);
+    }
 
-	@Override
-	public boolean evaluatesToSchemaType(SimpleType schemaType) {
-		switch (schemaType) {
-		case STRING:
-			return true;
-		default:
-			return false;
-		}
-	}
+    @Override
+    public boolean evaluatesToSchemaType(SimpleType schemaType) {
+        switch (schemaType) {
+            case STRING:
+                return true;
+            default:
+                return false;
+        }
+    }
 
-	@Override
-	public PlaceHolder<?> convertToSQLPlaceHolder() {
-		return new PlaceHolder<>(value);
-	}
+    @Override
+    public PlaceHolder<?> convertToSQLPlaceHolder() {
+        return new PlaceHolder<>(value);
+    }
 
-	@Override
-	public LiteralType getLiteralType() {
-		return LiteralType.STRING;
-	}
+    @Override
+    public LiteralType getLiteralType() {
+        return LiteralType.STRING;
+    }
 
 }

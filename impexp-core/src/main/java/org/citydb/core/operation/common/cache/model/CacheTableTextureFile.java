@@ -30,25 +30,25 @@ package org.citydb.core.operation.common.cache.model;
 import org.citydb.core.database.adapter.AbstractSQLAdapter;
 
 public class CacheTableTextureFile extends AbstractCacheTableModel {
-	public static CacheTableTextureFile instance = null;
-	
-	public synchronized static CacheTableTextureFile getInstance() {
-		if (instance == null)
-			instance = new CacheTableTextureFile();
-		
-		return instance;
-	}
+    public static CacheTableTextureFile instance = null;
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.TEXTURE_FILE;
-	}
-	
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"ID " + sqlAdapter.getBigInt() + ", " +
-				"FILE_URI " + sqlAdapter.getCharacterVarying(1000) +
-				")";
-	}
+    public synchronized static CacheTableTextureFile getInstance() {
+        if (instance == null)
+            instance = new CacheTableTextureFile();
+
+        return instance;
+    }
+
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.TEXTURE_FILE;
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "ID " + sqlAdapter.getBigInt() + ", " +
+                "FILE_URI " + sqlAdapter.getCharacterVarying(1000) +
+                ")";
+    }
 }

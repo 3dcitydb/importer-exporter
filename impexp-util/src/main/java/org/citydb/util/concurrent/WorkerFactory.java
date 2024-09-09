@@ -28,5 +28,5 @@
 package org.citydb.util.concurrent;
 
 public interface WorkerFactory<T> {
-	public Worker<T> createWorker();
+    public Worker<T> createWorker();
 }

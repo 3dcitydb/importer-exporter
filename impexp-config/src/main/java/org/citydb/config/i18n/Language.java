@@ -31,19 +31,19 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class Language {
-	// language pack
-	public static ResourceBundle I18N;
-	
-	static {
-		Locale locale = new Locale(System.getProperty("user.language"));
-		if (!existsLanguagePack(locale))
-			locale = Locale.ENGLISH;
-		
-		I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
-	}
-	
-	public static boolean existsLanguagePack(Locale locale) {
-		return Language.class.getResource("/org/citydb/config/i18n/language_" + locale.getLanguage() + ".properties") != null;
-	}
+    // language pack
+    public static ResourceBundle I18N;
+
+    static {
+        Locale locale = new Locale(System.getProperty("user.language"));
+        if (!existsLanguagePack(locale))
+            locale = Locale.ENGLISH;
+
+        I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
+    }
+
+    public static boolean existsLanguagePack(Locale locale) {
+        return Language.class.getResource("/org/citydb/config/i18n/language_" + locale.getLanguage() + ".properties") != null;
+    }
 
 }

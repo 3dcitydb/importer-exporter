@@ -34,37 +34,37 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class CacheTableLinearRing extends AbstractCacheTableModel {
-	public static CacheTableLinearRing instance = null;
+    public static CacheTableLinearRing instance = null;
 
-	public synchronized static CacheTableLinearRing getInstance() {
-		if (instance == null)
-			instance = new CacheTableLinearRing();
+    public synchronized static CacheTableLinearRing getInstance() {
+        if (instance == null)
+            instance = new CacheTableLinearRing();
 
-		return instance;
-	}
-	
-	@Override
-	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		try (Statement stmt = conn.createStatement()) {
-			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
-			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (PARENT_ID) " + properties);
-			stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (RING_NO) " + properties);
-		}
-	}
+        return instance;
+    }
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.LINEAR_RING;
-	}
+    @Override
+    public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
+            stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (PARENT_ID) " + properties);
+            stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (RING_NO) " + properties);
+        }
+    }
 
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"PARENT_ID " + sqlAdapter.getBigInt() + ", " +
-				"RING_NO " + sqlAdapter.getInteger() + ", " +
-				"REVERSE " + sqlAdapter.getNumeric(1, 0) +
-				")";
-	}
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.LINEAR_RING;
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+                "PARENT_ID " + sqlAdapter.getBigInt() + ", " +
+                "RING_NO " + sqlAdapter.getInteger() + ", " +
+                "REVERSE " + sqlAdapter.getNumeric(1, 0) +
+                ")";
+    }
 
 }

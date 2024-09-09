@@ -28,18 +28,18 @@
 package org.citydb.core.query.filter.lod;
 
 public enum LodFilterMode {
-	AND("AND"),
-	OR("OR"),
-	MINIMUM("MIN"),
-	MAXIMUM("MAX");
+    AND("AND"),
+    OR("OR"),
+    MINIMUM("MIN"),
+    MAXIMUM("MAX");
 
-	final String symbol;
+    final String symbol;
 
-	LodFilterMode(String symbol) {
-		this.symbol = symbol;
-	}
+    LodFilterMode(String symbol) {
+        this.symbol = symbol;
+    }
 
-	public String getSymbol() {
-		return symbol;
-	}
+    public String getSymbol() {
+        return symbol;
+    }
 }

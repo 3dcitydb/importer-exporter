@@ -28,44 +28,44 @@
 package org.citydb.core.operation.common.xlink;
 
 public class DBXlinkSurfaceDataToTexImage implements DBXlink {
-	private long fromId;
-	private long toId;
+    private long fromId;
+    private long toId;
 
-	public DBXlinkSurfaceDataToTexImage(long fromId, long toId) {
-		this.fromId = fromId;
-		this.toId = toId;
-	}
-	
-	public long getFromId() {
-		return fromId;
-	}
+    public DBXlinkSurfaceDataToTexImage(long fromId, long toId) {
+        this.fromId = fromId;
+        this.toId = toId;
+    }
 
-
-	public void setFromId(long fromId) {
-		this.fromId = fromId;
-	}
+    public long getFromId() {
+        return fromId;
+    }
 
 
-	public long getToId() {
-		return toId;
-	}
+    public void setFromId(long fromId) {
+        this.fromId = fromId;
+    }
 
 
-	public void setToId(long toId) {
-		this.toId = toId;
-	}
+    public long getToId() {
+        return toId;
+    }
 
-	public String getGmlId() {
-		// no need for gml:ids
-		return null;
-	}
 
-	public void setGmlId(String gmlId) {
-		// no need for gml:ids
-	}
+    public void setToId(long toId) {
+        this.toId = toId;
+    }
 
-	@Override
-	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.SURFACE_DATA_TO_TEX_IMAGE;
-	}
+    public String getGmlId() {
+        // no need for gml:ids
+        return null;
+    }
+
+    public void setGmlId(String gmlId) {
+        // no need for gml:ids
+    }
+
+    @Override
+    public DBXlinkEnum getXlinkType() {
+        return DBXlinkEnum.SURFACE_DATA_TO_TEX_IMAGE;
+    }
 }

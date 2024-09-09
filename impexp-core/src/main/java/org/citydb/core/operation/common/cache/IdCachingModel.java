@@ -31,8 +31,11 @@ import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public interface IdCachingModel {
-	void drainToDB(ConcurrentHashMap<String, IdCacheEntry> map, int drain) throws SQLException;
-	IdCacheEntry lookupDB(String key) throws SQLException;
-	void close() throws SQLException;
-	String getType();
+    void drainToDB(ConcurrentHashMap<String, IdCacheEntry> map, int drain) throws SQLException;
+
+    IdCacheEntry lookupDB(String key) throws SQLException;
+
+    void close() throws SQLException;
+
+    String getType();
 }

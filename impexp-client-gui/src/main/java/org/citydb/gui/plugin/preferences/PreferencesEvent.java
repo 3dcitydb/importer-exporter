@@ -28,7 +28,7 @@
 package org.citydb.gui.plugin.preferences;
 
 public enum PreferencesEvent {
-	APPLY_SETTINGS,
-	RESTORE_SETTINGS,
-	SET_DEFAULT_SETTINGS
+    APPLY_SETTINGS,
+    RESTORE_SETTINGS,
+    SET_DEFAULT_SETTINGS
 }

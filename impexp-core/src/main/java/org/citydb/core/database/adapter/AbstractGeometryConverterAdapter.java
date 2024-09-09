@@ -33,22 +33,33 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public abstract class AbstractGeometryConverterAdapter {
-	protected final AbstractDatabaseAdapter databaseAdapter;
+    protected final AbstractDatabaseAdapter databaseAdapter;
 
-	protected AbstractGeometryConverterAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		this.databaseAdapter = databaseAdapter;
-	}
-	
-	public abstract GeometryObject getEnvelope(Object geomObj) throws SQLException;
-	public abstract GeometryObject getPoint(Object geomObj) throws SQLException;
-	public abstract GeometryObject getMultiPoint(Object geomObj) throws SQLException;
-	public abstract GeometryObject getCurve(Object geomObj) throws SQLException;
-	public abstract GeometryObject getMultiCurve(Object geomObj) throws SQLException;
-	public abstract GeometryObject getPolygon(Object geomObj) throws SQLException;
-	public abstract GeometryObject getMultiPolygon(Object geomObj) throws SQLException;
-	public abstract GeometryObject getGeometry(Object geomObj) throws SQLException;
-	public abstract Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException;
-	public abstract String getDatabaseObjectConstructor(GeometryObject geomObj) throws SQLException;
-	public abstract int getNullGeometryType();
-	public abstract String getNullGeometryTypeName();
+    protected AbstractGeometryConverterAdapter(AbstractDatabaseAdapter databaseAdapter) {
+        this.databaseAdapter = databaseAdapter;
+    }
+
+    public abstract GeometryObject getEnvelope(Object geomObj) throws SQLException;
+
+    public abstract GeometryObject getPoint(Object geomObj) throws SQLException;
+
+    public abstract GeometryObject getMultiPoint(Object geomObj) throws SQLException;
+
+    public abstract GeometryObject getCurve(Object geomObj) throws SQLException;
+
+    public abstract GeometryObject getMultiCurve(Object geomObj) throws SQLException;
+
+    public abstract GeometryObject getPolygon(Object geomObj) throws SQLException;
+
+    public abstract GeometryObject getMultiPolygon(Object geomObj) throws SQLException;
+
+    public abstract GeometryObject getGeometry(Object geomObj) throws SQLException;
+
+    public abstract Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException;
+
+    public abstract String getDatabaseObjectConstructor(GeometryObject geomObj) throws SQLException;
+
+    public abstract int getNullGeometryType();
+
+    public abstract String getNullGeometryTypeName();
 }

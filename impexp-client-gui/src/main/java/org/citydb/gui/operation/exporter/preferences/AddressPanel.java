@@ -40,83 +40,83 @@ import java.awt.*;
 import java.util.Locale;
 
 public class AddressPanel extends InternalPreferencesComponent {
-	private TitledPanel exportXALPanel;
-	private JRadioButton exportXAL;
-	private JRadioButton exportDB;
-	private JCheckBox exportFallback;
+    private TitledPanel exportXALPanel;
+    private JRadioButton exportXAL;
+    private JRadioButton exportDB;
+    private JCheckBox exportFallback;
 
-	public AddressPanel(Config config) {
-		super(config);
-		initGui();
-	}
+    public AddressPanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-	@Override
-	public boolean isModified() {
-		ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
-		
-		if (exportDB.isSelected() && address.getMode() != AddressMode.DB) return true;
-		if (exportXAL.isSelected() && address.getMode() != AddressMode.XAL) return true;
-		if (exportFallback.isSelected() != address.isSetUseFallback()) return true;
-		
-		return false;
-	}
+    @Override
+    public boolean isModified() {
+        ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
 
-	private void initGui() {
-		exportXAL = new JRadioButton();
-		exportDB = new JRadioButton();
-		ButtonGroup exportGroup = new ButtonGroup();
-		exportGroup.add(exportXAL);
-		exportGroup.add(exportDB);
-		exportFallback = new JCheckBox();
+        if (exportDB.isSelected() && address.getMode() != AddressMode.DB) return true;
+        if (exportXAL.isSelected() && address.getMode() != AddressMode.XAL) return true;
+        if (exportFallback.isSelected() != address.isSetUseFallback()) return true;
 
-		setLayout(new GridBagLayout());
-		{
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			{
-				content.add(exportDB, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				content.add(exportXAL, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-				content.add(exportFallback, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			}
+        return false;
+    }
 
-			exportXALPanel = new TitledPanel().build(content);
-		}
+    private void initGui() {
+        exportXAL = new JRadioButton();
+        exportDB = new JRadioButton();
+        ButtonGroup exportGroup = new ButtonGroup();
+        exportGroup.add(exportXAL);
+        exportGroup.add(exportDB);
+        exportFallback = new JCheckBox();
 
-		add(exportXALPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-	}
+        setLayout(new GridBagLayout());
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(exportDB, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(exportXAL, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+                content.add(exportFallback, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            }
 
-	@Override
-	public void setSettings() {
-		ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
-		
-		address.setMode(exportDB.isSelected() ? AddressMode.DB : AddressMode.XAL);
-		address.setUseFallback(exportFallback.isSelected());
-	}
+            exportXALPanel = new TitledPanel().build(content);
+        }
 
-	@Override
-	public void loadSettings() {
-		ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
+        add(exportXALPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+    }
 
-		if (address.getMode() == AddressMode.XAL) {
-			exportXAL.setSelected(true);
-		} else {
-			exportDB.setSelected(true);
-		}
-		
-		exportFallback.setSelected(address.isSetUseFallback());
-	}
+    @Override
+    public void setSettings() {
+        ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
 
-	@Override
-	public void switchLocale(Locale locale) {
-		exportXALPanel.setTitle(Language.I18N.getString("pref.export.address.border.export"));
-		exportXAL.setText(Language.I18N.getString("pref.export.address.label.exportXAL"));
-		exportDB.setText(Language.I18N.getString("pref.export.address.label.exportDB"));
-		exportFallback.setText(Language.I18N.getString("pref.export.address.label.exportFallback"));
-	}
+        address.setMode(exportDB.isSelected() ? AddressMode.DB : AddressMode.XAL);
+        address.setUseFallback(exportFallback.isSelected());
+    }
 
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.export.address");
-	}
+    @Override
+    public void loadSettings() {
+        ExportAddress address = config.getExportConfig().getCityGMLOptions().getAddress();
+
+        if (address.getMode() == AddressMode.XAL) {
+            exportXAL.setSelected(true);
+        } else {
+            exportDB.setSelected(true);
+        }
+
+        exportFallback.setSelected(address.isSetUseFallback());
+    }
+
+    @Override
+    public void switchLocale(Locale locale) {
+        exportXALPanel.setTitle(Language.I18N.getString("pref.export.address.border.export"));
+        exportXAL.setText(Language.I18N.getString("pref.export.address.label.exportXAL"));
+        exportDB.setText(Language.I18N.getString("pref.export.address.label.exportDB"));
+        exportFallback.setText(Language.I18N.getString("pref.export.address.label.exportFallback"));
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.export.address");
+    }
 
 }

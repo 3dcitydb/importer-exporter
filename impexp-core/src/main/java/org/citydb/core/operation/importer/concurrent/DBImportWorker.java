@@ -63,228 +63,228 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBImportWorker extends Worker<CityGML> implements EventHandler {
-	private final ReentrantLock runLock = new ReentrantLock();
-	private volatile boolean shouldRun = true;
-	private volatile boolean shouldWork = true;
+    private final ReentrantLock runLock = new ReentrantLock();
+    private volatile boolean shouldRun = true;
+    private volatile boolean shouldWork = true;
 
-	private final Connection connection;
-	private final boolean isManagedTransaction;
-	private final CityGMLFilter filter;
-	private final ImportLogger importLogger;
-	private final EventDispatcher eventDispatcher;
+    private final Connection connection;
+    private final boolean isManagedTransaction;
+    private final CityGMLFilter filter;
+    private final ImportLogger importLogger;
+    private final EventDispatcher eventDispatcher;
 
-	private final BoundingBoxOptions bboxOptions;
-	private final CityGMLImportManager importer;
-	private final List<FeatureImportExtension> plugins;
+    private final BoundingBoxOptions bboxOptions;
+    private final CityGMLImportManager importer;
+    private final List<FeatureImportExtension> plugins;
 
-	private int globalAppearanceCounter = 0;
-	private int topLevelFeatureCounter = 0;
-	private int commitAfter;
+    private int globalAppearanceCounter = 0;
+    private int topLevelFeatureCounter = 0;
+    private int commitAfter;
 
-	public DBImportWorker(Connection connection,
-			boolean isManagedTransaction,
-			AbstractDatabaseAdapter databaseAdapter,
-			SchemaMapping schemaMapping,
-			CityGMLBuilder cityGMLBuilder,
-			WorkerPool<DBXlink> xlinkPool,
-			IdCacheManager idCacheManager,
-			CityGMLFilter filter,
-			AffineTransformer affineTransformer,
-			ImportLogger importLogger,
-			InternalConfig internalConfig,
-			Config config,
-			EventDispatcher eventDispatcher) throws SQLException {
-		this.connection = connection;
-		this.isManagedTransaction = isManagedTransaction;
-		this.filter = filter;
-		this.importLogger = importLogger;
-		this.eventDispatcher = eventDispatcher;
+    public DBImportWorker(Connection connection,
+                          boolean isManagedTransaction,
+                          AbstractDatabaseAdapter databaseAdapter,
+                          SchemaMapping schemaMapping,
+                          CityGMLBuilder cityGMLBuilder,
+                          WorkerPool<DBXlink> xlinkPool,
+                          IdCacheManager idCacheManager,
+                          CityGMLFilter filter,
+                          AffineTransformer affineTransformer,
+                          ImportLogger importLogger,
+                          InternalConfig internalConfig,
+                          Config config,
+                          EventDispatcher eventDispatcher) throws SQLException {
+        this.connection = connection;
+        this.isManagedTransaction = isManagedTransaction;
+        this.filter = filter;
+        this.importLogger = importLogger;
+        this.eventDispatcher = eventDispatcher;
 
-		importer = new CityGMLImportManager(connection,
-				databaseAdapter,
-				schemaMapping,
-				cityGMLBuilder,
-				xlinkPool,
-				idCacheManager,
-				affineTransformer,
-				internalConfig,
-				config);
+        importer = new CityGMLImportManager(connection,
+                databaseAdapter,
+                schemaMapping,
+                cityGMLBuilder,
+                xlinkPool,
+                idCacheManager,
+                affineTransformer,
+                internalConfig,
+                config);
 
-		commitAfter = config.getDatabaseConfig().getImportBatching().getFeatureBatchSize();
-		if (commitAfter > databaseAdapter.getMaxBatchSize()) {
-			commitAfter = databaseAdapter.getMaxBatchSize();
-		}
+        commitAfter = config.getDatabaseConfig().getImportBatching().getFeatureBatchSize();
+        if (commitAfter > databaseAdapter.getMaxBatchSize()) {
+            commitAfter = databaseAdapter.getMaxBatchSize();
+        }
 
-		bboxOptions = BoundingBoxOptions.defaults()				
-				.useExistingEnvelopes(true)
-				.assignResultToFeatures(true);
+        bboxOptions = BoundingBoxOptions.defaults()
+                .useExistingEnvelopes(true)
+                .assignResultToFeatures(true);
 
-		plugins = PluginManager.getInstance().getEnabledExternalPlugins(FeatureImportExtension.class);
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-	}
+        plugins = PluginManager.getInstance().getEnabledExternalPlugins(FeatureImportExtension.class);
+        eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+    }
 
-	@Override
-	public void interrupt() {
-		shouldRun = false;
-	}
+    @Override
+    public void interrupt() {
+        shouldRun = false;
+    }
 
-	@Override
-	public void run() {
-		try {
-			if (firstWork != null) {
-				doWork(firstWork);
-				firstWork = null;
-			}
+    @Override
+    public void run() {
+        try {
+            if (firstWork != null) {
+                doWork(firstWork);
+                firstWork = null;
+            }
 
-			while (shouldRun) {
-				try {
-					CityGML work = workQueue.take();
-					doWork(work);
-				} catch (InterruptedException ie) {
-					// re-check state
-				}
-			}
+            while (shouldRun) {
+                try {
+                    CityGML work = workQueue.take();
+                    doWork(work);
+                } catch (InterruptedException ie) {
+                    // re-check state
+                }
+            }
 
-			try {
-				if (shouldWork) {
-					importer.executeBatch();					
-					if (!isManagedTransaction) {
-						connection.commit();
-					}
+            try {
+                if (shouldWork) {
+                    importer.executeBatch();
+                    if (!isManagedTransaction) {
+                        connection.commit();
+                    }
 
-					updateImportContext();
-				}
-			} catch (IOException e) {
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the import log.", LogLevel.ERROR, e, eventChannel));
-			} catch (Throwable e) {
-				if (!isManagedTransaction) {
-					try {
-						connection.rollback();
-					} catch (SQLException sql) {
-						//
-					}
-				}
+                    updateImportContext();
+                }
+            } catch (IOException e) {
+                eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred while updating the import log.", LogLevel.ERROR, e, eventChannel));
+            } catch (Throwable e) {
+                if (!isManagedTransaction) {
+                    try {
+                        connection.rollback();
+                    } catch (SQLException sql) {
+                        //
+                    }
+                }
 
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
-			}
-		} finally {
-			try {
-				importer.close();
-			} catch (CityGMLImportException | SQLException e) {
-				// 
-			}
+                eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
+            }
+        } finally {
+            try {
+                importer.close();
+            } catch (CityGMLImportException | SQLException e) {
+                //
+            }
 
-			if (!isManagedTransaction) {
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					//
-				}
-			}
+            if (!isManagedTransaction) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    //
+                }
+            }
 
-			eventDispatcher.removeEventHandler(this);
-		}
-	}
+            eventDispatcher.removeEventHandler(this);
+        }
+    }
 
-	private void doWork(CityGML work) {
-		final ReentrantLock runLock = this.runLock;
-		runLock.lock();
+    private void doWork(CityGML work) {
+        final ReentrantLock runLock = this.runLock;
+        runLock.lock();
 
-		try {
-			if (!shouldWork) {
-				return;
-			}
+        try {
+            if (!shouldWork) {
+                return;
+            }
 
-			if (work instanceof AbstractFeature) {
-				AbstractFeature feature = (AbstractFeature) work;
+            if (work instanceof AbstractFeature) {
+                AbstractFeature feature = (AbstractFeature) work;
 
-				// invoke import plugins
-				if (!plugins.isEmpty()) {
-					for (FeatureImportExtension plugin : plugins) {
-						try {
-							feature = plugin.preprocess(feature);
-							if (feature == null) {
-								return;
-							}
-						} catch (PluginException e) {
-							throw new CityGMLImportException("Import plugin " + plugin.getClass().getName() + " threw an exception.", e);
-						}
-					}
-				}
+                // invoke import plugins
+                if (!plugins.isEmpty()) {
+                    for (FeatureImportExtension plugin : plugins) {
+                        try {
+                            feature = plugin.preprocess(feature);
+                            if (feature == null) {
+                                return;
+                            }
+                        } catch (PluginException e) {
+                            throw new CityGMLImportException("Import plugin " + plugin.getClass().getName() + " threw an exception.", e);
+                        }
+                    }
+                }
 
-				long id;
-				if (feature instanceof Appearance) {
-					// global appearance
-					id = importer.importGlobalAppearance((Appearance) feature);
-					if (id != 0) {
-						globalAppearanceCounter++;
-					}
-				} else {
-					// compute bounding box
-					feature.calcBoundedBy(bboxOptions);
+                long id;
+                if (feature instanceof Appearance) {
+                    // global appearance
+                    id = importer.importGlobalAppearance((Appearance) feature);
+                    if (id != 0) {
+                        globalAppearanceCounter++;
+                    }
+                } else {
+                    // compute bounding box
+                    feature.calcBoundedBy(bboxOptions);
 
-					// check import filter
-					if (!filter.getSelectionFilter().isSatisfiedBy(feature)) {
-						return;
-					}
+                    // check import filter
+                    if (!filter.getSelectionFilter().isSatisfiedBy(feature)) {
+                        return;
+                    }
 
-					id = importer.importObject(feature);
-					if (id != 0) {
-						topLevelFeatureCounter++;
-					}
-				}
+                    id = importer.importObject(feature);
+                    if (id != 0) {
+                        topLevelFeatureCounter++;
+                    }
+                }
 
-				if (id == 0) {
-					importer.logOrThrowErrorMessage("Failed to import object " + importer.getObjectSignature(feature) + ".");
-				} else if (globalAppearanceCounter + topLevelFeatureCounter == commitAfter) {
-					importer.executeBatch();
-					if (!isManagedTransaction) {
-						connection.commit();
-					}
+                if (id == 0) {
+                    importer.logOrThrowErrorMessage("Failed to import object " + importer.getObjectSignature(feature) + ".");
+                } else if (globalAppearanceCounter + topLevelFeatureCounter == commitAfter) {
+                    importer.executeBatch();
+                    if (!isManagedTransaction) {
+                        connection.commit();
+                    }
 
-					updateImportContext();
-				}
-			} else {
-				importer.logOrThrowErrorMessage((work instanceof AbstractGML ?
-						importer.getObjectSignature((AbstractGML) work) :
-						work.getCityGMLClass()) +
-						": Unsupported top-level object type. Skipping import.");
-			}
-		} catch (IOException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel));
-		} catch (Throwable e) {
-			try {
-				connection.rollback();
-			} catch (SQLException sql) {
-				//
-			}
+                    updateImportContext();
+                }
+            } else {
+                importer.logOrThrowErrorMessage((work instanceof AbstractGML ?
+                        importer.getObjectSignature((AbstractGML) work) :
+                        work.getCityGMLClass()) +
+                        ": Unsupported top-level object type. Skipping import.");
+            }
+        } catch (IOException e) {
+            eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel));
+        } catch (Throwable e) {
+            try {
+                connection.rollback();
+            } catch (SQLException sql) {
+                //
+            }
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
-		} finally {
-			runLock.unlock();
-		}
-	}
+            eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel));
+        } finally {
+            runLock.unlock();
+        }
+    }
 
-	private void updateImportContext() throws IOException {
-		eventDispatcher.triggerEvent(new ObjectCounterEvent(importer.getAndResetObjectCounter(), eventChannel));
-		eventDispatcher.triggerEvent(new GeometryCounterEvent(importer.getAndResetGeometryCounter(), eventChannel));
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter));
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter));
-		globalAppearanceCounter = 0;
-		topLevelFeatureCounter = 0;
+    private void updateImportContext() throws IOException {
+        eventDispatcher.triggerEvent(new ObjectCounterEvent(importer.getAndResetObjectCounter(), eventChannel));
+        eventDispatcher.triggerEvent(new GeometryCounterEvent(importer.getAndResetGeometryCounter(), eventChannel));
+        eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter));
+        eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter));
+        globalAppearanceCounter = 0;
+        topLevelFeatureCounter = 0;
 
-		// log imported top-level features
-		if (importLogger != null) {
-			for (ImportLogEntry entry : importer.getAndResetImportLogEntries()) {
-				importLogger.write(entry);
-			}
-		}
-	}
+        // log imported top-level features
+        if (importLogger != null) {
+            for (ImportLogEntry entry : importer.getAndResetImportLogEntries()) {
+                importLogger.write(entry);
+            }
+        }
+    }
 
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		if (event.getChannel() == eventChannel) {
-			shouldWork = false;
-		}
-	}
+    @Override
+    public void handleEvent(Event event) throws Exception {
+        if (event.getChannel() == eventChannel) {
+            shouldWork = false;
+        }
+    }
 }

@@ -31,46 +31,46 @@ import org.citydb.config.project.database.DatabaseType;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
 
 public class H2Adapter extends AbstractDatabaseAdapter {
-	// NOTE: this adapter is currently only used for cache tables
-	
-	public H2Adapter() {
-		geometryAdapter = new GeometryConverterAdapter(this);
-		sqlAdapter = new SQLAdapter(this);
-	}
-	
-	@Override
-	public DatabaseType getDatabaseType() {
-		return null;
-	}
+    // NOTE: this adapter is currently only used for cache tables
 
-	@Override
-	public boolean hasVersioningSupport() {
-		return false;
-	}
-	
-	@Override
-	public boolean hasTableStatsSupport() {
-		return false;
-	}
+    public H2Adapter() {
+        geometryAdapter = new GeometryConverterAdapter(this);
+        sqlAdapter = new SQLAdapter(this);
+    }
 
-	@Override
-	public int getDefaultPort() {
-		return -1;
-	}
+    @Override
+    public DatabaseType getDatabaseType() {
+        return null;
+    }
 
-	@Override
-	public String getConnectionFactoryClassName() {
-		return "org.h2.Driver";
-	}
+    @Override
+    public boolean hasVersioningSupport() {
+        return false;
+    }
 
-	@Override
-	public String getJDBCUrl(String server, int port, String database) {
-		return "jdbc:h2:" + server;
-	}
+    @Override
+    public boolean hasTableStatsSupport() {
+        return false;
+    }
 
-	@Override
-	public int getMaxBatchSize() {
-		return 65535;
-	}
+    @Override
+    public int getDefaultPort() {
+        return -1;
+    }
+
+    @Override
+    public String getConnectionFactoryClassName() {
+        return "org.h2.Driver";
+    }
+
+    @Override
+    public String getJDBCUrl(String server, int port, String database) {
+        return "jdbc:h2:" + server;
+    }
+
+    @Override
+    public int getMaxBatchSize() {
+        return 65535;
+    }
 
 }

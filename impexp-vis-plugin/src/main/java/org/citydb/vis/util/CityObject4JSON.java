@@ -30,60 +30,60 @@ package org.citydb.vis.util;
 import org.citydb.config.geometry.BoundingBox;
 
 public class CityObject4JSON {
-	private String gmlId;
+    private String gmlId;
 
-	private BoundingBox envelope;
-	private int tileRow = 0;
-	private int tileColumn = 0;
+    private BoundingBox envelope;
+    private int tileRow = 0;
+    private int tileColumn = 0;
 
-	public CityObject4JSON (String gmlId) {
-		this.gmlId = gmlId;
-	}
+    public CityObject4JSON(String gmlId) {
+        this.gmlId = gmlId;
+    }
 
-	@Override
-	public String toString() {
-		return " \"" + gmlId + "\": {" +
-				"\"envelope\": [" + getEnvelopeXmin() + "," + getEnvelopeYmin() + "," + getEnvelopeXmax() + "," + getEnvelopeYmax() + "]," +
-				"\"tile\": [" + tileRow + "," + tileColumn + "]}";
-	}
+    @Override
+    public String toString() {
+        return " \"" + gmlId + "\": {" +
+                "\"envelope\": [" + getEnvelopeXmin() + "," + getEnvelopeYmin() + "," + getEnvelopeXmax() + "," + getEnvelopeYmax() + "]," +
+                "\"tile\": [" + tileRow + "," + tileColumn + "]}";
+    }
 
-	public String getGmlId() {
-		return gmlId;
-	}
+    public String getGmlId() {
+        return gmlId;
+    }
 
-	public void setEnvelope(BoundingBox envelope) {
-		this.envelope = envelope;
-	}
+    public void setEnvelope(BoundingBox envelope) {
+        this.envelope = envelope;
+    }
 
-	public double getEnvelopeXmin() {
-		return envelope != null ? envelope.getLowerCorner().getX() : 0;
-	}
+    public double getEnvelopeXmin() {
+        return envelope != null ? envelope.getLowerCorner().getX() : 0;
+    }
 
-	public double getEnvelopeXmax() {
-		return envelope != null ? envelope.getUpperCorner().getX() : 0;
-	}
+    public double getEnvelopeXmax() {
+        return envelope != null ? envelope.getUpperCorner().getX() : 0;
+    }
 
-	public double getEnvelopeYmin() {
-		return envelope != null ? envelope.getLowerCorner().getY() : 0;
-	}
+    public double getEnvelopeYmin() {
+        return envelope != null ? envelope.getLowerCorner().getY() : 0;
+    }
 
-	public double getEnvelopeYmax() {
-		return envelope != null ? envelope.getUpperCorner().getY() : 0;
-	}
+    public double getEnvelopeYmax() {
+        return envelope != null ? envelope.getUpperCorner().getY() : 0;
+    }
 
-	public void setTileRow(int tileRow) {
-		this.tileRow = tileRow;
-	}
+    public void setTileRow(int tileRow) {
+        this.tileRow = tileRow;
+    }
 
-	public int getTileRow() {
-		return tileRow;
-	}
+    public int getTileRow() {
+        return tileRow;
+    }
 
-	public void setTileColumn(int tileColumn) {
-		this.tileColumn = tileColumn;
-	}
+    public void setTileColumn(int tileColumn) {
+        this.tileColumn = tileColumn;
+    }
 
-	public int getTileColumn() {
-		return tileColumn;
-	}
+    public int getTileColumn() {
+        return tileColumn;
+    }
 }

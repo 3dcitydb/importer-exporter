@@ -34,23 +34,27 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public abstract class AbstractCacheTable {
-	protected static long ID;
-	protected final Connection connection;
-	protected final AbstractSQLAdapter sqlAdapter;
-	
-	protected AbstractCacheTable(Connection connection, AbstractSQLAdapter sqlAdapter) {
-		ID++;
-		this.connection = connection;
-		this.sqlAdapter = sqlAdapter;
-	}
-	
-	public Connection getConnection() {
-		return connection;
-	}
-	
-	public abstract CacheTableModel getModelType();
-	public abstract boolean isCreated();
-	protected abstract void create() throws SQLException;
-	protected abstract void createAndIndex() throws SQLException;
-	protected abstract void drop() throws SQLException;	
+    protected static long ID;
+    protected final Connection connection;
+    protected final AbstractSQLAdapter sqlAdapter;
+
+    protected AbstractCacheTable(Connection connection, AbstractSQLAdapter sqlAdapter) {
+        ID++;
+        this.connection = connection;
+        this.sqlAdapter = sqlAdapter;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public abstract CacheTableModel getModelType();
+
+    public abstract boolean isCreated();
+
+    protected abstract void create() throws SQLException;
+
+    protected abstract void createAndIndex() throws SQLException;
+
+    protected abstract void drop() throws SQLException;
 }

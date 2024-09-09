@@ -30,92 +30,92 @@ package org.citydb.core.database.schema;
 import java.util.Locale;
 
 public enum TableEnum {
-	UNDEFINED,
-	ADDRESS,
-	ADDRESS_TO_BUILDING,
-	ADDRESS_TO_BRIDGE,
-	APPEARANCE,
-	SURFACE_DATA,
-	APPEAR_TO_SURFACE_DATA,
-	TEX_IMAGE,
-	TEXTUREPARAM,
-	SURFACE_GEOMETRY,
-	IMPLICIT_GEOMETRY,
-	CITYOBJECT,
-	GENERALIZATION,
-	CITYOBJECT_GENERICATTRIB,
-	EXTERNAL_REFERENCE,
-	BUILDING,
-	ROOM,
-	BUILDING_FURNITURE,
-	BUILDING_INSTALLATION,
-	THEMATIC_SURFACE,
-	OPENING,
-	OPENING_TO_THEM_SURFACE,
-	BRIDGE,
-	BRIDGE_CONSTR_ELEMENT,
-	BRIDGE_INSTALLATION,
-	BRIDGE_THEMATIC_SURFACE,
-	BRIDGE_OPENING,
-	BRIDGE_ROOM,
-	BRIDGE_FURNITURE,
-	BRIDGE_OPEN_TO_THEM_SRF,
-	TUNNEL,
-	TUNNEL_THEMATIC_SURFACE,
-	TUNNEL_OPENING,
-	TUNNEL_INSTALLATION,
-	TUNNEL_HOLLOW_SPACE,
-	TUNNEL_FURNITURE,
-	TUNNEL_OPEN_TO_THEM_SRF,
-	WATERBODY,
-	WATERBOUNDARY_SURFACE,
-	WATERBOD_TO_WATERBND_SRF,
-	PLANT_COVER,
-	SOLITARY_VEGETAT_OBJECT,
-	TRANSPORTATION_COMPLEX,
-	TRAFFIC_AREA,
-	CITY_FURNITURE,
-	LAND_USE,
-	RELIEF_FEATURE,
-	RELIEF_COMPONENT,
-	TIN_RELIEF,
-	RASTER_RELIEF,
-	BREAKLINE_RELIEF,
-	MASSPOINT_RELIEF,
-	RELIEF_FEAT_TO_REL_COMP,
-	GENERIC_CITYOBJECT,
-	CITYOBJECTGROUP,
-	GROUP_TO_CITYOBJECT;
+    UNDEFINED,
+    ADDRESS,
+    ADDRESS_TO_BUILDING,
+    ADDRESS_TO_BRIDGE,
+    APPEARANCE,
+    SURFACE_DATA,
+    APPEAR_TO_SURFACE_DATA,
+    TEX_IMAGE,
+    TEXTUREPARAM,
+    SURFACE_GEOMETRY,
+    IMPLICIT_GEOMETRY,
+    CITYOBJECT,
+    GENERALIZATION,
+    CITYOBJECT_GENERICATTRIB,
+    EXTERNAL_REFERENCE,
+    BUILDING,
+    ROOM,
+    BUILDING_FURNITURE,
+    BUILDING_INSTALLATION,
+    THEMATIC_SURFACE,
+    OPENING,
+    OPENING_TO_THEM_SURFACE,
+    BRIDGE,
+    BRIDGE_CONSTR_ELEMENT,
+    BRIDGE_INSTALLATION,
+    BRIDGE_THEMATIC_SURFACE,
+    BRIDGE_OPENING,
+    BRIDGE_ROOM,
+    BRIDGE_FURNITURE,
+    BRIDGE_OPEN_TO_THEM_SRF,
+    TUNNEL,
+    TUNNEL_THEMATIC_SURFACE,
+    TUNNEL_OPENING,
+    TUNNEL_INSTALLATION,
+    TUNNEL_HOLLOW_SPACE,
+    TUNNEL_FURNITURE,
+    TUNNEL_OPEN_TO_THEM_SRF,
+    WATERBODY,
+    WATERBOUNDARY_SURFACE,
+    WATERBOD_TO_WATERBND_SRF,
+    PLANT_COVER,
+    SOLITARY_VEGETAT_OBJECT,
+    TRANSPORTATION_COMPLEX,
+    TRAFFIC_AREA,
+    CITY_FURNITURE,
+    LAND_USE,
+    RELIEF_FEATURE,
+    RELIEF_COMPONENT,
+    TIN_RELIEF,
+    RASTER_RELIEF,
+    BREAKLINE_RELIEF,
+    MASSPOINT_RELIEF,
+    RELIEF_FEAT_TO_REL_COMP,
+    GENERIC_CITYOBJECT,
+    CITYOBJECTGROUP,
+    GROUP_TO_CITYOBJECT;
 
-	public static TableEnum fromOrdinal(int i) {
-		for (TableEnum table : TableEnum.values()) {
-			if (table.ordinal() == i) {
-				return table;
-			}
-		}
+    public static TableEnum fromOrdinal(int i) {
+        for (TableEnum table : TableEnum.values()) {
+            if (table.ordinal() == i) {
+                return table;
+            }
+        }
 
-		return UNDEFINED;
-	}
-	
-	public static TableEnum fromTableName(String name) {
-		name = name.toLowerCase(Locale.ROOT);
+        return UNDEFINED;
+    }
 
-		for (TableEnum table : TableEnum.values()) {
-			if (table.getName().equals(name)) {
-				return table;
-			}
-		}
+    public static TableEnum fromTableName(String name) {
+        name = name.toLowerCase(Locale.ROOT);
 
-		return UNDEFINED;
-	}
-	
-	public String getName() {
-		return super.toString().toLowerCase(Locale.ROOT);
-	}
+        for (TableEnum table : TableEnum.values()) {
+            if (table.getName().equals(name)) {
+                return table;
+            }
+        }
 
-	@Override
-	public String toString() {
-		return getName();
-	}
-	
+        return UNDEFINED;
+    }
+
+    public String getName() {
+        return super.toString().toLowerCase(Locale.ROOT);
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
 }

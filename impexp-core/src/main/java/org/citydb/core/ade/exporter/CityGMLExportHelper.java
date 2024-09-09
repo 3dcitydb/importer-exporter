@@ -52,45 +52,71 @@ import java.sql.SQLException;
 import java.util.Collection;
 
 public interface CityGMLExportHelper {
-	<T extends AbstractGML> T createObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException;
-	<T extends AbstractFeature> Collection<T> exportNestedFeatures(FeatureProperty featureProperty, long parentId, Class<T> featureClass) throws CityGMLExportException, SQLException;
-	ImplicitGeometry createImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException;
-	SurfaceGeometryExporter getSurfaceGeometryExporter() throws CityGMLExportException, SQLException;
-	AttributeValueSplitter getAttributeValueSplitter();
-	GMLConverter getGMLConverter();
+    <T extends AbstractGML> T createObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException;
 
-	void executeBatch() throws CityGMLExportException, SQLException;
-	boolean exportAsGlobalFeature(AbstractFeature feature) throws CityGMLExportException, SQLException;
-	boolean supportsExportOfGlobalFeatures();
+    <T extends AbstractFeature> Collection<T> exportNestedFeatures(FeatureProperty featureProperty, long parentId, Class<T> featureClass) throws CityGMLExportException, SQLException;
 
-	AbstractDatabaseAdapter getDatabaseAdapter();
-	CityGMLVersion getTargetCityGMLVersion();
-	ProjectionFilter getProjectionFilter(AbstractObjectType<?> objectType);
-	CombinedProjectionFilter getCombinedProjectionFilter(String tableName);
-	LodFilter getLodFilter();
+    ImplicitGeometry createImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException;
 
-	boolean isFailOnError();
-	ExportConfig getExportConfig();
-	
-	String getTableNameWithSchema(String tableName);
-	ProjectionToken getGeometryColumn(Column column);
-	ProjectionToken getGeometryColumn(Column column, String asName);
-	String getGeometryColumn(String columnName);
-	String getGeometryColumn(String columnName, String asName);
+    SurfaceGeometryExporter getSurfaceGeometryExporter() throws CityGMLExportException, SQLException;
 
-	void logOrThrowErrorMessage(String message) throws CityGMLExportException;
-	void logOrThrowErrorMessage(String message, Throwable cause) throws CityGMLExportException;
-	String getObjectSignature(int objectClassId, long id);
-	String getObjectSignature(AbstractObjectType<?> objectType, long id);
-	
-	FeatureType getFeatureType(AbstractFeature feature);	
-	ObjectType getObjectType(AbstractGML object);
-	AbstractObjectType<?> getAbstractObjectType(AbstractGML object);
-	FeatureType getFeatureType(int objectClassId);	
-	ObjectType getObjectType(int objectClassId);
-	AbstractObjectType<?> getAbstractObjectType(int objectClassId);
-	
-	boolean lookupAndPutObjectId(String gmlId, long id, int objectClassId);
-	boolean lookupObjectId(String gmlId);
-	String replaceObjectId(String gmlId);
+    AttributeValueSplitter getAttributeValueSplitter();
+
+    GMLConverter getGMLConverter();
+
+    void executeBatch() throws CityGMLExportException, SQLException;
+
+    boolean exportAsGlobalFeature(AbstractFeature feature) throws CityGMLExportException, SQLException;
+
+    boolean supportsExportOfGlobalFeatures();
+
+    AbstractDatabaseAdapter getDatabaseAdapter();
+
+    CityGMLVersion getTargetCityGMLVersion();
+
+    ProjectionFilter getProjectionFilter(AbstractObjectType<?> objectType);
+
+    CombinedProjectionFilter getCombinedProjectionFilter(String tableName);
+
+    LodFilter getLodFilter();
+
+    boolean isFailOnError();
+
+    ExportConfig getExportConfig();
+
+    String getTableNameWithSchema(String tableName);
+
+    ProjectionToken getGeometryColumn(Column column);
+
+    ProjectionToken getGeometryColumn(Column column, String asName);
+
+    String getGeometryColumn(String columnName);
+
+    String getGeometryColumn(String columnName, String asName);
+
+    void logOrThrowErrorMessage(String message) throws CityGMLExportException;
+
+    void logOrThrowErrorMessage(String message, Throwable cause) throws CityGMLExportException;
+
+    String getObjectSignature(int objectClassId, long id);
+
+    String getObjectSignature(AbstractObjectType<?> objectType, long id);
+
+    FeatureType getFeatureType(AbstractFeature feature);
+
+    ObjectType getObjectType(AbstractGML object);
+
+    AbstractObjectType<?> getAbstractObjectType(AbstractGML object);
+
+    FeatureType getFeatureType(int objectClassId);
+
+    ObjectType getObjectType(int objectClassId);
+
+    AbstractObjectType<?> getAbstractObjectType(int objectClassId);
+
+    boolean lookupAndPutObjectId(String gmlId, long id, int objectClassId);
+
+    boolean lookupObjectId(String gmlId);
+
+    String replaceObjectId(String gmlId);
 }

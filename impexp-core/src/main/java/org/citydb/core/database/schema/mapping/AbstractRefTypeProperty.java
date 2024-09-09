@@ -35,13 +35,13 @@ public abstract class AbstractRefTypeProperty<T extends AbstractType<T>> extends
     @XmlAttribute
     protected RelationType relationType;
 
-	protected AbstractRefTypeProperty() {
-	}
-    
-    public AbstractRefTypeProperty(String path, AppSchema schema) {
-    	super(path, schema);
+    protected AbstractRefTypeProperty() {
     }
-    
+
+    public AbstractRefTypeProperty(String path, AppSchema schema) {
+        super(path, schema);
+    }
+
     public abstract void setType(T type);
 
     @Override

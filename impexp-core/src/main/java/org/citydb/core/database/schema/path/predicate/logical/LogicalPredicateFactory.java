@@ -32,12 +32,12 @@ import org.citydb.core.database.schema.path.predicate.comparison.EqualToPredicat
 
 public class LogicalPredicateFactory {
 
-	public static BinaryLogicalPredicate AND(EqualToPredicate leftOperand, AbstractNodePredicate rightOperand) {
-		return new BinaryLogicalPredicate(leftOperand, LogicalPredicateName.AND, rightOperand);
-	}
-	
-	public static BinaryLogicalPredicate OR(EqualToPredicate leftOperand, AbstractNodePredicate rightOperand) {
-		return new BinaryLogicalPredicate(leftOperand, LogicalPredicateName.OR, rightOperand);
-	}
-	
+    public static BinaryLogicalPredicate AND(EqualToPredicate leftOperand, AbstractNodePredicate rightOperand) {
+        return new BinaryLogicalPredicate(leftOperand, LogicalPredicateName.AND, rightOperand);
+    }
+
+    public static BinaryLogicalPredicate OR(EqualToPredicate leftOperand, AbstractNodePredicate rightOperand) {
+        return new BinaryLogicalPredicate(leftOperand, LogicalPredicateName.OR, rightOperand);
+    }
+
 }

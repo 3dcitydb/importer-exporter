@@ -34,6 +34,8 @@ import org.jdesktop.swingx.mapviewer.GeoPosition;
 
 public interface GeocodingService {
     GeocoderResult geocode(String address) throws GeocodingServiceException;
+
     GeocoderResult lookupAddress(GeoPosition latlon, int zoomLevel) throws GeocodingServiceException;
+
     GeocodingServiceName getName();
 }

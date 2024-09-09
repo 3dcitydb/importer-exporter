@@ -31,14 +31,14 @@ import org.citydb.config.project.global.ProxyConfig;
 import org.citydb.util.event.Event;
 
 public final class ProxyServerUnavailableEvent extends Event {
-	private final ProxyConfig proxy;
-	
-	public ProxyServerUnavailableEvent(ProxyConfig proxy) {
-		super(EventType.PROXY_SERVER_UNAVAILABLE, GLOBAL_CHANNEL);
-		this.proxy = proxy;
-	}
+    private final ProxyConfig proxy;
 
-	public ProxyConfig getProxy() {
-		return proxy;
-	}
+    public ProxyServerUnavailableEvent(ProxyConfig proxy) {
+        super(EventType.PROXY_SERVER_UNAVAILABLE, GLOBAL_CHANNEL);
+        this.proxy = proxy;
+    }
+
+    public ProxyConfig getProxy() {
+        return proxy;
+    }
 }

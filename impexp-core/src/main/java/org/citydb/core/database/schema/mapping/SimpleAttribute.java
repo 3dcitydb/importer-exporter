@@ -30,64 +30,64 @@ package org.citydb.core.database.schema.mapping;
 import javax.xml.bind.annotation.*;
 
 @XmlType(name = "attribute", propOrder = {
-	    "join"
-	})
+        "join"
+})
 public class SimpleAttribute extends AbstractAttribute {
-	@XmlElements({
-        @XmlElement(type = Join.class),
-        @XmlElement(name = "reverseJoin", type = ReverseJoin.class)
+    @XmlElements({
+            @XmlElement(type = Join.class),
+            @XmlElement(name = "reverseJoin", type = ReverseJoin.class)
     })
     protected AbstractJoin join;
-	@XmlAttribute(required = true)
-	protected String column;
-	@XmlAttribute(required = true)
-	protected SimpleType type;
-	@XmlAttribute
-	protected Boolean requiresPrefix;
-	
-	@XmlTransient
-	protected AbstractType<?> complexType;
-	@XmlTransient
-	protected ComplexAttributeType attributeType;
-	@XmlTransient
-	protected String name;
+    @XmlAttribute(required = true)
+    protected String column;
+    @XmlAttribute(required = true)
+    protected SimpleType type;
+    @XmlAttribute
+    protected Boolean requiresPrefix;
 
-	protected SimpleAttribute() {
-	}
-    
-    public SimpleAttribute(String path, String column, SimpleType type, AppSchema schema) {
-    	super(path, schema);
-    	this.column = column;
-    	this.type = type;
+    @XmlTransient
+    protected AbstractType<?> complexType;
+    @XmlTransient
+    protected ComplexAttributeType attributeType;
+    @XmlTransient
+    protected String name;
+
+    protected SimpleAttribute() {
     }
-	
-	public boolean hasParentType() {
-		return complexType != null;
-	}
-	
-	public AbstractType<?> getParentType() {
-		return complexType;
-	}
 
-	public boolean hasParentAttributeType() {
-		return attributeType != null;
-	}
-	
-	public ComplexAttributeType getParentAttributeType() {
-		return attributeType;
-	}
-	
-	protected void setParentType(AbstractType<?> complexType) {
-		this.complexType = complexType;
-		this.attributeType = null;
-	}
-	
-	protected void setParentAttributeType(ComplexAttributeType attributeType) {
-		this.attributeType = attributeType;
-		this.complexType = null;
-	}
-	
-	@Override
+    public SimpleAttribute(String path, String column, SimpleType type, AppSchema schema) {
+        super(path, schema);
+        this.column = column;
+        this.type = type;
+    }
+
+    public boolean hasParentType() {
+        return complexType != null;
+    }
+
+    public AbstractType<?> getParentType() {
+        return complexType;
+    }
+
+    public boolean hasParentAttributeType() {
+        return attributeType != null;
+    }
+
+    public ComplexAttributeType getParentAttributeType() {
+        return attributeType;
+    }
+
+    protected void setParentType(AbstractType<?> complexType) {
+        this.complexType = complexType;
+        this.attributeType = null;
+    }
+
+    protected void setParentAttributeType(ComplexAttributeType attributeType) {
+        this.attributeType = attributeType;
+        this.complexType = null;
+    }
+
+    @Override
     public AbstractJoin getJoin() {
         return join;
     }
@@ -96,74 +96,74 @@ public class SimpleAttribute extends AbstractAttribute {
     public boolean isSetJoin() {
         return join != null;
     }
-    
+
     public void setJoin(Join join) {
-    	this.join = join;
+        this.join = join;
     }
-	
+
     public void setJoin(ReverseJoin join) {
-    	this.join = join;
+        this.join = join;
     }
-    
-	public String getColumn() {
-		return column;
-	}
 
-	public boolean isSetColumn() {
-		return column != null && !column.isEmpty();
-	}
-	
-	public void setColumn(String column) {
-		this.column = column;
-	}
+    public String getColumn() {
+        return column;
+    }
 
-	public SimpleType getType() {
-		return type;
-	}
+    public boolean isSetColumn() {
+        return column != null && !column.isEmpty();
+    }
 
-	public boolean isSetType() {
-		return type != null;
-	}
-	
-	public void setType(SimpleType type) {
-		this.type = type;
-	}
+    public void setColumn(String column) {
+        this.column = column;
+    }
 
-	public boolean requiresPrefix() {
-		return requiresPrefix != null && requiresPrefix;
-	}
+    public SimpleType getType() {
+        return type;
+    }
 
-	public boolean isSetRequiresPrefix() {
-		return requiresPrefix!= null;
-	}
+    public boolean isSetType() {
+        return type != null;
+    }
 
-	public void setRequiresPrefix(boolean requiresPrefix) {
-		this.requiresPrefix = requiresPrefix ? true : null;
-	}
+    public void setType(SimpleType type) {
+        this.type = type;
+    }
 
-	public String getName() {
-		if (name == null)
-			name = path.startsWith("@") ? path.substring(1, path.length()) : path;
+    public boolean requiresPrefix() {
+        return requiresPrefix != null && requiresPrefix;
+    }
 
-		return name;
-	}
+    public boolean isSetRequiresPrefix() {
+        return requiresPrefix != null;
+    }
 
-	@Override
-	public PathElementType getElementType() {
-		return PathElementType.SIMPLE_ATTRIBUTE;
-	}
+    public void setRequiresPrefix(boolean requiresPrefix) {
+        this.requiresPrefix = requiresPrefix ? true : null;
+    }
 
-	@Override
-	protected void validate(SchemaMapping schemaMapping, Object parent) throws SchemaMappingException {
-		super.validate(schemaMapping, parent);
+    public String getName() {
+        if (name == null)
+            name = path.startsWith("@") ? path.substring(1, path.length()) : path;
 
-		if (requiresPrefix() && !path.startsWith("@"))
-			throw new SchemaMappingException("The attribute 'requiresPrefix' shall only be used for XML attributes.");
-		
-		if (parent instanceof AbstractType<?>)
-			complexType = (AbstractType<?>)parent;
-		else if (parent instanceof ComplexAttributeType)
-			attributeType = (ComplexAttributeType)parent;
-	}
+        return name;
+    }
+
+    @Override
+    public PathElementType getElementType() {
+        return PathElementType.SIMPLE_ATTRIBUTE;
+    }
+
+    @Override
+    protected void validate(SchemaMapping schemaMapping, Object parent) throws SchemaMappingException {
+        super.validate(schemaMapping, parent);
+
+        if (requiresPrefix() && !path.startsWith("@"))
+            throw new SchemaMappingException("The attribute 'requiresPrefix' shall only be used for XML attributes.");
+
+        if (parent instanceof AbstractType<?>)
+            complexType = (AbstractType<?>) parent;
+        else if (parent instanceof ComplexAttributeType)
+            attributeType = (ComplexAttributeType) parent;
+    }
 
 }

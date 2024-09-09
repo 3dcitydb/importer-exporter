@@ -28,18 +28,18 @@
 package org.citydb.core.operation.common.xlink;
 
 public enum DBXlinkTextureParamEnum {
-	UNDEFINED,
-	X3DMATERIAL,
-	GEOREFERENCEDTEXTURE,
-	TEXCOORDGEN;
-	
-	public static DBXlinkTextureParamEnum fromInt(int i) {
-		for (DBXlinkTextureParamEnum c : DBXlinkTextureParamEnum.values()) {
-			if (c.ordinal() == i) {
-				return c;
-			}
-		}
+    UNDEFINED,
+    X3DMATERIAL,
+    GEOREFERENCEDTEXTURE,
+    TEXCOORDGEN;
 
-		return UNDEFINED;
-	}
+    public static DBXlinkTextureParamEnum fromInt(int i) {
+        for (DBXlinkTextureParamEnum c : DBXlinkTextureParamEnum.values()) {
+            if (c.ordinal() == i) {
+                return c;
+            }
+        }
+
+        return UNDEFINED;
+    }
 }

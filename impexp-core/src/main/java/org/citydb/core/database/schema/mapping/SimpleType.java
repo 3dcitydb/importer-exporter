@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlEnum
-@XmlType(name="simpleType")
+@XmlType(name = "simpleType")
 public enum SimpleType {
 
     @XmlEnumValue("string")
@@ -49,7 +49,7 @@ public enum SimpleType {
     TIMESTAMP("timestamp"),
     @XmlEnumValue("clob")
     CLOB("clob");
-    
+
     private final String value;
 
     SimpleType(String v) {
@@ -61,7 +61,7 @@ public enum SimpleType {
     }
 
     public static SimpleType fromValue(String v) {
-        for (SimpleType c: SimpleType.values()) {
+        for (SimpleType c : SimpleType.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

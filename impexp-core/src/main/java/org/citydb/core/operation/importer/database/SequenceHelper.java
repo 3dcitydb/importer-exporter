@@ -37,41 +37,41 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 public class SequenceHelper {
-	private final Connection connection;
-	private final AbstractDatabaseAdapter databaseAdapter;
+    private final Connection connection;
+    private final AbstractDatabaseAdapter databaseAdapter;
 
-	private HashMap<String, PreparedStatement> psIdMap;
+    private HashMap<String, PreparedStatement> psIdMap;
 
-	public SequenceHelper(Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config) throws SQLException {
-		this.connection = connection;
-		this.databaseAdapter = databaseAdapter;
+    public SequenceHelper(Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config) throws SQLException {
+        this.connection = connection;
+        this.databaseAdapter = databaseAdapter;
 
-		psIdMap = new HashMap<String, PreparedStatement>();
-	}
-	
-	public long getNextSequenceValue(String sequence) throws SQLException {
-		PreparedStatement stmt = psIdMap.get(sequence);
-		if (stmt == null) {
-			StringBuilder query = new StringBuilder("select ").append(databaseAdapter.getSQLAdapter().getNextSequenceValue(sequence));
-			if (databaseAdapter.getSQLAdapter().requiresPseudoTableInSelect())
-				query.append(" from ").append(databaseAdapter.getSQLAdapter().getPseudoTableName());
+        psIdMap = new HashMap<String, PreparedStatement>();
+    }
 
-			stmt = connection.prepareStatement(query.toString());
-			psIdMap.put(sequence, stmt);
-		}
+    public long getNextSequenceValue(String sequence) throws SQLException {
+        PreparedStatement stmt = psIdMap.get(sequence);
+        if (stmt == null) {
+            StringBuilder query = new StringBuilder("select ").append(databaseAdapter.getSQLAdapter().getNextSequenceValue(sequence));
+            if (databaseAdapter.getSQLAdapter().requiresPseudoTableInSelect())
+                query.append(" from ").append(databaseAdapter.getSQLAdapter().getPseudoTableName());
 
-		try (ResultSet rs = stmt.executeQuery()) {
-			if (rs.next())
-				return rs.getLong(1);
+            stmt = connection.prepareStatement(query.toString());
+            psIdMap.put(sequence, stmt);
+        }
 
-			throw new SQLException("Failed to retrieve the next sequence value from " + sequence + ".");
-		} catch (SQLException e) {
-			throw new SQLException("Failed to retrieve the next sequence value from " + sequence + ".", e);
-		}
-	}
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next())
+                return rs.getLong(1);
 
-	public void close() throws SQLException {
-		for (PreparedStatement stmt : psIdMap.values())
-			stmt.close();
-	}
+            throw new SQLException("Failed to retrieve the next sequence value from " + sequence + ".");
+        } catch (SQLException e) {
+            throw new SQLException("Failed to retrieve the next sequence value from " + sequence + ".", e);
+        }
+    }
+
+    public void close() throws SQLException {
+        for (PreparedStatement stmt : psIdMap.values())
+            stmt.close();
+    }
 }

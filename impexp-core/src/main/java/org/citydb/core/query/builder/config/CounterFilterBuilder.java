@@ -32,19 +32,19 @@ import org.citydb.core.query.filter.counter.CounterFilter;
 
 public class CounterFilterBuilder {
 
-	protected CounterFilterBuilder() {
-	}
+    protected CounterFilterBuilder() {
+    }
 
-	protected CounterFilter buildCounterFilter(org.citydb.config.project.query.filter.counter.CounterFilter counterFilterConfig) throws FilterException {
-		if (!counterFilterConfig.isSetCount() && !counterFilterConfig.isSetStartIndex())
-			throw new FilterException("Either count or startIndex must be defined for a counter filter.");
+    protected CounterFilter buildCounterFilter(org.citydb.config.project.query.filter.counter.CounterFilter counterFilterConfig) throws FilterException {
+        if (!counterFilterConfig.isSetCount() && !counterFilterConfig.isSetStartIndex())
+            throw new FilterException("Either count or startIndex must be defined for a counter filter.");
 
-		CounterFilter counterFilter = new CounterFilter();
-		if (counterFilterConfig.isSetCount())
-			counterFilter.setCount(counterFilterConfig.getCount());
-		if (counterFilterConfig.isSetStartIndex())
-			counterFilter.setStartIndex(counterFilterConfig.getStartIndex());
+        CounterFilter counterFilter = new CounterFilter();
+        if (counterFilterConfig.isSetCount())
+            counterFilter.setCount(counterFilterConfig.getCount());
+        if (counterFilterConfig.isSetStartIndex())
+            counterFilter.setStartIndex(counterFilterConfig.getStartIndex());
 
-		return counterFilter;
-	}
+        return counterFilter;
+    }
 }

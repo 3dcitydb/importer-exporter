@@ -37,301 +37,295 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public class TableHelper {
-	private final SchemaMapping schemaMapping;
-	private final HashMap<String, Set<String>> dependencyMap;
-	private List<String> weightedTables;
-	private Set<Object> visited;	
+    private final SchemaMapping schemaMapping;
+    private final HashMap<String, Set<String>> dependencyMap;
+    private List<String> weightedTables;
+    private Set<Object> visited;
 
-	public TableHelper(SchemaMapping schemaMapping) {
-		this.schemaMapping = schemaMapping;
-		dependencyMap = new HashMap<>();
-		
-		init();
-	}
-		
-	private void init() {
-		visited = new HashSet<>();		
-	
-		// build dependencies between tables
-		List<AbstractType<?>> types = schemaMapping.getAbstractTypes();
-		for (AbstractType<?> type : types)
-			addDependency(type.getTable(), type);
-		
-		// add dependencies that are not available from 
-		// the 3dcitydb schema mapping file
-		addDependency("surface_geometry", "cityobject");
-		addDependency("textureparam", "surface_data");
-		addDependency("textureparam", "surface_geometry");
-		addDependency("implicit_geometry", "surface_geometry");
+    public TableHelper(SchemaMapping schemaMapping) {
+        this.schemaMapping = schemaMapping;
+        dependencyMap = new HashMap<>();
 
-		// weight tables according to their dependencies
-		HashMap<String, Integer> weights = new HashMap<>();
-		for (String table : dependencyMap.keySet())
-			calcWeights(table, weights);
+        init();
+    }
 
-		weightedTables = weights.entrySet().stream()
-				.sorted(Entry.<String, Integer>comparingByValue().reversed())
-				.map(Entry::getKey)
-				.collect(Collectors.toList());
+    private void init() {
+        visited = new HashSet<>();
 
-		// clean up
-		visited = null;
-	}
-	
-	public List<String> getCommitOrder() {
-		return weightedTables;
-	}
+        // build dependencies between tables
+        List<AbstractType<?>> types = schemaMapping.getAbstractTypes();
+        for (AbstractType<?> type : types)
+            addDependency(type.getTable(), type);
 
-	public List<String> getCommitOrder(String table) {
-		Set<String> dependencies = getTransitiveDependencies(getTableName(table));		
-		return weightedTables.stream()
-				.filter(dependencies::contains)
-				.collect(Collectors.toList());
-	}
+        // add dependencies that are not available from
+        // the 3dcitydb schema mapping file
+        addDependency("surface_geometry", "cityobject");
+        addDependency("textureparam", "surface_data");
+        addDependency("textureparam", "surface_geometry");
+        addDependency("implicit_geometry", "surface_geometry");
 
-	private Set<String> getTransitiveDependencies(String table) {
-		Set<String> result = new HashSet<>();
-		result.add(table);
+        // weight tables according to their dependencies
+        HashMap<String, Integer> weights = new HashMap<>();
+        for (String table : dependencyMap.keySet())
+            calcWeights(table, weights);
 
-		Set<String> dependencies = dependencyMap.get(table);		
-		if (dependencies != null) {
-			for (String dependency : dependencies)
-				result.addAll(getTransitiveDependencies(dependency));
-		}
+        weightedTables = weights.entrySet().stream()
+                .sorted(Entry.<String, Integer>comparingByValue().reversed())
+                .map(Entry::getKey)
+                .collect(Collectors.toList());
 
-		return result;
-	}
-	
-	private void calcWeights(String table, HashMap<String, Integer> weights) {
-		if (!weights.containsKey(table))
-			weights.put(table, 0);
+        // clean up
+        visited = null;
+    }
 
-		int score = weights.get(table) + 1;
+    public List<String> getCommitOrder() {
+        return weightedTables;
+    }
 
-		Set<String> dependencies = dependencyMap.get(table);
-		if (dependencies != null) {
-			for (String dependency : dependencies) {
-				if (!weights.containsKey(dependency))
-					weights.put(dependency, score);
-				else
-					weights.put(dependency, weights.get(dependency) + score);
+    public List<String> getCommitOrder(String table) {
+        Set<String> dependencies = getTransitiveDependencies(getTableName(table));
+        return weightedTables.stream()
+                .filter(dependencies::contains)
+                .collect(Collectors.toList());
+    }
 
-				calcWeights(dependency, weights);
-			}
-		}		
-	}
+    private Set<String> getTransitiveDependencies(String table) {
+        Set<String> result = new HashSet<>();
+        result.add(table);
 
-	private void addDependency(String table, AbstractType<?> type) {
-		if (type.isSetExtension()) {
-			AbstractExtension<?> extension = type.getExtension();			
-			if (extension.isSetJoin())
-				addDependency(table, extension.getJoin(), type.getSchema());
-		}
+        Set<String> dependencies = dependencyMap.get(table);
+        if (dependencies != null) {
+            for (String dependency : dependencies)
+                result.addAll(getTransitiveDependencies(dependency));
+        }
 
-		for (AbstractProperty property : type.getProperties())
-			addDependency(table, property);
-	}
+        return result;
+    }
 
-	private void addDependency(String table, ComplexAttributeType type) {
-		if (visited.add(type)) {
-			for (AbstractAttribute attribute : type.getAttributes())
-				addDependency(table, attribute);
-		}
-	}
+    private void calcWeights(String table, HashMap<String, Integer> weights) {
+        if (!weights.containsKey(table))
+            weights.put(table, 0);
 
-	private void addDependency(String table, AbstractProperty property) {
-		String joinTable = table;
+        int score = weights.get(table) + 1;
 
-		if (property instanceof InjectedProperty) {
-			InjectedProperty injectedProperty = (InjectedProperty)property;
-			if (injectedProperty.isSetBaseJoin())
-				joinTable = addDependency(joinTable, injectedProperty.getBaseJoin(), property.getSchema());
-		}
+        Set<String> dependencies = dependencyMap.get(table);
+        if (dependencies != null) {
+            for (String dependency : dependencies) {
+                if (!weights.containsKey(dependency))
+                    weights.put(dependency, score);
+                else
+                    weights.put(dependency, weights.get(dependency) + score);
 
-		if (property.isSetJoin())
-			joinTable = addDependency(joinTable, property.getJoin(), property.getSchema());
+                calcWeights(dependency, weights);
+            }
+        }
+    }
 
-		if (property instanceof ComplexProperty) {
-			ComplexProperty complexProperty = (ComplexProperty)property;
-			if (complexProperty.isSetType() && visited.add(complexProperty.getType()))
-				addDependency(joinTable, complexProperty.getType());
-		}
+    private void addDependency(String table, AbstractType<?> type) {
+        if (type.isSetExtension()) {
+            AbstractExtension<?> extension = type.getExtension();
+            if (extension.isSetJoin())
+                addDependency(table, extension.getJoin(), type.getSchema());
+        }
 
-		else if (property instanceof GeometryProperty) {
-			GeometryProperty geometryProperty = (GeometryProperty)property;
-			if (geometryProperty.isSetRefColumn())
-				addDependency(table, "surface_geometry");
-		}
+        for (AbstractProperty property : type.getProperties())
+            addDependency(table, property);
+    }
 
-		else if (property instanceof ComplexAttribute) {
-			ComplexAttribute complexAttribute = (ComplexAttribute)property;
-			if (complexAttribute.isSetType())
-				addDependency(joinTable, complexAttribute.getType());
-		}
-	}
+    private void addDependency(String table, ComplexAttributeType type) {
+        if (visited.add(type)) {
+            for (AbstractAttribute attribute : type.getAttributes())
+                addDependency(table, attribute);
+        }
+    }
 
-	private String addDependency(String table, AbstractJoin join, AppSchema schema) {
-		if (join instanceof Join) {
-			Join simpleJoin = (Join)join;
-			String joinTable = simpleJoin.getTable();
+    private void addDependency(String table, AbstractProperty property) {
+        String joinTable = table;
 
-			if (simpleJoin.getToRole() == TableRole.PARENT)
-				addDependency(table, joinTable);
-			else
-				addDependency(joinTable, table);
-			
-			return joinTable;
-		}
+        if (property instanceof InjectedProperty) {
+            InjectedProperty injectedProperty = (InjectedProperty) property;
+            if (injectedProperty.isSetBaseJoin())
+                joinTable = addDependency(joinTable, injectedProperty.getBaseJoin(), property.getSchema());
+        }
 
-		else if (join instanceof JoinTable) {
-			JoinTable joinTable = (JoinTable)join;
-			String fromTable = joinTable.getTable();
-						
-			for (Join simpleJoin : joinTable.getJoins())
-				addDependency(fromTable, simpleJoin, schema);
+        if (property.isSetJoin())
+            joinTable = addDependency(joinTable, property.getJoin(), property.getSchema());
 
-			return table;
-		}
+        if (property instanceof ComplexProperty) {
+            ComplexProperty complexProperty = (ComplexProperty) property;
+            if (complexProperty.isSetType() && visited.add(complexProperty.getType()))
+                addDependency(joinTable, complexProperty.getType());
+        } else if (property instanceof GeometryProperty) {
+            GeometryProperty geometryProperty = (GeometryProperty) property;
+            if (geometryProperty.isSetRefColumn())
+                addDependency(table, "surface_geometry");
+        } else if (property instanceof ComplexAttribute) {
+            ComplexAttribute complexAttribute = (ComplexAttribute) property;
+            if (complexAttribute.isSetType())
+                addDependency(joinTable, complexAttribute.getType());
+        }
+    }
 
-		// we do not consider reverse joins...
-		return table;
-	}
+    private String addDependency(String table, AbstractJoin join, AppSchema schema) {
+        if (join instanceof Join) {
+            Join simpleJoin = (Join) join;
+            String joinTable = simpleJoin.getTable();
 
-	private void addDependency(String table, String dependency) {
-		table = getTableName(table);
-		dependency = getTableName(dependency);
+            if (simpleJoin.getToRole() == TableRole.PARENT)
+                addDependency(table, joinTable);
+            else
+                addDependency(joinTable, table);
 
-		if (dependency.equals(table))
-			return;
+            return joinTable;
+        } else if (join instanceof JoinTable) {
+            JoinTable joinTable = (JoinTable) join;
+            String fromTable = joinTable.getTable();
 
-		Set<String> dependencies = dependencyMap.computeIfAbsent(table, k -> new HashSet<>());
-		dependencies.add(dependency);
-	}
+            for (Join simpleJoin : joinTable.getJoins())
+                addDependency(fromTable, simpleJoin, schema);
 
-	private String getTableName(String table) {
-		if (table.equals(MappingConstants.TARGET_TABLE_TOKEN))
-			table = "cityobject";
+            return table;
+        }
 
-		return table.toLowerCase(Locale.ROOT);
-	}
-	
-	public Class<? extends DBImporter> getImporterClass(TableEnum table) throws SQLException {
-		switch (table) {
-		case ADDRESS:
-			return DBAddress.class;
-		case ADDRESS_TO_BRIDGE:
-			return DBAddressToBridge.class;
-		case ADDRESS_TO_BUILDING:
-			return DBAddressToBuilding.class;
-		case APPEAR_TO_SURFACE_DATA:
-			return DBAppearToSurfaceData.class;
-		case APPEARANCE:
-			return DBAppearance.class;
-		case BRIDGE_OPEN_TO_THEM_SRF:
-			return DBBridgeOpenToThemSrf.class;
-		case BREAKLINE_RELIEF:
-			return DBReliefComponent.class;
-		case BRIDGE:
-			return DBBridge.class;
-		case BRIDGE_CONSTR_ELEMENT:
-			return DBBridgeConstrElement.class;
-		case BRIDGE_FURNITURE:
-			return DBBridgeFurniture.class;
-		case BRIDGE_INSTALLATION:
-			return DBBridgeInstallation.class;
-		case BRIDGE_OPENING:
-			return DBBridgeOpening.class;
-		case BRIDGE_ROOM:
-			return DBBridgeRoom.class;
-		case BRIDGE_THEMATIC_SURFACE:
-			return DBBridgeThematicSurface.class;
-		case BUILDING:
-			return DBBuilding.class;
-		case BUILDING_FURNITURE:
-			return DBBuildingFurniture.class;
-		case BUILDING_INSTALLATION:
-			return DBBuildingInstallation.class;
-		case CITY_FURNITURE:
-			return DBCityFurniture.class;
-		case CITYOBJECT:
-			return DBCityObject.class;
-		case CITYOBJECT_GENERICATTRIB:
-			return DBCityObjectGenericAttrib.class;
-		case CITYOBJECTGROUP:
-			return DBCityObjectGroup.class;
-		case EXTERNAL_REFERENCE:
-			return DBExternalReference.class;
-		case GENERALIZATION:
-			return null;
-		case GENERIC_CITYOBJECT:
-			return DBGenericCityObject.class;
-		case GROUP_TO_CITYOBJECT:
-			return null;
-		case IMPLICIT_GEOMETRY:
-			return DBImplicitGeometry.class;
-		case LAND_USE:
-			return DBLandUse.class;
-		case MASSPOINT_RELIEF:
-			return DBReliefComponent.class;
-		case OPENING:
-			return DBOpening.class;
-		case OPENING_TO_THEM_SURFACE:
-			return DBOpeningToThemSurface.class;
-		case PLANT_COVER:
-			return DBPlantCover.class;
-		case RASTER_RELIEF:
-			return DBReliefComponent.class;
-		case RELIEF_COMPONENT:
-			return DBReliefComponent.class;
-		case RELIEF_FEAT_TO_REL_COMP:
-			return DBReliefFeatToRelComp.class;
-		case RELIEF_FEATURE:
-			return DBReliefFeature.class;
-		case ROOM:
-			return DBRoom.class;
-		case SOLITARY_VEGETAT_OBJECT:
-			return DBSolitaryVegetatObject.class;
-		case SURFACE_DATA:
-			return DBSurfaceData.class;
-		case SURFACE_GEOMETRY:
-			return DBSurfaceGeometry.class;
-		case TEX_IMAGE:
-			return DBTexImage.class;
-		case TEXTUREPARAM:
-			return DBTextureParam.class;
-		case THEMATIC_SURFACE:
-			return DBThematicSurface.class;
-		case TIN_RELIEF:
-			return DBReliefComponent.class;
-		case TRAFFIC_AREA:
-			return DBTrafficArea.class;
-		case TRANSPORTATION_COMPLEX:
-			return DBTransportationComplex.class;
-		case TUNNEL:
-			return DBTunnel.class;
-		case TUNNEL_FURNITURE:
-			return DBTunnelFurniture.class;
-		case TUNNEL_HOLLOW_SPACE:
-			return DBTunnelHollowSpace.class;
-		case TUNNEL_INSTALLATION:
-			return DBTunnelInstallation.class;
-		case TUNNEL_OPEN_TO_THEM_SRF:
-			return DBTunnelOpenToThemSrf.class;
-		case TUNNEL_OPENING:
-			return DBTunnelOpening.class;
-		case TUNNEL_THEMATIC_SURFACE:
-			return DBTunnelThematicSurface.class;
-		case WATERBOD_TO_WATERBND_SRF:
-			return DBWaterBodToWaterBndSrf.class;
-		case WATERBODY:
-			return DBWaterBody.class;
-		case WATERBOUNDARY_SURFACE:
-			return DBWaterBoundarySurface.class;
-		case UNDEFINED:
-			return null;
-		}
-		
-		return null;
-	}
-	
+        // we do not consider reverse joins...
+        return table;
+    }
+
+    private void addDependency(String table, String dependency) {
+        table = getTableName(table);
+        dependency = getTableName(dependency);
+
+        if (dependency.equals(table))
+            return;
+
+        Set<String> dependencies = dependencyMap.computeIfAbsent(table, k -> new HashSet<>());
+        dependencies.add(dependency);
+    }
+
+    private String getTableName(String table) {
+        if (table.equals(MappingConstants.TARGET_TABLE_TOKEN))
+            table = "cityobject";
+
+        return table.toLowerCase(Locale.ROOT);
+    }
+
+    public Class<? extends DBImporter> getImporterClass(TableEnum table) throws SQLException {
+        switch (table) {
+            case ADDRESS:
+                return DBAddress.class;
+            case ADDRESS_TO_BRIDGE:
+                return DBAddressToBridge.class;
+            case ADDRESS_TO_BUILDING:
+                return DBAddressToBuilding.class;
+            case APPEAR_TO_SURFACE_DATA:
+                return DBAppearToSurfaceData.class;
+            case APPEARANCE:
+                return DBAppearance.class;
+            case BRIDGE_OPEN_TO_THEM_SRF:
+                return DBBridgeOpenToThemSrf.class;
+            case BREAKLINE_RELIEF:
+                return DBReliefComponent.class;
+            case BRIDGE:
+                return DBBridge.class;
+            case BRIDGE_CONSTR_ELEMENT:
+                return DBBridgeConstrElement.class;
+            case BRIDGE_FURNITURE:
+                return DBBridgeFurniture.class;
+            case BRIDGE_INSTALLATION:
+                return DBBridgeInstallation.class;
+            case BRIDGE_OPENING:
+                return DBBridgeOpening.class;
+            case BRIDGE_ROOM:
+                return DBBridgeRoom.class;
+            case BRIDGE_THEMATIC_SURFACE:
+                return DBBridgeThematicSurface.class;
+            case BUILDING:
+                return DBBuilding.class;
+            case BUILDING_FURNITURE:
+                return DBBuildingFurniture.class;
+            case BUILDING_INSTALLATION:
+                return DBBuildingInstallation.class;
+            case CITY_FURNITURE:
+                return DBCityFurniture.class;
+            case CITYOBJECT:
+                return DBCityObject.class;
+            case CITYOBJECT_GENERICATTRIB:
+                return DBCityObjectGenericAttrib.class;
+            case CITYOBJECTGROUP:
+                return DBCityObjectGroup.class;
+            case EXTERNAL_REFERENCE:
+                return DBExternalReference.class;
+            case GENERALIZATION:
+                return null;
+            case GENERIC_CITYOBJECT:
+                return DBGenericCityObject.class;
+            case GROUP_TO_CITYOBJECT:
+                return null;
+            case IMPLICIT_GEOMETRY:
+                return DBImplicitGeometry.class;
+            case LAND_USE:
+                return DBLandUse.class;
+            case MASSPOINT_RELIEF:
+                return DBReliefComponent.class;
+            case OPENING:
+                return DBOpening.class;
+            case OPENING_TO_THEM_SURFACE:
+                return DBOpeningToThemSurface.class;
+            case PLANT_COVER:
+                return DBPlantCover.class;
+            case RASTER_RELIEF:
+                return DBReliefComponent.class;
+            case RELIEF_COMPONENT:
+                return DBReliefComponent.class;
+            case RELIEF_FEAT_TO_REL_COMP:
+                return DBReliefFeatToRelComp.class;
+            case RELIEF_FEATURE:
+                return DBReliefFeature.class;
+            case ROOM:
+                return DBRoom.class;
+            case SOLITARY_VEGETAT_OBJECT:
+                return DBSolitaryVegetatObject.class;
+            case SURFACE_DATA:
+                return DBSurfaceData.class;
+            case SURFACE_GEOMETRY:
+                return DBSurfaceGeometry.class;
+            case TEX_IMAGE:
+                return DBTexImage.class;
+            case TEXTUREPARAM:
+                return DBTextureParam.class;
+            case THEMATIC_SURFACE:
+                return DBThematicSurface.class;
+            case TIN_RELIEF:
+                return DBReliefComponent.class;
+            case TRAFFIC_AREA:
+                return DBTrafficArea.class;
+            case TRANSPORTATION_COMPLEX:
+                return DBTransportationComplex.class;
+            case TUNNEL:
+                return DBTunnel.class;
+            case TUNNEL_FURNITURE:
+                return DBTunnelFurniture.class;
+            case TUNNEL_HOLLOW_SPACE:
+                return DBTunnelHollowSpace.class;
+            case TUNNEL_INSTALLATION:
+                return DBTunnelInstallation.class;
+            case TUNNEL_OPEN_TO_THEM_SRF:
+                return DBTunnelOpenToThemSrf.class;
+            case TUNNEL_OPENING:
+                return DBTunnelOpening.class;
+            case TUNNEL_THEMATIC_SURFACE:
+                return DBTunnelThematicSurface.class;
+            case WATERBOD_TO_WATERBND_SRF:
+                return DBWaterBodToWaterBndSrf.class;
+            case WATERBODY:
+                return DBWaterBody.class;
+            case WATERBOUNDARY_SURFACE:
+                return DBWaterBoundarySurface.class;
+            case UNDEFINED:
+                return null;
+        }
+
+        return null;
+    }
+
 }

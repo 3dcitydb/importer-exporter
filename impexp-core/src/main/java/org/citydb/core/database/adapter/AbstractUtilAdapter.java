@@ -72,17 +72,29 @@ public abstract class AbstractUtilAdapter {
     }
 
     protected abstract void getCityDBVersion(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException;
+
     protected abstract void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException;
+
     protected abstract void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException;
+
     protected abstract void changeSrs(DatabaseSrs srs, boolean doTransform, String schema, Connection connection) throws SQLException;
+
     protected abstract String[] createDatabaseReport(String schema, Connection connection) throws SQLException;
+
     protected abstract GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException;
+
     protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;
+
     protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException;
+
     protected abstract boolean updateTableStats(IndexType type, String schema, Connection connection) throws SQLException;
+
     protected abstract boolean containsGlobalAppearances(Connection connection) throws SQLException;
+
     public abstract int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException;
+
     public abstract BoundingBox createBoundingBox(String schema, long objectId, boolean onlyIfNull, Connection connection) throws SQLException;
+
     public abstract DatabaseSrs getWGS843D();
 
     public DatabaseMetaData getDatabaseInfo(String schema) throws SQLException {
@@ -120,7 +132,7 @@ public abstract class AbstractUtilAdapter {
             if (srs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid()) {
                 changeSrs(srs, doTransform, schema, conn);
             } else {
-                try (PreparedStatement ps  = conn.prepareStatement("update " +
+                try (PreparedStatement ps = conn.prepareStatement("update " +
                         databaseAdapter.getConnectionDetails().getSchema() + ".database_srs set gml_srs_name = ?")) {
                     ps.setString(1, srs.getGMLSrsName());
                     ps.execute();

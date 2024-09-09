@@ -34,31 +34,31 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class CacheTableGlobalAppearance extends AbstractCacheTableModel {
-	private static CacheTableGlobalAppearance instance;
+    private static CacheTableGlobalAppearance instance;
 
-	public synchronized static CacheTableGlobalAppearance getInstance() {
-		if (instance == null)
-			instance = new CacheTableGlobalAppearance();
+    public synchronized static CacheTableGlobalAppearance getInstance() {
+        if (instance == null)
+            instance = new CacheTableGlobalAppearance();
 
-		return instance;
-	}
+        return instance;
+    }
 
-	@Override
-	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		try (Statement stmt = conn.createStatement()) {
-			stmt.executeUpdate("create unique index idx_" + tableName + " on " + tableName + " (ID) " + properties);
-		}
-	}
+    @Override
+    public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("create unique index idx_" + tableName + " on " + tableName + " (ID) " + properties);
+        }
+    }
 
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.GLOBAL_APPEARANCE;
-	}
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.GLOBAL_APPEARANCE;
+    }
 
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"ID " + sqlAdapter.getBigInt() +
-				")";
-	}
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "ID " + sqlAdapter.getBigInt() +
+                ")";
+    }
 }

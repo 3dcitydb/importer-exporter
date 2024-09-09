@@ -43,45 +43,45 @@ import java.util.Iterator;
 import java.util.List;
 
 public class AppearanceFilterBuilder {
-	private final AbstractDatabaseAdapter databaseAdapter;
-	
-	public AppearanceFilterBuilder(AbstractDatabaseAdapter databaseAdapter) {
-		this.databaseAdapter = databaseAdapter;
-	}
+    private final AbstractDatabaseAdapter databaseAdapter;
 
-	@SuppressWarnings("unchecked")
-	public PredicateToken buildAppearanceFilter(AppearanceFilter appearanceFilter, Column themeColumn) throws QueryBuildException {
-		if (!appearanceFilter.containsThemes())
-			throw new QueryBuildException("The appearance filter does not contain themes.");
+    public AppearanceFilterBuilder(AbstractDatabaseAdapter databaseAdapter) {
+        this.databaseAdapter = databaseAdapter;
+    }
 
-		List<PredicateToken> predicates = new ArrayList<>();
-		
-		// add null theme predicate
-		if (appearanceFilter.isIncludeNullTheme())
-			predicates.add(ComparisonFactory.isNull(themeColumn));
+    @SuppressWarnings("unchecked")
+    public PredicateToken buildAppearanceFilter(AppearanceFilter appearanceFilter, Column themeColumn) throws QueryBuildException {
+        if (!appearanceFilter.containsThemes())
+            throw new QueryBuildException("The appearance filter does not contain themes.");
 
-		// add in operator for themes
-		HashSet<String> themes = appearanceFilter.getThemes();
-		if (themes.size() == 1) {
-			predicates.add(ComparisonFactory.equalTo(themeColumn, new PlaceHolder<>(themes.iterator().next())));
-		} else {
-			List<PlaceHolder<String>> placeHolders = new ArrayList<>();
-			int maxItems = databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator();
-			int i = 0;
-			
-			Iterator<String> iter = themes.iterator();
-			while (iter.hasNext()) {
-				placeHolders.add(new PlaceHolder<>(iter.next()));
+        List<PredicateToken> predicates = new ArrayList<>();
 
-				if (++i == maxItems || !iter.hasNext()) {
-					predicates.add(ComparisonFactory.in(themeColumn, new LiteralList(placeHolders.toArray(new PlaceHolder[0]))));
-					placeHolders.clear();
-					i = 0;
-				}
-			}
-		}
+        // add null theme predicate
+        if (appearanceFilter.isIncludeNullTheme())
+            predicates.add(ComparisonFactory.isNull(themeColumn));
 
-		return LogicalOperationFactory.OR(predicates);
-	}
+        // add in operator for themes
+        HashSet<String> themes = appearanceFilter.getThemes();
+        if (themes.size() == 1) {
+            predicates.add(ComparisonFactory.equalTo(themeColumn, new PlaceHolder<>(themes.iterator().next())));
+        } else {
+            List<PlaceHolder<String>> placeHolders = new ArrayList<>();
+            int maxItems = databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator();
+            int i = 0;
+
+            Iterator<String> iter = themes.iterator();
+            while (iter.hasNext()) {
+                placeHolders.add(new PlaceHolder<>(iter.next()));
+
+                if (++i == maxItems || !iter.hasNext()) {
+                    predicates.add(ComparisonFactory.in(themeColumn, new LiteralList(placeHolders.toArray(new PlaceHolder[0]))));
+                    placeHolders.clear();
+                    i = 0;
+                }
+            }
+        }
+
+        return LogicalOperationFactory.OR(predicates);
+    }
 
 }

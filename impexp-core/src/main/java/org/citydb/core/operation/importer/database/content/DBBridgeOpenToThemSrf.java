@@ -36,41 +36,41 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBBridgeOpenToThemSrf implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psBridgeOpenToThemSrf;
-	private int batchCounter;
+    private PreparedStatement psBridgeOpenToThemSrf;
+    private int batchCounter;
 
-	public DBBridgeOpenToThemSrf(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
-		this.importer = importer;
+    public DBBridgeOpenToThemSrf(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String stmt = "insert into " + schema + ".bridge_open_to_them_srf (bridge_opening_id, bridge_thematic_surface_id) values " +
-				"(?, ?)";
-		psBridgeOpenToThemSrf = batchConn.prepareStatement(stmt);
-	}
+        String stmt = "insert into " + schema + ".bridge_open_to_them_srf (bridge_opening_id, bridge_thematic_surface_id) values " +
+                "(?, ?)";
+        psBridgeOpenToThemSrf = batchConn.prepareStatement(stmt);
+    }
 
-	protected void doImport(long openingId, long thematicSurfaceId) throws CityGMLImportException, SQLException {
-		psBridgeOpenToThemSrf.setLong(1, openingId);
-		psBridgeOpenToThemSrf.setLong(2, thematicSurfaceId);
+    protected void doImport(long openingId, long thematicSurfaceId) throws CityGMLImportException, SQLException {
+        psBridgeOpenToThemSrf.setLong(1, openingId);
+        psBridgeOpenToThemSrf.setLong(2, thematicSurfaceId);
 
-		psBridgeOpenToThemSrf.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.BRIDGE_OPEN_TO_THEM_SRF);
-	}
+        psBridgeOpenToThemSrf.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.BRIDGE_OPEN_TO_THEM_SRF);
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psBridgeOpenToThemSrf.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psBridgeOpenToThemSrf.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psBridgeOpenToThemSrf.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psBridgeOpenToThemSrf.close();
+    }
 
 }

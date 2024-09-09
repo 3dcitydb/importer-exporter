@@ -44,94 +44,94 @@ import javax.swing.*;
 import java.util.List;
 
 public class MenuView extends JMenu {
-	private final ImpExpGui mainView;
-	private final Config config;
-	
-	private JMenuItem map;
-	private JCheckBoxMenuItem detachConsole;
-	private JCheckBoxMenuItem lightTheme;
-	private JCheckBoxMenuItem darkTheme;
-	private JMenuItem defaults;
-	
-	public MenuView(ImpExpGui mainView, Config config) {
-		this.mainView = mainView;		
-		this.config = config;
-		init();
-	}
-	
-	private void init() {
-		map = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/map.svg"));
-		detachConsole = new JCheckBoxMenuItem();
-		detachConsole.setSelected(config.getGuiConfig().getConsoleWindow().isDetached());
-		lightTheme = new JCheckBoxMenuItem();
-		darkTheme = new JCheckBoxMenuItem();
-		defaults = new JMenuItem();
+    private final ImpExpGui mainView;
+    private final Config config;
 
-		ButtonGroup lafGroup = new ButtonGroup();
-		lafGroup.add(lightTheme);
-		lafGroup.add(darkTheme);
+    private JMenuItem map;
+    private JCheckBoxMenuItem detachConsole;
+    private JCheckBoxMenuItem lightTheme;
+    private JCheckBoxMenuItem darkTheme;
+    private JMenuItem defaults;
 
-		if (config.getGuiConfig().getAppearance().getTheme() == Theme.DARK) {
-			darkTheme.setSelected(true);
-		} else {
-			lightTheme.setSelected(true);
-		}
+    public MenuView(ImpExpGui mainView, Config config) {
+        this.mainView = mainView;
+        this.config = config;
+        init();
+    }
 
-		map.addActionListener(e -> {
-			SwingUtilities.invokeLater(() -> MapWindow.getInstance(mainView).setVisible(true));
-		});
+    private void init() {
+        map = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/map.svg"));
+        detachConsole = new JCheckBoxMenuItem();
+        detachConsole.setSelected(config.getGuiConfig().getConsoleWindow().isDetached());
+        lightTheme = new JCheckBoxMenuItem();
+        darkTheme = new JCheckBoxMenuItem();
+        defaults = new JMenuItem();
 
-		detachConsole.addActionListener(e -> mainView.enableConsoleWindow(!config.getGuiConfig().getConsoleWindow().isDetached(), true));
-		lightTheme.addActionListener(e -> mainView.setLookAndFeel(Theme.LIGHT));
-		darkTheme.addActionListener(e -> mainView.setLookAndFeel(Theme.DARK));
+        ButtonGroup lafGroup = new ButtonGroup();
+        lafGroup.add(lightTheme);
+        lafGroup.add(darkTheme);
 
-		defaults.addActionListener(e -> {
-			List<String> recentlyUsedProjects = config.getGuiConfig().getRecentlyUsedConfigFiles();
-			Theme theme = config.getGuiConfig().getAppearance().getTheme();
+        if (config.getGuiConfig().getAppearance().getTheme() == Theme.DARK) {
+            darkTheme.setSelected(true);
+        } else {
+            lightTheme.setSelected(true);
+        }
 
-			// replace existing GUI configuration with defaults
-			config.setGuiConfig(new GuiConfig());
+        map.addActionListener(e -> {
+            SwingUtilities.invokeLater(() -> MapWindow.getInstance(mainView).setVisible(true));
+        });
 
-			// reset logging settings
-			PluginManager pluginManager = PluginManager.getInstance();
-			pluginManager.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
+        detachConsole.addActionListener(e -> mainView.enableConsoleWindow(!config.getGuiConfig().getConsoleWindow().isDetached(), true));
+        lightTheme.addActionListener(e -> mainView.setLookAndFeel(Theme.LIGHT));
+        darkTheme.addActionListener(e -> mainView.setLookAndFeel(Theme.DARK));
 
-			// fire event to external plugins
-			for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
-				plugin.handleEvent(PluginConfigEvent.RESET_GUI_VIEW);
-			}
+        defaults.addActionListener(e -> {
+            List<String> recentlyUsedProjects = config.getGuiConfig().getRecentlyUsedConfigFiles();
+            Theme theme = config.getGuiConfig().getAppearance().getTheme();
 
-			config.getGuiConfig().setRecentlyUsedConfigFiles(recentlyUsedProjects);
-			config.getGuiConfig().getAppearance().setTheme(theme);
-			mainView.restoreDefaults();
-		});
-		
-		add(map);
-		addSeparator();
-		add(detachConsole);
-		addSeparator();
-		add(lightTheme);
-		add(darkTheme);
-		addSeparator();
-		add(defaults);
-	}
-	
-	public void switchLocale() {
-		map.setText(Language.I18N.getString("menu.view.map.label"));
-		detachConsole.setText(Language.I18N.getString("menu.view.detach.label"));
-		lightTheme.setText(Language.I18N.getString("map.view.laf.light.label"));
-		darkTheme.setText(Language.I18N.getString("map.view.laf.dark.label"));
-		defaults.setText(Language.I18N.getString("menu.view.defaults.label"));
-		
-		GuiUtil.setMnemonic(map, "menu.view.map.label", "menu.view.map.label.mnemonic");
-		GuiUtil.setMnemonic(detachConsole, "menu.view.detach.label", "menu.view.detach.label.mnemonic");
-		GuiUtil.setMnemonic(lightTheme, "map.view.laf.light.label", "map.view.laf.light.label.mnemonic");
-		GuiUtil.setMnemonic(darkTheme, "map.view.laf.dark.label", "map.view.laf.dark.label.mnemonic");
-		GuiUtil.setMnemonic(defaults, "menu.view.defaults.label", "menu.view.defaults.label.mnemonic");
-	}
+            // replace existing GUI configuration with defaults
+            config.setGuiConfig(new GuiConfig());
 
-	public void update() {
-		detachConsole.setSelected(config.getGuiConfig().getConsoleWindow().isDetached());
-	}
-	
+            // reset logging settings
+            PluginManager pluginManager = PluginManager.getInstance();
+            pluginManager.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
+
+            // fire event to external plugins
+            for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
+                plugin.handleEvent(PluginConfigEvent.RESET_GUI_VIEW);
+            }
+
+            config.getGuiConfig().setRecentlyUsedConfigFiles(recentlyUsedProjects);
+            config.getGuiConfig().getAppearance().setTheme(theme);
+            mainView.restoreDefaults();
+        });
+
+        add(map);
+        addSeparator();
+        add(detachConsole);
+        addSeparator();
+        add(lightTheme);
+        add(darkTheme);
+        addSeparator();
+        add(defaults);
+    }
+
+    public void switchLocale() {
+        map.setText(Language.I18N.getString("menu.view.map.label"));
+        detachConsole.setText(Language.I18N.getString("menu.view.detach.label"));
+        lightTheme.setText(Language.I18N.getString("map.view.laf.light.label"));
+        darkTheme.setText(Language.I18N.getString("map.view.laf.dark.label"));
+        defaults.setText(Language.I18N.getString("menu.view.defaults.label"));
+
+        GuiUtil.setMnemonic(map, "menu.view.map.label", "menu.view.map.label.mnemonic");
+        GuiUtil.setMnemonic(detachConsole, "menu.view.detach.label", "menu.view.detach.label.mnemonic");
+        GuiUtil.setMnemonic(lightTheme, "map.view.laf.light.label", "map.view.laf.light.label.mnemonic");
+        GuiUtil.setMnemonic(darkTheme, "map.view.laf.dark.label", "map.view.laf.dark.label.mnemonic");
+        GuiUtil.setMnemonic(defaults, "menu.view.defaults.label", "menu.view.defaults.label.mnemonic");
+    }
+
+    public void update() {
+        detachConsole.setSelected(config.getGuiConfig().getConsoleWindow().isDetached());
+    }
+
 }

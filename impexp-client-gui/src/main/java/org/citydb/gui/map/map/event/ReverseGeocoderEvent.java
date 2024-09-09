@@ -32,49 +32,49 @@ import org.citydb.gui.map.geocoder.service.GeocodingServiceException;
 import org.citydb.util.event.Event;
 
 public class ReverseGeocoderEvent extends Event {
-	private final ReverseGeocoderStatus status;
-	private final Location location;
-	private final GeocodingServiceException exception;
-	
-	public enum ReverseGeocoderStatus {
-		SEARCHING,
-		NO_RESULT,
-		RESULT,
-		ERROR
-	}	
-	
-	public ReverseGeocoderEvent(ReverseGeocoderStatus status) {
-		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL);
-		this.status = status == ReverseGeocoderStatus.SEARCHING || status == ReverseGeocoderStatus.NO_RESULT ?
-				status : ReverseGeocoderStatus.NO_RESULT;
+    private final ReverseGeocoderStatus status;
+    private final Location location;
+    private final GeocodingServiceException exception;
 
-		location = null;
-		exception = null;
-	}
-	
-	public ReverseGeocoderEvent(Location location) {
-		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL);
-		this.status = ReverseGeocoderStatus.RESULT;
-		this.location = location;
-		exception = null;
-	}
-	
-	public ReverseGeocoderEvent(GeocodingServiceException exception) {
-		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL);
-		this.status = ReverseGeocoderStatus.ERROR;
-		location = null;
-		this.exception = exception;
-	}
+    public enum ReverseGeocoderStatus {
+        SEARCHING,
+        NO_RESULT,
+        RESULT,
+        ERROR
+    }
 
-	public ReverseGeocoderStatus getStatus() {
-		return status;
-	}
+    public ReverseGeocoderEvent(ReverseGeocoderStatus status) {
+        super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL);
+        this.status = status == ReverseGeocoderStatus.SEARCHING || status == ReverseGeocoderStatus.NO_RESULT ?
+                status : ReverseGeocoderStatus.NO_RESULT;
 
-	public Location getLocation() {
-		return location;
-	}
+        location = null;
+        exception = null;
+    }
 
-	public GeocodingServiceException getException() {
-		return exception;
-	}
+    public ReverseGeocoderEvent(Location location) {
+        super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL);
+        this.status = ReverseGeocoderStatus.RESULT;
+        this.location = location;
+        exception = null;
+    }
+
+    public ReverseGeocoderEvent(GeocodingServiceException exception) {
+        super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL);
+        this.status = ReverseGeocoderStatus.ERROR;
+        location = null;
+        this.exception = exception;
+    }
+
+    public ReverseGeocoderStatus getStatus() {
+        return status;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public GeocodingServiceException getException() {
+        return exception;
+    }
 }

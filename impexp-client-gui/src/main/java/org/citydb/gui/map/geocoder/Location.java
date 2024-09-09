@@ -33,75 +33,75 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Location {
-	private LocationType locationType = LocationType.UNKNOWN;
-	private String formattedAddress;
-	private GeoPosition position;
-	private ViewPort viewPort;
-	private Map<String, Object> attributes;
+    private LocationType locationType = LocationType.UNKNOWN;
+    private String formattedAddress;
+    private GeoPosition position;
+    private ViewPort viewPort;
+    private Map<String, Object> attributes;
 
-	public Location() {
-		attributes = new HashMap<>();
-	}
-	
-	public LocationType getLocationType() {
-		return locationType;
-	}
+    public Location() {
+        attributes = new HashMap<>();
+    }
 
-	public void setLocationType(LocationType type) {
-		this.locationType = type;
-	}
+    public LocationType getLocationType() {
+        return locationType;
+    }
 
-	public String getFormattedAddress() {
-		return formattedAddress;
-	}
-	
-	public void setFormattedAddress(String formattedAddress) {
-		this.formattedAddress = formattedAddress;
-	}
-	
-	public GeoPosition getPosition() {
-		return position;
-	}
-	
-	public void setPosition(GeoPosition position) {
-		this.position = position;
-	}
-	
-	public void setViewPort(GeoPosition southWest, GeoPosition northEast) {
-		viewPort = new ViewPort(southWest, northEast);
-	}
+    public void setLocationType(LocationType type) {
+        this.locationType = type;
+    }
 
-	public ViewPort getViewPort() {
-		return viewPort;
-	}
+    public String getFormattedAddress() {
+        return formattedAddress;
+    }
 
-	public void addAttribute(String name, Object value) {
-		attributes.put(name, value);
-	}
+    public void setFormattedAddress(String formattedAddress) {
+        this.formattedAddress = formattedAddress;
+    }
 
-	public Map<String, Object> getAttributes() {
-		return attributes;
-	}
+    public GeoPosition getPosition() {
+        return position;
+    }
 
-	public boolean hasAttribute(String name) {
-		return attributes.containsKey(name);
-	}
+    public void setPosition(GeoPosition position) {
+        this.position = position;
+    }
 
-	public Object getAttribute(String name) {
-		return attributes.get(name);
-	}
+    public void setViewPort(GeoPosition southWest, GeoPosition northEast) {
+        viewPort = new ViewPort(southWest, northEast);
+    }
 
-	public <T> T getAttribute(String name, Class<T> type) {
-		Object attribute = attributes.get(name);
-		if (type.isInstance(attribute))
-			return type.cast(attribute);
+    public ViewPort getViewPort() {
+        return viewPort;
+    }
 
-		return null;
-	}
-	
-	@Override
-	public String toString() {
-		return formattedAddress;
-	}
-	
+    public void addAttribute(String name, Object value) {
+        attributes.put(name, value);
+    }
+
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    public boolean hasAttribute(String name) {
+        return attributes.containsKey(name);
+    }
+
+    public Object getAttribute(String name) {
+        return attributes.get(name);
+    }
+
+    public <T> T getAttribute(String name, Class<T> type) {
+        Object attribute = attributes.get(name);
+        if (type.isInstance(attribute))
+            return type.cast(attribute);
+
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return formattedAddress;
+    }
+
 }

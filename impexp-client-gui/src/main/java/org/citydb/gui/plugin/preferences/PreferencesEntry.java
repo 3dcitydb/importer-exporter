@@ -31,24 +31,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class PreferencesEntry {
-	private List<PreferencesEntry> childEntries;
-	
-	public abstract boolean isModified();
-	public abstract boolean handleEvent(PreferencesEvent event);
-	public abstract String getLocalizedTitle();
-	public abstract PreferencesComponent getViewComponent();
+    private List<PreferencesEntry> childEntries;
 
-	public void addChildEntry(PreferencesEntry child) {
-		if (childEntries == null)
-			childEntries = new ArrayList<>();
-		
-		childEntries.add(child);
-	}
-	
-	public List<PreferencesEntry> getChildEntries() {
-		if (childEntries == null)
-			childEntries = new ArrayList<>();
-		
-		return childEntries;
-	}
+    public abstract boolean isModified();
+
+    public abstract boolean handleEvent(PreferencesEvent event);
+
+    public abstract String getLocalizedTitle();
+
+    public abstract PreferencesComponent getViewComponent();
+
+    public void addChildEntry(PreferencesEntry child) {
+        if (childEntries == null)
+            childEntries = new ArrayList<>();
+
+        childEntries.add(child);
+    }
+
+    public List<PreferencesEntry> getChildEntries() {
+        if (childEntries == null)
+            childEntries = new ArrayList<>();
+
+        return childEntries;
+    }
 }

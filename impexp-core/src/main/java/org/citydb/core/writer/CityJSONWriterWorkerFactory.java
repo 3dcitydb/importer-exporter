@@ -34,16 +34,16 @@ import org.citygml4j.builder.cityjson.json.io.writer.CityJSONChunkWriter;
 import org.citygml4j.cityjson.feature.AbstractCityObjectType;
 
 public class CityJSONWriterWorkerFactory implements WorkerFactory<AbstractCityObjectType> {
-	private final CityJSONChunkWriter writer;
-	private final EventDispatcher eventDispatcher;
+    private final CityJSONChunkWriter writer;
+    private final EventDispatcher eventDispatcher;
 
-	public CityJSONWriterWorkerFactory(CityJSONChunkWriter writer, EventDispatcher eventDispatcher) {
-		this.writer = writer;
-		this.eventDispatcher = eventDispatcher;
-	}
+    public CityJSONWriterWorkerFactory(CityJSONChunkWriter writer, EventDispatcher eventDispatcher) {
+        this.writer = writer;
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	@Override
-	public Worker<AbstractCityObjectType> createWorker() {
-		return new CityJSONWriterWorker(writer, eventDispatcher);
-	}
+    @Override
+    public Worker<AbstractCityObjectType> createWorker() {
+        return new CityJSONWriterWorker(writer, eventDispatcher);
+    }
 }

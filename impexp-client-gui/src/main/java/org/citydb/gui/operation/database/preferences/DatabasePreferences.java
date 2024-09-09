@@ -33,11 +33,11 @@ import org.citydb.gui.plugin.util.DefaultPreferencesEntry;
 import org.citydb.gui.plugin.view.ViewController;
 
 public class DatabasePreferences extends DefaultPreferences {
-	
-	public DatabasePreferences(ViewController viewController, Config config) {
-		super(new DatabaseEntry());
-		
-		rootEntry.addChildEntry(new DefaultPreferencesEntry(new SrsPanel(viewController, config)));
-	}
+
+    public DatabasePreferences(ViewController viewController, Config config) {
+        super(new DatabaseEntry());
+
+        rootEntry.addChildEntry(new DefaultPreferencesEntry(new SrsPanel(viewController, config)));
+    }
 
 }

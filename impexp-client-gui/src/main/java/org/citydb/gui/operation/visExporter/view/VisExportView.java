@@ -36,22 +36,22 @@ import javax.swing.*;
 
 public class VisExportView extends DefaultView {
 
-	public VisExportView(ViewController viewController, Config config) {
-		super(new VisExportPanel(viewController, config));
-	}
-	
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("main.tabbedPane.visExport");
-	}
+    public VisExportView(ViewController viewController, Config config) {
+        super(new VisExportPanel(viewController, config));
+    }
 
-	@Override
-	public String getToolTip() {
-		return null;
-	}
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("main.tabbedPane.visExport");
+    }
 
-	@Override
-	public Icon getIcon() {
-		return null;
-	}
+    @Override
+    public String getToolTip() {
+        return null;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return null;
+    }
 }

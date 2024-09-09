@@ -32,26 +32,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ConcurrentLockManager {
-	private static HashMap<String, ConcurrentLockManager> instances;	
-	private final ConcurrentHashMap<String, ReentrantLock> locks;
+    private static HashMap<String, ConcurrentLockManager> instances;
+    private final ConcurrentHashMap<String, ReentrantLock> locks;
 
-	private ConcurrentLockManager() {
-		locks = new ConcurrentHashMap<>();
-	}
+    private ConcurrentLockManager() {
+        locks = new ConcurrentHashMap<>();
+    }
 
-	public static synchronized ConcurrentLockManager getInstance(Class<?> className) {
-		if (instances == null)
-			instances = new HashMap<>();
+    public static synchronized ConcurrentLockManager getInstance(Class<?> className) {
+        if (instances == null)
+            instances = new HashMap<>();
 
-		return instances.computeIfAbsent(className.getName(), v -> new ConcurrentLockManager());
-	}
+        return instances.computeIfAbsent(className.getName(), v -> new ConcurrentLockManager());
+    }
 
-	public ReentrantLock getLock(String key) {
-		return locks.computeIfAbsent(key, v -> new ReentrantLock());
-	}
+    public ReentrantLock getLock(String key) {
+        return locks.computeIfAbsent(key, v -> new ReentrantLock());
+    }
 
-	public void releaseLock(String key) {
-		locks.remove(key);
-	}
+    public void releaseLock(String key) {
+        locks.remove(key);
+    }
 
 }

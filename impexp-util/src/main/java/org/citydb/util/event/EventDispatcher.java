@@ -35,109 +35,109 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class EventDispatcher {
-	private SingleWorkerPool<Event> eventDispatcherThread;
-	private ConcurrentHashMap<Enum<?>, EventHandlerContainerQueue> containerQueueMap;
-	private ReentrantLock mainLock;
+    private SingleWorkerPool<Event> eventDispatcherThread;
+    private ConcurrentHashMap<Enum<?>, EventHandlerContainerQueue> containerQueueMap;
+    private ReentrantLock mainLock;
 
-	public EventDispatcher(int eventQueueSize) {
-		containerQueueMap = new ConcurrentHashMap<>();
-		eventDispatcherThread = new SingleWorkerPool<>(
-				"event_dispatcher",
-				new EventWorkerFactory(this),
-				eventQueueSize,
-				true);
+    public EventDispatcher(int eventQueueSize) {
+        containerQueueMap = new ConcurrentHashMap<>();
+        eventDispatcherThread = new SingleWorkerPool<>(
+                "event_dispatcher",
+                new EventWorkerFactory(this),
+                eventQueueSize,
+                true);
 
-		eventDispatcherThread.prestartCoreWorkers();
-		mainLock = new ReentrantLock();
-	}
+        eventDispatcherThread.prestartCoreWorkers();
+        mainLock = new ReentrantLock();
+    }
 
-	public EventDispatcher() {
-		this(100);
-	}
+    public EventDispatcher() {
+        this(100);
+    }
 
-	public void addEventHandler(Enum<?> type, EventHandler handler, boolean autoRemove) {
-		containerQueueMap.putIfAbsent(type, new EventHandlerContainerQueue());
+    public void addEventHandler(Enum<?> type, EventHandler handler, boolean autoRemove) {
+        containerQueueMap.putIfAbsent(type, new EventHandlerContainerQueue());
 
-		EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
-		containerQueue.addEventHandler(handler, autoRemove);
-	}
+        EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
+        containerQueue.addEventHandler(handler, autoRemove);
+    }
 
 
-	public void addEventHandler(Enum<?> type, EventHandler handler) {
-		addEventHandler(type, handler, false);
-	}
+    public void addEventHandler(Enum<?> type, EventHandler handler) {
+        addEventHandler(type, handler, false);
+    }
 
-	public boolean removeEventHandler(Enum<?> type, EventHandler handler) {
-		if (!containerQueueMap.containsKey(type))
-			return false;
+    public boolean removeEventHandler(Enum<?> type, EventHandler handler) {
+        if (!containerQueueMap.containsKey(type))
+            return false;
 
-		EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
-		return containerQueue.removeEventHandler(handler);
-	}
+        EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
+        return containerQueue.removeEventHandler(handler);
+    }
 
-	public void removeEventHandler(EventHandler handler) {
-		for (EventHandlerContainerQueue containerQueue : containerQueueMap.values())
-			containerQueue.removeEventHandler(handler);	
-	}
+    public void removeEventHandler(EventHandler handler) {
+        for (EventHandlerContainerQueue containerQueue : containerQueueMap.values())
+            containerQueue.removeEventHandler(handler);
+    }
 
-	public void triggerEvent(Event event) {
-		eventDispatcherThread.addWork(event);
-	}
+    public void triggerEvent(Event event) {
+        eventDispatcherThread.addWork(event);
+    }
 
-	public Event triggerSyncEvent(Event event) {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+    public Event triggerSyncEvent(Event event) {
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			return propagate(event);
-		} finally {
-			lock.unlock();
-		}
-	}
+        try {
+            return propagate(event);
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	protected Event propagate(Event event) {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+    protected Event propagate(Event event) {
+        final ReentrantLock lock = this.mainLock;
+        lock.lock();
 
-		try {
-			if (containerQueueMap.containsKey(event.getEventType())) {
-				EventHandlerContainerQueue containerQueue = containerQueueMap.get(event.getEventType());
-				containerQueue.propagate(event);
-			}
+        try {
+            if (containerQueueMap.containsKey(event.getEventType())) {
+                EventHandlerContainerQueue containerQueue = containerQueueMap.get(event.getEventType());
+                containerQueue.propagate(event);
+            }
 
-			return event;
-		} finally {
-			lock.unlock();
-		}
-	}
+            return event;
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	public List<EventHandler> getRegisteredHandlers(Enum<?> type) {
-		return containerQueueMap.containsKey(type) ?
-				containerQueueMap.get(type).getHandlers() : new ArrayList<>();
-	}
+    public List<EventHandler> getRegisteredHandlers(Enum<?> type) {
+        return containerQueueMap.containsKey(type) ?
+                containerQueueMap.get(type).getHandlers() : new ArrayList<>();
+    }
 
-	public void reset() {
-		for (EventHandlerContainerQueue containerQueue : containerQueueMap.values())
-			containerQueue.clear();
-	}
+    public void reset() {
+        for (EventHandlerContainerQueue containerQueue : containerQueueMap.values())
+            containerQueue.clear();
+    }
 
-	public void flushEvents() throws InterruptedException {
-		eventDispatcherThread.join();
-	}
-	
-	public void shutdown() {
-		eventDispatcherThread.shutdown();
-		containerQueueMap.clear();
-	}
-	
-	public void shutdownNow() {
-		eventDispatcherThread.shutdownNow();
-		containerQueueMap.clear();
-	}
-	
-	public void shutdownAndWait() throws InterruptedException {
-		eventDispatcherThread.shutdownAndWait();
-		containerQueueMap.clear();
-	}
-	
+    public void flushEvents() throws InterruptedException {
+        eventDispatcherThread.join();
+    }
+
+    public void shutdown() {
+        eventDispatcherThread.shutdown();
+        containerQueueMap.clear();
+    }
+
+    public void shutdownNow() {
+        eventDispatcherThread.shutdownNow();
+        containerQueueMap.clear();
+    }
+
+    public void shutdownAndWait() throws InterruptedException {
+        eventDispatcherThread.shutdownAndWait();
+        containerQueueMap.clear();
+    }
+
 }

@@ -75,7 +75,7 @@ public class CityGMLReader implements FeatureReader, EventHandler {
         maxThreads = config.getImportConfig().getResources().getThreadPool().getMaxThreads();
 
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-        eventDispatcher.addEventHandler(EventType.INTERRUPT,this);
+        eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
     }
 
     @Override

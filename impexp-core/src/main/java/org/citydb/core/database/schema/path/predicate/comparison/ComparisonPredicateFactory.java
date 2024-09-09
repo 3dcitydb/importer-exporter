@@ -31,8 +31,8 @@ import org.citydb.core.database.schema.mapping.SimpleAttribute;
 import org.citydb.core.query.filter.selection.expression.AbstractLiteral;
 
 public class ComparisonPredicateFactory {
-	
-	public static EqualToPredicate equalTo(SimpleAttribute leftOperand, AbstractLiteral<?> rightOperand) {
-		return new EqualToPredicate(leftOperand, rightOperand);
-	}
+
+    public static EqualToPredicate equalTo(SimpleAttribute leftOperand, AbstractLiteral<?> rightOperand) {
+        return new EqualToPredicate(leftOperand, rightOperand);
+    }
 }

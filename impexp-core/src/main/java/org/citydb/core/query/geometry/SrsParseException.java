@@ -28,22 +28,22 @@
 package org.citydb.core.query.geometry;
 
 public class SrsParseException extends Exception {
-	private static final long serialVersionUID = -2099896956174757521L;
+    private static final long serialVersionUID = -2099896956174757521L;
 
-	public SrsParseException() {
-		super();
-	}
-	
-	public SrsParseException(String message) {
-		super(message);
-	}
-	
-	public SrsParseException(Throwable cause) {
-		super(cause);
-	}
-	
-	public SrsParseException(String message, Throwable cause) {
-		super(message, cause);
-	}
-	
+    public SrsParseException() {
+        super();
+    }
+
+    public SrsParseException(String message) {
+        super(message);
+    }
+
+    public SrsParseException(Throwable cause) {
+        super(cause);
+    }
+
+    public SrsParseException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

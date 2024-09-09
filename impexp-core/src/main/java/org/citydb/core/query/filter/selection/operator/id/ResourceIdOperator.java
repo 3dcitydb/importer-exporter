@@ -35,51 +35,51 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ResourceIdOperator extends AbstractIdOperator {
-	private final Set<String> resourceIds;
-	
-	public ResourceIdOperator() {
-		resourceIds = new HashSet<>();
-	}
-	
-	public ResourceIdOperator(Collection<String> resourceIds) throws FilterException {
-		if (resourceIds == null)
-			throw new FilterException("List of resource ids may not be null.");
-		
-		this.resourceIds = new HashSet<>(resourceIds);
-	}
-	
-	public ResourceIdOperator(String... resourceIds) throws FilterException {
-		this(Arrays.asList(resourceIds));
-	}
-	
-	public boolean isEmpty() {
-		return resourceIds.isEmpty();
-	}
-	
-	public void clear() {
-		resourceIds.clear();
-	}
+    private final Set<String> resourceIds;
 
-	public int numberOfResourceIds() {
-		return resourceIds.size();
-	}
-	
-	public boolean addResourceId(String resourceId) {
-		return resourceIds.add(resourceId);
-	}
-	
-	public Set<String> getResourceIds() {
-		return resourceIds;
-	}
-	
-	@Override
-	public IdOperationName getOperatorName() {
-		return IdOperationName.RESOURCE_ID;
-	}
+    public ResourceIdOperator() {
+        resourceIds = new HashSet<>();
+    }
 
-	@Override
-	public ResourceIdOperator copy() throws FilterException {
-		return new ResourceIdOperator(resourceIds);
-	}
+    public ResourceIdOperator(Collection<String> resourceIds) throws FilterException {
+        if (resourceIds == null)
+            throw new FilterException("List of resource ids may not be null.");
+
+        this.resourceIds = new HashSet<>(resourceIds);
+    }
+
+    public ResourceIdOperator(String... resourceIds) throws FilterException {
+        this(Arrays.asList(resourceIds));
+    }
+
+    public boolean isEmpty() {
+        return resourceIds.isEmpty();
+    }
+
+    public void clear() {
+        resourceIds.clear();
+    }
+
+    public int numberOfResourceIds() {
+        return resourceIds.size();
+    }
+
+    public boolean addResourceId(String resourceId) {
+        return resourceIds.add(resourceId);
+    }
+
+    public Set<String> getResourceIds() {
+        return resourceIds;
+    }
+
+    @Override
+    public IdOperationName getOperatorName() {
+        return IdOperationName.RESOURCE_ID;
+    }
+
+    @Override
+    public ResourceIdOperator copy() throws FilterException {
+        return new ResourceIdOperator(resourceIds);
+    }
 
 }

@@ -65,10 +65,12 @@ public class CityJSONOptionsPanel extends InternalPreferencesComponent {
         CityJSONOptions cityJSONOptions = config.getExportConfig().getCityJSONOptions();
         if (prettyPrint.isSelected() != cityJSONOptions.isPrettyPrint()) return true;
         if (useGeometryCompression.isSelected() != cityJSONOptions.isUseGeometryCompression()) return true;
-        if (removeDuplicateChildGeometries.isSelected() != cityJSONOptions.isRemoveDuplicateChildGeometries()) return true;
+        if (removeDuplicateChildGeometries.isSelected() != cityJSONOptions.isRemoveDuplicateChildGeometries())
+            return true;
         if (addSequenceIdWhenSorting.isSelected() != cityJSONOptions.isAddSequenceIdWhenSorting()) return true;
         if (((Number) significantDigits.getValue()).intValue() != cityJSONOptions.getSignificantDigits()) return true;
-        if (((Number) significantTextureDigits.getValue()).intValue() != cityJSONOptions.getSignificantTextureDigits()) return true;
+        if (((Number) significantTextureDigits.getValue()).intValue() != cityJSONOptions.getSignificantTextureDigits())
+            return true;
         return false;
     }
 

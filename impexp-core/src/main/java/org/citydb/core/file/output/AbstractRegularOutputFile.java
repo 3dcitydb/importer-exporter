@@ -55,7 +55,7 @@ public abstract class AbstractRegularOutputFile extends OutputFile {
 
     @Override
     public OutputStream newOutputStream(String file) throws IOException {
-        return Files.newOutputStream(Paths.get(file) );
+        return Files.newOutputStream(Paths.get(file));
     }
 
     @Override

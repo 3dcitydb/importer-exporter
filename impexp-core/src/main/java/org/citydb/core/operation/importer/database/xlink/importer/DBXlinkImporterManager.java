@@ -38,133 +38,133 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 public class DBXlinkImporterManager {
-	private final CacheTableManager cacheTableManager;
-	private final EventDispatcher eventDispatcher;
-	private HashMap<DBXlinkImporterEnum, DBXlinkImporter> dbImporterMap;
+    private final CacheTableManager cacheTableManager;
+    private final EventDispatcher eventDispatcher;
+    private HashMap<DBXlinkImporterEnum, DBXlinkImporter> dbImporterMap;
 
-	public DBXlinkImporterManager(CacheTableManager cacheTableManager, EventDispatcher eventDispatcher) {
-		this.cacheTableManager = cacheTableManager;
-		this.eventDispatcher = eventDispatcher;
+    public DBXlinkImporterManager(CacheTableManager cacheTableManager, EventDispatcher eventDispatcher) {
+        this.cacheTableManager = cacheTableManager;
+        this.eventDispatcher = eventDispatcher;
 
-		dbImporterMap = new HashMap<DBXlinkImporterEnum, DBXlinkImporter>();
-	}
+        dbImporterMap = new HashMap<DBXlinkImporterEnum, DBXlinkImporter>();
+    }
 
-	public DBXlinkImporter getDBImporterXlink(DBXlinkImporterEnum xlinkType) throws SQLException {
-		DBXlinkImporter dbImporter = dbImporterMap.get(xlinkType);
+    public DBXlinkImporter getDBImporterXlink(DBXlinkImporterEnum xlinkType) throws SQLException {
+        DBXlinkImporter dbImporter = dbImporterMap.get(xlinkType);
 
-		if (dbImporter == null) {
-			// firstly create tmp table
-			CacheTable tempTable = null;
+        if (dbImporter == null) {
+            // firstly create tmp table
+            CacheTable tempTable = null;
 
-			switch (xlinkType) {
-			case SURFACE_GEOMETRY:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.SURFACE_GEOMETRY);
-				break;
-			case LINEAR_RING:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.LINEAR_RING);
-				break;
-			case XLINK_BASIC:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.BASIC);
-				break;
-			case XLINK_TEXTURE_COORD_LIST:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTURE_COORD_LIST);
-				break;
-			case XLINK_TEXTUREPARAM:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTUREPARAM);
-				break;
-			case TEXTUREASSOCIATION_TARGET:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTUREASSOCIATION_TARGET);
-				break;
-			case XLINK_TEXTUREASSOCIATION:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTUREASSOCIATION);
-				break;
-			case TEXTURE_FILE:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTURE_FILE);
-				break;
-			case SURFACE_DATA_TO_TEX_IMAGE:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.SURFACE_DATA_TO_TEX_IMAGE);
-				break;
-			case LIBRARY_OBJECT:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.LIBRARY_OBJECT);
-				break;
-			case XLINK_DEPRECATED_MATERIAL:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.DEPRECATED_MATERIAL);
-				break;
-			case GROUP_TO_CITYOBJECT:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.GROUP_TO_CITYOBJECT);
-				break;
-			case SOLID_GEOMETRY:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModel.SOLID_GEOMETRY);
-				break;
-			}
+            switch (xlinkType) {
+                case SURFACE_GEOMETRY:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.SURFACE_GEOMETRY);
+                    break;
+                case LINEAR_RING:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.LINEAR_RING);
+                    break;
+                case XLINK_BASIC:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.BASIC);
+                    break;
+                case XLINK_TEXTURE_COORD_LIST:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTURE_COORD_LIST);
+                    break;
+                case XLINK_TEXTUREPARAM:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTUREPARAM);
+                    break;
+                case TEXTUREASSOCIATION_TARGET:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTUREASSOCIATION_TARGET);
+                    break;
+                case XLINK_TEXTUREASSOCIATION:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTUREASSOCIATION);
+                    break;
+                case TEXTURE_FILE:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTURE_FILE);
+                    break;
+                case SURFACE_DATA_TO_TEX_IMAGE:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.SURFACE_DATA_TO_TEX_IMAGE);
+                    break;
+                case LIBRARY_OBJECT:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.LIBRARY_OBJECT);
+                    break;
+                case XLINK_DEPRECATED_MATERIAL:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.DEPRECATED_MATERIAL);
+                    break;
+                case GROUP_TO_CITYOBJECT:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.GROUP_TO_CITYOBJECT);
+                    break;
+                case SOLID_GEOMETRY:
+                    tempTable = cacheTableManager.createCacheTable(CacheTableModel.SOLID_GEOMETRY);
+                    break;
+            }
 
-			if (tempTable != null) {
-				// initialize DBImporter
-				switch (xlinkType) {
-				case SURFACE_GEOMETRY:
-					dbImporter = new DBXlinkImporterSurfaceGeometry(tempTable, this);
-					break;
-				case LINEAR_RING:
-					dbImporter = new DBXlinkImporterLinearRing(tempTable, this);
-					break;
-				case XLINK_BASIC:
-					dbImporter = new DBXlinkImporterBasic(tempTable, this);
-					break;
-				case XLINK_TEXTURE_COORD_LIST:
-					dbImporter = new DBXlinkImporterTextureCoordList(tempTable, this);
-					break;
-				case XLINK_TEXTUREPARAM:
-					dbImporter = new DBXlinkImporterTextureParam(tempTable, this);
-					break;
-				case TEXTUREASSOCIATION_TARGET:
-					dbImporter = new DBXlinkImporterTextureAssociationTarget(tempTable, this);
-					break;
-				case XLINK_TEXTUREASSOCIATION:
-					dbImporter = new DBXlinkImporterTextureAssociation(tempTable, this);
-					break;
-				case TEXTURE_FILE:
-					dbImporter = new DBXlinkImporterTextureFile(tempTable, this);
-					break;
-				case SURFACE_DATA_TO_TEX_IMAGE:
-					dbImporter = new DBXlinkImporterSurfaceDataToTexImage(tempTable, this);
-					break;
-				case LIBRARY_OBJECT:
-					dbImporter = new DBXlinkImporterLibraryObject(tempTable, this);
-					break;
-				case XLINK_DEPRECATED_MATERIAL:
-					dbImporter = new DBXlinkImporterDeprecatedMaterial(tempTable, this);
-					break;
-				case GROUP_TO_CITYOBJECT:
-					dbImporter = new DBXlinkImporterGroupToCityObject(tempTable, this);
-					break;
-				case SOLID_GEOMETRY:
-					dbImporter = new DBXlinkImporterSolidGeometry(tempTable, this);
-					break;
-				}
+            if (tempTable != null) {
+                // initialize DBImporter
+                switch (xlinkType) {
+                    case SURFACE_GEOMETRY:
+                        dbImporter = new DBXlinkImporterSurfaceGeometry(tempTable, this);
+                        break;
+                    case LINEAR_RING:
+                        dbImporter = new DBXlinkImporterLinearRing(tempTable, this);
+                        break;
+                    case XLINK_BASIC:
+                        dbImporter = new DBXlinkImporterBasic(tempTable, this);
+                        break;
+                    case XLINK_TEXTURE_COORD_LIST:
+                        dbImporter = new DBXlinkImporterTextureCoordList(tempTable, this);
+                        break;
+                    case XLINK_TEXTUREPARAM:
+                        dbImporter = new DBXlinkImporterTextureParam(tempTable, this);
+                        break;
+                    case TEXTUREASSOCIATION_TARGET:
+                        dbImporter = new DBXlinkImporterTextureAssociationTarget(tempTable, this);
+                        break;
+                    case XLINK_TEXTUREASSOCIATION:
+                        dbImporter = new DBXlinkImporterTextureAssociation(tempTable, this);
+                        break;
+                    case TEXTURE_FILE:
+                        dbImporter = new DBXlinkImporterTextureFile(tempTable, this);
+                        break;
+                    case SURFACE_DATA_TO_TEX_IMAGE:
+                        dbImporter = new DBXlinkImporterSurfaceDataToTexImage(tempTable, this);
+                        break;
+                    case LIBRARY_OBJECT:
+                        dbImporter = new DBXlinkImporterLibraryObject(tempTable, this);
+                        break;
+                    case XLINK_DEPRECATED_MATERIAL:
+                        dbImporter = new DBXlinkImporterDeprecatedMaterial(tempTable, this);
+                        break;
+                    case GROUP_TO_CITYOBJECT:
+                        dbImporter = new DBXlinkImporterGroupToCityObject(tempTable, this);
+                        break;
+                    case SOLID_GEOMETRY:
+                        dbImporter = new DBXlinkImporterSolidGeometry(tempTable, this);
+                        break;
+                }
 
-				if (dbImporter != null)
-					dbImporterMap.put(xlinkType, dbImporter);
-			}
-		}
+                if (dbImporter != null)
+                    dbImporterMap.put(xlinkType, dbImporter);
+            }
+        }
 
-		return dbImporter;
-	}
+        return dbImporter;
+    }
 
-	public void propagateEvent(Event event) {
-		eventDispatcher.triggerEvent(event);
-	}
-	
-	public AbstractDatabaseAdapter getCacheAdapter() {
-		return cacheTableManager.getCacheAdapter();
-	}
+    public void propagateEvent(Event event) {
+        eventDispatcher.triggerEvent(event);
+    }
 
-	public void executeBatch() throws SQLException {
-		for (DBXlinkImporter dbImporter : dbImporterMap.values())
-			dbImporter.executeBatch();
-	}
-	
-	public void close() throws SQLException {
-		for (DBXlinkImporter dbImporter : dbImporterMap.values())
-			dbImporter.close();
-	}
+    public AbstractDatabaseAdapter getCacheAdapter() {
+        return cacheTableManager.getCacheAdapter();
+    }
+
+    public void executeBatch() throws SQLException {
+        for (DBXlinkImporter dbImporter : dbImporterMap.values())
+            dbImporter.executeBatch();
+    }
+
+    public void close() throws SQLException {
+        for (DBXlinkImporter dbImporter : dbImporterMap.values())
+            dbImporter.close();
+    }
 }

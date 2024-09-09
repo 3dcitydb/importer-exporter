@@ -74,28 +74,28 @@ public class UtilAdapter extends AbstractUtilAdapter {
         boolean requiresSchema = metaData.getCityDBVersion().compareTo(4, 0, 0) < 0;
         query.append(requiresSchema ? "()" : "(?)");
 
-		try (PreparedStatement psQuery = connection.prepareStatement(query.toString())) {
-		    if (!requiresSchema)
-		        psQuery.setString(1, databaseAdapter.getConnectionDetails().getSchema());
-			
-			try (ResultSet rs = psQuery.executeQuery()) {
-				if (rs.next()) {
-					DatabaseSrs srs = metaData.getReferenceSystem();
-					srs.setSrid(rs.getInt("SCHEMA_SRID"));
-					srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
-					srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
-					srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
-					srs.setWkText(rs.getString("WKTEXT"));
-					srs.setSupported(true);
+        try (PreparedStatement psQuery = connection.prepareStatement(query.toString())) {
+            if (!requiresSchema)
+                psQuery.setString(1, databaseAdapter.getConnectionDetails().getSchema());
 
-					metaData.setVersioning(Versioning.NOT_SUPPORTED);
-				} else
-					throw new SQLException("Failed to retrieve metadata information from database.");
-			} catch (SQLException e) {
-				throw new SQLException("No 3DCityDB instance found in given database schema '" + schema + "'.", e);
-			}
-		}
-	}
+            try (ResultSet rs = psQuery.executeQuery()) {
+                if (rs.next()) {
+                    DatabaseSrs srs = metaData.getReferenceSystem();
+                    srs.setSrid(rs.getInt("SCHEMA_SRID"));
+                    srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
+                    srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
+                    srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
+                    srs.setWkText(rs.getString("WKTEXT"));
+                    srs.setSupported(true);
+
+                    metaData.setVersioning(Versioning.NOT_SUPPORTED);
+                } else
+                    throw new SQLException("Failed to retrieve metadata information from database.");
+            } catch (SQLException e) {
+                throw new SQLException("No 3DCityDB instance found in given database schema '" + schema + "'.", e);
+            }
+        }
+    }
 
 
     @Override

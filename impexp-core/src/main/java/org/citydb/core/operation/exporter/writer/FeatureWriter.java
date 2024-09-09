@@ -31,14 +31,19 @@ import org.citydb.core.operation.exporter.util.Metadata;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
 public interface FeatureWriter extends AutoCloseable {
-	void writeHeader() throws FeatureWriteException;
-	void write(AbstractFeature feature, long sequenceId) throws FeatureWriteException;
-	void updateSequenceId(long sequenceId) throws FeatureWriteException;
-	void useIndentation(boolean useIndentation);
-	Metadata getMetadata();
-	void close() throws FeatureWriteException;
+    void writeHeader() throws FeatureWriteException;
 
-	default boolean supportsFlatHierarchies() {
-		return true;
-	}
+    void write(AbstractFeature feature, long sequenceId) throws FeatureWriteException;
+
+    void updateSequenceId(long sequenceId) throws FeatureWriteException;
+
+    void useIndentation(boolean useIndentation);
+
+    Metadata getMetadata();
+
+    void close() throws FeatureWriteException;
+
+    default boolean supportsFlatHierarchies() {
+        return true;
+    }
 }

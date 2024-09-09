@@ -36,20 +36,20 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ResourceIdFilter {
-	private final Set<String> ids;
-	
-	public ResourceIdFilter(ResourceIdOperator idOperator) throws FilterException {
-		if (idOperator == null)
-			throw new FilterException("The resource id operator must not be null.");
-		
-		if (idOperator.isSetResourceIds())
-			ids = new HashSet<>(idOperator.getResourceIds());
-		else
-			ids = Collections.emptySet();
-	}
-	
-	public boolean isSatisfiedBy(AbstractFeature feature) {
-		return feature.isSetId() && ids.contains(feature.getId());
-	}
-	
+    private final Set<String> ids;
+
+    public ResourceIdFilter(ResourceIdOperator idOperator) throws FilterException {
+        if (idOperator == null)
+            throw new FilterException("The resource id operator must not be null.");
+
+        if (idOperator.isSetResourceIds())
+            ids = new HashSet<>(idOperator.getResourceIds());
+        else
+            ids = Collections.emptySet();
+    }
+
+    public boolean isSatisfiedBy(AbstractFeature feature) {
+        return feature.isSetId() && ids.contains(feature.getId());
+    }
+
 }

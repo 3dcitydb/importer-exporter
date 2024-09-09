@@ -30,27 +30,27 @@ package org.citydb.util.event;
 import java.lang.ref.WeakReference;
 
 public class EventHandlerContainer {
-	private final WeakReference<EventHandler> eventHandlerRef;
-	private boolean autoRemove = false;
+    private final WeakReference<EventHandler> eventHandlerRef;
+    private boolean autoRemove = false;
 
-	public EventHandlerContainer(EventHandler handler) {
-		this.eventHandlerRef = new WeakReference<EventHandler>(handler);
-	}
+    public EventHandlerContainer(EventHandler handler) {
+        this.eventHandlerRef = new WeakReference<EventHandler>(handler);
+    }
 
-	public EventHandlerContainer(EventHandler handler, boolean autoRemove) {
-		this(handler);
-		this.autoRemove = autoRemove;
-	}
+    public EventHandlerContainer(EventHandler handler, boolean autoRemove) {
+        this(handler);
+        this.autoRemove = autoRemove;
+    }
 
-	public boolean isAutoRemove() {
-		return autoRemove;
-	}
+    public boolean isAutoRemove() {
+        return autoRemove;
+    }
 
-	public void setAutoRemove(boolean autoRemove) {
-		this.autoRemove = autoRemove;
-	}
+    public void setAutoRemove(boolean autoRemove) {
+        this.autoRemove = autoRemove;
+    }
 
-	public EventHandler getEventHandler() {
-		return eventHandlerRef.get();
-	}
+    public EventHandler getEventHandler() {
+        return eventHandlerRef.get();
+    }
 }

@@ -36,131 +36,131 @@ import org.citygml4j.model.citygml.core.XalAddressProperty;
 import org.citygml4j.model.xal.*;
 
 public class AddressExportFactory {
-	protected final AddressMode primary;
-	protected final AddressMode fallback;
-	protected final boolean useFallback;
+    protected final AddressMode primary;
+    protected final AddressMode fallback;
+    protected final boolean useFallback;
 
-	public AddressExportFactory(OutputFormat outputFormat, ExportConfig exportConfig) {
-		if (outputFormat == OutputFormat.CITYGML) {
-			primary = exportConfig.getCityGMLOptions().getAddress().getMode();
-			fallback = primary == AddressMode.DB ? AddressMode.XAL : AddressMode.DB;
-			useFallback = exportConfig.getCityGMLOptions().getAddress().isSetUseFallback();
-		} else {
-			primary = fallback = AddressMode.DB;
-			useFallback = false;
-		}
-	}
-	
-	public AddressObject newAddressObject() {
-		return new AddressObject(this);
-	}
+    public AddressExportFactory(OutputFormat outputFormat, ExportConfig exportConfig) {
+        if (outputFormat == OutputFormat.CITYGML) {
+            primary = exportConfig.getCityGMLOptions().getAddress().getMode();
+            fallback = primary == AddressMode.DB ? AddressMode.XAL : AddressMode.DB;
+            useFallback = exportConfig.getCityGMLOptions().getAddress().isSetUseFallback();
+        } else {
+            primary = fallback = AddressMode.DB;
+            useFallback = false;
+        }
+    }
 
-	public AddressProperty create(AddressObject addressObject) {
-		return create(addressObject, new Address());
-	}
-	
-	public AddressProperty create(AddressObject addressObject, Address address) {
-		AddressProperty addressProperty = null;
-		AddressMode mode = null;
-		
-		if (addressObject.canCreate(primary))
-			mode = primary;
-		else if (useFallback && addressObject.canCreate(fallback))
-			mode = fallback;
+    public AddressObject newAddressObject() {
+        return new AddressObject(this);
+    }
 
-		if (mode != null) {
-			AddressDetails addressDetails = null;
+    public AddressProperty create(AddressObject addressObject) {
+        return create(addressObject, new Address());
+    }
 
-			if (mode == AddressMode.XAL) {
-				addressDetails = addressObject.addressDetails;						
-			} else {				
-				addressDetails = new AddressDetails();
+    public AddressProperty create(AddressObject addressObject, Address address) {
+        AddressProperty addressProperty = null;
+        AddressMode mode = null;
 
-				Locality locality = new Locality();
-				locality.setType("City");
+        if (addressObject.canCreate(primary))
+            mode = primary;
+        else if (useFallback && addressObject.canCreate(fallback))
+            mode = fallback;
 
-				if (addressObject.city != null) {
-					LocalityName localityName = new LocalityName();
-					localityName.setContent(addressObject.city);
-					locality.addLocalityName(localityName);
-				}
+        if (mode != null) {
+            AddressDetails addressDetails = null;
 
-				if (addressObject.street != null) {
-					Thoroughfare thoroughfare = new Thoroughfare();
-					thoroughfare.setType("Street");
+            if (mode == AddressMode.XAL) {
+                addressDetails = addressObject.addressDetails;
+            } else {
+                addressDetails = new AddressDetails();
 
-					ThoroughfareName name = new ThoroughfareName();
-					name.setContent(addressObject.street);
-					thoroughfare.addThoroughfareName(name);
+                Locality locality = new Locality();
+                locality.setType("City");
 
-					if (addressObject.houseNumber != null) {
-						ThoroughfareNumber number = new ThoroughfareNumber();
-						number.setContent(addressObject.houseNumber);
-						thoroughfare.addThoroughfareNumber(number);
-					}
+                if (addressObject.city != null) {
+                    LocalityName localityName = new LocalityName();
+                    localityName.setContent(addressObject.city);
+                    locality.addLocalityName(localityName);
+                }
 
-					locality.setThoroughfare(thoroughfare);
-				}				
+                if (addressObject.street != null) {
+                    Thoroughfare thoroughfare = new Thoroughfare();
+                    thoroughfare.setType("Street");
 
-				if (addressObject.zipCode != null) {
-					PostalCode postalCode = new PostalCode();
-					PostalCodeNumber zipNumber = new PostalCodeNumber();
-					zipNumber.setContent(addressObject.zipCode);
+                    ThoroughfareName name = new ThoroughfareName();
+                    name.setContent(addressObject.street);
+                    thoroughfare.addThoroughfareName(name);
 
-					postalCode.addPostalCodeNumber(zipNumber);
-					locality.setPostalCode(postalCode);
-				}
+                    if (addressObject.houseNumber != null) {
+                        ThoroughfareNumber number = new ThoroughfareNumber();
+                        number.setContent(addressObject.houseNumber);
+                        thoroughfare.addThoroughfareNumber(number);
+                    }
 
-				if (addressObject.poBox != null) {
-					PostBox postBox = new PostBox();
-					PostBoxNumber postBoxNumber = new PostBoxNumber();
-					postBoxNumber.setContent(addressObject.poBox);
+                    locality.setThoroughfare(thoroughfare);
+                }
 
-					postBox.setPostBoxNumber(postBoxNumber);
-					locality.setPostBox(postBox);
-				}
-				
-				Country country = new Country();
+                if (addressObject.zipCode != null) {
+                    PostalCode postalCode = new PostalCode();
+                    PostalCodeNumber zipNumber = new PostalCodeNumber();
+                    zipNumber.setContent(addressObject.zipCode);
 
-				if (addressObject.country != null) {
-					CountryName countryName = new CountryName();
-					countryName.setContent(addressObject.country);
-					country.addCountryName(countryName);
-				}
+                    postalCode.addPostalCodeNumber(zipNumber);
+                    locality.setPostalCode(postalCode);
+                }
 
-				country.setLocality(locality);
-				addressDetails.setCountry(country);
-			}
+                if (addressObject.poBox != null) {
+                    PostBox postBox = new PostBox();
+                    PostBoxNumber postBoxNumber = new PostBoxNumber();
+                    postBoxNumber.setContent(addressObject.poBox);
 
-			if (addressDetails != null) {
-				XalAddressProperty xalAddressProperty = new XalAddressProperty();
-				xalAddressProperty.setAddressDetails(addressDetails);
+                    postBox.setPostBoxNumber(postBoxNumber);
+                    locality.setPostBox(postBox);
+                }
 
-				address.setId(addressObject.getGmlId());
-				address.setXalAddress(xalAddressProperty);
+                Country country = new Country();
 
-				// multiPointGeometry
-				if (addressObject.multiPointProperty != null)
-					address.setMultiPoint(addressObject.multiPointProperty);				
+                if (addressObject.country != null) {
+                    CountryName countryName = new CountryName();
+                    countryName.setContent(addressObject.country);
+                    country.addCountryName(countryName);
+                }
 
-				addressProperty = new AddressProperty();
-				addressProperty.setObject(address);
-			}
-		}
+                country.setLocality(locality);
+                addressDetails.setCountry(country);
+            }
 
-		return addressProperty;
-	}
+            if (addressDetails != null) {
+                XalAddressProperty xalAddressProperty = new XalAddressProperty();
+                xalAddressProperty.setAddressDetails(addressDetails);
 
-	public AddressMode getPrimaryMode() {
-		return primary;
-	}
-	
-	public AddressMode getFallbackMode() {
-		return fallback;
-	}
-	
-	public boolean isUseFallback() {
-		return useFallback;
-	}
-	
+                address.setId(addressObject.getGmlId());
+                address.setXalAddress(xalAddressProperty);
+
+                // multiPointGeometry
+                if (addressObject.multiPointProperty != null)
+                    address.setMultiPoint(addressObject.multiPointProperty);
+
+                addressProperty = new AddressProperty();
+                addressProperty.setObject(address);
+            }
+        }
+
+        return addressProperty;
+    }
+
+    public AddressMode getPrimaryMode() {
+        return primary;
+    }
+
+    public AddressMode getFallbackMode() {
+        return fallback;
+    }
+
+    public boolean isUseFallback() {
+        return useFallback;
+    }
+
 }

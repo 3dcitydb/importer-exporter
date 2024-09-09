@@ -34,13 +34,17 @@ import org.citydb.util.event.global.DatabaseConnectionStateEvent;
 import java.util.Locale;
 
 public abstract class DatabaseOperationView extends View {
-	public abstract DatabaseOperationType getType();
-	public abstract void switchLocale(Locale locale);
-	public abstract void setEnabled(boolean enable);
-	public abstract void loadSettings();
-	public abstract void setSettings();
-	
-	public void handleDatabaseConnectionStateEvent(DatabaseConnectionStateEvent event) {
-		// nothing to do per default
-	}
+    public abstract DatabaseOperationType getType();
+
+    public abstract void switchLocale(Locale locale);
+
+    public abstract void setEnabled(boolean enable);
+
+    public abstract void loadSettings();
+
+    public abstract void setSettings();
+
+    public void handleDatabaseConnectionStateEvent(DatabaseConnectionStateEvent event) {
+        // nothing to do per default
+    }
 }

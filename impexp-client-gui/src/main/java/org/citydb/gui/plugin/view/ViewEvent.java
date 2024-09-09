@@ -28,25 +28,25 @@
 package org.citydb.gui.plugin.view;
 
 public final class ViewEvent {
-	public enum ViewState {
-		VIEW_ACTIVATED,
-		VIEW_DEACTIVATED
-	}
-	
-	private final View view;
-	private final ViewState viewState;
-	
-	public ViewEvent(View view, ViewState viewState, Object source) {
-		this.view = view;
-		this.viewState = viewState;
-	}
-	
-	public View getView() {
-		return view;
-	}
+    public enum ViewState {
+        VIEW_ACTIVATED,
+        VIEW_DEACTIVATED
+    }
 
-	public ViewState getViewState() {
-		return viewState;
-	}
-	
+    private final View view;
+    private final ViewState viewState;
+
+    public ViewEvent(View view, ViewState viewState, Object source) {
+        this.view = view;
+        this.viewState = viewState;
+    }
+
+    public View getView() {
+        return view;
+    }
+
+    public ViewState getViewState() {
+        return viewState;
+    }
+
 }

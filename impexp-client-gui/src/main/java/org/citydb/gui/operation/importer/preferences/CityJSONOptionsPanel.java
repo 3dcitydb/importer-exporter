@@ -38,49 +38,50 @@ import java.awt.*;
 import java.util.Locale;
 
 public class CityJSONOptionsPanel extends InternalPreferencesComponent {
-	private TitledPanel mapUnknownExtensionsPanel;
-	private JCheckBox mapUnknownExtensions;
+    private TitledPanel mapUnknownExtensionsPanel;
+    private JCheckBox mapUnknownExtensions;
 
-	public CityJSONOptionsPanel(Config config) {
-		super(config);
-		initGui();
-	}
+    public CityJSONOptionsPanel(Config config) {
+        super(config);
+        initGui();
+    }
 
-	@Override
-	public boolean isModified() {
-		if (mapUnknownExtensions.isSelected() != config.getImportConfig().getCityJSONOptions().isMapUnknownExtensions()) return true;
-		return false;
-	}
+    @Override
+    public boolean isModified() {
+        if (mapUnknownExtensions.isSelected() != config.getImportConfig().getCityJSONOptions().isMapUnknownExtensions())
+            return true;
+        return false;
+    }
 
-	private void initGui() {
-		mapUnknownExtensions = new JCheckBox();
+    private void initGui() {
+        mapUnknownExtensions = new JCheckBox();
 
-		setLayout(new GridBagLayout());
-		mapUnknownExtensionsPanel = new TitledPanel()
-				.withToggleButton(mapUnknownExtensions)
-				.showSeparator(false)
-				.buildWithoutContent();
+        setLayout(new GridBagLayout());
+        mapUnknownExtensionsPanel = new TitledPanel()
+                .withToggleButton(mapUnknownExtensions)
+                .showSeparator(false)
+                .buildWithoutContent();
 
-		add(mapUnknownExtensionsPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-	}
-	
-	@Override
-	public void loadSettings() {
-		mapUnknownExtensions.setSelected(config.getImportConfig().getCityJSONOptions().isMapUnknownExtensions());
-	}
+        add(mapUnknownExtensionsPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+    }
 
-	@Override
-	public void setSettings() {
-		config.getImportConfig().getCityJSONOptions().setMapUnknownExtensions(mapUnknownExtensions.isSelected());
-	}
+    @Override
+    public void loadSettings() {
+        mapUnknownExtensions.setSelected(config.getImportConfig().getCityJSONOptions().isMapUnknownExtensions());
+    }
 
-	@Override
-	public void switchLocale(Locale locale) {
-		mapUnknownExtensionsPanel.setTitle(Language.I18N.getString("pref.import.cityjson.label.mapUnknownExtensions"));
-	}
+    @Override
+    public void setSettings() {
+        config.getImportConfig().getCityJSONOptions().setMapUnknownExtensions(mapUnknownExtensions.isSelected());
+    }
 
-	@Override
-	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.import.cityJSONOptions");
-	}
+    @Override
+    public void switchLocale(Locale locale) {
+        mapUnknownExtensionsPanel.setTitle(Language.I18N.getString("pref.import.cityjson.label.mapUnknownExtensions"));
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("pref.tree.import.cityJSONOptions");
+    }
 }

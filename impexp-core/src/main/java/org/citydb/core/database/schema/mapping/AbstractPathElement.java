@@ -45,19 +45,19 @@ public abstract class AbstractPathElement {
     protected AppSchema schema;
     @XmlAttribute
     protected Boolean queryable;
-    
+
     protected AbstractPathElement() {
-	}
-    
-    public AbstractPathElement(String path, AppSchema schema) {
-    	this.path = path;
-    	this.schema = schema;
     }
-    
+
+    public AbstractPathElement(String path, AppSchema schema) {
+        this.path = path;
+        this.schema = schema;
+    }
+
     @XmlTransient
     private HashMap<String, Object> localProperties;
 
-	public abstract PathElementType getElementType();
+    public abstract PathElementType getElementType();
 
     public String getPath() {
         return path;
@@ -66,9 +66,9 @@ public abstract class AbstractPathElement {
     public boolean isSetPath() {
         return path != null && !path.isEmpty();
     }
-    
+
     public void setPath(String path) {
-    	this.path = path;
+        this.path = path;
     }
 
     public AppSchema getSchema() {
@@ -78,9 +78,9 @@ public abstract class AbstractPathElement {
     public boolean isSetSchema() {
         return schema != null;
     }
-    
+
     public void setSchema(AppSchema schema) {
-    	this.schema = schema;
+        this.schema = schema;
     }
 
     public boolean isQueryable() {
@@ -94,66 +94,66 @@ public abstract class AbstractPathElement {
     public void setQueryable(boolean queryable) {
         this.queryable = queryable ? null : false;
     }
-    
+
     public Object getLocalProperty(String name) {
-		if (localProperties != null)
-			return localProperties.get(name);
-			
-		return null;
-	}
+        if (localProperties != null)
+            return localProperties.get(name);
 
-	public void setLocalProperty(String name, Object value) {
-		if (localProperties == null)
-			localProperties = new HashMap<String, Object>();
-		
-		localProperties.put(name, value);
-	}
+        return null;
+    }
 
-	public boolean hasLocalProperty(String name) {
-		return localProperties != null && localProperties.containsKey(name);
-	}
+    public void setLocalProperty(String name, Object value) {
+        if (localProperties == null)
+            localProperties = new HashMap<String, Object>();
 
-	public Object unsetLocalProperty(String name) {
-		if (localProperties != null)
-			return localProperties.remove(name);
-		
-		return null;
-	}
-	
-	public boolean matchesName(String name, String namespaceURI) {
-		return schema.matchesNamespaceURI(namespaceURI) && path.equals(name);
-	}
-	
-	public boolean matchesName(QName name) {
-		return matchesName(name.getLocalPart(), name.getNamespaceURI());
-	}
-	
-	public boolean isAvailableForCityGML(CityGMLVersion version) {
-		return schema.isAvailableForCityGML(version);
-	}
-	
-	protected void validate(SchemaMapping schemaMapping, Object parent) throws SchemaMappingException {
-		if (!isSetPath())
-			throw new SchemaMappingException("A path element of type " + getElementType() + " lacks a path name.");
-		
-		if (!isSetSchema())
-			throw new SchemaMappingException("The path element of name '" + path + "' and type " + getElementType() + " lacks an application schema.");
-		
-		if (schema.hasLocalProperty(MappingConstants.IS_XLINK)) {
-			AppSchema ref = schemaMapping.getSchemaById(schema.id);
-			if (ref == null)
-				throw new SchemaMappingException("Failed to resolve application schema reference '" + schema.id + "'.");
-			
-			schema = ref;
-		}
-	}
+        localProperties.put(name, value);
+    }
 
-	@Override
-	public String toString() {
-		if (!schema.isSetXMLPrefix())
-			schema.generateXMLPrefix();
-		
-		return schema.getXMLPrefix() + ":" + path;
-	}
-	
+    public boolean hasLocalProperty(String name) {
+        return localProperties != null && localProperties.containsKey(name);
+    }
+
+    public Object unsetLocalProperty(String name) {
+        if (localProperties != null)
+            return localProperties.remove(name);
+
+        return null;
+    }
+
+    public boolean matchesName(String name, String namespaceURI) {
+        return schema.matchesNamespaceURI(namespaceURI) && path.equals(name);
+    }
+
+    public boolean matchesName(QName name) {
+        return matchesName(name.getLocalPart(), name.getNamespaceURI());
+    }
+
+    public boolean isAvailableForCityGML(CityGMLVersion version) {
+        return schema.isAvailableForCityGML(version);
+    }
+
+    protected void validate(SchemaMapping schemaMapping, Object parent) throws SchemaMappingException {
+        if (!isSetPath())
+            throw new SchemaMappingException("A path element of type " + getElementType() + " lacks a path name.");
+
+        if (!isSetSchema())
+            throw new SchemaMappingException("The path element of name '" + path + "' and type " + getElementType() + " lacks an application schema.");
+
+        if (schema.hasLocalProperty(MappingConstants.IS_XLINK)) {
+            AppSchema ref = schemaMapping.getSchemaById(schema.id);
+            if (ref == null)
+                throw new SchemaMappingException("Failed to resolve application schema reference '" + schema.id + "'.");
+
+            schema = ref;
+        }
+    }
+
+    @Override
+    public String toString() {
+        if (!schema.isSetXMLPrefix())
+            schema.generateXMLPrefix();
+
+        return schema.getXMLPrefix() + ":" + path;
+    }
+
 }

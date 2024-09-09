@@ -30,5 +30,5 @@ package org.citydb.gui.plugin.preferences;
 import org.citydb.gui.plugin.GuiExtension;
 
 public interface PreferencesExtension extends GuiExtension {
-	Preferences getPreferences();
+    Preferences getPreferences();
 }

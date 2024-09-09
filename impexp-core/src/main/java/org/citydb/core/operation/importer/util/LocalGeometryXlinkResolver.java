@@ -46,181 +46,181 @@ import org.citygml4j.util.walker.GMLWalker;
 import java.util.*;
 
 public class LocalGeometryXlinkResolver {
-	private final Logger log = Logger.getInstance();
-	private final ResolverWalker resolver;
-	
-	private AbstractGML rootObject;
-	private HashSet<String> targets;
-	private HashMap<String, AbstractGeometry> geometries;
-	private ChildInfo childInfo;
-	private Stack<String> circularTargets;
-	private CopyBuilder copyBuilder = new ShallowCopyBuilder();
-	private CityGMLImportManager importer;
+    private final Logger log = Logger.getInstance();
+    private final ResolverWalker resolver;
 
-	private enum ResolverState {
-		GET_XLINKS,
-		GET_GEOMETRY,
-		RESOLVE_XLINKS
-	};
+    private AbstractGML rootObject;
+    private HashSet<String> targets;
+    private HashMap<String, AbstractGeometry> geometries;
+    private ChildInfo childInfo;
+    private Stack<String> circularTargets;
+    private CopyBuilder copyBuilder = new ShallowCopyBuilder();
+    private CityGMLImportManager importer;
 
-	public LocalGeometryXlinkResolver() {
-		resolver = new ResolverWalker();
-		
-		childInfo = new ChildInfo();
-		targets = new HashSet<>();
-		geometries = new HashMap<>();
-		circularTargets = new Stack<>();
-	}
-	
-	public LocalGeometryXlinkResolver(CityGMLImportManager importer) {
-		this();
-		this.importer = importer;
-	}
+    private enum ResolverState {
+        GET_XLINKS,
+        GET_GEOMETRY,
+        RESOLVE_XLINKS
+    }
 
-	public boolean resolveGeometryXlinks(AbstractGML abstractGML) {
-		// we follow a three-phase resolving approach which is a 
-		// compromise between performance and memory consumption.
+    ;
 
-		resolver.hasCircularReference = false;
-		circularTargets.clear();
-		rootObject = abstractGML;
-		
-		// phase 1: iterate through all elements and detect 
-		// xlink references to geometry object
-		resolver.state = ResolverState.GET_XLINKS;
-		abstractGML.accept(resolver);
+    public LocalGeometryXlinkResolver() {
+        resolver = new ResolverWalker();
 
-		if (targets.isEmpty())
-			return true;
+        childInfo = new ChildInfo();
+        targets = new HashSet<>();
+        geometries = new HashMap<>();
+        circularTargets = new Stack<>();
+    }
 
-		// phase 2: iterate through all elements again and collect
-		// the geometry objects for the detected xlinks		
-		resolver.reset();
-		resolver.state = ResolverState.GET_GEOMETRY;
-		abstractGML.accept(resolver);
+    public LocalGeometryXlinkResolver(CityGMLImportManager importer) {
+        this();
+        this.importer = importer;
+    }
 
-		// phase 3: finally iterate through all elements once more
-		// and actually replace xlinks by geometries
-		resolver.reset();
-		resolver.state = ResolverState.RESOLVE_XLINKS;
-		abstractGML.accept(resolver);
+    public boolean resolveGeometryXlinks(AbstractGML abstractGML) {
+        // we follow a three-phase resolving approach which is a
+        // compromise between performance and memory consumption.
 
-		// clean up
-		targets.clear();
-		geometries.clear();
-		if (!resolver.hasCircularReference)
-			circularTargets.clear();
+        resolver.hasCircularReference = false;
+        circularTargets.clear();
+        rootObject = abstractGML;
 
-		return !resolver.hasCircularReference;
-	}
+        // phase 1: iterate through all elements and detect
+        // xlink references to geometry object
+        resolver.state = ResolverState.GET_XLINKS;
+        abstractGML.accept(resolver);
 
-	public List<String> getCircularReferences() {
-		return new ArrayList<>(circularTargets);
-	}
+        if (targets.isEmpty())
+            return true;
 
-	private class ResolverWalker extends GMLWalker {
-		private boolean hasCircularReference = false;
-		private ResolverState state;
+        // phase 2: iterate through all elements again and collect
+        // the geometry objects for the detected xlinks
+        resolver.reset();
+        resolver.state = ResolverState.GET_GEOMETRY;
+        abstractGML.accept(resolver);
 
-		@Override
-		public <T extends AbstractGeometry> void visit(GeometryProperty<T> property) {
-			if (!property.isSetGeometry() && property.isSetHref()) {
-				if (state == ResolverState.RESOLVE_XLINKS && shouldWalk()) {
-					final String target = clipGMLId(property.getHref());
-					final AbstractGeometry geometry = geometries.get(target);
+        // phase 3: finally iterate through all elements once more
+        // and actually replace xlinks by geometries
+        resolver.reset();
+        resolver.state = ResolverState.RESOLVE_XLINKS;
+        abstractGML.accept(resolver);
 
-					if (geometry != null) {
-						// check whether the type of the referenced geometry is allowed
-						if (property.getAssociableClass().isInstance(geometry)) {
+        // clean up
+        targets.clear();
+        geometries.clear();
+        if (!resolver.hasCircularReference)
+            circularTargets.clear();
 
-							// check whether we have already seen this target while 
-							// iterating through the geometry tree.
-							if (circularTargets.contains(target)) {
-								setShouldWalk(false);
-								hasCircularReference = true;
-								circularTargets.clear();
-								circularTargets.push(property.getHref());
+        return !resolver.hasCircularReference;
+    }
 
-								return;
-							}
+    public List<String> getCircularReferences() {
+        return new ArrayList<>(circularTargets);
+    }
 
-							// iterate through all parent geometries and get their
-							// gml:ids to be able to detect circular references
-							Child child = property;
-							int parents = 0;
+    private class ResolverWalker extends GMLWalker {
+        private boolean hasCircularReference = false;
+        private ResolverState state;
 
-							while ((child = childInfo.getParentGeometry(child)) != null) {
-								circularTargets.push(((AbstractGeometry)child).getId());
-								parents++;
-							}
+        @Override
+        public <T extends AbstractGeometry> void visit(GeometryProperty<T> property) {
+            if (!property.isSetGeometry() && property.isSetHref()) {
+                if (state == ResolverState.RESOLVE_XLINKS && shouldWalk()) {
+                    final String target = clipGMLId(property.getHref());
+                    final AbstractGeometry geometry = geometries.get(target);
 
-							// recursively walk through the referenced geometry
-							geometry.accept(this);
+                    if (geometry != null) {
+                        // check whether the type of the referenced geometry is allowed
+                        if (property.getAssociableClass().isInstance(geometry)) {
 
-							if (!hasCircularReference) {
-								// ok, we can replace the link by a shallow copy of the object
-								T copy = property.getAssociableClass().cast(geometry.copy(copyBuilder));
+                            // check whether we have already seen this target while
+                            // iterating through the geometry tree.
+                            if (circularTargets.contains(target)) {
+                                setShouldWalk(false);
+                                hasCircularReference = true;
+                                circularTargets.clear();
+                                circularTargets.push(property.getHref());
 
-								property.setGeometry(copy);
-								property.unsetHref();
-								copy.setLocalProperty(CoreConstants.GEOMETRY_XLINK, true);
-								copy.setLocalProperty(CoreConstants.GEOMETRY_ORIGINAL, geometry);
+                                return;
+                            }
 
-								geometry.setLocalProperty(CoreConstants.GEOMETRY_XLINK, true);
+                            // iterate through all parent geometries and get their
+                            // gml:ids to be able to detect circular references
+                            Child child = property;
+                            int parents = 0;
 
-								targets.remove(target);
-								for (int i = 0; i < parents; ++i)
-									circularTargets.pop();
-							} else {
-								// ups, circular reference detected
-								if (!circularTargets.peek().equals(property.getHref()))
-									circularTargets.push(property.getHref());
-							}
-						} else {
-							if (importer != null) {
-								log.error(importer.getObjectSignature(rootObject) +
-										": Incompatible type of geometry referenced by '" +
-										target + "'.");
-							}
-							
-							property.unsetHref();
-						}
-					}
-				}
+                            while ((child = childInfo.getParentGeometry(child)) != null) {
+                                circularTargets.push(((AbstractGeometry) child).getId());
+                                parents++;
+                            }
 
-				else if (state == ResolverState.GET_XLINKS)				
-					targets.add(clipGMLId(property.getHref()));
-			}
+                            // recursively walk through the referenced geometry
+                            geometry.accept(this);
 
-			super.visit(property);
-		}
+                            if (!hasCircularReference) {
+                                // ok, we can replace the link by a shallow copy of the object
+                                T copy = property.getAssociableClass().cast(geometry.copy(copyBuilder));
 
-		@Override
-		public void visit(AbstractGeometry abstractGeometry) {
-			if (state == ResolverState.GET_GEOMETRY && abstractGeometry.isSetId() && targets.contains(abstractGeometry.getId()))
-				geometries.put(abstractGeometry.getId(), abstractGeometry);
-		}
+                                property.setGeometry(copy);
+                                property.unsetHref();
+                                copy.setLocalProperty(CoreConstants.GEOMETRY_XLINK, true);
+                                copy.setLocalProperty(CoreConstants.GEOMETRY_ORIGINAL, geometry);
 
-		@Override
-		public void visit(ADEGenericElement adeGenericElement) {
-			// we do not support generic ADEs...
-		}
+                                geometry.setLocalProperty(CoreConstants.GEOMETRY_XLINK, true);
 
-		@Override
-		public <T extends AbstractFeature> void visit(FeatureProperty<T> featureProperty) {
-			// we skip appearance elements for performance reasons;
-			// there could be an xlink reference to the reference point of a 
-			// GeoreferencedTexture. However, this is unlikely and thus is
-			// ruled out here.
-			if (featureProperty.isSetFeature() && featureProperty.getFeature() instanceof AppearanceModuleComponent)
-				return;
+                                targets.remove(target);
+                                for (int i = 0; i < parents; ++i)
+                                    circularTargets.pop();
+                            } else {
+                                // ups, circular reference detected
+                                if (!circularTargets.peek().equals(property.getHref()))
+                                    circularTargets.push(property.getHref());
+                            }
+                        } else {
+                            if (importer != null) {
+                                log.error(importer.getObjectSignature(rootObject) +
+                                        ": Incompatible type of geometry referenced by '" +
+                                        target + "'.");
+                            }
 
-			super.visit(featureProperty);
-		}
-	}
+                            property.unsetHref();
+                        }
+                    }
+                } else if (state == ResolverState.GET_XLINKS)
+                    targets.add(clipGMLId(property.getHref()));
+            }
 
-	private String clipGMLId(String target) {
-		return target.replaceAll("^.*?#+?", "");
-	}
+            super.visit(property);
+        }
+
+        @Override
+        public void visit(AbstractGeometry abstractGeometry) {
+            if (state == ResolverState.GET_GEOMETRY && abstractGeometry.isSetId() && targets.contains(abstractGeometry.getId()))
+                geometries.put(abstractGeometry.getId(), abstractGeometry);
+        }
+
+        @Override
+        public void visit(ADEGenericElement adeGenericElement) {
+            // we do not support generic ADEs...
+        }
+
+        @Override
+        public <T extends AbstractFeature> void visit(FeatureProperty<T> featureProperty) {
+            // we skip appearance elements for performance reasons;
+            // there could be an xlink reference to the reference point of a
+            // GeoreferencedTexture. However, this is unlikely and thus is
+            // ruled out here.
+            if (featureProperty.isSetFeature() && featureProperty.getFeature() instanceof AppearanceModuleComponent)
+                return;
+
+            super.visit(featureProperty);
+        }
+    }
+
+    private String clipGMLId(String target) {
+        return target.replaceAll("^.*?#+?", "");
+    }
 
 }

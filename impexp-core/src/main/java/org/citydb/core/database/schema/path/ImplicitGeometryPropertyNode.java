@@ -31,33 +31,33 @@ import org.citydb.core.database.schema.mapping.*;
 
 public final class ImplicitGeometryPropertyNode extends AbstractNode<ImplicitGeometryProperty> {
 
-	protected ImplicitGeometryPropertyNode(ImplicitGeometryProperty implicitGeometryProperty) {
-		super(implicitGeometryProperty);
-	}
-	
-	protected ImplicitGeometryPropertyNode(ImplicitGeometryPropertyNode other) {
-		super(other);
-	}
-	
-	@Override
-	protected boolean isValidChild(AbstractPathElement candidate) {
-		if (candidate.getElementType() == PathElementType.OBJECT_TYPE) {
-			ObjectType type = (ObjectType)candidate;
-			if (type.getPath() == MappingConstants.IMPLICIT_GEOMETRY_PATH)
-				return true;
-		}
+    protected ImplicitGeometryPropertyNode(ImplicitGeometryProperty implicitGeometryProperty) {
+        super(implicitGeometryProperty);
+    }
 
-		return false;
-	}
+    protected ImplicitGeometryPropertyNode(ImplicitGeometryPropertyNode other) {
+        super(other);
+    }
 
-	@Override
-	protected boolean isValidPredicate(AbstractNodePredicate candidate) {
-		return false;
-	}
+    @Override
+    protected boolean isValidChild(AbstractPathElement candidate) {
+        if (candidate.getElementType() == PathElementType.OBJECT_TYPE) {
+            ObjectType type = (ObjectType) candidate;
+            if (type.getPath() == MappingConstants.IMPLICIT_GEOMETRY_PATH)
+                return true;
+        }
 
-	@Override
-	protected ImplicitGeometryPropertyNode copy() {
-		return new ImplicitGeometryPropertyNode(this);
-	}
-	
+        return false;
+    }
+
+    @Override
+    protected boolean isValidPredicate(AbstractNodePredicate candidate) {
+        return false;
+    }
+
+    @Override
+    protected ImplicitGeometryPropertyNode copy() {
+        return new ImplicitGeometryPropertyNode(this);
+    }
+
 }

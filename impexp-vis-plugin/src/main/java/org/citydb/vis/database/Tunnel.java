@@ -53,329 +53,387 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tunnel extends AbstractVisObject {
-	private final Logger log = Logger.getInstance();
+    private final Logger log = Logger.getInstance();
 
-	public static final String STYLE_BASIS_NAME = "Tunnel"; // "TUNNEL"
+    public static final String STYLE_BASIS_NAME = "Tunnel"; // "TUNNEL"
 
-	public Tunnel(Connection connection,
-			Query query,
-			VisExporterManager visExporterManager,
-			net.opengis.kml._2.ObjectFactory kmlFactory,
-			AbstractDatabaseAdapter databaseAdapter,
-			BlobExportAdapter textureExportAdapter,
-			ElevationServiceHandler elevationServiceHandler,
-			BalloonTemplateHandler balloonTemplateHandler,
-			EventDispatcher eventDispatcher,
-			Config config) {
+    public Tunnel(Connection connection,
+                  Query query,
+                  VisExporterManager visExporterManager,
+                  net.opengis.kml._2.ObjectFactory kmlFactory,
+                  AbstractDatabaseAdapter databaseAdapter,
+                  BlobExportAdapter textureExportAdapter,
+                  ElevationServiceHandler elevationServiceHandler,
+                  BalloonTemplateHandler balloonTemplateHandler,
+                  EventDispatcher eventDispatcher,
+                  Config config) {
 
-		super(connection,
-				query,
+        super(connection,
+                query,
                 visExporterManager,
-				kmlFactory,
-				databaseAdapter,
-				textureExportAdapter,
-				elevationServiceHandler,
-				balloonTemplateHandler,
-				eventDispatcher,
-				config);
-	}
+                kmlFactory,
+                databaseAdapter,
+                textureExportAdapter,
+                elevationServiceHandler,
+                balloonTemplateHandler,
+                eventDispatcher,
+                config);
+    }
 
-	protected Styles getStyles() {
-		return config.getVisExportConfig().getTunnelStyles();
-	}
+    protected Styles getStyles() {
+        return config.getVisExportConfig().getTunnelStyles();
+    }
 
-	public Balloon getBalloonSettings() {
-		return config.getVisExportConfig().getTunnelBalloon();
-	}
+    public Balloon getBalloonSettings() {
+        return config.getVisExportConfig().getTunnelBalloon();
+    }
 
-	public String getStyleBasisName() {
-		return STYLE_BASIS_NAME;
-	}
+    public String getStyleBasisName() {
+        return STYLE_BASIS_NAME;
+    }
 
-	public void read(DBSplittingResult work) {
-		List<PlacemarkType> placemarks = new ArrayList<>();
-		PreparedStatement psQuery = null;
-		ResultSet rs = null;
-		try {
-			String query = queries.getTunnelPartsFromTunnel();
-			psQuery = connection.prepareStatement(query);
-			for (int i = 1; i <= getParameterCount(query); i++)
-				psQuery.setLong(i, work.getId());
+    public void read(DBSplittingResult work) {
+        List<PlacemarkType> placemarks = new ArrayList<>();
+        PreparedStatement psQuery = null;
+        ResultSet rs = null;
+        try {
+            String query = queries.getTunnelPartsFromTunnel();
+            psQuery = connection.prepareStatement(query);
+            for (int i = 1; i <= getParameterCount(query); i++)
+                psQuery.setLong(i, work.getId());
 
-			rs = psQuery.executeQuery();						
-			while (rs.next()) {
-				long tunnelPartId = rs.getLong(1);
-				List<PlacemarkType> placemarkBPart = readTunnelPart(tunnelPartId, work);
-				if (placemarkBPart != null)
-					placemarks.addAll(placemarkBPart);
-			}
-		} catch (SQLException sqlEx) {
-			log.error("SQL error while getting tunnel parts for tunnel " + work.getGmlId() + ": " + sqlEx.getMessage());
-			return;
-		} finally {
-			try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
-			try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-		}
-		
-		if (placemarks.size() == 0) {
-			int lodToExportFrom = config.getVisExportConfig().getLodToExportFrom();
-			String fromMessage = " from LoD" + lodToExportFrom;
-			if (lodToExportFrom == 5) {
-				if (work.getDisplayForm().getType() == DisplayFormType.COLLADA)
-					fromMessage = ". LoD1 or higher required";
-				else
-					fromMessage = " from any LoD";
-			}
-			log.info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
-		}
-		
-		else {
-			try {
-				// compact list before exporting
-				for (int i = 0; i < placemarks.size(); i++) {
-					PlacemarkType placemark1 = placemarks.get(i);
-					if (placemark1 == null) continue;
-					MultiGeometryType multiGeometry1 = (MultiGeometryType) placemark1.getAbstractGeometryGroup().getValue();
-					for (int j = i+1; j < placemarks.size(); j++) {
-						PlacemarkType placemark2 = placemarks.get(j);
-						if (placemark2 == null || !placemark1.getId().equals(placemark2.getId())) continue;
-						// compact since ids are identical
-						MultiGeometryType multiGeometry2 = (MultiGeometryType) placemark2.getAbstractGeometryGroup().getValue();
-						multiGeometry1.getAbstractGeometryGroup().addAll(multiGeometry2.getAbstractGeometryGroup());
-						placemarks.set(j, null); // polygons transfered, placemark exhausted
-					}
-				}
+            rs = psQuery.executeQuery();
+            while (rs.next()) {
+                long tunnelPartId = rs.getLong(1);
+                List<PlacemarkType> placemarkBPart = readTunnelPart(tunnelPartId, work);
+                if (placemarkBPart != null)
+                    placemarks.addAll(placemarkBPart);
+            }
+        } catch (SQLException sqlEx) {
+            log.error("SQL error while getting tunnel parts for tunnel " + work.getGmlId() + ": " + sqlEx.getMessage());
+            return;
+        } finally {
+            try {
+                if (rs != null) rs.close();
+            } catch (SQLException sqle) {
+            }
+            try {
+                if (psQuery != null) psQuery.close();
+            } catch (SQLException sqle) {
+            }
+        }
 
-				visExporterManager.updateFeatureTracker(work);
-				visExporterManager.print(placemarks,
-						work,
-						getBalloonSettings().isBalloonContentInSeparateFile());
-			} catch (JAXBException jaxbEx) {
-				//
-			}
-		}
-	}
+        if (placemarks.size() == 0) {
+            int lodToExportFrom = config.getVisExportConfig().getLodToExportFrom();
+            String fromMessage = " from LoD" + lodToExportFrom;
+            if (lodToExportFrom == 5) {
+                if (work.getDisplayForm().getType() == DisplayFormType.COLLADA)
+                    fromMessage = ". LoD1 or higher required";
+                else
+                    fromMessage = " from any LoD";
+            }
+            log.info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
+        } else {
+            try {
+                // compact list before exporting
+                for (int i = 0; i < placemarks.size(); i++) {
+                    PlacemarkType placemark1 = placemarks.get(i);
+                    if (placemark1 == null) continue;
+                    MultiGeometryType multiGeometry1 = (MultiGeometryType) placemark1.getAbstractGeometryGroup().getValue();
+                    for (int j = i + 1; j < placemarks.size(); j++) {
+                        PlacemarkType placemark2 = placemarks.get(j);
+                        if (placemark2 == null || !placemark1.getId().equals(placemark2.getId())) continue;
+                        // compact since ids are identical
+                        MultiGeometryType multiGeometry2 = (MultiGeometryType) placemark2.getAbstractGeometryGroup().getValue();
+                        multiGeometry1.getAbstractGeometryGroup().addAll(multiGeometry2.getAbstractGeometryGroup());
+                        placemarks.set(j, null); // polygons transfered, placemark exhausted
+                    }
+                }
 
-	private List<PlacemarkType> readTunnelPart(long tunnelPartId, DBSplittingResult work) {
-		PreparedStatement psQuery = null;
-		ResultSet rs = null;
-		boolean reversePointOrder = false;
+                visExporterManager.updateFeatureTracker(work);
+                visExporterManager.print(placemarks,
+                        work,
+                        getBalloonSettings().isBalloonContentInSeparateFile());
+            } catch (JAXBException jaxbEx) {
+                //
+            }
+        }
+    }
 
-		try {
-			currentLod = config.getVisExportConfig().getLodToExportFrom();
+    private List<PlacemarkType> readTunnelPart(long tunnelPartId, DBSplittingResult work) {
+        PreparedStatement psQuery = null;
+        ResultSet rs = null;
+        boolean reversePointOrder = false;
 
-			// we handle FOOTPRINT/EXTRUDED differently than GEOMETRY/COLLADA
-			if (work.getDisplayForm().getType() == DisplayFormType.GEOMETRY
-					|| work.getDisplayForm().getType() == DisplayFormType.COLLADA) {
+        try {
+            currentLod = config.getVisExportConfig().getLodToExportFrom();
 
-				if (currentLod == 5) {
-					// find the highest available LOD to export from. to increase performance, 
-					// this is just a light-weight query that only checks for the main exterior 
-					// building shell without appearances 
-					while (--currentLod > 0) {
-						if (!work.getDisplayForm().isAchievableFromLoD(currentLod)) 
-							break;
+            // we handle FOOTPRINT/EXTRUDED differently than GEOMETRY/COLLADA
+            if (work.getDisplayForm().getType() == DisplayFormType.GEOMETRY
+                    || work.getDisplayForm().getType() == DisplayFormType.COLLADA) {
 
-						try {
-							String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), true, work.getObjectClassId());
-							psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-							for (int i = 1; i <= getParameterCount(query); i++)
-								psQuery.setLong(i, tunnelPartId);
+                if (currentLod == 5) {
+                    // find the highest available LOD to export from. to increase performance,
+                    // this is just a light-weight query that only checks for the main exterior
+                    // building shell without appearances
+                    while (--currentLod > 0) {
+                        if (!work.getDisplayForm().isAchievableFromLoD(currentLod))
+                            break;
 
-							rs = psQuery.executeQuery();
-							if (rs.isBeforeFirst())
-								break;
-						} catch (SQLException e) {
-							log.error("SQL error while querying the highest available LOD.", e);
-							try { connection.commit(); } catch (SQLException sqle) {}
-						} finally {
-							try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
-							try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-							rs = null;
-						}
-					}
-				}
+                        try {
+                            String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), true, work.getObjectClassId());
+                            psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                            for (int i = 1; i <= getParameterCount(query); i++)
+                                psQuery.setLong(i, tunnelPartId);
 
-				// ok, if we have an LOD to export from, we issue a heavy-weight query to get 
-				// the tunnel geometry including sub-features and appearances 
-				if (currentLod > 0 && work.getDisplayForm().isAchievableFromLoD(currentLod)) {
-					try {
-						String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), false, work.getObjectClassId());
-						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-						for (int i = 1; i <= getParameterCount(query); i++)
-							psQuery.setLong(i, tunnelPartId);
+                            rs = psQuery.executeQuery();
+                            if (rs.isBeforeFirst())
+                                break;
+                        } catch (SQLException e) {
+                            log.error("SQL error while querying the highest available LOD.", e);
+                            try {
+                                connection.commit();
+                            } catch (SQLException sqle) {
+                            }
+                        } finally {
+                            try {
+                                if (rs != null) rs.close();
+                            } catch (SQLException sqle) {
+                            }
+                            try {
+                                if (psQuery != null) psQuery.close();
+                            } catch (SQLException sqle) {
+                            }
+                            rs = null;
+                        }
+                    }
+                }
 
-						rs = psQuery.executeQuery();
-					} catch (SQLException e) {
-						log.error("SQL error while querying geometries in LOD " + currentLod + ".", e);
-						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-						try { connection.commit(); } catch (SQLException sqle) {}
-						rs = null;
-					}
-				}
-			}
+                // ok, if we have an LOD to export from, we issue a heavy-weight query to get
+                // the tunnel geometry including sub-features and appearances
+                if (currentLod > 0 && work.getDisplayForm().isAchievableFromLoD(currentLod)) {
+                    try {
+                        String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), false, work.getObjectClassId());
+                        psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                        for (int i = 1; i <= getParameterCount(query); i++)
+                            psQuery.setLong(i, tunnelPartId);
 
-			else {
-				int minLod = currentLod;
-				if (currentLod == 5) {
-					currentLod = 4;
-					minLod = 1;
-				}
+                        rs = psQuery.executeQuery();
+                    } catch (SQLException e) {
+                        log.error("SQL error while querying geometries in LOD " + currentLod + ".", e);
+                        try {
+                            if (psQuery != null) psQuery.close();
+                        } catch (SQLException sqle) {
+                        }
+                        try {
+                            connection.commit();
+                        } catch (SQLException sqle) {
+                        }
+                        rs = null;
+                    }
+                }
+            } else {
+                int minLod = currentLod;
+                if (currentLod == 5) {
+                    currentLod = 4;
+                    minLod = 1;
+                }
 
-				while (currentLod >= minLod) {
-					if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) 
-						break;
+                while (currentLod >= minLod) {
+                    if (!work.getDisplayForm().isAchievableFromLoD(currentLod))
+                        break;
 
-					try {
-						// first, check whether we have an LOD1 geometry or a GroundSurface
-						String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), false, work.getObjectClassId());
-						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-						for (int i = 1; i <= getParameterCount(query); i++)
-							psQuery.setLong(i, tunnelPartId);
+                    try {
+                        // first, check whether we have an LOD1 geometry or a GroundSurface
+                        String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), false, work.getObjectClassId());
+                        psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                        for (int i = 1; i <= getParameterCount(query); i++)
+                            psQuery.setLong(i, tunnelPartId);
 
-						rs = psQuery.executeQuery();
-						if (rs.isBeforeFirst())
-							break;
+                        rs = psQuery.executeQuery();
+                        if (rs.isBeforeFirst())
+                            break;
 
-						try { rs.close(); } catch (SQLException sqle) {} 
-						try { psQuery.close(); } catch (SQLException sqle) {}
-					} catch (SQLException e) {
-						log.error("SQL error while querying geometries in LOD " + currentLod + ".", e);
-						try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
-						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-						try { connection.commit(); } catch (SQLException sqle) {}
-					}
+                        try {
+                            rs.close();
+                        } catch (SQLException sqle) {
+                        }
+                        try {
+                            psQuery.close();
+                        } catch (SQLException sqle) {
+                        }
+                    } catch (SQLException e) {
+                        log.error("SQL error while querying geometries in LOD " + currentLod + ".", e);
+                        try {
+                            if (rs != null) rs.close();
+                        } catch (SQLException sqle) {
+                        }
+                        try {
+                            if (psQuery != null) psQuery.close();
+                        } catch (SQLException sqle) {
+                        }
+                        try {
+                            connection.commit();
+                        } catch (SQLException sqle) {
+                        }
+                    }
 
-					// second, try and generate a footprint by aggregating geometries
-					reversePointOrder = true;
-					int groupBasis = 4;
+                    // second, try and generate a footprint by aggregating geometries
+                    reversePointOrder = true;
+                    int groupBasis = 4;
 
-					try {
-						String query = queries.getTunnelPartAggregateGeometries(0.001,
-								DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(dbSrs),
-								currentLod,
-								Math.pow(groupBasis, 4),
-								Math.pow(groupBasis, 3),
-								Math.pow(groupBasis, 2), work.getObjectClassId());
+                    try {
+                        String query = queries.getTunnelPartAggregateGeometries(0.001,
+                                DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(dbSrs),
+                                currentLod,
+                                Math.pow(groupBasis, 4),
+                                Math.pow(groupBasis, 3),
+                                Math.pow(groupBasis, 2), work.getObjectClassId());
 
-						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-						for (int i = 1; i <= getParameterCount(query); i++)
-							psQuery.setLong(i, tunnelPartId);
+                        psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                        for (int i = 1; i <= getParameterCount(query); i++)
+                            psQuery.setLong(i, tunnelPartId);
 
-						rs = psQuery.executeQuery();
-						if (rs.isBeforeFirst()) {
-							rs.next();
-							if (rs.getObject(1) != null) {
-								rs.beforeFirst();
-								break;
-							}
-						}
+                        rs = psQuery.executeQuery();
+                        if (rs.isBeforeFirst()) {
+                            rs.next();
+                            if (rs.getObject(1) != null) {
+                                rs.beforeFirst();
+                                break;
+                            }
+                        }
 
-						try { rs.close(); } catch (SQLException sqle) {}
-						try { psQuery.close(); } catch (SQLException sqle) {}
-						rs = null;
-					} catch (SQLException e) {
-						log.error("SQL error while aggregating geometries in LOD " + currentLod + ".", e);
-						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
-						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-						try { connection.commit(); } catch (SQLException sqle) {}
-						rs = null;
-					}
+                        try {
+                            rs.close();
+                        } catch (SQLException sqle) {
+                        }
+                        try {
+                            psQuery.close();
+                        } catch (SQLException sqle) {
+                        }
+                        rs = null;
+                    } catch (SQLException e) {
+                        log.error("SQL error while aggregating geometries in LOD " + currentLod + ".", e);
+                        try {
+                            if (rs != null) rs.close();
+                        } catch (SQLException sqle) {
+                        }
+                        try {
+                            if (psQuery != null) psQuery.close();
+                        } catch (SQLException sqle) {
+                        }
+                        try {
+                            connection.commit();
+                        } catch (SQLException sqle) {
+                        }
+                        rs = null;
+                    }
 
-					currentLod--;
-					reversePointOrder = false;
-				}
-			}
+                    currentLod--;
+                    reversePointOrder = false;
+                }
+            }
 
-			if (rs != null && rs.isBeforeFirst()) { // result not empty				
-				switch (work.getDisplayForm().getType()) {
-				case FOOTPRINT:
-					return createPlacemarksForFootprint(rs, work);
+            if (rs != null && rs.isBeforeFirst()) { // result not empty
+                switch (work.getDisplayForm().getType()) {
+                    case FOOTPRINT:
+                        return createPlacemarksForFootprint(rs, work);
 
-				case EXTRUDED:
-					PreparedStatement psQuery2 = null;
-					ResultSet rs2 = null;
+                    case EXTRUDED:
+                        PreparedStatement psQuery2 = null;
+                        ResultSet rs2 = null;
 
-					try {
-						String query = queries.getExtrusionHeight();
-						psQuery2 = connection.prepareStatement(query);
-						for (int i = 1; i <= getParameterCount(query); i++)
-							psQuery2.setLong(i, tunnelPartId);
+                        try {
+                            String query = queries.getExtrusionHeight();
+                            psQuery2 = connection.prepareStatement(query);
+                            for (int i = 1; i <= getParameterCount(query); i++)
+                                psQuery2.setLong(i, tunnelPartId);
 
-						rs2 = psQuery2.executeQuery();
-						rs2.next();
+                            rs2 = psQuery2.executeQuery();
+                            rs2.next();
 
-						double measuredHeight = rs2.getDouble("envelope_measured_height");
-						return createPlacemarksForExtruded(rs, work, measuredHeight, reversePointOrder);
-					} finally {
-						try { if (rs2 != null) rs2.close(); } catch (SQLException e) {}
-						try { if (psQuery2 != null) psQuery2.close(); } catch (SQLException e) {}
-					}
-					
-				case GEOMETRY:
-					setGmlId(work.getGmlId());
-					setId(work.getId());
-					List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
-					if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
-						placemarks.addAll(createPlacemarksForHighlighting(rs, work));
-					}
-					return placemarks;
+                            double measuredHeight = rs2.getDouble("envelope_measured_height");
+                            return createPlacemarksForExtruded(rs, work, measuredHeight, reversePointOrder);
+                        } finally {
+                            try {
+                                if (rs2 != null) rs2.close();
+                            } catch (SQLException e) {
+                            }
+                            try {
+                                if (psQuery2 != null) psQuery2.close();
+                            } catch (SQLException e) {
+                            }
+                        }
 
-				case COLLADA:
-					ColladaOptions colladaOptions = config.getVisExportConfig().getColladaOptions();
+                    case GEOMETRY:
+                        setGmlId(work.getGmlId());
+                        setId(work.getId());
+                        List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
+                        if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
+                            placemarks.addAll(createPlacemarksForHighlighting(rs, work));
+                        }
+                        return placemarks;
 
-					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases()); // fill and refill
-					String currentgmlId = getGmlId();
-					setGmlId(work.getGmlId());
-					setId(work.getId());
+                    case COLLADA:
+                        ColladaOptions colladaOptions = config.getVisExportConfig().getColladaOptions();
 
-					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
-						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
+                        fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases()); // fill and refill
+                        String currentgmlId = getGmlId();
+                        setGmlId(work.getGmlId());
+                        setId(work.getId());
 
-					List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
-					double zOffset = getZOffsetFromConfigOrDB(work.getId());
-					if (zOffset == Double.MAX_VALUE) {
-						zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
-					}
-					setZOffset(zOffset);
+                        if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
+                            log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
-					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
-					try {
-						if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
-							return createPlacemarksForHighlighting(rs, work);
-						}
-						// just COLLADA, no KML
-						List<PlacemarkType> dummy = new ArrayList<>();
-						dummy.add(null);
-						return dummy;
-					}
-					catch (Exception ioe) {
-						log.logStackTrace(ioe);
-					}
-				}
-			}
-		} catch (SQLException sqlEx) {
-			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-			return null;
-		} finally {
-			if (rs != null)
-				try { rs.close(); } catch (SQLException e) {}
-			if (psQuery != null)
-				try { psQuery.close(); } catch (SQLException e) {}
-		}
+                        List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
+                        double zOffset = getZOffsetFromConfigOrDB(work.getId());
+                        if (zOffset == Double.MAX_VALUE) {
+                            zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
+                        }
+                        setZOffset(zOffset);
 
-		return null; // nothing found 
-	}
+                        setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
+                        try {
+                            if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
+                                return createPlacemarksForHighlighting(rs, work);
+                            }
+                            // just COLLADA, no KML
+                            List<PlacemarkType> dummy = new ArrayList<>();
+                            dummy.add(null);
+                            return dummy;
+                        } catch (Exception ioe) {
+                            log.logStackTrace(ioe);
+                        }
+                }
+            }
+        } catch (SQLException sqlEx) {
+            log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+            return null;
+        } finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                }
+            if (psQuery != null)
+                try {
+                    psQuery.close();
+                } catch (SQLException e) {
+                }
+        }
 
-	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
-		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOrigin().x,
-				getOrigin().y,
-				getOrigin().z});
-		setLocation(reducePrecisionForXorY(originInWGS84[0]),
-				reducePrecisionForXorY(originInWGS84[1]),
-				reducePrecisionForZ(originInWGS84[2]));
+        return null; // nothing found
+    }
 
-		return super.createPlacemarkForColladaModel();
-	}
+    public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
+        double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[]{getOrigin().x,
+                getOrigin().y,
+                getOrigin().z});
+        setLocation(reducePrecisionForXorY(originInWGS84[0]),
+                reducePrecisionForXorY(originInWGS84[1]),
+                reducePrecisionForZ(originInWGS84[2]));
+
+        return super.createPlacemarkForColladaModel();
+    }
 
 }

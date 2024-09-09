@@ -38,81 +38,81 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BundledConnection implements ConnectionManager {
-	private final ReentrantLock lock = new ReentrantLock();
-	private final List<Connection> connections;
-	private final DatabaseConnectionPool connectionPool;
+    private final ReentrantLock lock = new ReentrantLock();
+    private final List<Connection> connections;
+    private final DatabaseConnectionPool connectionPool;
 
-	private boolean singleConnection;
-	private boolean autoCommit;
-	private volatile boolean shouldRollback = false;
-	
-	public BundledConnection() {
-		connections = Collections.synchronizedList(new ArrayList<>());
-		connectionPool = DatabaseConnectionPool.getInstance();
-	}
+    private boolean singleConnection;
+    private boolean autoCommit;
+    private volatile boolean shouldRollback = false;
 
-	public boolean isSingleConnection() {
-		return singleConnection;
-	}
+    public BundledConnection() {
+        connections = Collections.synchronizedList(new ArrayList<>());
+        connectionPool = DatabaseConnectionPool.getInstance();
+    }
 
-	public BundledConnection withSingleConnection(boolean singleConnection) {
-		this.singleConnection = singleConnection;
-		return this;
-	}
+    public boolean isSingleConnection() {
+        return singleConnection;
+    }
 
-	public boolean isAutoCommit() {
-		return autoCommit;
-	}
+    public BundledConnection withSingleConnection(boolean singleConnection) {
+        this.singleConnection = singleConnection;
+        return this;
+    }
 
-	public BundledConnection withAutoCommit(boolean autoCommit) {
-		this.autoCommit = autoCommit;
-		return this;
-	}
+    public boolean isAutoCommit() {
+        return autoCommit;
+    }
 
-	public boolean isShouldRollback() {
-		return shouldRollback;
-	}
+    public BundledConnection withAutoCommit(boolean autoCommit) {
+        this.autoCommit = autoCommit;
+        return this;
+    }
 
-	public BundledConnection setShouldRollback(boolean shouldRollback) {
-		this.shouldRollback = shouldRollback;
-		return this;
-	}
+    public boolean isShouldRollback() {
+        return shouldRollback;
+    }
 
-	@Override
-	public Connection getConnection() throws SQLException {
-		if (singleConnection) {
-			lock.lock();
-			try {
-				return connections.isEmpty() ? newConnection() : connections.get(0);
-			} finally {
-				lock.unlock();
-			}
-		} else {
-			return newConnection();
-		}
-	}
+    public BundledConnection setShouldRollback(boolean shouldRollback) {
+        this.shouldRollback = shouldRollback;
+        return this;
+    }
 
-	private Connection newConnection() throws SQLException {
-		Connection connection = connectionPool.getConnection();
-		connection.setAutoCommit(autoCommit);
-		connections.add(connection);
-		return connection;
-	}
+    @Override
+    public Connection getConnection() throws SQLException {
+        if (singleConnection) {
+            lock.lock();
+            try {
+                return connections.isEmpty() ? newConnection() : connections.get(0);
+            } finally {
+                lock.unlock();
+            }
+        } else {
+            return newConnection();
+        }
+    }
 
-	public void close() throws SQLException {
-		try {
-			for (Connection connection : connections) {
-				if (!autoCommit && shouldRollback) {
-					connection.rollback();
-				} else {
-					connection.commit();
-				}
+    private Connection newConnection() throws SQLException {
+        Connection connection = connectionPool.getConnection();
+        connection.setAutoCommit(autoCommit);
+        connections.add(connection);
+        return connection;
+    }
 
-				connection.close();
-			}
-		} finally {
-			connections.clear();
-		}
-	}
+    public void close() throws SQLException {
+        try {
+            for (Connection connection : connections) {
+                if (!autoCommit && shouldRollback) {
+                    connection.rollback();
+                } else {
+                    connection.commit();
+                }
+
+                connection.close();
+            }
+        } finally {
+            connections.clear();
+        }
+    }
 
 }

@@ -31,7 +31,9 @@ import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.core.plugin.extension.Extension;
 
 public interface ConfigExtension<T extends PluginConfig> extends Extension {
-	T getConfig();
-	void configLoaded(T config);
-	void handleEvent(PluginConfigEvent event);
+    T getConfig();
+
+    void configLoaded(T config);
+
+    void handleEvent(PluginConfigEvent event);
 }

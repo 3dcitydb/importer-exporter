@@ -32,27 +32,27 @@ import org.citydb.core.database.schema.mapping.GeometryProperty;
 
 public final class GeometryPropertyNode extends AbstractNode<GeometryProperty> {
 
-	protected GeometryPropertyNode(GeometryProperty geometryProperty) {
-		super(geometryProperty);
-	}
-	
-	protected GeometryPropertyNode(GeometryPropertyNode other) {
-		super(other);
-	}
-	
-	@Override
-	protected boolean isValidChild(AbstractPathElement candidate) {
-		return false;
-	}
+    protected GeometryPropertyNode(GeometryProperty geometryProperty) {
+        super(geometryProperty);
+    }
 
-	@Override
-	protected boolean isValidPredicate(AbstractNodePredicate candidate) {
-		return false;
-	}
+    protected GeometryPropertyNode(GeometryPropertyNode other) {
+        super(other);
+    }
 
-	@Override
-	protected GeometryPropertyNode copy() {
-		return new GeometryPropertyNode(this);
-	}
-	
+    @Override
+    protected boolean isValidChild(AbstractPathElement candidate) {
+        return false;
+    }
+
+    @Override
+    protected boolean isValidPredicate(AbstractNodePredicate candidate) {
+        return false;
+    }
+
+    @Override
+    protected GeometryPropertyNode copy() {
+        return new GeometryPropertyNode(this);
+    }
+
 }

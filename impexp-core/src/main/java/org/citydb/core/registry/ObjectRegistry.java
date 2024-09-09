@@ -42,112 +42,112 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ObjectRegistry {
-	private static ObjectRegistry instance;
+    private static ObjectRegistry instance;
 
-	static {
-		try {
-			// register the citygml4j module for handling the 3DCityDB ADE
-			CityGMLContext.getInstance().registerADEContext(new CityDBADEContext());
-		} catch (ADEException e) {
-			throw new IllegalStateException("Failed to register the 3DCityDB ADE with citygml4j.", e);
-		}
-	}
+    static {
+        try {
+            // register the citygml4j module for handling the 3DCityDB ADE
+            CityGMLContext.getInstance().registerADEContext(new CityDBADEContext());
+        } catch (ADEException e) {
+            throw new IllegalStateException("Failed to register the 3DCityDB ADE with citygml4j.", e);
+        }
+    }
 
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
-	private final DatatypeFactory datatypeFactory;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
+    private final DatatypeFactory datatypeFactory;
 
-	private Map<String, Object> properties;
-	private DatabaseController databaseController;
-	private CityGMLBuilder cityGMLBuilder;
-	private SchemaMapping schemaMapping;
+    private Map<String, Object> properties;
+    private DatabaseController databaseController;
+    private CityGMLBuilder cityGMLBuilder;
+    private SchemaMapping schemaMapping;
 
-	private ObjectRegistry() {
-		config = new Config();
-		eventDispatcher = new EventDispatcher();
+    private ObjectRegistry() {
+        config = new Config();
+        eventDispatcher = new EventDispatcher();
 
-		try {
-			datatypeFactory = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
-			throw new IllegalStateException("Failed to create a new instance of DatatypeFactory.", e);
-		}
-	}
+        try {
+            datatypeFactory = DatatypeFactory.newInstance();
+        } catch (DatatypeConfigurationException e) {
+            throw new IllegalStateException("Failed to create a new instance of DatatypeFactory.", e);
+        }
+    }
 
-	public static synchronized ObjectRegistry getInstance() {
-		if (instance == null) {
-			instance = new ObjectRegistry();
-			instance.databaseController = new DatabaseController();
-		}
+    public static synchronized ObjectRegistry getInstance() {
+        if (instance == null) {
+            instance = new ObjectRegistry();
+            instance.databaseController = new DatabaseController();
+        }
 
-		return instance;
-	}
+        return instance;
+    }
 
-	public void register(String name, Object object) {
-		if (properties == null) {
-			properties = new HashMap<>();
-		}
+    public void register(String name, Object object) {
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
 
-		properties.put(name, object);
-	}
+        properties.put(name, object);
+    }
 
-	public void register(Object object) {
-		register(object.getClass().getName(), object);
-	}
+    public void register(Object object) {
+        register(object.getClass().getName(), object);
+    }
 
-	public void unregister(String name) {
-		properties.remove(name);
-	}
+    public void unregister(String name) {
+        properties.remove(name);
+    }
 
-	public void unregister(Class<?> type) {
-		unregister(type.getName());
-	}
+    public void unregister(Class<?> type) {
+        unregister(type.getName());
+    }
 
-	public Object lookup(String name) {
-		return properties != null ? properties.get(name) : null;
-	}
+    public Object lookup(String name) {
+        return properties != null ? properties.get(name) : null;
+    }
 
-	public <T> T lookup(Class<T> type) {
-		Object object = lookup(type.getName());
-		return type.isInstance(object) ? type.cast(object) : null;
-	}
+    public <T> T lookup(Class<T> type) {
+        Object object = lookup(type.getName());
+        return type.isInstance(object) ? type.cast(object) : null;
+    }
 
-	public Config getConfig() {
-		return config;
-	}
+    public Config getConfig() {
+        return config;
+    }
 
-	public DatatypeFactory getDatatypeFactory() {
-		return datatypeFactory;
-	}
+    public DatatypeFactory getDatatypeFactory() {
+        return datatypeFactory;
+    }
 
-	public EventDispatcher getEventDispatcher() {
-		return eventDispatcher;
-	}
+    public EventDispatcher getEventDispatcher() {
+        return eventDispatcher;
+    }
 
-	public DatabaseController getDatabaseController() {
-		return databaseController;
-	}
+    public DatabaseController getDatabaseController() {
+        return databaseController;
+    }
 
-	public CityGMLBuilder getCityGMLBuilder() {
-		return cityGMLBuilder;
-	}
+    public CityGMLBuilder getCityGMLBuilder() {
+        return cityGMLBuilder;
+    }
 
-	public void setCityGMLBuilder(CityGMLBuilder cityGMLBuilder) {
-		if (this.cityGMLBuilder != null) {
-			throw new IllegalArgumentException("CityGML Builder is already registered with the object registry.");
-		}
+    public void setCityGMLBuilder(CityGMLBuilder cityGMLBuilder) {
+        if (this.cityGMLBuilder != null) {
+            throw new IllegalArgumentException("CityGML Builder is already registered with the object registry.");
+        }
 
-		this.cityGMLBuilder = cityGMLBuilder;
-	}
+        this.cityGMLBuilder = cityGMLBuilder;
+    }
 
-	public SchemaMapping getSchemaMapping() {
-		return schemaMapping;
-	}
+    public SchemaMapping getSchemaMapping() {
+        return schemaMapping;
+    }
 
-	public void setSchemaMapping(SchemaMapping schemaMapping) {
-		if (this.schemaMapping != null) {
-			throw new IllegalArgumentException("Schema mapping is already registered with the object registry.");
-		}
+    public void setSchemaMapping(SchemaMapping schemaMapping) {
+        if (this.schemaMapping != null) {
+            throw new IllegalArgumentException("Schema mapping is already registered with the object registry.");
+        }
 
-		this.schemaMapping = schemaMapping;
-	}
+        this.schemaMapping = schemaMapping;
+    }
 }

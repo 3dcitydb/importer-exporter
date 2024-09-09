@@ -37,56 +37,56 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
-	private final String defaultWorkspaceName = "LIVE";
-	private final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+    private final String defaultWorkspaceName = "LIVE";
+    private final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
 
-	protected WorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		super(databaseAdapter);
-	}
-	
-	@Override
-	public String getDefaultWorkspaceName() {
-		return defaultWorkspaceName;
-	}
-	
-	@Override
-	public boolean equalsDefaultWorkspaceName(String workspaceName) {
-		workspaceName = formatWorkspaceName(workspaceName);
-		return workspaceName == null || workspaceName.isEmpty() || defaultWorkspaceName.equals(workspaceName);
-	}
+    protected WorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
+        super(databaseAdapter);
+    }
 
-	@Override
-	public void gotoWorkspace(Connection connection, Workspace workspace) throws SQLException {
-		String workspaceName = formatWorkspaceName(workspace.getName());
-		if (workspaceName == null || workspaceName.isEmpty()) {
-			workspaceName = defaultWorkspaceName;
-		}
+    @Override
+    public String getDefaultWorkspaceName() {
+        return defaultWorkspaceName;
+    }
 
-		try (CallableStatement workspaceStmt = connection.prepareCall("{call dbms_wm.GotoWorkspace('" + workspaceName + "')}")) {
-			workspaceStmt.executeQuery();
-			if (workspace.isSetTimestamp()) {
-				try (CallableStatement timestampStmt = connection.prepareCall("{call dbms_wm.GotoDate('" + format.format(workspace.getTimestamp()) + "', 'DD.MM.YYYY')}")) {
-					timestampStmt.executeQuery();
-				}
-			}
-		}
-	}
+    @Override
+    public boolean equalsDefaultWorkspaceName(String workspaceName) {
+        workspaceName = formatWorkspaceName(workspaceName);
+        return workspaceName == null || workspaceName.isEmpty() || defaultWorkspaceName.equals(workspaceName);
+    }
 
-	@Override
-	public List<String> fetchWorkspacesFromDatabase(Connection connection) throws SQLException {
-		try (Statement stmt = connection.createStatement();
-			 ResultSet rs = stmt.executeQuery("select workspace from all_workspaces order by workspace")) {
-			List<String> schemas = new ArrayList<>();
-			while (rs.next()) {
-				schemas.add(rs.getString(1));
-			}
+    @Override
+    public void gotoWorkspace(Connection connection, Workspace workspace) throws SQLException {
+        String workspaceName = formatWorkspaceName(workspace.getName());
+        if (workspaceName == null || workspaceName.isEmpty()) {
+            workspaceName = defaultWorkspaceName;
+        }
 
-			return schemas;
-		}
-	}
+        try (CallableStatement workspaceStmt = connection.prepareCall("{call dbms_wm.GotoWorkspace('" + workspaceName + "')}")) {
+            workspaceStmt.executeQuery();
+            if (workspace.isSetTimestamp()) {
+                try (CallableStatement timestampStmt = connection.prepareCall("{call dbms_wm.GotoDate('" + format.format(workspace.getTimestamp()) + "', 'DD.MM.YYYY')}")) {
+                    timestampStmt.executeQuery();
+                }
+            }
+        }
+    }
 
-	@Override
-	public String formatWorkspaceName(String workspaceName) {
-		return workspaceName != null ? workspaceName.trim() : null;
-	}
+    @Override
+    public List<String> fetchWorkspacesFromDatabase(Connection connection) throws SQLException {
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery("select workspace from all_workspaces order by workspace")) {
+            List<String> schemas = new ArrayList<>();
+            while (rs.next()) {
+                schemas.add(rs.getString(1));
+            }
+
+            return schemas;
+        }
+    }
+
+    @Override
+    public String formatWorkspaceName(String workspaceName) {
+        return workspaceName != null ? workspaceName.trim() : null;
+    }
 }

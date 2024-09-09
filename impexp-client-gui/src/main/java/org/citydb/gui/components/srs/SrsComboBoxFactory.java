@@ -36,63 +36,63 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 public class SrsComboBoxFactory {
-	private static SrsComboBoxFactory instance = null;
-	private final Set<SrsComboBox> srsComboBoxes = Collections.newSetFromMap(new WeakHashMap<>());
-	private final Config config;
+    private static SrsComboBoxFactory instance = null;
+    private final Set<SrsComboBox> srsComboBoxes = Collections.newSetFromMap(new WeakHashMap<>());
+    private final Config config;
 
-	private SrsComboBoxFactory() {
-		// just to thwart instantiation
-		config = ObjectRegistry.getInstance().getConfig();
-	}
+    private SrsComboBoxFactory() {
+        // just to thwart instantiation
+        config = ObjectRegistry.getInstance().getConfig();
+    }
 
-	public static synchronized SrsComboBoxFactory getInstance() {
-		if (instance == null) {
-			instance = new SrsComboBoxFactory();
-			instance.resetAll(true);
-		}
+    public static synchronized SrsComboBoxFactory getInstance() {
+        if (instance == null) {
+            instance = new SrsComboBoxFactory();
+            instance.resetAll(true);
+        }
 
-		return instance;
-	}
+        return instance;
+    }
 
-	public SrsComboBox createSrsComboBox(boolean onlyShowSupported) {
-		SrsComboBox srsComboBox = new SrsComboBox(onlyShowSupported, config);
-		srsComboBox.init();
-		srsComboBoxes.add(srsComboBox);
+    public SrsComboBox createSrsComboBox(boolean onlyShowSupported) {
+        SrsComboBox srsComboBox = new SrsComboBox(onlyShowSupported, config);
+        srsComboBox.init();
+        srsComboBoxes.add(srsComboBox);
 
-		return srsComboBox;
-	}
+        return srsComboBox;
+    }
 
-	public SrsComboBox createSrsComboBox() {
-		return createSrsComboBox(true);
-	}
+    public SrsComboBox createSrsComboBox() {
+        return createSrsComboBox(true);
+    }
 
-	public void updateAll(boolean sort) {
-		processSrsComboBoxes(sort, true);
-	}
+    public void updateAll(boolean sort) {
+        processSrsComboBoxes(sort, true);
+    }
 
-	public void resetAll(boolean sort) {
-		// by default, any reference system is not supported. In GUI mode we can
-		// override this because the SRS combo boxes will take care.
-		for (DatabaseSrs srs : config.getDatabaseConfig().getReferenceSystems()) {
-			srs.setSupported(true);
-		}
-		
-		processSrsComboBoxes(sort, false);
-	}
+    public void resetAll(boolean sort) {
+        // by default, any reference system is not supported. In GUI mode we can
+        // override this because the SRS combo boxes will take care.
+        for (DatabaseSrs srs : config.getDatabaseConfig().getReferenceSystems()) {
+            srs.setSupported(true);
+        }
 
-	private void processSrsComboBoxes(boolean sort, boolean update) {
-		if (sort) {
-			Collections.sort(config.getDatabaseConfig().getReferenceSystems());
-		}
+        processSrsComboBoxes(sort, false);
+    }
 
-		for (SrsComboBox srsComboBox : srsComboBoxes) {
-			if (update) {
-				srsComboBox.updateContent();
-			} else {
-				srsComboBox.reset();
-			}
+    private void processSrsComboBoxes(boolean sort, boolean update) {
+        if (sort) {
+            Collections.sort(config.getDatabaseConfig().getReferenceSystems());
+        }
 
-			srsComboBox.repaint();
-		}
-	}
+        for (SrsComboBox srsComboBox : srsComboBoxes) {
+            if (update) {
+                srsComboBox.updateContent();
+            } else {
+                srsComboBox.reset();
+            }
+
+            srsComboBox.repaint();
+        }
+    }
 }

@@ -40,186 +40,186 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ObjectGmlIdCache implements IdCachingModel {
-	private final ReentrantLock mainLock = new ReentrantLock();
-	private final int partitions;
-	private final CacheTableModel cacheTableModel;
-	private final CacheTableManager cacheTableManager;
+    private final ReentrantLock mainLock = new ReentrantLock();
+    private final int partitions;
+    private final CacheTableModel cacheTableModel;
+    private final CacheTableManager cacheTableManager;
 
-	private final CacheTable[] backUpTables;
-	private final PreparedStatement[] psLookupGmlIds;
-	private final PreparedStatement[] psDrains;
-	private final ReentrantLock[] locks;
-	private final int[] batchCounters;
-	private final int batchSize;
+    private final CacheTable[] backUpTables;
+    private final PreparedStatement[] psLookupGmlIds;
+    private final PreparedStatement[] psDrains;
+    private final ReentrantLock[] locks;
+    private final int[] batchCounters;
+    private final int batchSize;
 
-	private BranchCacheTable branchTable;
+    private BranchCacheTable branchTable;
 
-	public ObjectGmlIdCache(CacheTableManager cacheTableManager, int partitions, int batchSize) throws SQLException {
-		this.cacheTableManager = cacheTableManager;
-		this.partitions = partitions;
-		this.batchSize = batchSize;
+    public ObjectGmlIdCache(CacheTableManager cacheTableManager, int partitions, int batchSize) throws SQLException {
+        this.cacheTableManager = cacheTableManager;
+        this.partitions = partitions;
+        this.batchSize = batchSize;
 
-		cacheTableModel = CacheTableModel.OBJECT_GMLID;
-		backUpTables = new CacheTable[partitions];
-		psLookupGmlIds = new PreparedStatement[partitions];
-		psDrains = new PreparedStatement[partitions];
-		locks = new ReentrantLock[partitions];
-		batchCounters = new int[partitions];
+        cacheTableModel = CacheTableModel.OBJECT_GMLID;
+        backUpTables = new CacheTable[partitions];
+        psLookupGmlIds = new PreparedStatement[partitions];
+        psDrains = new PreparedStatement[partitions];
+        locks = new ReentrantLock[partitions];
+        batchCounters = new int[partitions];
 
-		for (int i = 0; i < partitions; i++) {
-			locks[i] = new ReentrantLock();
-		}
-	}
+        for (int i = 0; i < partitions; i++) {
+            locks[i] = new ReentrantLock();
+        }
+    }
 
-	@Override
-	public void drainToDB(ConcurrentHashMap<String, IdCacheEntry> map, int drain) throws SQLException {
-		int drainCounter = 0;			
+    @Override
+    public void drainToDB(ConcurrentHashMap<String, IdCacheEntry> map, int drain) throws SQLException {
+        int drainCounter = 0;
 
-		// firstly, try and write those entries which have already been requested
-		Iterator<Map.Entry<String, IdCacheEntry>> iter = map.entrySet().iterator();
-		while (drainCounter <= drain && iter.hasNext()) {
-			Map.Entry<String, IdCacheEntry> entry = iter.next();
-			if (entry.getValue().isRequested()) { 
-				String gmlId = entry.getKey();
+        // firstly, try and write those entries which have already been requested
+        Iterator<Map.Entry<String, IdCacheEntry>> iter = map.entrySet().iterator();
+        while (drainCounter <= drain && iter.hasNext()) {
+            Map.Entry<String, IdCacheEntry> entry = iter.next();
+            if (entry.getValue().isRequested()) {
+                String gmlId = entry.getKey();
 
-				// determine partition for gml:id
-				int partition = Math.abs(gmlId.hashCode() % partitions);
-				initializePartition(partition);
+                // determine partition for gml:id
+                int partition = Math.abs(gmlId.hashCode() % partitions);
+                initializePartition(partition);
 
-				// get corresponding prepared statement
-				PreparedStatement psDrain = psDrains[partition];
+                // get corresponding prepared statement
+                PreparedStatement psDrain = psDrains[partition];
 
-				psDrain.setString(1, gmlId);
-				psDrain.setLong(2, entry.getValue().getId());
-				psDrain.setString(3, entry.getValue().getMapping());
-				psDrain.setInt(4, entry.getValue().getObjectClassId());
+                psDrain.setString(1, gmlId);
+                psDrain.setLong(2, entry.getValue().getId());
+                psDrain.setString(3, entry.getValue().getMapping());
+                psDrain.setInt(4, entry.getValue().getObjectClassId());
 
-				psDrain.addBatch();
-				if (++batchCounters[partition] == batchSize) {
-					psDrain.executeBatch();
-					batchCounters[partition] = 0;
-				}
+                psDrain.addBatch();
+                if (++batchCounters[partition] == batchSize) {
+                    psDrain.executeBatch();
+                    batchCounters[partition] = 0;
+                }
 
-				iter.remove();
-				++drainCounter;
-			}
-		}
+                iter.remove();
+                ++drainCounter;
+            }
+        }
 
-		// secondly, drain remaining entries until drain limit
-		iter = map.entrySet().iterator();
-		while (drainCounter <= drain && iter.hasNext()) {
-			Map.Entry<String, IdCacheEntry> entry = iter.next();
-			String gmlId = entry.getKey();
+        // secondly, drain remaining entries until drain limit
+        iter = map.entrySet().iterator();
+        while (drainCounter <= drain && iter.hasNext()) {
+            Map.Entry<String, IdCacheEntry> entry = iter.next();
+            String gmlId = entry.getKey();
 
-			// determine partition for gml:id
-			int partition = Math.abs(gmlId.hashCode() % partitions);
-			initializePartition(partition);
+            // determine partition for gml:id
+            int partition = Math.abs(gmlId.hashCode() % partitions);
+            initializePartition(partition);
 
-			// get corresponding prepared statement
-			PreparedStatement psDrain = psDrains[partition];
+            // get corresponding prepared statement
+            PreparedStatement psDrain = psDrains[partition];
 
-			psDrain.setString(1, gmlId);
-			psDrain.setLong(2, entry.getValue().getId());
-			psDrain.setString(3, entry.getValue().getMapping());
-			psDrain.setInt(4, entry.getValue().getObjectClassId());
+            psDrain.setString(1, gmlId);
+            psDrain.setLong(2, entry.getValue().getId());
+            psDrain.setString(3, entry.getValue().getMapping());
+            psDrain.setInt(4, entry.getValue().getObjectClassId());
 
-			psDrain.addBatch();
-			if (++batchCounters[partition] == batchSize) {
-				psDrain.executeBatch();
-				batchCounters[partition] = 0;
-			}
+            psDrain.addBatch();
+            if (++batchCounters[partition] == batchSize) {
+                psDrain.executeBatch();
+                batchCounters[partition] = 0;
+            }
 
-			iter.remove();
-			++drainCounter;
-		}
+            iter.remove();
+            ++drainCounter;
+        }
 
-		// finally execute batches
-		for (int i = 0; i < psDrains.length; i++) {
-			if (psDrains[i] != null && batchCounters[i] > 0) {
-				psDrains[i].executeBatch();
-			}
-		}
-	}
+        // finally execute batches
+        for (int i = 0; i < psDrains.length; i++) {
+            if (psDrains[i] != null && batchCounters[i] > 0) {
+                psDrains[i].executeBatch();
+            }
+        }
+    }
 
-	@Override
-	public IdCacheEntry lookupDB(String key) throws SQLException {
-		// determine partition for gml:id
-		int partition = Math.abs(key.hashCode() % partitions);
-		initializePartition(partition);
+    @Override
+    public IdCacheEntry lookupDB(String key) throws SQLException {
+        // determine partition for gml:id
+        int partition = Math.abs(key.hashCode() % partitions);
+        initializePartition(partition);
 
-		// lock partition
-		final ReentrantLock tableLock = this.locks[partition];
-		tableLock.lock();
+        // lock partition
+        final ReentrantLock tableLock = this.locks[partition];
+        tableLock.lock();
 
-		try {
-			psLookupGmlIds[partition].setString(1, key);
-			try (ResultSet rs = psLookupGmlIds[partition].executeQuery()) {
-				if (rs.next()) {
-					long id = rs.getLong(1);
-					String mapping = rs.getString(2);
-					int objectClassId = rs.getInt(3);
+        try {
+            psLookupGmlIds[partition].setString(1, key);
+            try (ResultSet rs = psLookupGmlIds[partition].executeQuery()) {
+                if (rs.next()) {
+                    long id = rs.getLong(1);
+                    String mapping = rs.getString(2);
+                    int objectClassId = rs.getInt(3);
 
-					return new IdCacheEntry(id, 0, false, mapping, objectClassId);
-				}
+                    return new IdCacheEntry(id, 0, false, mapping, objectClassId);
+                }
 
-				return null;
-			}
-		} finally {
-			tableLock.unlock();
-		}
-	}
+                return null;
+            }
+        } finally {
+            tableLock.unlock();
+        }
+    }
 
-	@Override
-	public void close() throws SQLException {
-		for (PreparedStatement ps : psDrains) {
-			if (ps != null) {
-				ps.close();
-			}
-		}
+    @Override
+    public void close() throws SQLException {
+        for (PreparedStatement ps : psDrains) {
+            if (ps != null) {
+                ps.close();
+            }
+        }
 
-		for (PreparedStatement ps : psLookupGmlIds) {
-			if (ps != null) {
-				ps.close();
-			}
-		}
-	}
+        for (PreparedStatement ps : psLookupGmlIds) {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
 
-	@Override
-	public String getType() {
-		return "object";
-	}
+    @Override
+    public String getType() {
+        return "object";
+    }
 
-	private void initializePartition(int partition) throws SQLException {
-		if (branchTable == null) {
-			mainLock.lock();
+    private void initializePartition(int partition) throws SQLException {
+        if (branchTable == null) {
+            mainLock.lock();
 
-			try {
-				if (branchTable == null) {
-					branchTable = cacheTableManager.createAndIndexBranchCacheTable(cacheTableModel);
-				}
-			} finally {
-				mainLock.unlock();
-			}
-		}
+            try {
+                if (branchTable == null) {
+                    branchTable = cacheTableManager.createAndIndexBranchCacheTable(cacheTableModel);
+                }
+            } finally {
+                mainLock.unlock();
+            }
+        }
 
-		if (backUpTables[partition] == null) {
-			final ReentrantLock tableLock = locks[partition];
-			tableLock.lock();
+        if (backUpTables[partition] == null) {
+            final ReentrantLock tableLock = locks[partition];
+            tableLock.lock();
 
-			try {
-				if (backUpTables[partition] == null) {
-					CacheTable tempTable = partition == 0 ? branchTable.getMainTable() : branchTable.branchAndIndex();
+            try {
+                if (backUpTables[partition] == null) {
+                    CacheTable tempTable = partition == 0 ? branchTable.getMainTable() : branchTable.branchAndIndex();
 
-					Connection conn = tempTable.getConnection();
-					String tableName = tempTable.getTableName();
+                    Connection conn = tempTable.getConnection();
+                    String tableName = tempTable.getTableName();
 
-					backUpTables[partition] = tempTable;
-					psLookupGmlIds[partition] = conn.prepareStatement("select ID, MAPPING, OBJECTCLASS_ID from " + tableName + " where GMLID=?");
-					psDrains[partition] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, MAPPING, OBJECTCLASS_ID) values (?, ?, ?, ?)");
-				}
-			} finally {
-				tableLock.unlock();
-			}
-		}
-	}	
+                    backUpTables[partition] = tempTable;
+                    psLookupGmlIds[partition] = conn.prepareStatement("select ID, MAPPING, OBJECTCLASS_ID from " + tableName + " where GMLID=?");
+                    psDrains[partition] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, MAPPING, OBJECTCLASS_ID) values (?, ?, ?, ?)");
+                }
+            } finally {
+                tableLock.unlock();
+            }
+        }
+    }
 }

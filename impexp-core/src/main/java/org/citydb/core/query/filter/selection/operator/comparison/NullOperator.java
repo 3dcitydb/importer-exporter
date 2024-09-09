@@ -34,36 +34,36 @@ import org.citydb.core.query.filter.selection.expression.ExpressionName;
 import org.citydb.core.query.filter.selection.expression.ValueReference;
 
 public class NullOperator extends AbstractComparisonOperator {
-	private Expression operand;
-	
-	public NullOperator(Expression operand) throws FilterException {
-		setOperand(operand);
-	}
-	
-	public boolean isSetOperand() {
-		return operand != null;
-	}
-	
-	public Expression getOperand() {
-		return operand;
-	}
+    private Expression operand;
 
-	public void setOperand(Expression operand) throws FilterException {
-		if (operand.getExpressionName() == ExpressionName.VALUE_REFERENCE 
-				&& !(((ValueReference)operand).getSchemaPath().getLastNode().getPathElement() instanceof AbstractProperty))
-			throw new FilterException("The value reference of a null comparison must point to a property.");
+    public NullOperator(Expression operand) throws FilterException {
+        setOperand(operand);
+    }
 
-		this.operand = operand;
-	}
-	
-	@Override
-	public ComparisonOperatorName getOperatorName() {
-		return ComparisonOperatorName.NULL;
-	}
+    public boolean isSetOperand() {
+        return operand != null;
+    }
 
-	@Override
-	public NullOperator copy() throws FilterException {
-		return new NullOperator(operand);
-	}
+    public Expression getOperand() {
+        return operand;
+    }
+
+    public void setOperand(Expression operand) throws FilterException {
+        if (operand.getExpressionName() == ExpressionName.VALUE_REFERENCE
+                && !(((ValueReference) operand).getSchemaPath().getLastNode().getPathElement() instanceof AbstractProperty))
+            throw new FilterException("The value reference of a null comparison must point to a property.");
+
+        this.operand = operand;
+    }
+
+    @Override
+    public ComparisonOperatorName getOperatorName() {
+        return ComparisonOperatorName.NULL;
+    }
+
+    @Override
+    public NullOperator copy() throws FilterException {
+        return new NullOperator(operand);
+    }
 
 }

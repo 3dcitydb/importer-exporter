@@ -33,6 +33,7 @@ import org.citydb.core.database.connection.DatabaseConnectionWarning;
 import java.util.List;
 
 public interface DatabaseVersionChecker {
-	public List<DatabaseConnectionWarning> checkVersionSupport(AbstractDatabaseAdapter databaseAdapter) throws DatabaseVersionException;
-	public List<DatabaseVersionSupport> getSupportedVersions(String productName);
+    public List<DatabaseConnectionWarning> checkVersionSupport(AbstractDatabaseAdapter databaseAdapter) throws DatabaseVersionException;
+
+    public List<DatabaseVersionSupport> getSupportedVersions(String productName);
 }

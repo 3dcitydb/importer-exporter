@@ -41,66 +41,66 @@ import org.citygml4j.xml.io.reader.XMLChunk;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class FeatureReaderWorker extends Worker<XMLChunk> {
-	private final ReentrantLock runLock = new ReentrantLock();
-	private volatile boolean shouldRun = true;
+    private final ReentrantLock runLock = new ReentrantLock();
+    private volatile boolean shouldRun = true;
 
-	private final WorkerPool<CityGML> workerPool;
-	private final EventDispatcher eventDispatcher;
-	private final boolean useValidation;
+    private final WorkerPool<CityGML> workerPool;
+    private final EventDispatcher eventDispatcher;
+    private final boolean useValidation;
 
-	public FeatureReaderWorker(WorkerPool<CityGML> workerPool,
-			Config config,
-			EventDispatcher eventDispatcher) {
-		this.workerPool = workerPool;
-		this.eventDispatcher = eventDispatcher;
+    public FeatureReaderWorker(WorkerPool<CityGML> workerPool,
+                               Config config,
+                               EventDispatcher eventDispatcher) {
+        this.workerPool = workerPool;
+        this.eventDispatcher = eventDispatcher;
 
-		useValidation = config.getImportConfig().getCityGMLOptions().getXMLValidation().isSetUseXMLValidation();
-	}
-	
-	@Override
-	public void interrupt() {
-		shouldRun = false;
-	}
+        useValidation = config.getImportConfig().getCityGMLOptions().getXMLValidation().isSetUseXMLValidation();
+    }
 
-	@Override
-	public void run() {
-		if (firstWork != null) {
-			doWork(firstWork);
-			firstWork = null;
-		}
+    @Override
+    public void interrupt() {
+        shouldRun = false;
+    }
 
-		while (shouldRun) {
-			try {
-				XMLChunk work = workQueue.take();				
-				doWork(work);
-			} catch (InterruptedException ie) {
-				// re-check state
-			}
-		}
-	}
+    @Override
+    public void run() {
+        if (firstWork != null) {
+            doWork(firstWork);
+            firstWork = null;
+        }
 
-	private void doWork(XMLChunk work) {
-		final ReentrantLock runLock = this.runLock;
-		runLock.lock();
+        while (shouldRun) {
+            try {
+                XMLChunk work = workQueue.take();
+                doWork(work);
+            } catch (InterruptedException ie) {
+                // re-check state
+            }
+        }
+    }
 
-		try {
-			try {
-				CityGML cityGML = work.unmarshal();
-				if (!useValidation || work.hasPassedXMLValidation()) {
-					workerPool.addWork(cityGML);
-				}
-			} catch (UnmarshalException e) {
-				if (!useValidation || work.hasPassedXMLValidation()) {
-					eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to unmarshal XML chunk.", LogLevel.ERROR, e, eventChannel));
-				}
-			} catch (MissingADESchemaException e) {
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to read an ADE XML Schema.", LogLevel.ERROR, e, eventChannel));
-			} catch (Throwable e) {
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during parsing of input file.", LogLevel.ERROR, e, eventChannel));
-			}
-		} finally {
-			runLock.unlock();
-		}
-	}
+    private void doWork(XMLChunk work) {
+        final ReentrantLock runLock = this.runLock;
+        runLock.lock();
+
+        try {
+            try {
+                CityGML cityGML = work.unmarshal();
+                if (!useValidation || work.hasPassedXMLValidation()) {
+                    workerPool.addWork(cityGML);
+                }
+            } catch (UnmarshalException e) {
+                if (!useValidation || work.hasPassedXMLValidation()) {
+                    eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to unmarshal XML chunk.", LogLevel.ERROR, e, eventChannel));
+                }
+            } catch (MissingADESchemaException e) {
+                eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to read an ADE XML Schema.", LogLevel.ERROR, e, eventChannel));
+            } catch (Throwable e) {
+                eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during parsing of input file.", LogLevel.ERROR, e, eventChannel));
+            }
+        } finally {
+            runLock.unlock();
+        }
+    }
 
 }

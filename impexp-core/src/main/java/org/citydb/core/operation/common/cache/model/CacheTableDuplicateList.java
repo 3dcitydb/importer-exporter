@@ -34,33 +34,33 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class CacheTableDuplicateList extends AbstractCacheTableModel {
-	private static CacheTableDuplicateList instance;
+    private static CacheTableDuplicateList instance;
 
-	public synchronized static CacheTableDuplicateList getInstance() {
-		if (instance == null)
-			instance = new CacheTableDuplicateList();
+    public synchronized static CacheTableDuplicateList getInstance() {
+        if (instance == null)
+            instance = new CacheTableDuplicateList();
 
-		return instance;
-	}
-	
-	@Override
-	public CacheTableModel getType() {
-		return CacheTableModel.DUPLICATE_LIST;
-	}
+        return instance;
+    }
 
-	@Override
-	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		try (Statement stmt = conn.createStatement()) {
-			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
-			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (ID) " + properties);
-		}
-	}
+    @Override
+    public CacheTableModel getType() {
+        return CacheTableModel.DUPLICATE_LIST;
+    }
 
-	@Override
-	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		return "(" +
-				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
-				"ID " + sqlAdapter.getBigInt() +
-				")";
-	}
+    @Override
+    public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
+            stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (ID) " + properties);
+        }
+    }
+
+    @Override
+    protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+        return "(" +
+                "GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+                "ID " + sqlAdapter.getBigInt() +
+                ")";
+    }
 }

@@ -42,67 +42,67 @@ import java.util.Collections;
 import java.util.List;
 
 public class DefaultWaypointPainter implements Painter<JXMapViewer> {
-	private final WaypointPainter<JXMapViewer> painter;
-	private final List<Waypoint> waypoints;
+    private final WaypointPainter<JXMapViewer> painter;
+    private final List<Waypoint> waypoints;
 
-	public DefaultWaypointPainter() {
-		painter = new WaypointPainter<>();
-		painter.setRenderer(new SingleWaypointRenderer());
-		waypoints = new ArrayList<>();
-	}
+    public DefaultWaypointPainter() {
+        painter = new WaypointPainter<>();
+        painter.setRenderer(new SingleWaypointRenderer());
+        waypoints = new ArrayList<>();
+    }
 
-	public void showWaypoints(DefaultWaypoint... waypoints) {
-		this.waypoints.clear();
-		Collections.addAll(this.waypoints, waypoints);
-		painter.setWaypoints(this.waypoints);
-	}
+    public void showWaypoints(DefaultWaypoint... waypoints) {
+        this.waypoints.clear();
+        Collections.addAll(this.waypoints, waypoints);
+        painter.setWaypoints(this.waypoints);
+    }
 
-	public void clearWaypoints() {
-		waypoints.clear();
-		painter.setWaypoints(waypoints);
-	}
+    public void clearWaypoints() {
+        waypoints.clear();
+        painter.setWaypoints(waypoints);
+    }
 
-	@Override
-	public void paint(Graphics2D arg0, JXMapViewer arg1, int arg2, int arg3) {
-		painter.paint(arg0, arg1, arg2, arg3);
-	}
+    @Override
+    public void paint(Graphics2D arg0, JXMapViewer arg1, int arg2, int arg3) {
+        painter.paint(arg0, arg1, arg2, arg3);
+    }
 
-	private static final class SingleWaypointRenderer implements WaypointRenderer {
-		private ImageIcon precise;
-		private ImageIcon approximate;
-		private ImageIcon reverse;
+    private static final class SingleWaypointRenderer implements WaypointRenderer {
+        private ImageIcon precise;
+        private ImageIcon approximate;
+        private ImageIcon reverse;
 
-		public SingleWaypointRenderer() {
-			try {
-				precise = approximate = new FlatSVGIcon("org/citydb/gui/map/waypoint.svg");
-				reverse = new FlatSVGIcon("org/citydb/gui/map/waypoint_reverse.svg");
-			} catch (Exception ex) {
-				Logger.getInstance().logStackTrace(ex);
-			}
-		}
+        public SingleWaypointRenderer() {
+            try {
+                precise = approximate = new FlatSVGIcon("org/citydb/gui/map/waypoint.svg");
+                reverse = new FlatSVGIcon("org/citydb/gui/map/waypoint_reverse.svg");
+            } catch (Exception ex) {
+                Logger.getInstance().logStackTrace(ex);
+            }
+        }
 
-		public boolean paintWaypoint(Graphics2D g, JXMapViewer map, Waypoint waypoint) {
-			if (waypoint instanceof DefaultWaypoint) {
-				DefaultWaypoint tmp = (DefaultWaypoint)waypoint;
-				ImageIcon img = null;
-				switch (tmp.getType()) {
-					case PRECISE:
-						img = precise;
-						break;
-					case APPROXIMATE:
-						img = approximate;
-						break;
-					case REVERSE:
-						img = reverse;
-						break;
-				}
+        public boolean paintWaypoint(Graphics2D g, JXMapViewer map, Waypoint waypoint) {
+            if (waypoint instanceof DefaultWaypoint) {
+                DefaultWaypoint tmp = (DefaultWaypoint) waypoint;
+                ImageIcon img = null;
+                switch (tmp.getType()) {
+                    case PRECISE:
+                        img = precise;
+                        break;
+                    case APPROXIMATE:
+                        img = approximate;
+                        break;
+                    case REVERSE:
+                        img = reverse;
+                        break;
+                }
 
-				int x = -img.getIconWidth() / 2;
-				int y = -img.getIconHeight() + 3;
-				g.drawImage(img.getImage(), x, y, null);
-			}
+                int x = -img.getIconWidth() / 2;
+                int y = -img.getIconHeight() + 3;
+                g.drawImage(img.getImage(), x, y, null);
+            }
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }

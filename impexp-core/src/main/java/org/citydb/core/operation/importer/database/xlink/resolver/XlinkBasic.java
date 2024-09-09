@@ -38,84 +38,84 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class XlinkBasic implements DBXlinkResolver {
-	private final Connection connection;
-	private final DBXlinkResolverManager manager;
+    private final Connection connection;
+    private final DBXlinkResolverManager manager;
 
-	private final Map<String, PreparedStatement> statements;
-	private final Map<String, Integer> counters;
-	private final String schema;
+    private final Map<String, PreparedStatement> statements;
+    private final Map<String, Integer> counters;
+    private final String schema;
 
-	public XlinkBasic(Connection connection, DBXlinkResolverManager manager) {
-		this.connection = connection;
-		this.manager = manager;
+    public XlinkBasic(Connection connection, DBXlinkResolverManager manager) {
+        this.connection = connection;
+        this.manager = manager;
 
-		schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
-		statements = new HashMap<>();
-		counters = new HashMap<>();
-	}
+        schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+        statements = new HashMap<>();
+        counters = new HashMap<>();
+    }
 
-	public boolean insert(DBXlinkBasic xlink) throws SQLException {
-		IdCacheEntry entry = TableEnum.SURFACE_GEOMETRY.getName().equalsIgnoreCase(xlink.getTable()) ?
-				manager.getGeometryId(xlink.getGmlId()) :
-				manager.getObjectId(xlink.getGmlId());
+    public boolean insert(DBXlinkBasic xlink) throws SQLException {
+        IdCacheEntry entry = TableEnum.SURFACE_GEOMETRY.getName().equalsIgnoreCase(xlink.getTable()) ?
+                manager.getGeometryId(xlink.getGmlId()) :
+                manager.getObjectId(xlink.getGmlId());
 
-		if (entry == null)
-			return false;
+        if (entry == null)
+            return false;
 
-		String key = getKey(xlink);
-		PreparedStatement ps = getPreparedStatement(xlink, key);
-		if (ps != null) {
-			if (xlink.isReverse()) {
-				ps.setLong(1, xlink.getId());
-				ps.setLong(2, entry.getId());
-			} else {
-				ps.setLong(1, entry.getId());
-				ps.setLong(2, xlink.getId());
-			}
+        String key = getKey(xlink);
+        PreparedStatement ps = getPreparedStatement(xlink, key);
+        if (ps != null) {
+            if (xlink.isReverse()) {
+                ps.setLong(1, xlink.getId());
+                ps.setLong(2, entry.getId());
+            } else {
+                ps.setLong(1, entry.getId());
+                ps.setLong(2, xlink.getId());
+            }
 
-			ps.addBatch();
-			if (counters.merge(key, 1, Integer::sum) == manager.getDatabaseAdapter().getMaxBatchSize()) {
-				manager.executeBatchWithLock(ps, this);
-				counters.put(key, 0);
-			}
-		}
+            ps.addBatch();
+            if (counters.merge(key, 1, Integer::sum) == manager.getDatabaseAdapter().getMaxBatchSize()) {
+                manager.executeBatchWithLock(ps, this);
+                counters.put(key, 0);
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	private PreparedStatement getPreparedStatement(DBXlinkBasic xlink, String key) throws SQLException {
-		PreparedStatement ps = statements.get(key);
-		if (ps == null) {
-			ps = connection.prepareStatement(xlink.isBidirectional() ?
-					"insert into " + schema + "." + xlink.getTable() + " (" + xlink.getToColumn() + ", " + xlink.getFromColumn() + ") values (?, ?)" :
-					"update " + schema + "." + xlink.getTable() + " set " + (xlink.isForward() ? xlink.getFromColumn() : xlink.getToColumn()) + "=? where ID=?");
+    private PreparedStatement getPreparedStatement(DBXlinkBasic xlink, String key) throws SQLException {
+        PreparedStatement ps = statements.get(key);
+        if (ps == null) {
+            ps = connection.prepareStatement(xlink.isBidirectional() ?
+                    "insert into " + schema + "." + xlink.getTable() + " (" + xlink.getToColumn() + ", " + xlink.getFromColumn() + ") values (?, ?)" :
+                    "update " + schema + "." + xlink.getTable() + " set " + (xlink.isForward() ? xlink.getFromColumn() : xlink.getToColumn()) + "=? where ID=?");
 
-			statements.put(key, ps);
-		}
+            statements.put(key, ps);
+        }
 
-		return ps;
-	}
+        return ps;
+    }
 
-	private String getKey(DBXlinkBasic xlink) {
-		return xlink.getTable() + "_" + xlink.getFromColumn() + "_" + xlink.getToColumn();
-	}
+    private String getKey(DBXlinkBasic xlink) {
+        return xlink.getTable() + "_" + xlink.getFromColumn() + "_" + xlink.getToColumn();
+    }
 
-	@Override
-	public void executeBatch() throws SQLException {
-		for (PreparedStatement ps : statements.values())
-			ps.executeBatch();
+    @Override
+    public void executeBatch() throws SQLException {
+        for (PreparedStatement ps : statements.values())
+            ps.executeBatch();
 
-		counters.replaceAll((k, v) -> v = 0);
-	}
+        counters.replaceAll((k, v) -> v = 0);
+    }
 
-	@Override
-	public void close() throws SQLException {
-		for (PreparedStatement ps : statements.values())
-			ps.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        for (PreparedStatement ps : statements.values())
+            ps.close();
+    }
 
-	@Override
-	public DBXlinkResolverEnum getDBXlinkResolverType() {
-		return DBXlinkResolverEnum.BASIC;
-	}
+    @Override
+    public DBXlinkResolverEnum getDBXlinkResolverType() {
+        return DBXlinkResolverEnum.BASIC;
+    }
 }

@@ -45,39 +45,63 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import java.sql.SQLException;
 
 public interface CityGMLImportHelper {
-	long importObject(AbstractGML object) throws CityGMLImportException, SQLException;
-	long importObject(AbstractGML object, ForeignKeys foreignKeys) throws CityGMLImportException, SQLException;
-	long importGlobalAppearance(Appearance appearance) throws CityGMLImportException, SQLException;
-	long importSurfaceGeometry(AbstractGeometry surfaceGeometry, long cityObjectId) throws CityGMLImportException, SQLException;
-	long importImplicitGeometry(ImplicitGeometry implicitGeometry) throws CityGMLImportException, SQLException;
-	GeometryConverter getGeometryConverter();
-	String convertImplicitGeometryTransformationMatrix(TransformationMatrix4x4 matrix);
-	boolean isSurfaceGeometry(AbstractGeometry abstractGeometry);
-	boolean isPointOrLineGeometry(AbstractGeometry abstractGeometry);
+    long importObject(AbstractGML object) throws CityGMLImportException, SQLException;
 
-	AbstractDatabaseAdapter getDatabaseAdapter();
-	void executeBatch(String tableName) throws CityGMLImportException, SQLException;
-	void executeBatch(AbstractObjectType<?> type) throws CityGMLImportException, SQLException;
-	String getTableNameWithSchema(String tableName);
-	long getNextSequenceValue(String sequence) throws SQLException;
-	AttributeValueJoiner getAttributeValueJoiner();
+    long importObject(AbstractGML object, ForeignKeys foreignKeys) throws CityGMLImportException, SQLException;
 
-	boolean isFailOnError();
-	ImportConfig getImportConfig();
+    long importGlobalAppearance(Appearance appearance) throws CityGMLImportException, SQLException;
 
-	void logOrThrowUnsupportedXLinkMessage(AbstractGML from, Class<? extends AbstractGML> to, String xlink) throws CityGMLImportException;
-	void logOrThrowUnsupportedGeometryMessage(AbstractGML from, AbstractGeometry geometry) throws CityGMLImportException;
-	void logOrThrowErrorMessage(String message) throws CityGMLImportException;
-	void logOrThrowErrorMessage(String message, Throwable cause) throws CityGMLImportException;
-	String getObjectSignature(AbstractGML object);
+    long importSurfaceGeometry(AbstractGeometry surfaceGeometry, long cityObjectId) throws CityGMLImportException, SQLException;
 
-	int getObjectClassId(AbstractGML object);
-	FeatureType getFeatureType(AbstractFeature feature);
-	ObjectType getObjectType(AbstractGML object);
-	AbstractObjectType<?> getAbstractObjectType(AbstractGML object);
+    long importImplicitGeometry(ImplicitGeometry implicitGeometry) throws CityGMLImportException, SQLException;
 
-	void propagateObjectXlink(String table, long objectId, String xlink, String propertyColumn);
-	void propagateObjectXlink(String intermediateTable, long objectId, String fromColumn, String xlink, String toColumn);
-	void propagateReverseObjectXlink(String toTable, String gmlId, long objectId, String propertyColumn);
-	void propagateSurfaceGeometryXlink(String xlink, String table, long objectId, String propertyColumn);
+    GeometryConverter getGeometryConverter();
+
+    String convertImplicitGeometryTransformationMatrix(TransformationMatrix4x4 matrix);
+
+    boolean isSurfaceGeometry(AbstractGeometry abstractGeometry);
+
+    boolean isPointOrLineGeometry(AbstractGeometry abstractGeometry);
+
+    AbstractDatabaseAdapter getDatabaseAdapter();
+
+    void executeBatch(String tableName) throws CityGMLImportException, SQLException;
+
+    void executeBatch(AbstractObjectType<?> type) throws CityGMLImportException, SQLException;
+
+    String getTableNameWithSchema(String tableName);
+
+    long getNextSequenceValue(String sequence) throws SQLException;
+
+    AttributeValueJoiner getAttributeValueJoiner();
+
+    boolean isFailOnError();
+
+    ImportConfig getImportConfig();
+
+    void logOrThrowUnsupportedXLinkMessage(AbstractGML from, Class<? extends AbstractGML> to, String xlink) throws CityGMLImportException;
+
+    void logOrThrowUnsupportedGeometryMessage(AbstractGML from, AbstractGeometry geometry) throws CityGMLImportException;
+
+    void logOrThrowErrorMessage(String message) throws CityGMLImportException;
+
+    void logOrThrowErrorMessage(String message, Throwable cause) throws CityGMLImportException;
+
+    String getObjectSignature(AbstractGML object);
+
+    int getObjectClassId(AbstractGML object);
+
+    FeatureType getFeatureType(AbstractFeature feature);
+
+    ObjectType getObjectType(AbstractGML object);
+
+    AbstractObjectType<?> getAbstractObjectType(AbstractGML object);
+
+    void propagateObjectXlink(String table, long objectId, String xlink, String propertyColumn);
+
+    void propagateObjectXlink(String intermediateTable, long objectId, String fromColumn, String xlink, String toColumn);
+
+    void propagateReverseObjectXlink(String toTable, String gmlId, long objectId, String propertyColumn);
+
+    void propagateSurfaceGeometryXlink(String xlink, String table, long objectId, String propertyColumn);
 }

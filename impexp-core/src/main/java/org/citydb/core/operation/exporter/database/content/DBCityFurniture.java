@@ -58,259 +58,274 @@ import java.util.Collection;
 import java.util.List;
 
 public class DBCityFurniture extends AbstractFeatureExporter<CityFurniture> {
-	private final DBSurfaceGeometry geometryExporter;
-	private final DBCityObject cityObjectExporter;
-	private final DBImplicitGeometry implicitGeometryExporter;
-	private final GMLConverter gmlConverter;
+    private final DBSurfaceGeometry geometryExporter;
+    private final DBCityObject cityObjectExporter;
+    private final DBImplicitGeometry implicitGeometryExporter;
+    private final GMLConverter gmlConverter;
 
-	private final String cityFurnitureModule;
-	private final LodFilter lodFilter;
-	private final AttributeValueSplitter valueSplitter;
-	private final boolean hasObjectClassIdColumn;
-	private final List<Table> adeHookTables;
+    private final String cityFurnitureModule;
+    private final LodFilter lodFilter;
+    private final AttributeValueSplitter valueSplitter;
+    private final boolean hasObjectClassIdColumn;
+    private final List<Table> adeHookTables;
 
-	public DBCityFurniture(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
-		super(CityFurniture.class, connection, exporter);
+    public DBCityFurniture(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
+        super(CityFurniture.class, connection, exporter);
 
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
+        cityObjectExporter = exporter.getExporter(DBCityObject.class);
+        geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+        implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
+        gmlConverter = exporter.getGMLConverter();
+        valueSplitter = exporter.getAttributeValueSplitter();
 
-		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.CITY_FURNITURE.getName());
-		cityFurnitureModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CITY_FURNITURE).getNamespaceURI();
-		lodFilter = exporter.getLodFilter();
-		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+        CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.CITY_FURNITURE.getName());
+        cityFurnitureModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CITY_FURNITURE).getNamespaceURI();
+        lodFilter = exporter.getLodFilter();
+        hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+        String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		table = new Table(TableEnum.CITY_FURNITURE.getName(), schema);
-		select = new Select().addProjection(table.getColumn("id"));
-		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
-		if (projectionFilter.containsProperty("class", cityFurnitureModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
-		if (projectionFilter.containsProperty("function", cityFurnitureModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
-		if (projectionFilter.containsProperty("usage", cityFurnitureModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
-		if (lodFilter.isEnabled(1)) {
-			if (projectionFilter.containsProperty("lod1TerrainIntersection", cityFurnitureModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_terrain_intersection")));
-			if (projectionFilter.containsProperty("lod1Geometry", cityFurnitureModule)) select.addProjection(table.getColumn("lod1_brep_id"), exporter.getGeometryColumn(table.getColumn("lod1_other_geom")));
-			if (projectionFilter.containsProperty("lod1ImplicitRepresentation", cityFurnitureModule)) select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
-		}
-		if (lodFilter.isEnabled(2)) {
-			if (projectionFilter.containsProperty("lod2TerrainIntersection", cityFurnitureModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod2_terrain_intersection")));
-			if (projectionFilter.containsProperty("lod2Geometry", cityFurnitureModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
-			if (projectionFilter.containsProperty("lod2ImplicitRepresentation", cityFurnitureModule)) select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
-		}
-		if (lodFilter.isEnabled(3)) {
-			if (projectionFilter.containsProperty("lod3TerrainIntersection", cityFurnitureModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod3_terrain_intersection")));
-			if (projectionFilter.containsProperty("lod3Geometry", cityFurnitureModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
-			if (projectionFilter.containsProperty("lod3ImplicitRepresentation", cityFurnitureModule)) select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
-		}
-		if (lodFilter.isEnabled(4)) {
-			if (projectionFilter.containsProperty("lod4TerrainIntersection", cityFurnitureModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod4_terrain_intersection")));
-			if (projectionFilter.containsProperty("lod4Geometry", cityFurnitureModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
-			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", cityFurnitureModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
-		}
-		adeHookTables = addJoinsToADEHookTables(TableEnum.CITY_FURNITURE, table);
-	}
+        table = new Table(TableEnum.CITY_FURNITURE.getName(), schema);
+        select = new Select().addProjection(table.getColumn("id"));
+        if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
+        if (projectionFilter.containsProperty("class", cityFurnitureModule))
+            select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
+        if (projectionFilter.containsProperty("function", cityFurnitureModule))
+            select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
+        if (projectionFilter.containsProperty("usage", cityFurnitureModule))
+            select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
+        if (lodFilter.isEnabled(1)) {
+            if (projectionFilter.containsProperty("lod1TerrainIntersection", cityFurnitureModule))
+                select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_terrain_intersection")));
+            if (projectionFilter.containsProperty("lod1Geometry", cityFurnitureModule))
+                select.addProjection(table.getColumn("lod1_brep_id"), exporter.getGeometryColumn(table.getColumn("lod1_other_geom")));
+            if (projectionFilter.containsProperty("lod1ImplicitRepresentation", cityFurnitureModule))
+                select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
+        }
+        if (lodFilter.isEnabled(2)) {
+            if (projectionFilter.containsProperty("lod2TerrainIntersection", cityFurnitureModule))
+                select.addProjection(exporter.getGeometryColumn(table.getColumn("lod2_terrain_intersection")));
+            if (projectionFilter.containsProperty("lod2Geometry", cityFurnitureModule))
+                select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
+            if (projectionFilter.containsProperty("lod2ImplicitRepresentation", cityFurnitureModule))
+                select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
+        }
+        if (lodFilter.isEnabled(3)) {
+            if (projectionFilter.containsProperty("lod3TerrainIntersection", cityFurnitureModule))
+                select.addProjection(exporter.getGeometryColumn(table.getColumn("lod3_terrain_intersection")));
+            if (projectionFilter.containsProperty("lod3Geometry", cityFurnitureModule))
+                select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
+            if (projectionFilter.containsProperty("lod3ImplicitRepresentation", cityFurnitureModule))
+                select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
+        }
+        if (lodFilter.isEnabled(4)) {
+            if (projectionFilter.containsProperty("lod4TerrainIntersection", cityFurnitureModule))
+                select.addProjection(exporter.getGeometryColumn(table.getColumn("lod4_terrain_intersection")));
+            if (projectionFilter.containsProperty("lod4Geometry", cityFurnitureModule))
+                select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
+            if (projectionFilter.containsProperty("lod4ImplicitRepresentation", cityFurnitureModule))
+                select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
+        }
+        adeHookTables = addJoinsToADEHookTables(TableEnum.CITY_FURNITURE, table);
+    }
 
-	@Override
-	protected Collection<CityFurniture> doExport(long id, CityFurniture root, FeatureType rootType, PreparedStatement ps) throws CityGMLExportException, SQLException {
-		ps.setLong(1, id);
+    @Override
+    protected Collection<CityFurniture> doExport(long id, CityFurniture root, FeatureType rootType, PreparedStatement ps) throws CityGMLExportException, SQLException {
+        ps.setLong(1, id);
 
-		try (ResultSet rs = ps.executeQuery()) {
-			List<CityFurniture> cityFurnitures = new ArrayList<>();
+        try (ResultSet rs = ps.executeQuery()) {
+            List<CityFurniture> cityFurnitures = new ArrayList<>();
 
-			while (rs.next()) {
-				long cityFurnitureId = rs.getLong("id");
-				CityFurniture cityFurniture;
-				FeatureType featureType;
+            while (rs.next()) {
+                long cityFurnitureId = rs.getLong("id");
+                CityFurniture cityFurniture;
+                FeatureType featureType;
 
-				if (cityFurnitureId == id && root != null) {
-					cityFurniture = root;
-					featureType = rootType;
-				} else {
-					if (hasObjectClassIdColumn) {
-						// create city furniture object
-						int objectClassId = rs.getInt("objectclass_id");
-						cityFurniture = exporter.createObject(objectClassId, CityFurniture.class);
-						if (cityFurniture == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, cityFurnitureId) + " as city furniture object.");
-							continue;
-						}
+                if (cityFurnitureId == id && root != null) {
+                    cityFurniture = root;
+                    featureType = rootType;
+                } else {
+                    if (hasObjectClassIdColumn) {
+                        // create city furniture object
+                        int objectClassId = rs.getInt("objectclass_id");
+                        cityFurniture = exporter.createObject(objectClassId, CityFurniture.class);
+                        if (cityFurniture == null) {
+                            exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, cityFurnitureId) + " as city furniture object.");
+                            continue;
+                        }
 
-						featureType = exporter.getFeatureType(objectClassId);
-					} else {
-						cityFurniture = new CityFurniture();
-						featureType = exporter.getFeatureType(cityFurniture);
-					}
-				}
+                        featureType = exporter.getFeatureType(objectClassId);
+                    } else {
+                        cityFurniture = new CityFurniture();
+                        featureType = exporter.getFeatureType(cityFurniture);
+                    }
+                }
 
-				// get projection filter
-				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
+                // get projection filter
+                ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
-				// export city object information
-				cityObjectExporter.addBatch(cityFurniture, cityFurnitureId, featureType, projectionFilter);
-				
-				if (projectionFilter.containsProperty("class", cityFurnitureModule)) {
-					String clazz = rs.getString("class");
-					if (!rs.wasNull()) {
-						Code code = new Code(clazz);
-						code.setCodeSpace(rs.getString("class_codespace"));
-						cityFurniture.setClazz(code);
-					}
-				}
+                // export city object information
+                cityObjectExporter.addBatch(cityFurniture, cityFurnitureId, featureType, projectionFilter);
 
-				if (projectionFilter.containsProperty("function", cityFurnitureModule)) {
-					for (SplitValue splitValue : valueSplitter.split(rs.getString("function"), rs.getString("function_codespace"))) {
-						Code function = new Code(splitValue.result(0));
-						function.setCodeSpace(splitValue.result(1));
-						cityFurniture.addFunction(function);
-					}
-				}
+                if (projectionFilter.containsProperty("class", cityFurnitureModule)) {
+                    String clazz = rs.getString("class");
+                    if (!rs.wasNull()) {
+                        Code code = new Code(clazz);
+                        code.setCodeSpace(rs.getString("class_codespace"));
+                        cityFurniture.setClazz(code);
+                    }
+                }
 
-				if (projectionFilter.containsProperty("usage", cityFurnitureModule)) {
-					for (SplitValue splitValue : valueSplitter.split(rs.getString("usage"), rs.getString("usage_codespace"))) {
-						Code usage = new Code(splitValue.result(0));
-						usage.setCodeSpace(splitValue.result(1));
-						cityFurniture.addUsage(usage);
-					}
-				}
+                if (projectionFilter.containsProperty("function", cityFurnitureModule)) {
+                    for (SplitValue splitValue : valueSplitter.split(rs.getString("function"), rs.getString("function_codespace"))) {
+                        Code function = new Code(splitValue.result(0));
+                        function.setCodeSpace(splitValue.result(1));
+                        cityFurniture.addFunction(function);
+                    }
+                }
 
-				LodIterator lodIterator = lodFilter.iterator(1, 4);
-				while (lodIterator.hasNext()) {
-					int lod = lodIterator.next();
+                if (projectionFilter.containsProperty("usage", cityFurnitureModule)) {
+                    for (SplitValue splitValue : valueSplitter.split(rs.getString("usage"), rs.getString("usage_codespace"))) {
+                        Code usage = new Code(splitValue.result(0));
+                        usage.setCodeSpace(splitValue.result(1));
+                        cityFurniture.addUsage(usage);
+                    }
+                }
 
-					if (!projectionFilter.containsProperty("lod" + lod + "TerrainIntersection", cityFurnitureModule))
-						continue;
+                LodIterator lodIterator = lodFilter.iterator(1, 4);
+                while (lodIterator.hasNext()) {
+                    int lod = lodIterator.next();
 
-					Object terrainIntersectionObj = rs.getObject("lod" + lod + "_terrain_intersection");
-					if (rs.wasNull())
-						continue;
+                    if (!projectionFilter.containsProperty("lod" + lod + "TerrainIntersection", cityFurnitureModule))
+                        continue;
 
-					GeometryObject terrainIntersection = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(terrainIntersectionObj);
-					if (terrainIntersection != null) {
-						MultiCurveProperty multiCurveProperty = gmlConverter.getMultiCurveProperty(terrainIntersection, false);
-						if (multiCurveProperty != null) {
-							switch (lod) {
-							case 1:
-								cityFurniture.setLod1TerrainIntersection(multiCurveProperty);
-								break;
-							case 2:
-								cityFurniture.setLod2TerrainIntersection(multiCurveProperty);
-								break;
-							case 3:
-								cityFurniture.setLod3TerrainIntersection(multiCurveProperty);
-								break;
-							case 4:
-								cityFurniture.setLod4TerrainIntersection(multiCurveProperty);
-								break;
-							}
-						}
-					}
-				}
+                    Object terrainIntersectionObj = rs.getObject("lod" + lod + "_terrain_intersection");
+                    if (rs.wasNull())
+                        continue;
 
-				lodIterator.reset();
-				while (lodIterator.hasNext()) {
-					int lod = lodIterator.next();
+                    GeometryObject terrainIntersection = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(terrainIntersectionObj);
+                    if (terrainIntersection != null) {
+                        MultiCurveProperty multiCurveProperty = gmlConverter.getMultiCurveProperty(terrainIntersection, false);
+                        if (multiCurveProperty != null) {
+                            switch (lod) {
+                                case 1:
+                                    cityFurniture.setLod1TerrainIntersection(multiCurveProperty);
+                                    break;
+                                case 2:
+                                    cityFurniture.setLod2TerrainIntersection(multiCurveProperty);
+                                    break;
+                                case 3:
+                                    cityFurniture.setLod3TerrainIntersection(multiCurveProperty);
+                                    break;
+                                case 4:
+                                    cityFurniture.setLod4TerrainIntersection(multiCurveProperty);
+                                    break;
+                            }
+                        }
+                    }
+                }
 
-					if (!projectionFilter.containsProperty("lod" + lod + "Geometry", cityFurnitureModule))
-						continue;
+                lodIterator.reset();
+                while (lodIterator.hasNext()) {
+                    int lod = lodIterator.next();
 
-					long geometryId = rs.getLong("lod" + lod + "_brep_id");
-					if (!rs.wasNull()) {
-						switch (lod) {
-							case 1:
-								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityFurniture::setLod1Geometry);
-								break;
-							case 2:
-								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityFurniture::setLod2Geometry);
-								break;
-							case 3:
-								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityFurniture::setLod3Geometry);
-								break;
-							case 4:
-								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityFurniture::setLod4Geometry);
-								break;
-						}
-					} else {
-						Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
-						if (rs.wasNull())
-							continue;
+                    if (!projectionFilter.containsProperty("lod" + lod + "Geometry", cityFurnitureModule))
+                        continue;
 
-						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
-							switch (lod) {
-								case 1:
-									cityFurniture.setLod1Geometry(property);
-									break;
-								case 2:
-									cityFurniture.setLod2Geometry(property);
-									break;
-								case 3:
-									cityFurniture.setLod3Geometry(property);
-									break;
-								case 4:
-									cityFurniture.setLod4Geometry(property);
-									break;
-							}
-						}
-					}
-				}
+                    long geometryId = rs.getLong("lod" + lod + "_brep_id");
+                    if (!rs.wasNull()) {
+                        switch (lod) {
+                            case 1:
+                                geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityFurniture::setLod1Geometry);
+                                break;
+                            case 2:
+                                geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityFurniture::setLod2Geometry);
+                                break;
+                            case 3:
+                                geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityFurniture::setLod3Geometry);
+                                break;
+                            case 4:
+                                geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityFurniture::setLod4Geometry);
+                                break;
+                        }
+                    } else {
+                        Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
+                        if (rs.wasNull())
+                            continue;
 
-				lodIterator.reset();
-				while (lodIterator.hasNext()) {
-					int lod = lodIterator.next();
+                        GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
+                        if (geometry != null) {
+                            GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+                            switch (lod) {
+                                case 1:
+                                    cityFurniture.setLod1Geometry(property);
+                                    break;
+                                case 2:
+                                    cityFurniture.setLod2Geometry(property);
+                                    break;
+                                case 3:
+                                    cityFurniture.setLod3Geometry(property);
+                                    break;
+                                case 4:
+                                    cityFurniture.setLod4Geometry(property);
+                                    break;
+                            }
+                        }
+                    }
+                }
 
-					if (!projectionFilter.containsProperty("lod" + lod + "ImplicitRepresentation", cityFurnitureModule))
-						continue;
+                lodIterator.reset();
+                while (lodIterator.hasNext()) {
+                    int lod = lodIterator.next();
 
-					// get implicit geometry details
-					long implicitGeometryId = rs.getLong("lod" + lod + "_implicit_rep_id");
-					if (rs.wasNull())
-						continue;
+                    if (!projectionFilter.containsProperty("lod" + lod + "ImplicitRepresentation", cityFurnitureModule))
+                        continue;
 
-					GeometryObject referencePoint = null;
-					Object referencePointObj = rs.getObject("lod" + lod + "_implicit_ref_point");
-					if (!rs.wasNull())
-						referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
+                    // get implicit geometry details
+                    long implicitGeometryId = rs.getLong("lod" + lod + "_implicit_rep_id");
+                    if (rs.wasNull())
+                        continue;
 
-					String transformationMatrix = rs.getString("lod" + lod + "_implicit_transformation");
+                    GeometryObject referencePoint = null;
+                    Object referencePointObj = rs.getObject("lod" + lod + "_implicit_ref_point");
+                    if (!rs.wasNull())
+                        referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
 
-					ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
-					if (implicit != null) {
-						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
-						implicitProperty.setObject(implicit);
+                    String transformationMatrix = rs.getString("lod" + lod + "_implicit_transformation");
 
-						switch (lod) {
-						case 1:
-							cityFurniture.setLod1ImplicitRepresentation(implicitProperty);
-							break;
-						case 2:
-							cityFurniture.setLod2ImplicitRepresentation(implicitProperty);
-							break;
-						case 3:
-							cityFurniture.setLod3ImplicitRepresentation(implicitProperty);
-							break;
-						case 4:
-							cityFurniture.setLod4ImplicitRepresentation(implicitProperty);
-							break;
-						}
-					}
-				}
-				
-				// delegate export of generic ADE properties
-				if (adeHookTables != null) {
-					List<String> adeHookTables = retrieveADEHookTables(this.adeHookTables, rs);
-					if (adeHookTables != null)
-						exporter.delegateToADEExporter(adeHookTables, cityFurniture, cityFurnitureId, featureType, projectionFilter);
-				}
-				
-				cityFurnitures.add(cityFurniture);
-			}
-			
-			return cityFurnitures;
-		}
-	}
+                    ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
+                    if (implicit != null) {
+                        ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
+                        implicitProperty.setObject(implicit);
+
+                        switch (lod) {
+                            case 1:
+                                cityFurniture.setLod1ImplicitRepresentation(implicitProperty);
+                                break;
+                            case 2:
+                                cityFurniture.setLod2ImplicitRepresentation(implicitProperty);
+                                break;
+                            case 3:
+                                cityFurniture.setLod3ImplicitRepresentation(implicitProperty);
+                                break;
+                            case 4:
+                                cityFurniture.setLod4ImplicitRepresentation(implicitProperty);
+                                break;
+                        }
+                    }
+                }
+
+                // delegate export of generic ADE properties
+                if (adeHookTables != null) {
+                    List<String> adeHookTables = retrieveADEHookTables(this.adeHookTables, rs);
+                    if (adeHookTables != null)
+                        exporter.delegateToADEExporter(adeHookTables, cityFurniture, cityFurnitureId, featureType, projectionFilter);
+                }
+
+                cityFurnitures.add(cityFurniture);
+            }
+
+            return cityFurnitures;
+        }
+    }
 
 }

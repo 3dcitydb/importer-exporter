@@ -53,76 +53,76 @@ import java.util.Iterator;
 import java.util.List;
 
 public class IdOperatorBuilder {
-	private final Query query;
-	private final SchemaPathBuilder schemaPathBuilder;
-	private final SchemaMapping schemaMapping;
-	private final AbstractSQLAdapter sqlAdapter;
+    private final Query query;
+    private final SchemaPathBuilder schemaPathBuilder;
+    private final SchemaMapping schemaMapping;
+    private final AbstractSQLAdapter sqlAdapter;
 
-	protected IdOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, SchemaMapping schemaMapping, AbstractSQLAdapter sqlAdapter) {
-		this.query = query;
-		this.schemaPathBuilder = schemaPathBuilder;
-		this.schemaMapping = schemaMapping;
-		this.sqlAdapter = sqlAdapter;
-	}
+    protected IdOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, SchemaMapping schemaMapping, AbstractSQLAdapter sqlAdapter) {
+        this.query = query;
+        this.schemaPathBuilder = schemaPathBuilder;
+        this.schemaMapping = schemaMapping;
+        this.sqlAdapter = sqlAdapter;
+    }
 
-	protected void buildIdOperator(AbstractIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
-		switch (operator.getOperatorName()) {
-			case RESOURCE_ID:
-				buildResourceIdOperator((ResourceIdOperator) operator, queryContext, negate, useLeftJoins);
-				break;
-			case DATABASE_ID:
-				buildDatabaseIdOperator((DatabaseIdOperator) operator, queryContext, negate, useLeftJoins);
-				break;
-		}
-	}
+    protected void buildIdOperator(AbstractIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+        switch (operator.getOperatorName()) {
+            case RESOURCE_ID:
+                buildResourceIdOperator((ResourceIdOperator) operator, queryContext, negate, useLeftJoins);
+                break;
+            case DATABASE_ID:
+                buildDatabaseIdOperator((DatabaseIdOperator) operator, queryContext, negate, useLeftJoins);
+                break;
+        }
+    }
 
-	private void buildResourceIdOperator(ResourceIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
-		buildIdOperator(operator.getResourceIds(), GMLCoreModule.v3_1_1.getNamespaceURI(), queryContext, negate, useLeftJoins);
-	}
+    private void buildResourceIdOperator(ResourceIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+        buildIdOperator(operator.getResourceIds(), GMLCoreModule.v3_1_1.getNamespaceURI(), queryContext, negate, useLeftJoins);
+    }
 
-	private void buildDatabaseIdOperator(DatabaseIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
-		buildIdOperator(operator.getDatabaseIds(), CityDBADE200Module.v3_0.getNamespaceURI(), queryContext, negate, useLeftJoins);
-	}
+    private void buildDatabaseIdOperator(DatabaseIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+        buildIdOperator(operator.getDatabaseIds(), CityDBADE200Module.v3_0.getNamespaceURI(), queryContext, negate, useLeftJoins);
+    }
 
-	@SuppressWarnings("unchecked")
-	private <T> void buildIdOperator(Collection<T> ids, String namespaceURI, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
-		SchemaPath schemaPath;
-		try {
-			FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
-			schemaPath = new SchemaPath(superType).appendChild(superType.getProperty(MappingConstants.ID, namespaceURI, true));
-		} catch (InvalidSchemaPathException e) {
-			throw new QueryBuildException(e.getMessage());
-		}
+    @SuppressWarnings("unchecked")
+    private <T> void buildIdOperator(Collection<T> ids, String namespaceURI, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+        SchemaPath schemaPath;
+        try {
+            FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
+            schemaPath = new SchemaPath(superType).appendChild(superType.getProperty(MappingConstants.ID, namespaceURI, true));
+        } catch (InvalidSchemaPathException e) {
+            throw new QueryBuildException(e.getMessage());
+        }
 
-		// build the value reference
-		schemaPathBuilder.addSchemaPath(schemaPath, queryContext, useLeftJoins);
+        // build the value reference
+        schemaPathBuilder.addSchemaPath(schemaPath, queryContext, useLeftJoins);
 
-		// build predicates
-		if (ids.size() == 1) {
-			queryContext.addPredicate(ComparisonFactory.equalTo(queryContext.getTargetColumn(), new PlaceHolder<>(ids.iterator().next())));
-		} else {
-			List<PredicateToken> predicates = new ArrayList<>();
-			List<PlaceHolder<T>> placeHolders = new ArrayList<>();
-			Iterator<T> iter = ids.iterator();
-			int maxItems = sqlAdapter.getMaximumNumberOfItemsForInOperator();
-			int i = 0;
+        // build predicates
+        if (ids.size() == 1) {
+            queryContext.addPredicate(ComparisonFactory.equalTo(queryContext.getTargetColumn(), new PlaceHolder<>(ids.iterator().next())));
+        } else {
+            List<PredicateToken> predicates = new ArrayList<>();
+            List<PlaceHolder<T>> placeHolders = new ArrayList<>();
+            Iterator<T> iter = ids.iterator();
+            int maxItems = sqlAdapter.getMaximumNumberOfItemsForInOperator();
+            int i = 0;
 
-			while (iter.hasNext()) {
-				placeHolders.add(new PlaceHolder<>(iter.next()));
+            while (iter.hasNext()) {
+                placeHolders.add(new PlaceHolder<>(iter.next()));
 
-				if (++i == maxItems || !iter.hasNext()) {
-					predicates.add(ComparisonFactory.in(queryContext.getTargetColumn(), new LiteralList(placeHolders.toArray(new PlaceHolder[0])), negate));
-					placeHolders.clear();
-					i = 0;
-				}
-			}
+                if (++i == maxItems || !iter.hasNext()) {
+                    predicates.add(ComparisonFactory.in(queryContext.getTargetColumn(), new LiteralList(placeHolders.toArray(new PlaceHolder[0])), negate));
+                    placeHolders.clear();
+                    i = 0;
+                }
+            }
 
-			if (predicates.size() == 1) {
-				queryContext.addPredicate(predicates.get(0));
-			} else {
-				LogicalOperationName name = negate ? LogicalOperationName.AND : LogicalOperationName.OR;
-				queryContext.addPredicate(new BinaryLogicalOperator(name, predicates));
-			}
-		}
-	}
+            if (predicates.size() == 1) {
+                queryContext.addPredicate(predicates.get(0));
+            } else {
+                LogicalOperationName name = negate ? LogicalOperationName.AND : LogicalOperationName.OR;
+                queryContext.addPredicate(new BinaryLogicalOperator(name, predicates));
+            }
+        }
+    }
 }

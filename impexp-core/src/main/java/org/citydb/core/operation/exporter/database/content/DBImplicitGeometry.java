@@ -57,133 +57,133 @@ import java.util.List;
 import java.util.UUID;
 
 public class DBImplicitGeometry implements DBExporter {
-	private final CityGMLExportManager exporter;
-	private final PreparedStatement ps;
-	private final DBSurfaceGeometry geometryExporter;
-	private final GMLConverter gmlConverter;
-	private final AttributeValueSplitter valueSplitter;
-	private final boolean affineTransformation;
-	private final boolean hasGmlIdColumn;
+    private final CityGMLExportManager exporter;
+    private final PreparedStatement ps;
+    private final DBSurfaceGeometry geometryExporter;
+    private final GMLConverter gmlConverter;
+    private final AttributeValueSplitter valueSplitter;
+    private final boolean affineTransformation;
+    private final boolean hasGmlIdColumn;
 
-	public DBImplicitGeometry(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
-		this.exporter = exporter;
+    public DBImplicitGeometry(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
+        this.exporter = exporter;
 
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
-		affineTransformation = exporter.getExportConfig().getAffineTransformation().isEnabled();
-		hasGmlIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 3, 0) >= 0;
-		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+        geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+        gmlConverter = exporter.getGMLConverter();
+        valueSplitter = exporter.getAttributeValueSplitter();
+        affineTransformation = exporter.getExportConfig().getAffineTransformation().isEnabled();
+        hasGmlIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 3, 0) >= 0;
+        String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
+        String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		Table table = new Table(TableEnum.IMPLICIT_GEOMETRY.getName(), schema);
-		Select select = new Select().addProjection(table.getColumns("mime_type", "reference_to_library", "relative_brep_id", "relative_other_geom"))
-				.addProjection(new Function(getLength, "db_library_object_length", table.getColumn("library_object")))
-				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
+        Table table = new Table(TableEnum.IMPLICIT_GEOMETRY.getName(), schema);
+        Select select = new Select().addProjection(table.getColumns("mime_type", "reference_to_library", "relative_brep_id", "relative_other_geom"))
+                .addProjection(new Function(getLength, "db_library_object_length", table.getColumn("library_object")))
+                .addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
 
-		if (hasGmlIdColumn) {
-			select.addProjection(table.getColumn("gmlid"));
-		} else {
-			Table surfaceGeometry = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
-			select.addProjection(surfaceGeometry.getColumn("gmlid"))
-					.addJoin(JoinFactory.left(surfaceGeometry, "id", ComparisonName.EQUAL_TO, table.getColumn("relative_brep_id")));
-		}
-		ps = connection.prepareStatement(select.toString());
-	}
+        if (hasGmlIdColumn) {
+            select.addProjection(table.getColumn("gmlid"));
+        } else {
+            Table surfaceGeometry = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
+            select.addProjection(surfaceGeometry.getColumn("gmlid"))
+                    .addJoin(JoinFactory.left(surfaceGeometry, "id", ComparisonName.EQUAL_TO, table.getColumn("relative_brep_id")));
+        }
+        ps = connection.prepareStatement(select.toString());
+    }
 
-	protected ImplicitGeometry doExport(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException {
-		ps.setLong(1, id);
+    protected ImplicitGeometry doExport(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException {
+        ps.setLong(1, id);
 
-		try (ResultSet rs = ps.executeQuery()) {		
-			ImplicitGeometry implicitGeometry = new ImplicitGeometry();
-			boolean isValid = false;
+        try (ResultSet rs = ps.executeQuery()) {
+            ImplicitGeometry implicitGeometry = new ImplicitGeometry();
+            boolean isValid = false;
 
-			if (rs.next()) {
-				// library object
-				String libraryObject = rs.getString(2);
-				if (!rs.wasNull()) {
-					isValid = true;
-					long dbBlobSize = rs.getLong(5);
-					if (dbBlobSize > 0) {
-						String extension = Util.getFileExtension(libraryObject);
-						String fileName = CoreConstants.UNIQUE_LIBRARY_OBJECT_FILENAME_PREFIX + id +
-								(!extension.isEmpty() ? "." + extension : "");
-						implicitGeometry.setLibraryObject(CoreConstants.LIBRARY_OBJECTS_DIR + '/' + fileName);
-						exporter.propagateXlink(new DBXlinkLibraryObject(id, fileName));
-					} else {
-						implicitGeometry.setLibraryObject(libraryObject);
-					}
+            if (rs.next()) {
+                // library object
+                String libraryObject = rs.getString(2);
+                if (!rs.wasNull()) {
+                    isValid = true;
+                    long dbBlobSize = rs.getLong(5);
+                    if (dbBlobSize > 0) {
+                        String extension = Util.getFileExtension(libraryObject);
+                        String fileName = CoreConstants.UNIQUE_LIBRARY_OBJECT_FILENAME_PREFIX + id +
+                                (!extension.isEmpty() ? "." + extension : "");
+                        implicitGeometry.setLibraryObject(CoreConstants.LIBRARY_OBJECTS_DIR + '/' + fileName);
+                        exporter.propagateXlink(new DBXlinkLibraryObject(id, fileName));
+                    } else {
+                        implicitGeometry.setLibraryObject(libraryObject);
+                    }
 
-					String mimeType = rs.getString(1);
-					if (!rs.wasNull()) {
-						implicitGeometry.setMimeType(new Code(mimeType));
-					}
-				}
+                    String mimeType = rs.getString(1);
+                    if (!rs.wasNull()) {
+                        implicitGeometry.setMimeType(new Code(mimeType));
+                    }
+                }
 
-				// geometry
-				long geometryId = rs.getLong(3);
-				if (!rs.wasNull()) {
-					isValid = true;
-					String gmlId = rs.getString(6);
-					if (exporter.lookupGeometryId(gmlId)) {
-						implicitGeometry.setRelativeGeometry(new GeometryProperty<>("#" + gmlId));
-					} else {
-						geometryExporter.addImplicitGeometryBatch(geometryId, implicitGeometry);
-					}
-				} else {
-					Object otherGeometry = rs.getObject(4);
-					if (!rs.wasNull()) {
-						isValid = true;
-						String gmlId = hasGmlIdColumn ?
-								rs.getString(6) :
-								"ID_" + UUID.nameUUIDFromBytes(String.valueOf(id).getBytes());
+                // geometry
+                long geometryId = rs.getLong(3);
+                if (!rs.wasNull()) {
+                    isValid = true;
+                    String gmlId = rs.getString(6);
+                    if (exporter.lookupGeometryId(gmlId)) {
+                        implicitGeometry.setRelativeGeometry(new GeometryProperty<>("#" + gmlId));
+                    } else {
+                        geometryExporter.addImplicitGeometryBatch(geometryId, implicitGeometry);
+                    }
+                } else {
+                    Object otherGeometry = rs.getObject(4);
+                    if (!rs.wasNull()) {
+                        isValid = true;
+                        String gmlId = hasGmlIdColumn ?
+                                rs.getString(6) :
+                                "ID_" + UUID.nameUUIDFromBytes(String.valueOf(id).getBytes());
 
-						if (exporter.lookupAndPutObjectId(gmlId, id, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
-							implicitGeometry.setRelativeGeometry(new GeometryProperty<>("#" + gmlId));
-						} else {
-							GeometryObject geometryObject = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(otherGeometry);
-							AbstractGeometry geometry = gmlConverter.getPointOrCurveGeometry(geometryObject, true);
-							if (geometry != null) {
-								geometry.setId(gmlId);
-								implicitGeometry.setRelativeGeometry(new GeometryProperty<>(geometry));
-							} else {
-								isValid = false;
-							}
-						}
-					}
-				}
-			}
+                        if (exporter.lookupAndPutObjectId(gmlId, id, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
+                            implicitGeometry.setRelativeGeometry(new GeometryProperty<>("#" + gmlId));
+                        } else {
+                            GeometryObject geometryObject = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(otherGeometry);
+                            AbstractGeometry geometry = gmlConverter.getPointOrCurveGeometry(geometryObject, true);
+                            if (geometry != null) {
+                                geometry.setId(gmlId);
+                                implicitGeometry.setRelativeGeometry(new GeometryProperty<>(geometry));
+                            } else {
+                                isValid = false;
+                            }
+                        }
+                    }
+                }
+            }
 
-			if (!isValid) {
-				return null;
-			}
+            if (!isValid) {
+                return null;
+            }
 
-			// referencePoint
-			if (referencePoint != null) {
-				implicitGeometry.setReferencePoint(gmlConverter.getPointProperty(referencePoint, false));
-			}
+            // referencePoint
+            if (referencePoint != null) {
+                implicitGeometry.setReferencePoint(gmlConverter.getPointProperty(referencePoint, false));
+            }
 
-			// transformationMatrix
-			if (transformationMatrix != null) {
-				List<Double> values = valueSplitter.splitDoubleList(transformationMatrix);
-				if (values.size() >= 16) {
-					Matrix matrix = new Matrix(4, 4);
-					matrix.setMatrix(values.subList(0, 16));
+            // transformationMatrix
+            if (transformationMatrix != null) {
+                List<Double> values = valueSplitter.splitDoubleList(transformationMatrix);
+                if (values.size() >= 16) {
+                    Matrix matrix = new Matrix(4, 4);
+                    matrix.setMatrix(values.subList(0, 16));
 
-					if (affineTransformation) {
-						matrix = exporter.getAffineTransformer().transformImplicitGeometryTransformationMatrix(matrix);
-					}
+                    if (affineTransformation) {
+                        matrix = exporter.getAffineTransformer().transformImplicitGeometryTransformationMatrix(matrix);
+                    }
 
-					implicitGeometry.setTransformationMatrix(new TransformationMatrix4x4(matrix));
-				}
-			}
+                    implicitGeometry.setTransformationMatrix(new TransformationMatrix4x4(matrix));
+                }
+            }
 
-			return implicitGeometry;
-		}
-	}
+            return implicitGeometry;
+        }
+    }
 
-	@Override
-	public void close() throws SQLException {
-		ps.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        ps.close();
+    }
 }

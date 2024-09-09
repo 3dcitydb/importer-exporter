@@ -28,6 +28,6 @@
 package org.citydb.core.database.adapter;
 
 public enum BlobType {
-	TEXTURE_IMAGE,
-	LIBRARY_OBJECT
+    TEXTURE_IMAGE,
+    LIBRARY_OBJECT
 }

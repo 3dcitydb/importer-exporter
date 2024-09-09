@@ -124,7 +124,7 @@ public class Pipe {
     private synchronized int available() throws IOException {
         if (inputClosed)
             throw new IOException("The input stream has been closed.");
-        
+
         return size;
     }
 
@@ -134,7 +134,7 @@ public class Pipe {
             notifyAll();
         }
     }
-    
+
     private synchronized void write(int b) throws IOException {
         waitForOutput();
 
@@ -184,7 +184,7 @@ public class Pipe {
             try {
                 wait();
             } catch (InterruptedException e) {
-                throw (InterruptedIOException)new InterruptedIOException().initCause(e);
+                throw (InterruptedIOException) new InterruptedIOException().initCause(e);
             }
         }
     }
@@ -200,7 +200,7 @@ public class Pipe {
             try {
                 wait();
             } catch (InterruptedException e) {
-                throw (InterruptedIOException)new InterruptedIOException().initCause(e);
+                throw (InterruptedIOException) new InterruptedIOException().initCause(e);
             }
         }
     }

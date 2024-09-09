@@ -30,31 +30,31 @@ package org.citydb.util.event.global;
 import org.citydb.util.event.Event;
 
 public class StatusDialogProgressBar extends Event {
-	private final ProgressBarEventType type;
-	private int value;
-	private boolean setIntermediate;
-	
-	public StatusDialogProgressBar(ProgressBarEventType type, int value) {
-		super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL);
-		this.type = type;
-		this.value = value;
-	}
-	
-	public StatusDialogProgressBar(boolean setIntermediate) {
-		super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL);
-		type = ProgressBarEventType.INIT;		
-		this.setIntermediate = setIntermediate;
-	}
+    private final ProgressBarEventType type;
+    private int value;
+    private boolean setIntermediate;
 
-	public ProgressBarEventType getType() {
-		return type;
-	}
+    public StatusDialogProgressBar(ProgressBarEventType type, int value) {
+        super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL);
+        this.type = type;
+        this.value = value;
+    }
 
-	public int getValue() {
-		return value;
-	}
+    public StatusDialogProgressBar(boolean setIntermediate) {
+        super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL);
+        type = ProgressBarEventType.INIT;
+        this.setIntermediate = setIntermediate;
+    }
 
-	public boolean isSetIntermediate() {
-		return setIntermediate;
-	}
+    public ProgressBarEventType getType() {
+        return type;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public boolean isSetIntermediate() {
+        return setIntermediate;
+    }
 }

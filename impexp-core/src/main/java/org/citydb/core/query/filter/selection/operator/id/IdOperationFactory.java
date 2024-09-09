@@ -33,19 +33,19 @@ import java.util.List;
 
 public class IdOperationFactory {
 
-	public static ResourceIdOperator resourceIds(List<String> ids) throws FilterException {
-		return new ResourceIdOperator(ids);
-	}
-	
-	public static ResourceIdOperator resourceIds(String... ids) throws FilterException {
-		return new ResourceIdOperator(ids);
-	}
+    public static ResourceIdOperator resourceIds(List<String> ids) throws FilterException {
+        return new ResourceIdOperator(ids);
+    }
 
-	public static DatabaseIdOperator databaseIds(List<Long> ids) throws FilterException {
-		return new DatabaseIdOperator(ids);
-	}
+    public static ResourceIdOperator resourceIds(String... ids) throws FilterException {
+        return new ResourceIdOperator(ids);
+    }
 
-	public static DatabaseIdOperator databaseIds(Long... ids) throws FilterException {
-		return new DatabaseIdOperator(ids);
-	}
+    public static DatabaseIdOperator databaseIds(List<Long> ids) throws FilterException {
+        return new DatabaseIdOperator(ids);
+    }
+
+    public static DatabaseIdOperator databaseIds(Long... ids) throws FilterException {
+        return new DatabaseIdOperator(ids);
+    }
 }

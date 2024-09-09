@@ -39,233 +39,233 @@ import org.citydb.sqlbuilder.select.Select;
 import java.util.*;
 
 public class SQLQueryContext {
-	private final FeatureType featureType;
-	private final BuildContext buildContext;
-	private final Deque<LogicalOperatorName> logicalOperators;
+    private final FeatureType featureType;
+    private final BuildContext buildContext;
+    private final Deque<LogicalOperatorName> logicalOperators;
 
-	private Table fromTable;
-	private Select select;
-	private Table toTable;
-	private Column targetColumn;
-	private List<PredicateToken> predicates;
-	private Table cityObjectTable;
-	private int currentAndContext;
+    private Table fromTable;
+    private Select select;
+    private Table toTable;
+    private Column targetColumn;
+    private List<PredicateToken> predicates;
+    private Table cityObjectTable;
+    private int currentAndContext;
 
-	private enum ReuseMode {
-		NOT_REUSABLE,
-		AND_CONTEXT
-	}
+    private enum ReuseMode {
+        NOT_REUSABLE,
+        AND_CONTEXT
+    }
 
-	SQLQueryContext(FeatureType featureType, Table fromTable) {
-		this.featureType = featureType;
-		this.fromTable = toTable = fromTable;
+    SQLQueryContext(FeatureType featureType, Table fromTable) {
+        this.featureType = featureType;
+        this.fromTable = toTable = fromTable;
 
-		select = new Select();
-		buildContext = new BuildContext(new FeatureTypeNode(featureType), fromTable, new HashMap<>());
-		logicalOperators = new ArrayDeque<>();
-	}
+        select = new Select();
+        buildContext = new BuildContext(new FeatureTypeNode(featureType), fromTable, new HashMap<>());
+        logicalOperators = new ArrayDeque<>();
+    }
 
-	FeatureType getFeatureType() {
-		return featureType;
-	}
+    FeatureType getFeatureType() {
+        return featureType;
+    }
 
-	public Select getSelect() {
-		return select;
-	}
+    public Select getSelect() {
+        return select;
+    }
 
-	void setSelect(Select select) {
-		this.select = select;
-	}
+    void setSelect(Select select) {
+        this.select = select;
+    }
 
-	public Column getTargetColumn() {
-		return targetColumn;
-	}
+    public Column getTargetColumn() {
+        return targetColumn;
+    }
 
-	void setTargetColumn(Column targetColumn) {
-		this.targetColumn = targetColumn;
-	}
+    void setTargetColumn(Column targetColumn) {
+        this.targetColumn = targetColumn;
+    }
 
-	public Table getFromTable() {
-		return fromTable;
-	}
+    public Table getFromTable() {
+        return fromTable;
+    }
 
-	void setFromTable(Table fromTable) {
-		this.fromTable = fromTable;
-		buildContext.currentTable = fromTable;
-	}
+    void setFromTable(Table fromTable) {
+        this.fromTable = fromTable;
+        buildContext.currentTable = fromTable;
+    }
 
-	public Table getToTable() {
-		return toTable;
-	}
+    public Table getToTable() {
+        return toTable;
+    }
 
-	void setToTable(Table toTable) {
-		this.toTable = toTable;
-	}
+    void setToTable(Table toTable) {
+        this.toTable = toTable;
+    }
 
-	boolean hasPredicates() {
-		return predicates != null && !predicates.isEmpty();
-	}
+    boolean hasPredicates() {
+        return predicates != null && !predicates.isEmpty();
+    }
 
-	void addPredicate(PredicateToken predicate) {
-		if (predicates == null)
-			predicates = new ArrayList<>();
+    void addPredicate(PredicateToken predicate) {
+        if (predicates == null)
+            predicates = new ArrayList<>();
 
-		predicates.add(predicate);
-	}
+        predicates.add(predicate);
+    }
 
-	void addPredicates(PredicateToken... predicates) {
-		Arrays.stream(predicates).forEach(this::addPredicate);
-	}
+    void addPredicates(PredicateToken... predicates) {
+        Arrays.stream(predicates).forEach(this::addPredicate);
+    }
 
-	void setPredicate(PredicateToken predicate) {
-		predicates = new ArrayList<>();
-		predicates.add(predicate);
-	}
+    void setPredicate(PredicateToken predicate) {
+        predicates = new ArrayList<>();
+        predicates.add(predicate);
+    }
 
-	List<PredicateToken> getPredicates() {
-		return predicates;
-	}
+    List<PredicateToken> getPredicates() {
+        return predicates;
+    }
 
-	void unsetPredicates() {
-		predicates = null;
-	}
+    void unsetPredicates() {
+        predicates = null;
+    }
 
-	void applyPredicates() {
-		if (predicates != null) {
-			predicates.forEach(select::addSelection);
-			predicates = null;
-		}
-	}
+    void applyPredicates() {
+        if (predicates != null) {
+            predicates.forEach(select::addSelection);
+            predicates = null;
+        }
+    }
 
-	Table getCityObjectTable() {
-		return cityObjectTable;
-	}
+    Table getCityObjectTable() {
+        return cityObjectTable;
+    }
 
-	void setCityObjectTable(Table cityObjectTable) {
-		this.cityObjectTable = cityObjectTable;
-	}
+    void setCityObjectTable(Table cityObjectTable) {
+        this.cityObjectTable = cityObjectTable;
+    }
 
-	boolean requiresDistinct() {
-		return buildContext.requiresDistinct();
-	}
+    boolean requiresDistinct() {
+        return buildContext.requiresDistinct();
+    }
 
-	BuildContext getBuildContext() {
-		return buildContext;
-	}
+    BuildContext getBuildContext() {
+        return buildContext;
+    }
 
-	void pushLogicalContext(LogicalOperatorName logicalOperator) {
-		logicalOperators.push(logicalOperator);
-		if (logicalOperator == LogicalOperatorName.AND)
-			currentAndContext++;
-	}
+    void pushLogicalContext(LogicalOperatorName logicalOperator) {
+        logicalOperators.push(logicalOperator);
+        if (logicalOperator == LogicalOperatorName.AND)
+            currentAndContext++;
+    }
 
-	void popLogicalContext() {
-		LogicalOperatorName previous = logicalOperators.pop();
-		if (logicalOperators.peek() == LogicalOperatorName.AND)
-			buildContext.invalidateSubContexts();
+    void popLogicalContext() {
+        LogicalOperatorName previous = logicalOperators.pop();
+        if (logicalOperators.peek() == LogicalOperatorName.AND)
+            buildContext.invalidateSubContexts();
 
-		if (previous == LogicalOperatorName.AND)
-			currentAndContext--;
-	}
+        if (previous == LogicalOperatorName.AND)
+            currentAndContext--;
+    }
 
-	class BuildContext {
-		private final AbstractNode<?> node;
-		private final Map<String, Table> tableContext;
-		private Table currentTable;
-		private List<BuildContext> children;
-		private ReuseMode reuseMode;
-		private int reuseContext;
+    class BuildContext {
+        private final AbstractNode<?> node;
+        private final Map<String, Table> tableContext;
+        private Table currentTable;
+        private List<BuildContext> children;
+        private ReuseMode reuseMode;
+        private int reuseContext;
 
-		BuildContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
-			this.node = node;
-			this.currentTable = currentTable;
-			this.tableContext = tableContext;
-		}
+        BuildContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
+            this.node = node;
+            this.currentTable = currentTable;
+            this.tableContext = tableContext;
+        }
 
-		AbstractNode<?> getNode() {
-			return node;
-		}
+        AbstractNode<?> getNode() {
+            return node;
+        }
 
-		Map<String, Table> getTableContext() {
-			return tableContext;
-		}
+        Map<String, Table> getTableContext() {
+            return tableContext;
+        }
 
-		Table getCurrentTable() {
-			return currentTable;
-		}
+        Table getCurrentTable() {
+            return currentTable;
+        }
 
-		BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
-			BuildContext nodeContext = new BuildContext(node, currentTable, tableContext);
+        BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
+            BuildContext nodeContext = new BuildContext(node, currentTable, tableContext);
 
-			// remember the logical context for 1:n or n:m left joins
-			if (node.getPathElement() instanceof Joinable) {
-				AbstractJoin join = ((Joinable) node.getPathElement()).getJoin();
-				if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD) || join instanceof JoinTable) {
-					nodeContext.reuseContext = currentAndContext;
-					nodeContext.reuseMode = logicalOperators.peek() == LogicalOperatorName.AND ?
-							ReuseMode.NOT_REUSABLE :
-							ReuseMode.AND_CONTEXT;
-				}
-			}
+            // remember the logical context for 1:n or n:m left joins
+            if (node.getPathElement() instanceof Joinable) {
+                AbstractJoin join = ((Joinable) node.getPathElement()).getJoin();
+                if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD) || join instanceof JoinTable) {
+                    nodeContext.reuseContext = currentAndContext;
+                    nodeContext.reuseMode = logicalOperators.peek() == LogicalOperatorName.AND ?
+                            ReuseMode.NOT_REUSABLE :
+                            ReuseMode.AND_CONTEXT;
+                }
+            }
 
-			if (children == null)
-				children = new ArrayList<>();
+            if (children == null)
+                children = new ArrayList<>();
 
-			children.add(nodeContext);
-			return nodeContext;
-		}
+            children.add(nodeContext);
+            return nodeContext;
+        }
 
-		BuildContext findSubContext(AbstractNode<?> node) {
-			if (children != null && node != null) {
-				for (BuildContext child : children) {
-					if (child.reuseMode == ReuseMode.NOT_REUSABLE
-							|| (child.reuseMode == ReuseMode.AND_CONTEXT
-							&& child.reuseContext < currentAndContext))
-						continue;
+        BuildContext findSubContext(AbstractNode<?> node) {
+            if (children != null && node != null) {
+                for (BuildContext child : children) {
+                    if (child.reuseMode == ReuseMode.NOT_REUSABLE
+                            || (child.reuseMode == ReuseMode.AND_CONTEXT
+                            && child.reuseContext < currentAndContext))
+                        continue;
 
-					if (child.node.isEqualTo(node, logicalOperators.peek() == LogicalOperatorName.AND)) {
-						// only return the context of a property if the types are also identical
-						// otherwise the schema paths substantially differ
-						if (PathElementType.TYPE_PROPERTIES.contains(node.getPathElement().getElementType())
-								&& child.findSubContext(node.child()) == null)
-							continue;
+                    if (child.node.isEqualTo(node, logicalOperators.peek() == LogicalOperatorName.AND)) {
+                        // only return the context of a property if the types are also identical
+                        // otherwise the schema paths substantially differ
+                        if (PathElementType.TYPE_PROPERTIES.contains(node.getPathElement().getElementType())
+                                && child.findSubContext(node.child()) == null)
+                            continue;
 
-						return child;
-					}
-				}
-			}
+                        return child;
+                    }
+                }
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		void invalidateSubContexts() {
-			if (children != null) {
-				for (BuildContext child : children) {
-					if (child.reuseMode == ReuseMode.AND_CONTEXT && child.reuseContext >= currentAndContext)
-						child.reuseMode = ReuseMode.NOT_REUSABLE;
+        void invalidateSubContexts() {
+            if (children != null) {
+                for (BuildContext child : children) {
+                    if (child.reuseMode == ReuseMode.AND_CONTEXT && child.reuseContext >= currentAndContext)
+                        child.reuseMode = ReuseMode.NOT_REUSABLE;
 
-					child.invalidateSubContexts();
-				}
-			}
-		}
+                    child.invalidateSubContexts();
+                }
+            }
+        }
 
-		private boolean requiresDistinct() {
-			if (children != null) {
-				for (BuildContext child : children) {
-					if (child.node.getPathElement() instanceof Joinable) {
-						AbstractJoin join = ((Joinable) child.node.getPathElement()).getJoin();
-						if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD)
-								|| join instanceof JoinTable) {
-							return true;
-						}
-					}
+        private boolean requiresDistinct() {
+            if (children != null) {
+                for (BuildContext child : children) {
+                    if (child.node.getPathElement() instanceof Joinable) {
+                        AbstractJoin join = ((Joinable) child.node.getPathElement()).getJoin();
+                        if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD)
+                                || join instanceof JoinTable) {
+                            return true;
+                        }
+                    }
 
-					if (child.requiresDistinct())
-						return true;
-				}
-			}
+                    if (child.requiresDistinct())
+                        return true;
+                }
+            }
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }

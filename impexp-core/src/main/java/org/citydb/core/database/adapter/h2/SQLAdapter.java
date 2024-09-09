@@ -38,165 +38,165 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class SQLAdapter extends AbstractSQLAdapter {
-	
-	protected SQLAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		super(databaseAdapter);
-	}
 
-	@Override
-	public String getInteger() {
-		return "BIGINT";
-	}
+    protected SQLAdapter(AbstractDatabaseAdapter databaseAdapter) {
+        super(databaseAdapter);
+    }
 
-	@Override
-	public String getSmallInt() {
-		return "SMALLINT";
-	}
+    @Override
+    public String getInteger() {
+        return "BIGINT";
+    }
 
-	@Override
-	public String getBigInt() {
-		return "BIGINT";
-	}
+    @Override
+    public String getSmallInt() {
+        return "SMALLINT";
+    }
 
-	@Override
-	public String getNumeric() {
-		return "BIGINT";
-	}
+    @Override
+    public String getBigInt() {
+        return "BIGINT";
+    }
 
-	@Override
-	public String getNumeric(int precision) {
-		if (precision <= 3)
-			return "SMALLINT";
+    @Override
+    public String getNumeric() {
+        return "BIGINT";
+    }
 
-		return "BIGINT";
-	}
+    @Override
+    public String getNumeric(int precision) {
+        if (precision <= 3)
+            return "SMALLINT";
 
-	@Override
-	public String getNumeric(int precision, int scale) {
-		if (precision == 1 && scale == 0)
-			return "TINYINT";
+        return "BIGINT";
+    }
 
-		return "DECIMAL";
-	}
+    @Override
+    public String getNumeric(int precision, int scale) {
+        if (precision == 1 && scale == 0)
+            return "TINYINT";
 
-	@Override
-	public String getReal() {
-		return "REAL";
-	}
+        return "DECIMAL";
+    }
 
-	@Override
-	public String getDoublePrecision() {
-		return "DOUBLE";
-	}
+    @Override
+    public String getReal() {
+        return "REAL";
+    }
 
-	@Override
-	public String getCharacter(int nrOfChars) {
-		return "VARCHAR(" + nrOfChars + ")";
-	}
+    @Override
+    public String getDoublePrecision() {
+        return "DOUBLE";
+    }
 
-	@Override
-	public String getCharacterVarying(int nrOfChars) {
-		return "VARCHAR(" + nrOfChars + ")";
-	}
+    @Override
+    public String getCharacter(int nrOfChars) {
+        return "VARCHAR(" + nrOfChars + ")";
+    }
 
-	@Override
-	public String getPolygon2D() {
-		return "GEOMETRY";
-	}
+    @Override
+    public String getCharacterVarying(int nrOfChars) {
+        return "VARCHAR(" + nrOfChars + ")";
+    }
 
-	@Override
-	public String getCreateUnloggedTable(String tableName, String columns) {
-		return "create table " + tableName + " " + columns;
-	}
+    @Override
+    public String getPolygon2D() {
+        return "GEOMETRY";
+    }
 
-	@Override
-	public String getCreateUnloggedTableAsSelect(String tableName, String select) {
-		return "create table " + tableName + " as " + select;
-	}
+    @Override
+    public String getCreateUnloggedTable(String tableName, String columns) {
+        return "create table " + tableName + " " + columns;
+    }
 
-	@Override
-	public String getUnloggedIndexProperty() {
-		return "";
-	}
+    @Override
+    public String getCreateUnloggedTableAsSelect(String tableName, String select) {
+        return "create table " + tableName + " as " + select;
+    }
 
-	@Override
-	public boolean requiresPseudoTableInSelect() {
-		return false;
-	}
+    @Override
+    public String getUnloggedIndexProperty() {
+        return "";
+    }
 
-	@Override
-	public String getPseudoTableName() {
-		return "";
-	}
-	
-	@Override
-	public int getMaximumNumberOfItemsForInOperator() {
-		// not required for cache tables
-		return 0;
-	}
-	
-	@Override
-	public boolean spatialPredicateRequiresNoIndexHint() {
-		return false;
-	}
+    @Override
+    public boolean requiresPseudoTableInSelect() {
+        return false;
+    }
 
-	@Override
-	public boolean supportsFetchFirstClause() {
-		return true;
-	}
+    @Override
+    public String getPseudoTableName() {
+        return "";
+    }
 
-	@Override
-	public String getHierarchicalGeometryQuery() {
-		// not required for cache tables
-		return "";
-	}
+    @Override
+    public int getMaximumNumberOfItemsForInOperator() {
+        // not required for cache tables
+        return 0;
+    }
 
-	@Override
-	public String getNextSequenceValue(String sequence) {
-		// not required for cache tables
-		return "";
-	}
+    @Override
+    public boolean spatialPredicateRequiresNoIndexHint() {
+        return false;
+    }
 
-	@Override
-	public String getCurrentSequenceValue(String sequence) {
-		// not required for cache tables
-		return "";
-	}
+    @Override
+    public boolean supportsFetchFirstClause() {
+        return true;
+    }
 
-	@Override
-	public String getNextSequenceValuesQuery(String sequence) {
-		// not required for cache tables
-		return "";
-	}
+    @Override
+    public String getHierarchicalGeometryQuery() {
+        // not required for cache tables
+        return "";
+    }
 
-	@Override
-	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException {
-		// not required for cache tables
-		return null;
-	}
+    @Override
+    public String getNextSequenceValue(String sequence) {
+        // not required for cache tables
+        return "";
+    }
 
-	@Override
-	public BlobExportAdapter getBlobExportAdapter(Connection connection, BlobType type) {
-		// not required for cache tables
-		return null;
-	}
-	
-	@Override
-	public PredicateToken getBinarySpatialPredicate(SpatialOperatorName operator, Column targetColumn, GeometryObject geometry, boolean negate) {
-		// not required for cache tables
-		return null;
-	}
+    @Override
+    public String getCurrentSequenceValue(String sequence) {
+        // not required for cache tables
+        return "";
+    }
 
-	@Override
-	public PredicateToken getDistancePredicate(SpatialOperatorName operator, Column targetColumn, GeometryObject geometry, double distance, boolean negate) {
-		// not required for cache tables
-		return null;
-	}
+    @Override
+    public String getNextSequenceValuesQuery(String sequence) {
+        // not required for cache tables
+        return "";
+    }
 
-	@Override
-	public Function getAggregateExtentFunction(Column envelope) {
-		// not required for cache tables
-		return null;
-	}
+    @Override
+    public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException {
+        // not required for cache tables
+        return null;
+    }
+
+    @Override
+    public BlobExportAdapter getBlobExportAdapter(Connection connection, BlobType type) {
+        // not required for cache tables
+        return null;
+    }
+
+    @Override
+    public PredicateToken getBinarySpatialPredicate(SpatialOperatorName operator, Column targetColumn, GeometryObject geometry, boolean negate) {
+        // not required for cache tables
+        return null;
+    }
+
+    @Override
+    public PredicateToken getDistancePredicate(SpatialOperatorName operator, Column targetColumn, GeometryObject geometry, double distance, boolean negate) {
+        // not required for cache tables
+        return null;
+    }
+
+    @Override
+    public Function getAggregateExtentFunction(Column envelope) {
+        // not required for cache tables
+        return null;
+    }
 
 }

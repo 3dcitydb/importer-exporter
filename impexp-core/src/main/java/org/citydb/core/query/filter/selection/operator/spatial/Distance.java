@@ -28,32 +28,32 @@
 package org.citydb.core.query.filter.selection.operator.spatial;
 
 public class Distance {
-	private double value;
-	private DistanceUnit unit;
+    private double value;
+    private DistanceUnit unit;
 
-	public Distance(double value, DistanceUnit unit) {
-		this.value = value;
-		setUnit(unit);
-	}
+    public Distance(double value, DistanceUnit unit) {
+        this.value = value;
+        setUnit(unit);
+    }
 
-	public double getValue() {
-		return value;
-	}
+    public double getValue() {
+        return value;
+    }
 
-	public void setValue(double value) {
-		this.value = value;
-	}
+    public void setValue(double value) {
+        this.value = value;
+    }
 
-	public boolean isSetUnit() {
-		return unit != null;
-	}
+    public boolean isSetUnit() {
+        return unit != null;
+    }
 
-	public DistanceUnit getUnit() {
-		return unit;
-	}
+    public DistanceUnit getUnit() {
+        return unit;
+    }
 
-	public void setUnit(DistanceUnit unit) {
-		this.unit = unit;
-	}
+    public void setUnit(DistanceUnit unit) {
+        this.unit = unit;
+    }
 
 }

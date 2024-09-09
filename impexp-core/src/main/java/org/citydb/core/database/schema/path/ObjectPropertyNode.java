@@ -34,38 +34,38 @@ import org.citydb.core.database.schema.mapping.PathElementType;
 
 public final class ObjectPropertyNode extends AbstractNode<ObjectProperty> {
 
-	protected ObjectPropertyNode(ObjectProperty objectProperty) {
-		super(objectProperty);
-	}
-	
-	protected ObjectPropertyNode(ObjectPropertyNode other) {
-		super(other);
-	}
-	
-	@Override
-	protected boolean isValidChild(AbstractPathElement candidate) {
-		if (candidate.getElementType() == PathElementType.OBJECT_TYPE) {
-			ObjectType type = (ObjectType)candidate;
-			
-			while (type != null) {
-				if (pathElement.getType() == type)
-					return true;
-				
-				type = type.isSetExtension() ? type.getExtension().getBase() : null;
-			}
-		}
+    protected ObjectPropertyNode(ObjectProperty objectProperty) {
+        super(objectProperty);
+    }
 
-		return false;
-	}
+    protected ObjectPropertyNode(ObjectPropertyNode other) {
+        super(other);
+    }
 
-	@Override
-	protected boolean isValidPredicate(AbstractNodePredicate candidate) {
-		return false;
-	}
+    @Override
+    protected boolean isValidChild(AbstractPathElement candidate) {
+        if (candidate.getElementType() == PathElementType.OBJECT_TYPE) {
+            ObjectType type = (ObjectType) candidate;
 
-	@Override
-	protected ObjectPropertyNode copy() {
-		return new ObjectPropertyNode(this);
-	}
+            while (type != null) {
+                if (pathElement.getType() == type)
+                    return true;
+
+                type = type.isSetExtension() ? type.getExtension().getBase() : null;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    protected boolean isValidPredicate(AbstractNodePredicate candidate) {
+        return false;
+    }
+
+    @Override
+    protected ObjectPropertyNode copy() {
+        return new ObjectPropertyNode(this);
+    }
 
 }

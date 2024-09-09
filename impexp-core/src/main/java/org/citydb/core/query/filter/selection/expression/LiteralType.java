@@ -28,11 +28,11 @@
 package org.citydb.core.query.filter.selection.expression;
 
 public enum LiteralType {
-	STRING,
-	DOUBLE,
-	INTEGER,
-	LONG,
-	BOOLEAN,
-	DATE,
-	TIMESTAMP
+    STRING,
+    DOUBLE,
+    INTEGER,
+    LONG,
+    BOOLEAN,
+    DATE,
+    TIMESTAMP
 }

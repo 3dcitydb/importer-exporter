@@ -31,19 +31,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GeocoderResult {
-	private List<Location> locations = new ArrayList<>();
+    private List<Location> locations = new ArrayList<>();
 
-	public List<Location> getLocations() {
-		return locations;
-	}
+    public List<Location> getLocations() {
+        return locations;
+    }
 
-	public boolean isSetLocations() {
-		return !locations.isEmpty();
-	}
+    public boolean isSetLocations() {
+        return !locations.isEmpty();
+    }
 
-	public void addLocation(Location location) {
-		if (location != null)
-			locations.add(location);
-	}
+    public void addLocation(Location location) {
+        if (location != null)
+            locations.add(location);
+    }
 
 }

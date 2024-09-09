@@ -38,110 +38,110 @@ import org.citydb.config.project.visExporter.VisExportConfig;
 import org.citydb.config.util.ConfigNamespaceFilter;
 
 public class Config {
-	private ProjectConfig projectConfig;
-	private GuiConfig guiConfig;
+    private ProjectConfig projectConfig;
+    private GuiConfig guiConfig;
 
-	public Config(ProjectConfig projectConfig, GuiConfig guiConfig) {
-		setProjectConfig(projectConfig);
-		setGuiConfig(guiConfig);
-	}
-	
-	public Config() {
-		this(new ProjectConfig(), new GuiConfig());
-	}
+    public Config(ProjectConfig projectConfig, GuiConfig guiConfig) {
+        setProjectConfig(projectConfig);
+        setGuiConfig(guiConfig);
+    }
 
-	public ProjectConfig getProjectConfig() {
-		return projectConfig;
-	}
+    public Config() {
+        this(new ProjectConfig(), new GuiConfig());
+    }
 
-	public void setProjectConfig(ProjectConfig projectConfig) {
-		if (projectConfig != null) {
-			this.projectConfig = projectConfig;
-			
-			// add things to be done after changing the project settings
-			// (e.g., after unmarshalling the config file) here 
-			projectConfig.getDatabaseConfig().addDefaultReferenceSystems();
-		}
-	}
+    public ProjectConfig getProjectConfig() {
+        return projectConfig;
+    }
 
-	public DatabaseConfig getDatabaseConfig() {
-		return projectConfig.getDatabaseConfig();
-	}
+    public void setProjectConfig(ProjectConfig projectConfig) {
+        if (projectConfig != null) {
+            this.projectConfig = projectConfig;
 
-	public void setDatabaseConfig(DatabaseConfig databaseConfig) {
-		projectConfig.setDatabaseConfig(databaseConfig);
-	}
+            // add things to be done after changing the project settings
+            // (e.g., after unmarshalling the config file) here
+            projectConfig.getDatabaseConfig().addDefaultReferenceSystems();
+        }
+    }
 
-	public ImportConfig getImportConfig() {
-		return projectConfig.getImportConfig();
-	}
+    public DatabaseConfig getDatabaseConfig() {
+        return projectConfig.getDatabaseConfig();
+    }
 
-	public void setImportConfig(ImportConfig importConfig) {
-		projectConfig.setImportConfig(importConfig);
-	}
+    public void setDatabaseConfig(DatabaseConfig databaseConfig) {
+        projectConfig.setDatabaseConfig(databaseConfig);
+    }
 
-	public ExportConfig getExportConfig() {
-		return projectConfig.getExportConfig();
-	}
+    public ImportConfig getImportConfig() {
+        return projectConfig.getImportConfig();
+    }
 
-	public void setExportConfig(ExportConfig exportConfig) {
-		projectConfig.setExportConfig(exportConfig);
-	}
+    public void setImportConfig(ImportConfig importConfig) {
+        projectConfig.setImportConfig(importConfig);
+    }
 
-	public DeleteConfig getDeleteConfig() {
-		return projectConfig.getDeleteConfig();
-	}
+    public ExportConfig getExportConfig() {
+        return projectConfig.getExportConfig();
+    }
 
-	public void setDeleteConfig(DeleteConfig deleteConfig) {
-		projectConfig.setDeleteConfig(deleteConfig);
-	}
+    public void setExportConfig(ExportConfig exportConfig) {
+        projectConfig.setExportConfig(exportConfig);
+    }
 
-	public VisExportConfig getVisExportConfig() {
-		return projectConfig.getVisExportConfig();
-	}
+    public DeleteConfig getDeleteConfig() {
+        return projectConfig.getDeleteConfig();
+    }
 
-	public void setVisExportConfig(VisExportConfig visExportConfig) {
-		projectConfig.setVisExportConfig(visExportConfig);
-	}
+    public void setDeleteConfig(DeleteConfig deleteConfig) {
+        projectConfig.setDeleteConfig(deleteConfig);
+    }
 
-	public GlobalConfig getGlobalConfig() {
-		return projectConfig.getGlobalConfig();
-	}
+    public VisExportConfig getVisExportConfig() {
+        return projectConfig.getVisExportConfig();
+    }
 
-	public void setGlobalConfig(GlobalConfig globalConfig) {
-		projectConfig.setGlobalConfig(globalConfig);
-	}
+    public void setVisExportConfig(VisExportConfig visExportConfig) {
+        projectConfig.setVisExportConfig(visExportConfig);
+    }
 
-	public boolean isPluginEnabled(String pluginClass, boolean defaultValue) {
-		return projectConfig.isPluginEnabled(pluginClass, defaultValue);
-	}
+    public GlobalConfig getGlobalConfig() {
+        return projectConfig.getGlobalConfig();
+    }
 
-	public void setPluginEnabled(String pluginClass, boolean enable) {
-		projectConfig.setPluginEnabled(pluginClass, enable);
-	}
+    public void setGlobalConfig(GlobalConfig globalConfig) {
+        projectConfig.setGlobalConfig(globalConfig);
+    }
 
-	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
-		return projectConfig.getPluginConfig(type);
-	}
+    public boolean isPluginEnabled(String pluginClass, boolean defaultValue) {
+        return projectConfig.isPluginEnabled(pluginClass, defaultValue);
+    }
 
-	public PluginConfig registerPluginConfig(PluginConfig pluginConfig) {
-		return projectConfig.registerPluginConfig(pluginConfig);
-	}
+    public void setPluginEnabled(String pluginClass, boolean enable) {
+        projectConfig.setPluginEnabled(pluginClass, enable);
+    }
 
-	public ConfigNamespaceFilter getNamespaceFilter() {
-		return projectConfig.getNamespaceFilter();
-	}
+    public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
+        return projectConfig.getPluginConfig(type);
+    }
 
-	public void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
-		projectConfig.setNamespaceFilter(namespaceFilter);
-	}
+    public PluginConfig registerPluginConfig(PluginConfig pluginConfig) {
+        return projectConfig.registerPluginConfig(pluginConfig);
+    }
 
-	public GuiConfig getGuiConfig() {
-		return guiConfig;
-	}
+    public ConfigNamespaceFilter getNamespaceFilter() {
+        return projectConfig.getNamespaceFilter();
+    }
 
-	public void setGuiConfig(GuiConfig guiConfig) {
-		if (guiConfig != null)
-			this.guiConfig = guiConfig;
-	}
+    public void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
+        projectConfig.setNamespaceFilter(namespaceFilter);
+    }
+
+    public GuiConfig getGuiConfig() {
+        return guiConfig;
+    }
+
+    public void setGuiConfig(GuiConfig guiConfig) {
+        if (guiConfig != null)
+            this.guiConfig = guiConfig;
+    }
 }

@@ -30,26 +30,26 @@ package org.citydb.util.event.global;
 import org.citydb.util.event.Event;
 
 public class PropertyChangeEvent extends Event {
-	private final String propertyName;
-	private final Object oldValue;
-	private final Object newValue;
-	
-	public PropertyChangeEvent(String propertyName, Object oldValue, Object newValue) {
-		super(EventType.PROPERTY_CHANGE_EVENT, GLOBAL_CHANNEL);
-		this.propertyName = propertyName;
-		this.oldValue = oldValue;
-		this.newValue = newValue;
-	}
+    private final String propertyName;
+    private final Object oldValue;
+    private final Object newValue;
 
-	public String getPropertyName() {
-		return propertyName;
-	}
+    public PropertyChangeEvent(String propertyName, Object oldValue, Object newValue) {
+        super(EventType.PROPERTY_CHANGE_EVENT, GLOBAL_CHANNEL);
+        this.propertyName = propertyName;
+        this.oldValue = oldValue;
+        this.newValue = newValue;
+    }
 
-	public Object getOldValue() {
-		return oldValue;
-	}
+    public String getPropertyName() {
+        return propertyName;
+    }
 
-	public Object getNewValue() {
-		return newValue;
-	}
+    public Object getOldValue() {
+        return oldValue;
+    }
+
+    public Object getNewValue() {
+        return newValue;
+    }
 }

@@ -61,27 +61,27 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
         setLayout(new GridBagLayout());
         operationsTab = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 
-		operations = new DatabaseOperationView[]{
-				new ReportOperation(this),
-				new BoundingBoxOperation(this, config),
-				new IndexOperation(this, config),
-				new SrsOperation(this, config),
-				new ADEInfoOperation(this)
-		};
+        operations = new DatabaseOperationView[]{
+                new ReportOperation(this),
+                new BoundingBoxOperation(this, config),
+                new IndexOperation(this, config),
+                new SrsOperation(this, config),
+                new ADEInfoOperation(this)
+        };
 
         for (int i = 0; i < operations.length; ++i) {
-        	operationsTab.insertTab(null, operations[i].getIcon(), null, operations[i].getToolTip(), i);
-		}
+            operationsTab.insertTab(null, operations[i].getIcon(), null, operations[i].getToolTip(), i);
+        }
 
         operationsTab.addChangeListener(e -> {
             int index = operationsTab.getSelectedIndex();
             for (int i = 0; i < operationsTab.getTabCount(); i++) {
-            	operationsTab.setComponentAt(i, index == i ? operations[index].getViewComponent() : null);
-			}
+                operationsTab.setComponentAt(i, index == i ? operations[index].getViewComponent() : null);
+            }
         });
 
-		add(operationsTab, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-	}
+        add(operationsTab, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+    }
 
     public void switchLocale(Locale locale) {
         for (int i = 0; i < operations.length; ++i) {
@@ -96,8 +96,8 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
         for (int i = 0; i < operations.length; ++i) {
             operations[i].loadSettings();
             if (operations[i].getType() == databaseConfig.getOperation().lastUsed()) {
-            	index = i;
-			}
+                index = i;
+            }
         }
 
         operationsTab.setSelectedIndex(-1);
@@ -105,17 +105,17 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
     }
 
     public void setSettings() {
-		config.getDatabaseConfig().getOperation().setLastUsed(operations[operationsTab.getSelectedIndex()].getType());
+        config.getDatabaseConfig().getOperation().setLastUsed(operations[operationsTab.getSelectedIndex()].getType());
         for (DatabaseOperationView operation : operations) {
-        	operation.setSettings();
-		}
+            operation.setSettings();
+        }
     }
 
     public void setEnabled(boolean enable) {
         operationsTab.setEnabled(enable);
         for (DatabaseOperationView operation : operations) {
-        	operation.setEnabled(enable);
-		}
+            operation.setEnabled(enable);
+        }
     }
 
     protected ViewController getViewController() {
@@ -143,7 +143,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
     public void handleEvent(Event event) throws Exception {
         DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent) event;
         for (DatabaseOperationView operation : operations) {
-        	operation.handleDatabaseConnectionStateEvent(state);
-		}
+            operation.handleDatabaseConnectionStateEvent(state);
+        }
     }
 }

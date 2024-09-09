@@ -39,62 +39,62 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DBXlinkExporterManager {
-	private final Connection connection;
-	private final AbstractDatabaseAdapter databaseAdapter;
-	private final InternalConfig internalConfig;
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
-	private final Map<DBXlinkExporterEnum, DBXlinkExporter> dbExporterMap;
+    private final Connection connection;
+    private final AbstractDatabaseAdapter databaseAdapter;
+    private final InternalConfig internalConfig;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
+    private final Map<DBXlinkExporterEnum, DBXlinkExporter> dbExporterMap;
 
-	public DBXlinkExporterManager(Connection connection, AbstractDatabaseAdapter databaseAdapter, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
-		this.connection = connection;
-		this.databaseAdapter = databaseAdapter;
-		this.internalConfig = internalConfig;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
+    public DBXlinkExporterManager(Connection connection, AbstractDatabaseAdapter databaseAdapter, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
+        this.connection = connection;
+        this.databaseAdapter = databaseAdapter;
+        this.internalConfig = internalConfig;
+        this.config = config;
+        this.eventDispatcher = eventDispatcher;
 
-		dbExporterMap = new HashMap<>();
-	}
+        dbExporterMap = new HashMap<>();
+    }
 
-	public DBXlinkExporter getDBXlinkExporter(DBXlinkExporterEnum dbXlinkExporterType) throws SQLException {
-		DBXlinkExporter dbExporter = dbExporterMap.get(dbXlinkExporterType);
+    public DBXlinkExporter getDBXlinkExporter(DBXlinkExporterEnum dbXlinkExporterType) throws SQLException {
+        DBXlinkExporter dbExporter = dbExporterMap.get(dbXlinkExporterType);
 
-		if (dbExporter == null) {
-			switch (dbXlinkExporterType) {
-			case TEXTURE_IMAGE:
-				dbExporter = new DBXlinkExporterTextureImage(connection, config, this);
-				break;
-			case LIBRARY_OBJECT:
-				dbExporter = new DBXlinkExporterLibraryObject(connection, this);
-				break;
-			}
+        if (dbExporter == null) {
+            switch (dbXlinkExporterType) {
+                case TEXTURE_IMAGE:
+                    dbExporter = new DBXlinkExporterTextureImage(connection, config, this);
+                    break;
+                case LIBRARY_OBJECT:
+                    dbExporter = new DBXlinkExporterLibraryObject(connection, this);
+                    break;
+            }
 
-			dbExporterMap.put(dbXlinkExporterType, dbExporter);
-		}
+            dbExporterMap.put(dbXlinkExporterType, dbExporter);
+        }
 
-		return dbExporter;
-	}
+        return dbExporter;
+    }
 
-	public InternalConfig getInternalConfig() {
-		return internalConfig;
-	}
+    public InternalConfig getInternalConfig() {
+        return internalConfig;
+    }
 
-	public AbstractDatabaseAdapter getDatabaseAdapter() {
-		return databaseAdapter;
-	}
+    public AbstractDatabaseAdapter getDatabaseAdapter() {
+        return databaseAdapter;
+    }
 
-	public int getBlobBatchSize() {
-		int blobBatchSize = config.getDatabaseConfig().getExportBatching().getBlobBatchSize();
-		return Math.min(blobBatchSize, databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator());
-	}
+    public int getBlobBatchSize() {
+        int blobBatchSize = config.getDatabaseConfig().getExportBatching().getBlobBatchSize();
+        return Math.min(blobBatchSize, databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator());
+    }
 
-	public void propagateEvent(Event event) {
-		eventDispatcher.triggerEvent(event);
-	}
-	
-	public void close() throws SQLException {
-		for (DBXlinkExporter exporter : dbExporterMap.values())
-			exporter.close();
-	}
-	
+    public void propagateEvent(Event event) {
+        eventDispatcher.triggerEvent(event);
+    }
+
+    public void close() throws SQLException {
+        for (DBXlinkExporter exporter : dbExporterMap.values())
+            exporter.close();
+    }
+
 }

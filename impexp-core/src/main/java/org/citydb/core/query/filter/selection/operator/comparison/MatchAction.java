@@ -28,7 +28,7 @@
 package org.citydb.core.query.filter.selection.operator.comparison;
 
 public enum MatchAction {
-	ANY,
-	ALL,
-	ONE
+    ANY,
+    ALL,
+    ONE
 }

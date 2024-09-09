@@ -29,24 +29,24 @@ package org.citydb.util.concurrent;
 
 public class SingleWorkerPool<T> extends WorkerPool<T> {
 
-	public SingleWorkerPool(String poolName,
-			WorkerFactory<T> workerFactory,
-			int queueSize,
-			boolean fair,
-			boolean daemon) {
-		super(poolName, 1, 1, PoolSizeAdaptationStrategy.AGGRESSIVE, workerFactory, queueSize, fair, daemon);
-	}
+    public SingleWorkerPool(String poolName,
+                            WorkerFactory<T> workerFactory,
+                            int queueSize,
+                            boolean fair,
+                            boolean daemon) {
+        super(poolName, 1, 1, PoolSizeAdaptationStrategy.AGGRESSIVE, workerFactory, queueSize, fair, daemon);
+    }
 
-	public SingleWorkerPool(String poolName,
-			WorkerFactory<T> workerFactory,
-			int queueSize,
-			boolean fair) {
-		super(poolName, 1, 1, PoolSizeAdaptationStrategy.AGGRESSIVE, workerFactory, queueSize, fair, true);
-	}
+    public SingleWorkerPool(String poolName,
+                            WorkerFactory<T> workerFactory,
+                            int queueSize,
+                            boolean fair) {
+        super(poolName, 1, 1, PoolSizeAdaptationStrategy.AGGRESSIVE, workerFactory, queueSize, fair, true);
+    }
 
-	public SingleWorkerPool(String poolName,
-			WorkerFactory<T> workerFactory,
-			int queueSize) {
-		super(poolName, 1, 1, PoolSizeAdaptationStrategy.AGGRESSIVE, workerFactory, queueSize, false);
-	}
+    public SingleWorkerPool(String poolName,
+                            WorkerFactory<T> workerFactory,
+                            int queueSize) {
+        super(poolName, 1, 1, PoolSizeAdaptationStrategy.AGGRESSIVE, workerFactory, queueSize, false);
+    }
 }

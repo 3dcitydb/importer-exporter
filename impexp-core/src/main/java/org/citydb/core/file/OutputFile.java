@@ -45,8 +45,11 @@ public abstract class OutputFile implements AutoCloseable {
     }
 
     public abstract OutputStream openStream() throws IOException;
+
     public abstract String resolve(String... paths) throws InvalidPathException;
+
     public abstract void createDirectories(String path) throws IOException;
+
     public abstract OutputStream newOutputStream(String file) throws IOException;
 
     @Override

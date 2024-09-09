@@ -40,70 +40,70 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class DBExternalReference implements DBImporter {
-	private final CityGMLImportManager importer;
+    private final CityGMLImportManager importer;
 
-	private PreparedStatement psExternalReference;
-	private int batchCounter;
+    private PreparedStatement psExternalReference;
+    private int batchCounter;
 
-	public DBExternalReference(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
-		this.importer = importer;
+    public DBExternalReference(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
+        this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+        String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String stmt = "insert into " + schema + ".external_reference (id, infosys, name, uri, cityobject_id) values " +
-				"(" + importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.EXTERNAL_REFERENCE_ID_SEQ.getName()) +
-				", ?, ?, ?, ?)";
-		psExternalReference = batchConn.prepareStatement(stmt);
-	}
+        String stmt = "insert into " + schema + ".external_reference (id, infosys, name, uri, cityobject_id) values " +
+                "(" + importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.EXTERNAL_REFERENCE_ID_SEQ.getName()) +
+                ", ?, ?, ?, ?)";
+        psExternalReference = batchConn.prepareStatement(stmt);
+    }
 
-	protected void doImport(ExternalReference externalReference, long cityObjectId) throws CityGMLImportException, SQLException {
-		// core:informationSystem
-		if (externalReference.isSetInformationSystem())
-			psExternalReference.setString(1, externalReference.getInformationSystem());
-		else
-			psExternalReference.setNull(1, Types.VARCHAR);
+    protected void doImport(ExternalReference externalReference, long cityObjectId) throws CityGMLImportException, SQLException {
+        // core:informationSystem
+        if (externalReference.isSetInformationSystem())
+            psExternalReference.setString(1, externalReference.getInformationSystem());
+        else
+            psExternalReference.setNull(1, Types.VARCHAR);
 
-		// core:externalObject
-		if (externalReference.isSetExternalObject()) {
-			ExternalObject externalObject = externalReference.getExternalObject();
+        // core:externalObject
+        if (externalReference.isSetExternalObject()) {
+            ExternalObject externalObject = externalReference.getExternalObject();
 
-			// core:name
-			if (externalObject.isSetName()) {
-				psExternalReference.setString(2, externalObject.getName());
-			} else {
-				psExternalReference.setNull(2, Types.VARCHAR);
-			}
+            // core:name
+            if (externalObject.isSetName()) {
+                psExternalReference.setString(2, externalObject.getName());
+            } else {
+                psExternalReference.setNull(2, Types.VARCHAR);
+            }
 
-			// core:uri
-			if (externalObject.isSetUri()) {
-				psExternalReference.setString(3, externalObject.getUri());
-			} else {
-				psExternalReference.setNull(3, Types.VARCHAR);
-			}
-		} else {
-			psExternalReference.setNull(2, Types.VARCHAR);
-			psExternalReference.setNull(3, Types.VARCHAR);
-		}
+            // core:uri
+            if (externalObject.isSetUri()) {
+                psExternalReference.setString(3, externalObject.getUri());
+            } else {
+                psExternalReference.setNull(3, Types.VARCHAR);
+            }
+        } else {
+            psExternalReference.setNull(2, Types.VARCHAR);
+            psExternalReference.setNull(3, Types.VARCHAR);
+        }
 
-		// cityObjectId
-		psExternalReference.setLong(4, cityObjectId);
+        // cityObjectId
+        psExternalReference.setLong(4, cityObjectId);
 
-		psExternalReference.addBatch();
-		if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
-			importer.executeBatch(TableEnum.EXTERNAL_REFERENCE);
-	}
+        psExternalReference.addBatch();
+        if (++batchCounter == importer.getDatabaseAdapter().getMaxBatchSize())
+            importer.executeBatch(TableEnum.EXTERNAL_REFERENCE);
+    }
 
-	@Override
-	public void executeBatch() throws CityGMLImportException, SQLException {
-		if (batchCounter > 0) {
-			psExternalReference.executeBatch();
-			batchCounter = 0;
-		}
-	}
+    @Override
+    public void executeBatch() throws CityGMLImportException, SQLException {
+        if (batchCounter > 0) {
+            psExternalReference.executeBatch();
+            batchCounter = 0;
+        }
+    }
 
-	@Override
-	public void close() throws CityGMLImportException, SQLException {
-		psExternalReference.close();
-	}
+    @Override
+    public void close() throws CityGMLImportException, SQLException {
+        psExternalReference.close();
+    }
 
 }
