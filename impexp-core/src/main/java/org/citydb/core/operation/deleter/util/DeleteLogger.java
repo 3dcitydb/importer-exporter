@@ -86,7 +86,7 @@ public class DeleteLogger {
 
     private void writeFooter(boolean success) throws IOException {
         writer.write("#" + (mode == DeleteMode.TERMINATE ? "Terminate" : "Delete"));
-        writer.write(success ? " successfully finished." : "aborted.");
+        writer.write(success ? " successfully finished." : " aborted.");
     }
 
     public void write(String type, long id, String gmlId) throws IOException {
