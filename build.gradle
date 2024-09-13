@@ -42,13 +42,13 @@ subprojects {
                     name: project.impexpName
             ])
         }
-        into "$buildDir/tmp/license"
+        into "$projectDir/build/tmp/license"
     }
 
     javadoc {
         include 'org/citydb/**'
         options {
-            overview "$buildDir/tmp/javadoc/overview.html"
+            overview "$projectDir/build/tmp/javadoc/overview.html"
             header "${project.name} ${project.version}"
             bottom """
                 <a href="${impexpIssueTrackerUrl}">Report a bug or suggest an enhancement</a><br>
@@ -77,7 +77,7 @@ subprojects {
                             impexpName: project.impexpName,
                     ])
                 }
-                into "$buildDir/tmp/javadoc"
+                into "$projectDir/build/tmp/javadoc"
             }
         }
     }
