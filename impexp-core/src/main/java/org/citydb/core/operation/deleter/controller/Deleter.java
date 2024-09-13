@@ -143,6 +143,7 @@ public class Deleter implements EventHandler {
 
     private boolean process(boolean preview) throws DeleteException {
         DeleteMode mode = config.getDeleteConfig().getMode();
+        boolean autoCommit = !preview && config.getDeleteConfig().isAutoCommit();
 
         // log workspace
         if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
@@ -162,6 +163,7 @@ public class Deleter implements EventHandler {
                         CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.DELETE_LOG_DIR);
                 deleteLogger = new DeleteLogger(logFile,
                         config.getDeleteConfig().getMode(),
+                        autoCommit,
                         config.getDatabaseConfig().getActiveConnection());
                 log.info("Log file of deleted top-level features: " + deleteLogger.getLogFilePath().toString());
             } catch (IOException e) {
@@ -195,7 +197,9 @@ public class Deleter implements EventHandler {
             throw new DeleteException("Database error while querying index status.", e);
         }
 
-        bundledConnection = new BundledConnection().withSingleConnection(true);
+        bundledConnection = new BundledConnection()
+                .withSingleConnection(true)
+                .withAutoCommit(autoCommit);
         CacheTableManager cacheTableManager = null;
         CacheTable cacheTable = null;
 
@@ -242,6 +246,9 @@ public class Deleter implements EventHandler {
                         "delete.dialog.title.terminate" :
                         "delete.dialog.title.delete")));
                 log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") + " city objects from database.");
+                if (autoCommit) {
+                    log.info("Auto-committing " + (mode == DeleteMode.TERMINATE ? "terminate" : "delete") + " operation.");
+                }
             }
 
             // create internal config and set metadata

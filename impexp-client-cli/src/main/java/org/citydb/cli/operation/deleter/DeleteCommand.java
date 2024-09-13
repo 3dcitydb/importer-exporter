@@ -52,8 +52,6 @@ import java.nio.file.Path;
 public class DeleteCommand extends CliCommand {
     enum Mode {delete, terminate}
 
-    ;
-
     @CommandLine.Option(names = {"-m", "--delete-mode"}, paramLabel = "<mode>", defaultValue = "delete",
             description = "Delete mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode mode;
@@ -61,6 +59,10 @@ public class DeleteCommand extends CliCommand {
     @CommandLine.Option(names = {"-v", "--preview"},
             description = "Run in preview mode. Affected city objects will be neither deleted nor terminated.")
     private boolean preview;
+
+    @CommandLine.Option(names = {"-a", "--auto-commit"}, negatable = true, defaultValue = "false",
+            description = "Auto-commit delete operation (default: ${DEFAULT-VALUE}).")
+    private boolean autoCommit;
 
     @CommandLine.Option(names = "--delete-log", paramLabel = "<file>",
             description = "Record deleted top-level features to this file.")
@@ -143,6 +145,10 @@ public class DeleteCommand extends CliCommand {
             deleteConfig.setMode(mode == Mode.terminate ?
                     DeleteMode.TERMINATE :
                     DeleteMode.DELETE);
+        }
+
+        if (autoCommit) {
+            deleteConfig.setAutoCommit(true);
         }
 
         if (deleteLogFile != null) {

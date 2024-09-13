@@ -45,6 +45,7 @@ import javax.xml.bind.annotation.XmlType;
         "simpleQuery",
         "deleteList",
         "cleanupGlobalAppearances",
+        "autoCommit",
         "computeNumberMatched",
         "continuation",
         "deleteLog"
@@ -60,6 +61,7 @@ public class DeleteConfig {
     private SimpleQuery simpleQuery;
     private IdList deleteList;
     private boolean cleanupGlobalAppearances;
+    private boolean autoCommit;
     private ComputeNumberMatched computeNumberMatched;
     private Continuation continuation;
     private DeleteLog deleteLog;
@@ -132,6 +134,14 @@ public class DeleteConfig {
 
     public void setCleanupGlobalAppearances(boolean cleanupGlobalAppearances) {
         this.cleanupGlobalAppearances = cleanupGlobalAppearances;
+    }
+
+    public boolean isAutoCommit() {
+        return autoCommit;
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        this.autoCommit = autoCommit;
     }
 
     public ComputeNumberMatched getComputeNumberMatched() {

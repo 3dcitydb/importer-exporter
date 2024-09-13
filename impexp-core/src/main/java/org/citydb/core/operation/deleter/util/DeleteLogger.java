@@ -46,7 +46,7 @@ public class DeleteLogger {
     private final BufferedWriter writer;
     private final DeleteMode mode;
 
-    public DeleteLogger(Path logFile, DeleteMode mode, DatabaseConnection connection) throws IOException {
+    public DeleteLogger(Path logFile, DeleteMode mode, boolean autoCommit, DatabaseConnection connection) throws IOException {
         Path defaultDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.DELETE_LOG_DIR);
         if (logFile.toAbsolutePath().normalize().startsWith(defaultDir)) {
             Files.createDirectories(defaultDir);
@@ -61,14 +61,14 @@ public class DeleteLogger {
         this.logFile = logFile;
         this.mode = mode;
         writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8);
-        writeHeader(connection);
+        writeHeader(autoCommit, connection);
     }
 
     public Path getLogFilePath() {
         return logFile;
     }
 
-    private void writeHeader(DatabaseConnection connection) throws IOException {
+    private void writeHeader(boolean autoCommit, DatabaseConnection connection) throws IOException {
         writer.write('#' + getClass().getPackage().getImplementationTitle() +
                 ", version \"" + getClass().getPackage().getImplementationVersion() + "\"");
         writer.newLine();
@@ -79,6 +79,8 @@ public class DeleteLogger {
         writer.newLine();
         writer.write("#Timestamp: ");
         writer.write(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        writer.newLine();
+        writer.write("#Auto-commit: " + autoCommit);
         writer.newLine();
         writer.write("FEATURE_TYPE,CITYOBJECT_ID,GMLID");
         writer.newLine();
