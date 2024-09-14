@@ -1,5 +1,28 @@
 Change Log
 ==========
+
+### 5.5.0 - tba
+
+#### Changes
+* **Breaking:** Java 11 is now the minimum required version for running the Importer/Exporter.
+
+#### Additions
+* Added a too-few-points check when importing curve geometries. By default, invalid curve geometries will cause the
+  import to fail unless using the `no-fail-fast` flag. [#301](https://github.com/3dcitydb/importer-exporter/issues/301),
+  [#304](https://github.com/3dcitydb/importer-exporter/issues/304)
+* Added option to auto-commit delete operations to avoid database errors caused by too many statements in a transaction.
+* Added point and curve style settings for the VIS export. [#310](https://github.com/3dcitydb/importer-exporter/pull/310)
+
+#### Fixes
+* Fixed ADE info dialog to correctly show CityJSON support.
+* Export of tunnel boundary surfaces did not include ADE properties.
+* The CityJSON `"extension"` property is now automatically included when exporting ADE content to CityJSON format.
+* Improved error messages in case the OS-specific default web browser cannot be opened. [#299](https://github.com/3dcitydb/importer-exporter/issues/299)
+* Fixed start scripts for UNIX/Linux.
+
+#### Miscellaneous
+* Updated all dependencies to their latest versions.
+
 ### 5.4.3 - 2024-04-17
 
 #### Miscellaneous
