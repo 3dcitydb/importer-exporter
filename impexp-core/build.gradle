@@ -6,7 +6,7 @@ dependencies {
     api 'org.geotools:gt-epsg-extension:31.3'
     api 'org.geotools:gt-epsg-wkt:31.3'
     api 'org.geotools:gt-referencing:31.3'
-    api 'org.locationtech.jts:jts-core:1.19.0'
+    api 'org.locationtech.jts:jts-core:1.20.0'
     api 'org.postgresql:postgresql:42.7.4'
     api 'net.postgis:postgis-jdbc:2024.1.0'
     api 'com.oracle.database.jdbc:ojdbc11:23.5.0.24.07'
