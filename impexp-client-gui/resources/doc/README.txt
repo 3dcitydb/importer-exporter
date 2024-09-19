@@ -81,9 +81,9 @@ third party applications.
 4. System requirements
 ----------------------
 
-* Java JRE or JDK >= 8
+* Java JRE or JDK >= 11
 * @citydbName@ version @citydbVersion@ on
-  - PostgreSQL DBMS >= 11 with PostGIS extension >= 2.5
+  - PostgreSQL DBMS >= 12 with PostGIS extension >= 3.0
   - Oracle Spatial DBMS >= 19c
   - PolarDB for PostgresSQL >= 1.1 with Ganos >= 4.6
 
@@ -92,7 +92,7 @@ providing appropriate Java support. It has been tested on the
 following platforms:
   - Microsoft Windows 7, 8, 10, 11
   - Apple Mac OS X and macOS
-  - Ubuntu 9 - 22
+  - Ubuntu 9 - 24
 
 
 5. (Un)Installation
