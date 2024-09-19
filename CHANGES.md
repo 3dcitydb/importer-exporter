@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 5.5.0 - tba
+### 5.5.0 - 2024-09-19
 
 #### Changes
 * **Breaking:** Java 11 is now the minimum required version for running the Importer/Exporter.

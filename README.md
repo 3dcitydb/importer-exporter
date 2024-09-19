@@ -47,16 +47,16 @@ previous release of the 3D City Database Importer/Exporter under Apache License 
 
 Latest release
 --------------
-The latest stable release of the 3D City Database Importer/Exporter is 5.4.3.
+The latest stable release of the 3D City Database Importer/Exporter is 5.5.0.
 
-Download the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.4.3/3DCityDB-Importer-Exporter-5.4.3.zip).
+Download the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.5.0/3DCityDB-Importer-Exporter-5.5.0.zip).
 Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
 
 System requirements
 -------------------
 * Java JRE or JDK >= 11
 * [3D City Database](https://github.com/3dcitydb/3dcitydb) on
-  - PostgreSQL DBMS >= 11 with PostGIS extension >= 2.5
+  - PostgreSQL DBMS >= 12 with PostGIS extension >= 3.0
   - Oracle DBMS >= 19c
   - PolarDB for PostgresSQL >= 1.1 with Ganos >= 4.6
   
@@ -65,7 +65,7 @@ The 3D City Database Importer/Exporter can be run on any platform providing appr
 Documentation and literature
 ----------------------------
 A complete and comprehensive user manual on the 3D City Database and the Importer/Exporter is available
-[online](https://3dcitydb-docs.readthedocs.io/en/version-2023.0/).
+[online](http://3dcitydb-docs.rtfd.io/).
 
 An Open Access paper on the 3DCityDB has been published in the International Journal on Open Geospatial Data,
 Software and Standards 3 (5), 2018: [Z. Yao, C. Nagel, F. Kunde, G. Hudra, P. Willkomm, A. Donaubauer, T. Adolphi, T. H. Kolbe: 3DCityDB - a 3D geodatabase solution for the management, analysis, and visualization of semantic 3D city models based on CityGML](https://doi.org/10.1186/s40965-018-0046-7). Please use this reference when citing the 3DCityDB project.
@@ -82,7 +82,7 @@ The easiest way to get the Importer/Exporter running on your computer is to down
 [3D City Database Suite installer](https://github.com/3dcitydb/3dcitydb-suite/releases). In addition to the
 Importer/Exporter software, this installer also bundles the 3D City Database scripts, the 3D Web Map Client,
 Importer/Exporter plugins, test datasets, etc. A setup wizard will guide you through the separate steps of the
-installation process. Please refer to the [user manual](https://3dcitydb-docs.readthedocs.io/en/version-2023.0/)
+installation process. Please refer to the [user manual](http://3dcitydb-docs.rtfd.io/)
 for more information on how to install and use the tool.
 
 After successful installation, start scripts are available in the installation directory to run the application.
@@ -135,7 +135,7 @@ Using the Docker image of the Importer/Exporter is simple:
 This will show the help message and all available commands of the Importer/Exporter.
 
 More details on how to use the Importer/Exporter with Docker can be found in the
-[online documentation](https://3dcitydb-docs.readthedocs.io/en/version-2023.0/).
+[online documentation](http://3dcitydb-docs.rtfd.io/).
 
 Cooperation partners and supporters
 -----------------------------------
@@ -149,9 +149,9 @@ following cooperation partners:
 
 More information
 ----------------
-[OGC CityGML](http://www.opengeospatial.org/standards/citygml) is an open data model and XML-based format for the
+[OGC CityGML](https://www.ogc.org/standard/citygml/) is an open data model and XML-based format for the
 storage and exchange of semantic 3D city models. It is an application schema for the
-[Geography Markup Language version 3.1.1 (GML3)](http://www.opengeospatial.org/standards/gml), the extensible
+[Geography Markup Language version 3.1.1 (GML3)](https://www.ogc.org/standard/gml/), the extensible
 international standard for spatial data exchange issued by the Open Geospatial Consortium (OGC) and the ISO TC211.
 The aim of the development of CityGML is to reach a common definition of the basic entities, attributes,
 and relations of a 3D city model.
