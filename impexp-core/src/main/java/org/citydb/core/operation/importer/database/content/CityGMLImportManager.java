@@ -62,7 +62,6 @@ import org.citydb.util.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
 import org.citygml4j.geometry.Matrix;
-import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLModuleComponent;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
 import org.citygml4j.model.citygml.appearance.Appearance;
@@ -491,7 +490,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
     public void logOrThrowUnsupportedGeometryMessage(AbstractGML from, AbstractGeometry geometry) throws CityGMLImportException {
         logOrThrowErrorMessage(getObjectSignature(from) +
                 ": Unsupported geometry type " +
-                "gml:" + geometry.getGMLClass() + ".");
+                "gml:" + geometry.getClass().getSimpleName() + ".");
     }
 
     @Override
@@ -671,13 +670,13 @@ public class CityGMLImportManager implements CityGMLImportHelper {
         StringBuilder signature = new StringBuilder();
 
         if (object instanceof AbstractGeometry)
-            signature.append("gml:").append(object.getGMLClass());
+            signature.append("gml:").append(object.getClass().getSimpleName());
         else {
             AbstractObjectType<?> type = getAbstractObjectType(object);
             if (type != null)
                 signature.append(type.getSchema().getXMLPrefix()).append(":").append(type.getPath());
             else
-                signature.append((object instanceof CityGML) ? ((CityGML) object).getCityGMLClass().toString() : object.getGMLClass().toString());
+                signature.append(object.getClass().getSimpleName());
         }
 
         if (gmlId != null)

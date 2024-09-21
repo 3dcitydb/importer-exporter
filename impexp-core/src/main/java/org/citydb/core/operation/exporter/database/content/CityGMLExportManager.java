@@ -816,7 +816,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
     }
 
     public String getGeometrySignature(AbstractGeometry geometry, long id) {
-        return getGeometrySignature(geometry.getGMLClass(), id);
+        return "gml:" + geometry.getClass().getSimpleName() + " (ID: " + id + ")";
     }
 
     public String getGeometrySignature(GMLClass geometryClass, long id) {
