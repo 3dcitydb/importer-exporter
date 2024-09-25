@@ -1556,6 +1556,26 @@ public class Queries implements ADEVisExportQueryHelper {
         return query;
     }
 
+    @Override
+    public String getSolitaryVegetationObjectPointAndCurveQuery(int lodToExportFrom, int objectClassId) {
+        String query;
+
+        query = new StringBuilder().append("SELECT svo.lod").append(lodToExportFrom).append("_other_geom, ")
+                .append(implicitGeometryNullColumns)
+                .append("FROM ").append(schema).append(".SOLITARY_VEGETAT_OBJECT svo ")
+                .append("WHERE svo.id = ? ")
+                .append("AND svo.lod").append(lodToExportFrom).append("_other_geom IS NOT NULL ")
+                .append("UNION ALL ")
+                .append("SELECT ig.relative_other_geom, svo.lod").append(lodToExportFrom).append("_implicit_rep_id, svo.lod").append(lodToExportFrom).append("_implicit_ref_point, svo.lod").append(lodToExportFrom).append("_implicit_transformation ")
+                .append("FROM ").append(schema).append(".IMPLICIT_GEOMETRY ig ")
+                .append("LEFT JOIN ").append(schema).append(".SOLITARY_VEGETAT_OBJECT svo ON ig.id = svo.lod").append(lodToExportFrom).append("_implicit_rep_id ")
+                .append("WHERE svo.id = ? ")
+                .append("AND ig.relative_other_geom IS NOT NULL").toString();
+
+        query = unionADEQueries(QUERY_POINT_AND_CURVE_GEOMETRY, query, lodToExportFrom, objectClassId);
+        return query;
+    }
+
     // ----------------------------------------------------------------------
     // PLANT COVER QUERIES
     // ----------------------------------------------------------------------
@@ -1704,6 +1724,27 @@ public class Queries implements ADEVisExportQueryHelper {
 
         return query;
     }
+
+    @Override
+    public String getCityFurniturePointAndCurveQuery(int lodToExportFrom, int objectClassId) {
+        String query;
+
+        query = new StringBuilder().append("SELECT cf.lod").append(lodToExportFrom).append("_other_geom, ")
+                .append(implicitGeometryNullColumns)
+                .append("FROM ").append(schema).append(".CITY_FURNITURE cf ")
+                .append("WHERE cf.id = ? ")
+                .append("AND cf.lod").append(lodToExportFrom).append("_other_geom IS NOT NULL ")
+                .append("UNION ALL ")
+                .append("SELECT ig.relative_other_geom, cf.lod").append(lodToExportFrom).append("_implicit_rep_id, cf.lod").append(lodToExportFrom).append("_implicit_ref_point, cf.lod").append(lodToExportFrom).append("_implicit_transformation ")
+                .append("FROM ").append(schema).append(".IMPLICIT_GEOMETRY ig ")
+                .append("LEFT JOIN ").append(schema).append(".CITY_FURNITURE cf ON ig.id = cf.lod").append(lodToExportFrom).append("_implicit_rep_id ")
+                .append("WHERE cf.id = ? ")
+                .append("AND ig.relative_other_geom IS NOT NULL").toString();
+
+        query = unionADEQueries(QUERY_POINT_AND_CURVE_GEOMETRY, query, lodToExportFrom, objectClassId);
+        return query;
+    }
+
 
     // ----------------------------------------------------------------------
     // WATER BODY QUERIES
