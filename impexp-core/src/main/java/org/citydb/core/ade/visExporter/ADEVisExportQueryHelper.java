@@ -49,6 +49,8 @@ public interface ADEVisExportQueryHelper {
 
     String getSolitaryVegetationObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
 
+    String getSolitaryVegetationObjectPointAndCurveQuery(int lodToExportFrom, int objectClassId);
+
     String getPlantCoverQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
 
     String getGenericCityObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
@@ -56,6 +58,8 @@ public interface ADEVisExportQueryHelper {
     String getGenericCityObjectPointAndCurveQuery(int lodToExportFrom, int objectClassId);
 
     String getCityFurnitureQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
+
+    String getCityFurniturePointAndCurveQuery(int lodToExportFrom, int objectClassId);
 
     String getWaterBodyQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId);
 

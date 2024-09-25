@@ -54,6 +54,7 @@ import java.util.Map;
         "landUseBalloon",
         "vegetationStyles",
         "vegetationBalloon",
+        "solitaryVegetationObjectPointAndCurve",
         "transportationStyles",
         "transportationBalloon",
         "transportationPointAndCurve",
@@ -61,6 +62,7 @@ import java.util.Map;
         "reliefBalloon",
         "cityFurnitureStyles",
         "cityFurnitureBalloon",
+        "cityFurniturePointAndCurve",
         "genericCityObjectStyles",
         "genericCityObject3DBalloon",
         "genericCityObjectPointAndCurve",
@@ -107,6 +109,7 @@ public class VisExportConfig {
     @XmlJavaTypeAdapter(StylesAdapter.class)
     private Styles vegetationStyles;
     private Balloon vegetationBalloon;
+    private PointAndCurve solitaryVegetationObjectPointAndCurve;
     @XmlJavaTypeAdapter(StylesAdapter.class)
     private Styles transportationStyles;
     private Balloon transportationBalloon;
@@ -117,6 +120,7 @@ public class VisExportConfig {
     @XmlJavaTypeAdapter(StylesAdapter.class)
     private Styles cityFurnitureStyles;
     private Balloon cityFurnitureBalloon;
+    private PointAndCurve cityFurniturePointAndCurve;
     @XmlJavaTypeAdapter(StylesAdapter.class)
     private Styles genericCityObjectStyles;
     private Balloon genericCityObject3DBalloon;
@@ -166,6 +170,7 @@ public class VisExportConfig {
         landUseBalloon = new Balloon();
         vegetationStyles = new Styles();
         vegetationBalloon = new Balloon();
+        solitaryVegetationObjectPointAndCurve = new PointAndCurve();
         transportationStyles = new Styles();
         transportationBalloon = new Balloon();
         transportationPointAndCurve = new PointAndCurve();
@@ -173,6 +178,7 @@ public class VisExportConfig {
         reliefBalloon = new Balloon();
         cityFurnitureStyles = new Styles();
         cityFurnitureBalloon = new Balloon();
+        cityFurniturePointAndCurve = new PointAndCurve();
         genericCityObjectStyles = new Styles();
         genericCityObject3DBalloon = new Balloon();
         genericCityObjectPointAndCurve = new PointAndCurve();
@@ -450,6 +456,14 @@ public class VisExportConfig {
         }
     }
 
+    public void setSolitaryVegetationObjectPointAndCurve(PointAndCurve solitaryVegetationObjectPointAndCurve) {
+        this.solitaryVegetationObjectPointAndCurve = solitaryVegetationObjectPointAndCurve;
+    }
+
+    public PointAndCurve getSolitaryVegetationObjectPointAndCurve() {
+        return solitaryVegetationObjectPointAndCurve;
+    }
+
     public Styles getGenericCityObjectStyles() {
         return genericCityObjectStyles;
     }
@@ -488,6 +502,14 @@ public class VisExportConfig {
         return cityFurnitureBalloon;
     }
 
+    public void setCityFurniturePointAndCurve(PointAndCurve cityFurniturePointAndCurve) {
+        this.cityFurniturePointAndCurve = cityFurniturePointAndCurve;
+    }
+
+    public PointAndCurve getCityFurniturePointAndCurve() {
+        return cityFurniturePointAndCurve;
+    }
+
     public void setTransportationStyles(Styles transportationStyles) {
         if (transportationStyles != null) {
             this.transportationStyles = transportationStyles;
@@ -506,8 +528,8 @@ public class VisExportConfig {
         return transportationBalloon;
     }
 
-    public void setTransportationPointAndCurve(PointAndCurve TransportationPointAndCurve) {
-        this.transportationPointAndCurve = TransportationPointAndCurve;
+    public void setTransportationPointAndCurve(PointAndCurve transportationPointAndCurve) {
+        this.transportationPointAndCurve = transportationPointAndCurve;
     }
 
     public PointAndCurve getTransportationPointAndCurve() {

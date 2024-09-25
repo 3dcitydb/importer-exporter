@@ -897,6 +897,10 @@ public class VisExporter implements EventHandler {
 
         switch (Util.getCityGMLClass(objectClassId)) {
             case SOLITARY_VEGETATION_OBJECT:
+                style = config.getVisExportConfig().getVegetationStyles().getOrDefault(type);
+                styleBasisName = SolitaryVegetationObject.STYLE_BASIS_NAME;
+                addPointAndCurveStyle(saxWriter, config.getVisExportConfig().getSolitaryVegetationObjectPointAndCurve(), styleBasisName);
+                break;
             case PLANT_COVER:
                 style = config.getVisExportConfig().getVegetationStyles().getOrDefault(type);
                 styleBasisName = SolitaryVegetationObject.STYLE_BASIS_NAME;
@@ -906,9 +910,9 @@ public class VisExporter implements EventHandler {
             case RAILWAY:
             case ROAD:
             case SQUARE:
-                addPointAndCurveStyle(saxWriter, config.getVisExportConfig().getTransportationPointAndCurve(), Transportation.STYLE_BASIS_NAME);
                 style = config.getVisExportConfig().getTransportationStyles().getOrDefault(type);
                 styleBasisName = Transportation.STYLE_BASIS_NAME;
+                addPointAndCurveStyle(saxWriter, config.getVisExportConfig().getTransportationPointAndCurve(), styleBasisName);
                 break;
             case RELIEF_FEATURE:
                 style = config.getVisExportConfig().getReliefStyles().getOrDefault(type);
@@ -921,11 +925,12 @@ public class VisExporter implements EventHandler {
             case CITY_FURNITURE:
                 style = config.getVisExportConfig().getCityFurnitureStyles().getOrDefault(type);
                 styleBasisName = CityFurniture.STYLE_BASIS_NAME;
+                addPointAndCurveStyle(saxWriter, config.getVisExportConfig().getCityFurniturePointAndCurve(), styleBasisName);
                 break;
             case GENERIC_CITY_OBJECT:
-                addPointAndCurveStyle(saxWriter, config.getVisExportConfig().getGenericCityObjectPointAndCurve(), GenericCityObject.STYLE_BASIS_NAME);
                 style = config.getVisExportConfig().getGenericCityObjectStyles().getOrDefault(type);
                 styleBasisName = GenericCityObject.STYLE_BASIS_NAME;
+                addPointAndCurveStyle(saxWriter, config.getVisExportConfig().getGenericCityObjectPointAndCurve(), styleBasisName);
                 break;
             case LAND_USE:
                 style = config.getVisExportConfig().getLandUseStyles().getOrDefault(type);

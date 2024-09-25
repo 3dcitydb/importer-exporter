@@ -54,10 +54,18 @@ public class VisExportPreferences extends DefaultPreferences {
                 true, true, true, true,
                 config)));
         renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingStylingPanel(config)));
-        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-                "pref.tree.visExport.cityFurniture.styling",
+
+        DefaultPreferencesEntry cityFurnitureRenderingNode = new EmptyPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.cityFurniture.styling"));
+        cityFurnitureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.surfaceAndSolid.styling",
                 () -> config.getVisExportConfig().getCityFurnitureStyles(),
                 config)));
+        cityFurnitureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
+                () -> config.getVisExportConfig().getCityFurniturePointAndCurve(),
+                config)));
+        renderingNode.addChildEntry(cityFurnitureRenderingNode);
+
         renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
                 "pref.tree.visExport.cityObjectGroup.styling",
                 () -> config.getVisExportConfig().getReliefStyles(),
@@ -85,7 +93,7 @@ public class VisExportPreferences extends DefaultPreferences {
                 () -> Language.I18N.getString("pref.tree.visExport.transportation.styling"));
         transportationComplexRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
                 "pref.tree.visExport.surfaceAndSolid.styling",
-                () -> config.getVisExportConfig().getGenericCityObjectStyles(),
+                () -> config.getVisExportConfig().getTransportationStyles(),
                 config)));
         transportationComplexRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
                 () -> config.getVisExportConfig().getTransportationPointAndCurve(),
@@ -97,10 +105,18 @@ public class VisExportPreferences extends DefaultPreferences {
                 () -> config.getVisExportConfig().getTunnelStyles(),
                 true, true, true, true,
                 config)));
-        renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
-                "pref.tree.visExport.vegetation.styling",
+
+        DefaultPreferencesEntry vegetationRenderingNode = new EmptyPanel(
+                () -> Language.I18N.getString("pref.tree.visExport.vegetation.styling"));
+        vegetationRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
+                "pref.tree.visExport.surfaceAndSolid.styling",
                 () -> config.getVisExportConfig().getVegetationStyles(),
                 config)));
+        vegetationRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
+                () -> config.getVisExportConfig().getSolitaryVegetationObjectPointAndCurve(),
+                config)));
+        renderingNode.addChildEntry(vegetationRenderingNode);
+
         renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
                 "pref.tree.visExport.waterBody.styling",
                 () -> config.getVisExportConfig().getWaterBodyStyles(),
