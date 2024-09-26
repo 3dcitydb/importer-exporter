@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 5.5.0 - 2024-09-19
+### 5.5.0 - 2024-09-26
 
 #### Changes
 * **Breaking:** Java 11 is now the minimum required version for running the Importer/Exporter.
@@ -11,7 +11,8 @@ Change Log
   import to fail unless using the `no-fail-fast` flag. [#301](https://github.com/3dcitydb/importer-exporter/issues/301),
   [#304](https://github.com/3dcitydb/importer-exporter/issues/304)
 * Added option to auto-commit delete operations to avoid database errors caused by too many statements in a transaction.
-* Added point and curve style settings for the VIS export. [#310](https://github.com/3dcitydb/importer-exporter/pull/310)
+* Added point and curve styling settings for `Transportation`, `CityFurniture`, and `Vegetation` features to the
+  VIS export. [#310](https://github.com/3dcitydb/importer-exporter/pull/310), [#311](https://github.com/3dcitydb/importer-exporter/pull/311)
 
 #### Fixes
 * Fixed ADE info dialog to correctly show CityJSON support.
