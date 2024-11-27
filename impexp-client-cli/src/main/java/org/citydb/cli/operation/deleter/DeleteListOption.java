@@ -45,13 +45,13 @@ public class DeleteListOption implements CliOption {
     @CommandLine.Option(names = {"-w", "--delete-list-preview"},
             description = "Print a preview of the delete list and exit. If more than one CSV file is specified, " +
                     "the preview is only generated for the first one.")
-    private boolean preview;
+    private boolean isPreviewOn;
 
     @CommandLine.ArgGroup(exclusive = false)
     private IdListOption deleteListOption;
 
     public boolean isPreview() {
-        return preview;
+        return isPreviewOn;
     }
 
     public IdList toDeleteList() {
