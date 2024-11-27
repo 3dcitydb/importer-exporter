@@ -68,6 +68,67 @@ public class QueryOption implements CliOption {
     @CommandLine.ArgGroup
     private XMLQueryOption xmlQueryOption;
 
+    private void addFeatureTypeFilter(QueryConfig queryConfig) {
+        if (typeNamesOption != null) {
+            queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
+        }
+    }
+
+    private void addVersionFilter(QueryConfig queryOption, List<AbstractPredicate> predicates) {
+        SimpleFeatureVersionFilter versionFilter = featureVersionOption != null ?
+                featureVersionOption.toFeatureVersionFilter() :
+                FeatureVersionOption.defaultFeatureVersionFilter();
+
+        if (versionFilter != null) {
+            AbstractPredicate predicate = versionFilter.toPredicate();
+            if (predicate != null) {
+                predicates.add(predicate);
+            }
+        }
+    }
+
+    private void addResourceIdOperator(List<AbstractPredicate> predicates) {
+        if (resourceIdOption != null) {
+            ResourceIdOperator idOperator = resourceIdOption.toResourceIdOperator();
+            if (idOperator != null) {
+                predicates.add(idOperator);
+            }
+        }
+    }
+
+    private void addDatabaseIdOption(List<AbstractPredicate> predicates) {
+        if (databaseIdOption != null) {
+            DatabaseIdOperator idOperator = databaseIdOption.toDatabaseIdOperator();
+            if (idOperator != null) {
+                predicates.add(idOperator);
+            }
+        }
+    }
+
+    private void addBoundingBoxOptionPredicates(List<AbstractPredicate> predicates) {
+        if (boundingBoxOption != null) {
+            AbstractSpatialOperator spatialOperator = boundingBoxOption.toSpatialOperator();
+            if (spatialOperator != null) {
+                predicates.add(spatialOperator);
+            }
+        }
+    }
+
+    private void addCounterOptionFilter(QueryConfig queryConfig) {
+        if (counterOption != null) {
+            queryConfig.setCounterFilter(counterOption.toCounterFilter());
+        }
+    }
+
+    private void addSqlSelectPredicates(List<AbstractPredicate> predicates) {
+        if (sqlSelectOption != null) {
+            SelectOperator selectOperator = sqlSelectOption.toSelectOperator();
+            if (selectOperator != null) {
+                predicates.add(selectOperator);
+            }
+        }
+    }
+
     public QueryConfig toQueryConfig() {
         if (typeNamesOption != null
                 || featureVersionOption != null
@@ -79,52 +140,14 @@ public class QueryOption implements CliOption {
             QueryConfig queryConfig = new QueryConfig();
             List<AbstractPredicate> predicates = new ArrayList<>();
 
-            if (typeNamesOption != null) {
-                queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
-            }
+            addFeatureTypeFilter(queryConfig);
+            addVersionFilter(queryConfig, predicates);
+            addResourceIdOperator(predicates);
+            addDatabaseIdOption(predicates);
+            addBoundingBoxOptionPredicates(predicates);
+            addCounterOptionFilter(queryConfig);
+            addSqlSelectPredicates(predicates);
 
-            SimpleFeatureVersionFilter versionFilter = featureVersionOption != null ?
-                    featureVersionOption.toFeatureVersionFilter() :
-                    FeatureVersionOption.defaultFeatureVersionFilter();
-
-            if (versionFilter != null) {
-                AbstractPredicate predicate = versionFilter.toPredicate();
-                if (predicate != null) {
-                    predicates.add(predicate);
-                }
-            }
-
-            if (resourceIdOption != null) {
-                ResourceIdOperator idOperator = resourceIdOption.toResourceIdOperator();
-                if (idOperator != null) {
-                    predicates.add(idOperator);
-                }
-            }
-
-            if (databaseIdOption != null) {
-                DatabaseIdOperator idOperator = databaseIdOption.toDatabaseIdOperator();
-                if (idOperator != null) {
-                    predicates.add(idOperator);
-                }
-            }
-
-            if (boundingBoxOption != null) {
-                AbstractSpatialOperator spatialOperator = boundingBoxOption.toSpatialOperator();
-                if (spatialOperator != null) {
-                    predicates.add(spatialOperator);
-                }
-            }
-
-            if (counterOption != null) {
-                queryConfig.setCounterFilter(counterOption.toCounterFilter());
-            }
-
-            if (sqlSelectOption != null) {
-                SelectOperator selectOperator = sqlSelectOption.toSelectOperator();
-                if (selectOperator != null) {
-                    predicates.add(selectOperator);
-                }
-            }
 
             if (!predicates.isEmpty()) {
                 AndOperator andOperator = new AndOperator();
