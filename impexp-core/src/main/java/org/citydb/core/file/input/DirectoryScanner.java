@@ -28,44 +28,29 @@
 
 package org.citydb.core.file.input;
 
-import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.mime.MimeTypes;
 import org.citydb.core.file.InputFile;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
 
 public class DirectoryScanner {
-    private final TikaConfig tikaConfig;
-    private final Pattern contentFile;
+    private final FileProcessor fileProcessor;
     private final Matcher matcher;
 
     private volatile boolean shouldRun = true;
     private boolean recursive = false;
 
     public DirectoryScanner() throws TikaException, IOException {
-        tikaConfig = new TikaConfig();
-        contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(json)|(cityjson)|(gz)|(gzip))$");
+        Pattern contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(json)|(cityjson)|(gz)|(gzip))$");
+        this.fileProcessor = new FileProcessor(contentFile);
         matcher = Pattern.compile("").matcher("");
-
-        // map additional file extensions to mime types
-        tikaConfig.getMimeRepository().addPattern(MimeTypes.getDefaultMimeTypes().forName("application/json"), "*.cityjson");
     }
 
     public DirectoryScanner(boolean recursive) throws TikaException, IOException {
@@ -117,7 +102,7 @@ public class DirectoryScanner {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     matcher.reset(file.getFileName().toString()).usePattern(filePattern);
                     if (matcher.matches()) {
-                        processFile(file, files, false);
+                        fileProcessor.processFile(file, files, false);
                     }
 
                     return shouldRun ? FileVisitResult.CONTINUE : FileVisitResult.TERMINATE;
@@ -138,106 +123,7 @@ public class DirectoryScanner {
                 }
             });
         } else {
-            processFile(base, files, true);
+            this.fileProcessor.processFile(base, files, true);
         }
-    }
-
-    private void processFile(Path file, List<InputFile> files, boolean force) throws IOException {
-        if (!shouldRun)
-            return;
-
-        MediaType mediaType = getMediaType(file);
-        if (mediaType.equals(InputFile.APPLICATION_ZIP)) {
-            processZipFile(file, files);
-        } else if (mediaType.equals(InputFile.APPLICATION_GZIP)) {
-            processGZipFile(file, files);
-        } else if (isSupportedContentType(mediaType) || force) {
-            files.add(new RegularInputFile(file, mediaType));
-        }
-    }
-
-    private void processGZipFile(Path gzipFile, List<InputFile> files) {
-        try (InputStream stream = new GZIPInputStream(new FileInputStream(gzipFile.toFile()))) {
-            // pass file name without gzip extension as hint for content detection
-            String fileName = gzipFile.getFileName().toString();
-            if (fileName.endsWith(".gz")) {
-                fileName = fileName.substring(0, fileName.length() - 3);
-            } else if (fileName.endsWith(".gzip")) {
-                fileName = fileName.substring(0, fileName.length() - 5);
-            }
-
-            MediaType mediaType = getMediaType(stream, fileName);
-            if (isSupportedContentType(mediaType)) {
-                files.add(new GZipInputFile(gzipFile, mediaType));
-            }
-        } catch (IOException e) {
-            //
-        }
-    }
-
-    private void processZipFile(Path zipFile, List<InputFile> files) throws IOException {
-        URI uri = URI.create("jar:" + zipFile.toAbsolutePath().toUri());
-
-        FileSystem fileSystem = null;
-        try {
-            fileSystem = FileSystems.getFileSystem(uri);
-        } catch (FileSystemNotFoundException e) {
-            //
-        } catch (Throwable e) {
-            throw new IOException("Failed to open zip file system '" + uri + "'.", e);
-        }
-
-        if (fileSystem == null) {
-            try {
-                fileSystem = FileSystems.newFileSystem(uri, new HashMap<>());
-            } catch (Throwable e) {
-                throw new IOException("Failed to open zip file system '" + uri + "'.", e);
-            }
-        }
-
-        try (Stream<Path> stream = Files.walk(fileSystem.getPath("/")).filter(Files::isRegularFile)) {
-            stream.forEach(path -> {
-                matcher.reset(path.getFileName().toString()).usePattern(contentFile);
-                if (matcher.matches()) {
-                    MediaType mediaType = getMediaType(path);
-                    if (isSupportedContentType(mediaType)) {
-                        ZipInputFile zipInputFile = new ZipInputFile(path.toString(), zipFile, uri, mediaType);
-                        files.add(zipInputFile);
-                    }
-                }
-            });
-        } catch (Throwable e) {
-            throw new IOException("Failed to read zip file entries.", e);
-        } finally {
-            fileSystem.close();
-        }
-    }
-
-    private MediaType getMediaType(Path file) {
-        try (InputStream stream = TikaInputStream.get(file)) {
-            Metadata metadata = new Metadata();
-            metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, file.toString());
-            return tikaConfig.getDetector().detect(stream, metadata);
-        } catch (IOException e) {
-            return MediaType.EMPTY;
-        }
-    }
-
-    private MediaType getMediaType(InputStream stream, String fileName) {
-        try {
-            Metadata metadata = new Metadata();
-            if (fileName != null) {
-                metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, fileName);
-            }
-
-            return tikaConfig.getDetector().detect(TikaInputStream.get(stream), metadata);
-        } catch (IOException e) {
-            return MediaType.EMPTY;
-        }
-    }
-
-    private boolean isSupportedContentType(MediaType mediaType) {
-        return mediaType.equals(InputFile.APPLICATION_XML)
-                || mediaType.equals(InputFile.APPLICATION_JSON);
     }
 }
