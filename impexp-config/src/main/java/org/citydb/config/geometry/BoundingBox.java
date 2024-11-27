@@ -139,4 +139,10 @@ public class BoundingBox extends AbstractGeometry {
         return GeometryType.ENVELOPE;
     }
 
+    public boolean containsPoint(Position point) {
+        boolean containsX = point.getX() > this.lowerCorner.getX() && point.getX() <= this.upperCorner.getX();
+        boolean containsY = point.getY() > this.lowerCorner.getY() && point.getY() <= this.upperCorner.getY();
+        return containsX && containsY;
+    }
+
 }

@@ -114,10 +114,7 @@ public class Tile {
             pos = point.getPos();
         }
 
-        return pos.getX() > extent.getLowerCorner().getX()
-                && pos.getX() <= extent.getUpperCorner().getX()
-                && pos.getY() > extent.getLowerCorner().getY()
-                && pos.getY() <= extent.getUpperCorner().getY();
+        return extent.containsPoint(pos);
     }
 
 }
