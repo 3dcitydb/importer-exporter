@@ -31,6 +31,7 @@ package org.citydb.core.file.input;
 import org.apache.tika.exception.TikaException;
 import org.citydb.core.file.InputFile;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.*;
@@ -41,7 +42,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DirectoryScanner {
-    private final FileProcessor fileProcessor;
     private final Matcher matcher;
 
     private volatile boolean shouldRun = true;
@@ -49,7 +49,6 @@ public class DirectoryScanner {
 
     public DirectoryScanner() throws TikaException, IOException {
         Pattern contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(json)|(cityjson)|(gz)|(gzip))$");
-        this.fileProcessor = new FileProcessor(contentFile);
         matcher = Pattern.compile("").matcher("");
     }
 
@@ -70,7 +69,7 @@ public class DirectoryScanner {
         return new String[]{"gml", "xml", "json", "cityjson", "gz", "gzip", "zip"};
     }
 
-    public List<InputFile> listFiles(List<Path> bases, String... fileEndings) throws IOException {
+    public List<InputFile> listFiles(List<Path> bases, String... fileEndings) throws IOException, TikaException {
         if (fileEndings.length == 0) {
             fileEndings = getDefaultFileEndings();
         }
@@ -91,18 +90,25 @@ public class DirectoryScanner {
         return files;
     }
 
-    public List<InputFile> listFiles(Path base, String... fileEndings) throws IOException {
+    public List<InputFile> listFiles(Path base, String... fileEndings) throws IOException, TikaException {
         return listFiles(Collections.singletonList(base), fileEndings);
     }
 
-    private void listFiles(Path base, List<InputFile> files, Pattern filePattern) throws IOException {
+    private void listFiles(Path base, List<InputFile> files, Pattern filePattern) throws IOException, TikaException {
+        Pattern contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(json)|(cityjson)|(gz)|(gzip))$");
         if (Files.isDirectory(base)) {
             Files.walkFileTree(base, new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     matcher.reset(file.getFileName().toString()).usePattern(filePattern);
                     if (matcher.matches()) {
-                        fileProcessor.processFile(file, files, false);
+                        FileProcessor fileProcessor = null;
+                        try {
+                            fileProcessor = FileProcessor.getProcessor(file);
+                        } catch (TikaException e) {
+                            throw new RuntimeException(e);
+                        }
+                        fileProcessor.process(file, files, false, contentFile);
                     }
 
                     return shouldRun ? FileVisitResult.CONTINUE : FileVisitResult.TERMINATE;
@@ -123,7 +129,8 @@ public class DirectoryScanner {
                 }
             });
         } else {
-            this.fileProcessor.processFile(base, files, true);
+            FileProcessor fileProcessor = FileProcessor.getProcessor(base);
+            fileProcessor.process(base, files, true, contentFile);
         }
     }
 }

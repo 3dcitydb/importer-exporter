@@ -43,89 +43,25 @@ import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 
-public class FileProcessor {
-    private final FileTypeDetector fileTypeDetector;
-    private final Pattern contentFilePattern;
-    private final Matcher matcher;
+public abstract class FileProcessor {
 
+    public abstract void process(Path file, List<InputFile> files, boolean force, Pattern contentFilePattern) throws IOException;
 
-    public FileProcessor(Pattern contentFilePattern) throws TikaException, IOException {
-        this.fileTypeDetector = new FileTypeDetector();
-        this.contentFilePattern = contentFilePattern;
-        this.matcher = Pattern.compile("").matcher("");
-    }
-
-    public void processFile(Path file, List<InputFile> files, boolean force) throws IOException {
+    public static FileProcessor getProcessor(Path file) throws TikaException, IOException {
+        FileTypeDetector fileTypeDetector = new FileTypeDetector();
         MediaType mediaType = fileTypeDetector.getMediaType(file);
         if (mediaType.equals(InputFile.APPLICATION_ZIP)) {
-            processZipFile(file, files);
+            return new ZipFileProcessor();
         } else if (mediaType.equals(InputFile.APPLICATION_GZIP)) {
-            processGZipFile(file, files);
-        } else if (isSupportedContentType(mediaType) || force) {
-            files.add(new RegularInputFile(file, mediaType));
+            return new GZipFileProcessor();
+        } else {
+            return new RegularFileProcessor();
         }
     }
 
-    private void processGZipFile(Path gzipFile, List<InputFile> files) {
-        try (InputStream stream = new GZIPInputStream(new FileInputStream(gzipFile.toFile()))) {
-            // pass file name without gzip extension as hint for content detection
-            String fileName = gzipFile.getFileName().toString();
-            fileName = deriveFileNameWithoutGzipExtension(fileName);
-            MediaType mediaType = fileTypeDetector.getMediaType(stream, fileName);
-            if (isSupportedContentType(mediaType)) {
-                files.add(new GZipInputFile(gzipFile, mediaType));
-            }
-        } catch (IOException e) {
-            //
-        }
-    }
-
-    private void processZipFile(Path zipFile, List<InputFile> files) throws IOException {
-        URI uri = URI.create("jar:" + zipFile.toAbsolutePath().toUri());
-        FileSystem fileSystem = null;
-        try {
-            fileSystem = FileSystems.getFileSystem(uri);
-        } catch (FileSystemNotFoundException e) {
-            //
-        } catch (Throwable e) {
-            throw new IOException("Failed to open zip file system '" + uri + "'.", e);
-        }
-        if (fileSystem == null) {
-            try {
-                fileSystem = FileSystems.newFileSystem(uri, new HashMap<>());
-            } catch (Throwable e) {
-                throw new IOException("Failed to open zip file system '" + uri + "'.", e);
-            }
-        }
-        try (Stream<Path> stream = Files.walk(fileSystem.getPath("/")).filter(Files::isRegularFile)) {
-            stream.forEach(path -> {
-                matcher.reset(path.getFileName().toString()).usePattern(this.contentFilePattern);
-                if (matcher.matches()) {
-                    MediaType mediaType = fileTypeDetector.getMediaType(path);
-                    if (isSupportedContentType(mediaType)) {
-                        ZipInputFile zipInputFile = new ZipInputFile(path.toString(), zipFile, uri, mediaType);
-                        files.add(zipInputFile);
-                    }
-                }
-            });
-        } catch (Throwable e) {
-            throw new IOException("Failed to read zip file entries.", e);
-        } finally {
-            fileSystem.close();
-        }
-    }
-
-    private boolean isSupportedContentType(MediaType mediaType) {
+    public static boolean isSupportedContentType(MediaType mediaType) {
         return mediaType.equals(InputFile.APPLICATION_XML)
                 || mediaType.equals(InputFile.APPLICATION_JSON);
     }
 
-    private String deriveFileNameWithoutGzipExtension(String fileName) {
-        if (fileName.endsWith(".gz")) {
-            return fileName.substring(0, fileName.length() - 3);
-        } else if (fileName.endsWith(".gzip")) {
-            return fileName.substring(0, fileName.length() - 5);
-        }
-        return fileName;
-    }
 }
