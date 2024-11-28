@@ -68,14 +68,20 @@ public class QueryOption implements CliOption {
     @CommandLine.ArgGroup
     private XMLQueryOption xmlQueryOption;
 
+    private boolean canCreateQueryConfig() {
+        return (
+            typeNamesOption != null
+            || featureVersionOption != null
+            || resourceIdOption != null
+            || databaseIdOption != null
+            || boundingBoxOption != null
+            || counterOption != null
+            || sqlSelectOption != null
+        );
+    }
+
     public QueryConfig toQueryConfig() {
-        if (typeNamesOption != null
-                || featureVersionOption != null
-                || resourceIdOption != null
-                || databaseIdOption != null
-                || boundingBoxOption != null
-                || counterOption != null
-                || sqlSelectOption != null) {
+        if (canCreateQueryConfig()) {
             QueryConfig queryConfig = new QueryConfig();
             List<AbstractPredicate> predicates = new ArrayList<>();
 
