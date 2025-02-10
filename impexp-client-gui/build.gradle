@@ -15,7 +15,7 @@ dependencies {
     api "com.formdev:flatlaf:$flatlaf_version"
     api "com.formdev:flatlaf-extras:$flatlaf_version"
     api "com.formdev:flatlaf-swingx:$flatlaf_version"
-    api "com.fifesoft:rsyntaxtextarea:3.5.1"
+    api "com.fifesoft:rsyntaxtextarea:3.5.4"
     api 'com.github.vertical-blank:sql-formatter:2.0.5'
     api('org.citydb:swingx-ws:1.1.6') {
         transitive = false
@@ -23,7 +23,6 @@ dependencies {
     api('org.citydb:swingx-all:1.6.10') {
         transitive = false
     }
-
     implementation "com.formdev:flatlaf:$flatlaf_version:linux-x86_64@so"
     implementation "com.formdev:flatlaf:$flatlaf_version:macos-arm64@dylib"
     implementation "com.formdev:flatlaf:$flatlaf_version:macos-x86_64@dylib"
