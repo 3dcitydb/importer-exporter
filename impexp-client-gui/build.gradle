@@ -12,7 +12,7 @@ def flatlaf_version = '3.5.4'
 
 dependencies {
     api project(':impexp-client-cli')
-    api "com.fifesoft:rsyntaxtextarea:3.5.4"
+    api 'com.fifesoft:rsyntaxtextarea:3.5.4'
     api 'com.github.vertical-blank:sql-formatter:2.0.5'
     api "com.formdev:flatlaf:$flatlaf_version:no-natives"
     api("com.formdev:flatlaf-extras:$flatlaf_version") {
