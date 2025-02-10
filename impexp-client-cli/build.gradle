@@ -46,9 +46,9 @@ distributions {
                 from "$rootDir/resources/license/APACHE-2.0.txt"
                 from processLicense
             }
-            from(file("$buildDir/tmp/dir")) {
-                mkdir "$buildDir/tmp/dir/plugins"
-                mkdir "$buildDir/tmp/dir/ade-extensions"
+            from(file("$projectDir/build/tmp/dir")) {
+                mkdir "$projectDir/build/tmp/dir/plugins"
+                mkdir "$projectDir/build/tmp/dir/ade-extensions"
             }
         }
     }

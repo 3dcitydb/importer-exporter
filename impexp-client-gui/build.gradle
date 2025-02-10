@@ -12,11 +12,15 @@ def flatlaf_version = '3.5.4'
 
 dependencies {
     api project(':impexp-client-cli')
-    api "com.formdev:flatlaf:$flatlaf_version"
-    api "com.formdev:flatlaf-extras:$flatlaf_version"
-    api "com.formdev:flatlaf-swingx:$flatlaf_version"
     api "com.fifesoft:rsyntaxtextarea:3.5.4"
     api 'com.github.vertical-blank:sql-formatter:2.0.5'
+    api "com.formdev:flatlaf:$flatlaf_version:no-natives"
+    api("com.formdev:flatlaf-extras:$flatlaf_version") {
+        exclude group: 'com.formdev', module: 'flatlaf'
+    }
+    api("com.formdev:flatlaf-swingx:$flatlaf_version") {
+        exclude group: 'com.formdev', module: 'flatlaf'
+    }
     api('org.citydb:swingx-ws:1.1.6') {
         transitive = false
     }
@@ -66,7 +70,7 @@ task processReadme(type: Copy) {
                 docUrl: project.docUrl
         ])
     }
-    into "$buildDir/tmp/doc"
+    into "$projectDir/build/tmp/doc"
 }
 
 javadoc {
@@ -130,9 +134,9 @@ distributions {
                 from "$rootDir/resources/license/APACHE-2.0.txt"
                 from processLicense
             }
-            from(file("$buildDir/tmp/dir")) {
-                mkdir "$buildDir/tmp/dir/plugins"
-                mkdir "$buildDir/tmp/dir/ade-extensions"
+            from(file("$projectDir/build/tmp/dir")) {
+                mkdir "$projectDir/build/tmp/dir/plugins"
+                mkdir "$projectDir/build/tmp/dir/ade-extensions"
             }
         }
     }
