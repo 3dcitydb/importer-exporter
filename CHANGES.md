@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+### 5.5.1 - tba
+
+#### Changes
+* Native libraries used by the FlatLaf GUI framework are now bundled with the Importer/Exporter. This prevents the
+  libraries from being extracted to a temporary directory, which could cause issues on systems with execution
+  restrictions enabled.
+
+#### Fixes
+* Fixed an issue with writing ZIP files containing texture files.
+* Fixed the import of `relativeToTerrain` and `relativeToWater` properties of city objects.
+* Fixed the incorrect export of the `worldToTexture` property of `TexCoordGen` elements.
+
+#### Miscellaneous
+* Updated all dependencies to their latest versions.
+
 ### 5.5.0 - 2024-09-26
 
 #### Changes
