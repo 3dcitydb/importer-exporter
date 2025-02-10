@@ -5,23 +5,31 @@ plugins {
 }
 
 configurations {
-    izpack
     doc
 }
 
+def flatlaf_version = '3.5.4'
+
 dependencies {
     api project(':impexp-client-cli')
-    api 'com.formdev:flatlaf:3.5.1'
-    api 'com.formdev:flatlaf-extras:3.5.1'
-    api 'com.formdev:flatlaf-swingx:3.5.1'
-    api 'com.fifesoft:rsyntaxtextarea:3.5.1'
+    api "com.formdev:flatlaf:$flatlaf_version"
+    api "com.formdev:flatlaf-extras:$flatlaf_version"
+    api "com.formdev:flatlaf-swingx:$flatlaf_version"
+    api "com.fifesoft:rsyntaxtextarea:3.5.1"
     api 'com.github.vertical-blank:sql-formatter:2.0.5'
-    api ('org.citydb:swingx-ws:1.1.6') {
+    api('org.citydb:swingx-ws:1.1.6') {
         transitive = false
     }
-    api ('org.citydb:swingx-all:1.6.10') {
+    api('org.citydb:swingx-all:1.6.10') {
         transitive = false
     }
+
+    implementation "com.formdev:flatlaf:$flatlaf_version:linux-x86_64@so"
+    implementation "com.formdev:flatlaf:$flatlaf_version:macos-arm64@dylib"
+    implementation "com.formdev:flatlaf:$flatlaf_version:macos-x86_64@dylib"
+    implementation "com.formdev:flatlaf:$flatlaf_version:windows-x86_64@dll"
+    implementation "com.formdev:flatlaf:$flatlaf_version:windows-x86@dll"
+    implementation "com.formdev:flatlaf:$flatlaf_version:windows-arm64@dll"
 
     doc 'org.kohsuke.metainf-services:metainf-services:1.8'
     doc 'org.swinglabs.swingx:swingx-mavensupport:1.6.5-1'
