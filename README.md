@@ -47,16 +47,16 @@ previous release of the 3D City Database Importer/Exporter under Apache License 
 
 Latest release
 --------------
-The latest stable release of the 3D City Database Importer/Exporter is 5.5.0.
+The latest stable release of the 3D City Database Importer/Exporter is 5.5.1.
 
-Download the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.5.0/3DCityDB-Importer-Exporter-5.5.0.zip).
+Download the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v5.5.1/3DCityDB-Importer-Exporter-5.5.1.zip).
 Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
 
 System requirements
 -------------------
 * Java JRE or JDK >= 11
 * [3D City Database](https://github.com/3dcitydb/3dcitydb) on
-  - PostgreSQL DBMS >= 12 with PostGIS extension >= 3.0
+  - PostgreSQL DBMS >= 13 with PostGIS extension >= 3.0
   - Oracle DBMS >= 19c
   - PolarDB for PostgresSQL >= 1.1 with Ganos >= 4.6
   

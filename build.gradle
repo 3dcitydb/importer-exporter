@@ -2,7 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply from: 'properties.gradle'
 
-version '5.5.1-SNAPSHOT'
+version '5.5.1'
 
 subprojects {
     apply plugin: 'java-library'
@@ -61,10 +61,6 @@ subprojects {
                 """.replaceAll("[\r|\n]+", "")
             addStringOption('doctitle', project.name + ' - ' + project.version)
             addStringOption('Xdoclint:none', '-quiet')
-        }
-
-        if (JavaVersion.current().isJava9Compatible()) {
-            options.addBooleanOption('html5', true)
         }
 
         doFirst {

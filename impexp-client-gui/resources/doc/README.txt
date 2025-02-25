@@ -83,7 +83,7 @@ third party applications.
 
 * Java JRE or JDK >= 11
 * @citydbName@ version @citydbVersion@ on
-  - PostgreSQL DBMS >= 12 with PostGIS extension >= 3.0
+  - PostgreSQL DBMS >= 13 with PostGIS extension >= 3.0
   - Oracle Spatial DBMS >= 19c
   - PolarDB for PostgresSQL >= 1.1 with Ganos >= 4.6
 
@@ -194,9 +194,7 @@ and with the support from the following cooperation partners:
 --------------------
 
 Claus Nagel <cnagel@vc.systems>
-Zhihang Yao <zyao@vc.systems>
-Luca Casagrande <lcasagrande@moss.de>
-Felix Kunde <felix-kunde@gmx.de>
+Zhihang Yao <zhihang.yao@hft-stuttgart.de>
 Son H. Nguyen <son.nguyen@tum.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
 

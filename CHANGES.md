@@ -1,11 +1,11 @@
 Change Log
 ==========
 
-### 5.5.1 - tba
+### 5.5.1 - 2025-02-25
 
 #### Changes
 * Native libraries used by the FlatLaf GUI framework are now bundled with the Importer/Exporter. This prevents the
-  libraries from being extracted to a temporary directory, which could cause issues on systems with execution
+  libraries from being extracted to a temporary directory, which could cause security issues on systems with execution
   restrictions enabled.
 
 #### Fixes
