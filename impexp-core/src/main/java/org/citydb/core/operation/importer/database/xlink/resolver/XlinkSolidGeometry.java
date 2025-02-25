@@ -155,7 +155,7 @@ public class XlinkSolidGeometry implements DBXlinkResolver {
             // rebuild geometry hierarchy
             while (rs.next()) {
                 long id = rs.getLong("id");
-                long parentId = rs.getInt("parent_id");
+                long parentId = rs.getLong("parent_id");
 
                 // constructing a geometry node
                 GeometryNode geomNode = new GeometryNode();

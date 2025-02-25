@@ -246,7 +246,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
                 int isTriangulated = rs.getInt("IS_TRIANGULATED");
                 int isReverse = rs.getInt("IS_REVERSE");
                 long id = rs.getLong("ID");
-                long parent_id = rs.getInt("PARENT_ID");
+                long parent_id = rs.getLong("PARENT_ID");
 
                 Object solidGeometry = null;
                 if (isSolid == 1)
