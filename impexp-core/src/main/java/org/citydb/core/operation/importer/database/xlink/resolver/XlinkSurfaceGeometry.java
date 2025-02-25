@@ -349,7 +349,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
         updateBatchCounter = 0;
         parentBatchCounter = 0;
         memberBatchCounter = 0;
-        counters.replaceAll((k, v) -> v = 0);
+        counters.replaceAll((k, v) -> 0);
     }
 
     @Override
