@@ -105,7 +105,7 @@ public class XlinkBasic implements DBXlinkResolver {
         for (PreparedStatement ps : statements.values())
             ps.executeBatch();
 
-        counters.replaceAll((k, v) -> v = 0);
+        counters.replaceAll((k, v) -> 0);
     }
 
     @Override

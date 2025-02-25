@@ -78,7 +78,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
         // be careful with cyclic groupings
         if (featureType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
             psSelectTmp.setLong(1, cityObjectEntry.getId());
-            psSelectTmp.setLong(2, xlink.isParent() ? 1 : 0);
+            psSelectTmp.setInt(2, xlink.isParent() ? 1 : 0);
 
             try (ResultSet rs = psSelectTmp.executeQuery()) {
                 if (rs.next()) {
