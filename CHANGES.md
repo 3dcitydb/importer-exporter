@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 5.5.1 - 2025-02-25
+### 5.5.1 - 2025-02-26
 
 #### Changes
 * Native libraries used by the FlatLaf GUI framework are now bundled with the Importer/Exporter. This prevents the
@@ -12,6 +12,7 @@ Change Log
 * Fixed an issue with writing ZIP files containing texture files.
 * Fixed the import of `relativeToTerrain` and `relativeToWater` properties of city objects.
 * Fixed the incorrect export of the `worldToTexture` property of `TexCoordGen` elements.
+* Fixed a long to int conversion issue on the database when resolving XLinks. [#320](https://github.com/3dcitydb/importer-exporter/issues/320)
 
 #### Miscellaneous
 * Updated all dependencies to their latest versions.
