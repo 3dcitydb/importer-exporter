@@ -81,11 +81,11 @@ public class UtilAdapter extends AbstractUtilAdapter {
             try (ResultSet rs = psQuery.executeQuery()) {
                 if (rs.next()) {
                     DatabaseSrs srs = metaData.getReferenceSystem();
-                    srs.setSrid(rs.getInt("SCHEMA_SRID"));
-                    srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
-                    srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
-                    srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
-                    srs.setWkText(rs.getString("WKTEXT"));
+                    srs.setSrid(rs.getInt(1));
+                    srs.setGMLSrsName(rs.getString(2));
+                    srs.setDatabaseSrsName(rs.getString(3));
+                    srs.setType(getSrsType(rs.getString(4)));
+                    srs.setWkText(rs.getString(5));
                     srs.setSupported(true);
 
                     metaData.setVersioning(Versioning.NOT_SUPPORTED);
