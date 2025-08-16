@@ -264,10 +264,8 @@ public class DatabaseConnectionPool implements ConnectionManager {
     }
 
     public void closeAndRemoveConnection(Connection connection) throws SQLException {
-        try {
+        try (connection) {
             connection.unwrap(PooledConnection.class).setDiscarded(true);
-        } finally {
-            connection.close();
         }
     }
 
