@@ -35,7 +35,7 @@ subprojects {
         mavenCentral()
     }
 
-    task processLicense(type: Copy) {
+    tasks.register('processLicense', Copy) {
         from("$rootDir/resources/license/LICENSE.txt") {
             filteringCharset = 'UTF-8'
             filter(ReplaceTokens, tokens: [
