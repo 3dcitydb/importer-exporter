@@ -23,7 +23,8 @@ dependencies {
     jaxb 'org.slf4j:slf4j-simple:1.7.25'
 }
 
-task generateJaxb(group: 'jaxb') {
+tasks.register('generateJaxb') {
+    group = 'jaxb'
     outputs.dir genSrcDir
 
     doLast {
@@ -44,6 +45,7 @@ task generateJaxb(group: 'jaxb') {
     }
 }
 
-task cleanJaxb(type: Delete, group: 'jaxb') {
+tasks.register('cleanJaxb', Delete) {
+    group = 'jaxb'
     delete 'src-gen'
 }

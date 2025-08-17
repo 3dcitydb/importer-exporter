@@ -2,7 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply from: 'properties.gradle'
 
-version '5.5.1'
+version '5.5.2'
 
 subprojects {
     apply plugin: 'java-library'
@@ -35,7 +35,7 @@ subprojects {
         mavenCentral()
     }
 
-    task processLicense(type: Copy) {
+    tasks.register('processLicense', Copy) {
         from("$rootDir/resources/license/LICENSE.txt") {
             filteringCharset = 'UTF-8'
             filter(ReplaceTokens, tokens: [
