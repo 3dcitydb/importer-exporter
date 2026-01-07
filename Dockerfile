@@ -5,11 +5,11 @@
 
 # Fetch & build stage #########################################################
 # ARGS
-ARG BUILDER_IMAGE_TAG='17-jdk-slim'
-ARG RUNTIME_IMAGE_TAG='17-slim'
+ARG BUILDER_IMAGE_TAG='25-jdk-noble'
+ARG RUNTIME_IMAGE_TAG='25-jre-noble'
 
 # Base image
-FROM openjdk:${BUILDER_IMAGE_TAG} AS builder
+FROM eclipse-temurin:${BUILDER_IMAGE_TAG} AS builder
 
 # Copy source code
 WORKDIR /build
@@ -20,7 +20,7 @@ RUN chmod u+x ./gradlew && ./gradlew installDockerDist
 
 # Runtime stage ###############################################################
 # Base image
-FROM openjdk:${RUNTIME_IMAGE_TAG} AS runtime
+FROM eclipse-temurin:${RUNTIME_IMAGE_TAG} AS runtime
 
 # Version info
 ARG IMPEXP_VERSION
