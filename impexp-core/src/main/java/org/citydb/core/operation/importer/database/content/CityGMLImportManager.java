@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2025
+ * Copyright 2013 - 2026
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -66,9 +66,9 @@ import org.citygml4j.model.citygml.CityGMLModuleComponent;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.bridge.*;
+import org.citygml4j.model.citygml.building.*;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.AbstractOpening;
-import org.citygml4j.model.citygml.building.*;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.core.Address;

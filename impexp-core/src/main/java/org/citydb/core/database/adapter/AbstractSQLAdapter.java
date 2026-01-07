@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2025
+ * Copyright 2013 - 2026
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -36,8 +36,8 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.projection.Function;
 
-import java.sql.Date;
 import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

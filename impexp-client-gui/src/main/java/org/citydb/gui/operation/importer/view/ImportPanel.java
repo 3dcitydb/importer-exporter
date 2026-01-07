@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2025
+ * Copyright 2013 - 2026
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -60,8 +60,8 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ImportPanel extends DefaultViewComponent {

@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2025
+ * Copyright 2013 - 2026
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -89,8 +89,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
     private final Logger log = Logger.getInstance();
