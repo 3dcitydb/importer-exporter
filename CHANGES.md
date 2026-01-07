@@ -3,6 +3,9 @@ Change Log
 
 ### 5.5.3 - 2026-01-07
 
+#### Fixes
+* Replaced deprecated `opendjdk` Docker base image with `eclipse-temurin` in Dockerfile.
+
 #### Miscellaneous
 * Updated dependencies to their latest versions.
 
