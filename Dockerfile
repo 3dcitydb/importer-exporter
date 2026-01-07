@@ -33,8 +33,8 @@ COPY --from=builder /build/impexp-client-cli/build/install/3DCityDB-Importer-Exp
 RUN ln -sf /opt/impexp/impexp /usr/local/bin/ && \
     chmod a+x /opt/impexp/contribs/collada2gltf/*linux*/COLLADA2GLTF-bin
 
-USER 1000
 WORKDIR /data
+USER 1000
 
 ENTRYPOINT ["impexp"]
 CMD ["--help"]
