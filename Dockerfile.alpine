@@ -5,8 +5,8 @@
 
 # Fetch & build stage #########################################################
 # ARGS
-ARG BUILDER_IMAGE_TAG='17'
-ARG RUNTIME_IMAGE_TAG='17'
+ARG BUILDER_IMAGE_TAG='21'
+ARG RUNTIME_IMAGE_TAG='21'
 
 # Base image
 FROM bellsoft/liberica-openjdk-alpine:${BUILDER_IMAGE_TAG} AS builder
