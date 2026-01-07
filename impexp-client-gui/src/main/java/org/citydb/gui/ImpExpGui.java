@@ -445,7 +445,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
             } catch (Exception e) {
                 log.error("Failed to switch to look and feel theme '" + laf + "'.", e);
             } finally {
-                SwingUtilities.invokeLater(FlatAnimatedLafChange::hideSnapshotWithAnimation);
+                FlatAnimatedLafChange.hideSnapshotWithAnimation();
             }
         });
     }
