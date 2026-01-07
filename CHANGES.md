@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+### 5.5.3 - 2026-01-07
+
+#### Miscellaneous
+* Updated dependencies to their latest versions.
+
 ### 5.5.2 - 2025-08-17
 
 #### Changes
