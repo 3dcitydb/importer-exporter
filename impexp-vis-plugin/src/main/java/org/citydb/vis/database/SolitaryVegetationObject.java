@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2025
+ * Copyright 2013 - 2026
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -57,15 +57,15 @@ public class SolitaryVegetationObject extends AbstractVisObject {
     private boolean isPointOrCurve;
 
     public SolitaryVegetationObject(Connection connection,
-                          Query query,
-                          VisExporterManager visExporterManager,
-                          net.opengis.kml._2.ObjectFactory kmlFactory,
-                          AbstractDatabaseAdapter databaseAdapter,
-                          BlobExportAdapter textureExportAdapter,
-                          ElevationServiceHandler elevationServiceHandler,
-                          BalloonTemplateHandler balloonTemplateHandler,
-                          EventDispatcher eventDispatcher,
-                          Config config) {
+                                    Query query,
+                                    VisExporterManager visExporterManager,
+                                    net.opengis.kml._2.ObjectFactory kmlFactory,
+                                    AbstractDatabaseAdapter databaseAdapter,
+                                    BlobExportAdapter textureExportAdapter,
+                                    ElevationServiceHandler elevationServiceHandler,
+                                    BalloonTemplateHandler balloonTemplateHandler,
+                                    EventDispatcher eventDispatcher,
+                                    Config config) {
 
         super(connection,
                 query,

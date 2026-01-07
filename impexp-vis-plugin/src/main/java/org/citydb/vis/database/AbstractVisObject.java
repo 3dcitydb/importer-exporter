@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * https://www.3dcitydb.org/
  *
- * Copyright 2013 - 2025
+ * Copyright 2013 - 2026
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.lrg.tum.de/gis/
@@ -62,9 +62,9 @@ import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
+import org.collada._2005._11.colladaschema.*;
 import org.collada._2005._11.colladaschema.Image;
 import org.collada._2005._11.colladaschema.ObjectFactory;
-import org.collada._2005._11.colladaschema.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -87,8 +87,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 public abstract class AbstractVisObject {
     private final Logger log = Logger.getInstance();

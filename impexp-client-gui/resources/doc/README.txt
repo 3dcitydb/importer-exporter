@@ -83,22 +83,22 @@ third party applications.
 
 * Java JRE or JDK >= 11
 * @citydbName@ version @citydbVersion@ on
-  - PostgreSQL DBMS >= 13 with PostGIS extension >= 3.0
+  - PostgreSQL DBMS >= 14 with PostGIS extension >= 3.1
   - Oracle Spatial DBMS >= 19c
   - PolarDB for PostgresSQL >= 1.1 with Ganos >= 4.6
 
 The @name@ can be run on any platform 
 providing appropriate Java support. It has been tested on the 
 following platforms:
-  - Microsoft Windows 7, 8, 10, 11
+  - Microsoft Windows 10, 11
   - Apple Mac OS X and macOS
-  - Ubuntu 9 - 24
+  - Ubuntu 24 - 25
 
 
 5. (Un)Installation
 -------------------
 
-It is recommended to use the universal installer to setup the
+It is recommended to use the universal installer to set up the
 @name@ application on your local computer.
 The universal installer will guide you through the steps of the
 installation process. Afterwards, you can immediately run the application 
