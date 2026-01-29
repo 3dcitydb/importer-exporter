@@ -48,6 +48,7 @@ import javax.xml.bind.annotation.XmlType;
         "autoCommit",
         "computeNumberMatched",
         "continuation",
+        "indexes",
         "deleteLog"
 })
 public class DeleteConfig {
@@ -64,6 +65,7 @@ public class DeleteConfig {
     private boolean autoCommit;
     private ComputeNumberMatched computeNumberMatched;
     private Continuation continuation;
+    private DeleteIndex indexes;
     private DeleteLog deleteLog;
 
     public DeleteConfig() {
@@ -71,6 +73,7 @@ public class DeleteConfig {
         simpleQuery = new SimpleQuery();
         computeNumberMatched = new ComputeNumberMatched();
         continuation = new Continuation();
+        indexes = new DeleteIndex();
         deleteLog = new DeleteLog();
     }
 
@@ -161,6 +164,16 @@ public class DeleteConfig {
     public void setContinuation(Continuation continuation) {
         if (continuation != null)
             this.continuation = continuation;
+    }
+
+    public DeleteIndex getIndexes() {
+        return indexes;
+    }
+
+    public void setIndexes(DeleteIndex indexes) {
+        if (indexes != null) {
+            this.indexes = indexes;
+        }
     }
 
     public DeleteLog getDeleteLog() {
