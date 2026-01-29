@@ -48,7 +48,6 @@ import javax.xml.bind.annotation.XmlType;
         "autoCommit",
         "computeNumberMatched",
         "continuation",
-        "indexes",
         "deleteLog"
 })
 public class DeleteConfig {
