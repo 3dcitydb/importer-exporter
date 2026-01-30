@@ -370,14 +370,14 @@ public class Deleter implements EventHandler {
 
         // reactivate database indexes
         if (shouldRun && !preview) {
-            if (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivateActivate()
-                    || config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate()) {
+            if (config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivateActivate()
+                    || config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivateActivate()) {
                 try {
-                    if (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivateActivate()) {
+                    if (config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivateActivate()) {
                         manageIndexes(true, true);
                     }
 
-                    if (config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate()) {
+                    if (config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivateActivate()) {
                         manageIndexes(true, false);
                     }
                 } catch (SQLException e) {
