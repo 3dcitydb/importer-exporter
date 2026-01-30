@@ -189,37 +189,21 @@ public class Deleter implements EventHandler {
                 || config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivate()
                 || config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivateActivate())) {
             try {
-                boolean showSpatialIndexStatus = true;
                 if (shouldRun && (config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivate()
                         || config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivateActivate())) {
                     if (query.isSetSelection() && query.getSelection().containsSpatialOperators()) {
                         log.debug("Not deactivating spatial indexes because the delete query contains spatial filters.");
                     } else {
                         manageIndexes(false, true);
-                        showSpatialIndexStatus = false;
                     }
-                }
-
-                if (showSpatialIndexStatus) {
-                    databaseAdapter.getUtil().getIndexStatus(IndexStatusInfo.IndexType.SPATIAL).printStatusToConsole();
                 }
 
                 if (shouldRun && (config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivate()
                         || config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivateActivate())) {
                     manageIndexes(false, false);
-                } else {
-                    databaseAdapter.getUtil().getIndexStatus(IndexStatusInfo.IndexType.NORMAL).printStatusToConsole();
                 }
             } catch (SQLException e) {
                 throw new DeleteException("Failed to deactivate indexes.", e);
-            }
-        } else {
-            try {
-                for (IndexStatusInfo.IndexType type : IndexStatusInfo.IndexType.values()) {
-                    databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
-                }
-            } catch (SQLException e) {
-                throw new DeleteException("Failed to query index status.", e);
             }
         }
 
