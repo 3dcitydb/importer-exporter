@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.importer;
+package org.citydb.config.project.common;
 
 import javax.xml.bind.annotation.XmlType;
 
@@ -33,11 +33,11 @@ import javax.xml.bind.annotation.XmlType;
         "spatial",
         "normal"
 })
-public class Index {
+public class Indexes {
     private IndexMode spatial = IndexMode.UNCHANGED;
     private IndexMode normal = IndexMode.UNCHANGED;
 
-    public Index() {
+    public Indexes() {
     }
 
     public IndexMode getSpatial() {

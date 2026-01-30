@@ -29,8 +29,8 @@ package org.citydb.gui.operation.importer.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.importer.Index;
-import org.citydb.config.project.importer.IndexMode;
+import org.citydb.config.project.common.Indexes;
+import org.citydb.config.project.common.IndexMode;
 import org.citydb.gui.components.TitledPanel;
 import org.citydb.gui.plugin.internal.InternalPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
@@ -56,15 +56,15 @@ public class IndexPanel extends InternalPreferencesComponent {
 
     @Override
     public boolean isModified() {
-        Index index = config.getImportConfig().getIndexes();
+        Indexes indexes = config.getImportConfig().getIndexes();
 
-        if (impSIRadioNoDeac.isSelected() != index.isSpatialIndexModeUnchanged()) return true;
-        if (impSIRadioDeacAc.isSelected() != index.isSpatialIndexModeDeactivateActivate()) return true;
-        if (impSIRadioDeac.isSelected() != index.isSpatialIndexModeDeactivate()) return true;
+        if (impSIRadioNoDeac.isSelected() != indexes.isSpatialIndexModeUnchanged()) return true;
+        if (impSIRadioDeacAc.isSelected() != indexes.isSpatialIndexModeDeactivateActivate()) return true;
+        if (impSIRadioDeac.isSelected() != indexes.isSpatialIndexModeDeactivate()) return true;
 
-        if (impNIRadioNoDeac.isSelected() != index.isNormalIndexModeUnchanged()) return true;
-        if (impNIRadioDeacAc.isSelected() != index.isNormalIndexModeDeactivateActivate()) return true;
-        if (impNIRadioDeac.isSelected() != index.isNormalIndexModeDeactivate()) return true;
+        if (impNIRadioNoDeac.isSelected() != indexes.isNormalIndexModeUnchanged()) return true;
+        if (impNIRadioDeacAc.isSelected() != indexes.isNormalIndexModeDeactivateActivate()) return true;
+        if (impNIRadioDeac.isSelected() != indexes.isNormalIndexModeDeactivate()) return true;
 
         return false;
     }
@@ -130,18 +130,18 @@ public class IndexPanel extends InternalPreferencesComponent {
 
     @Override
     public void loadSettings() {
-        Index index = config.getImportConfig().getIndexes();
+        Indexes indexes = config.getImportConfig().getIndexes();
 
-        if (index.isSpatialIndexModeUnchanged())
+        if (indexes.isSpatialIndexModeUnchanged())
             impSIRadioNoDeac.setSelected(true);
-        else if (index.isSpatialIndexModeDeactivateActivate())
+        else if (indexes.isSpatialIndexModeDeactivateActivate())
             impSIRadioDeacAc.setSelected(true);
         else
             impSIRadioDeac.setSelected(true);
 
-        if (index.isNormalIndexModeUnchanged())
+        if (indexes.isNormalIndexModeUnchanged())
             impNIRadioNoDeac.setSelected(true);
-        else if (index.isNormalIndexModeDeactivateActivate())
+        else if (indexes.isNormalIndexModeDeactivateActivate())
             impNIRadioDeacAc.setSelected(true);
         else
             impNIRadioDeac.setSelected(true);
@@ -149,21 +149,21 @@ public class IndexPanel extends InternalPreferencesComponent {
 
     @Override
     public void setSettings() {
-        Index index = config.getImportConfig().getIndexes();
+        Indexes indexes = config.getImportConfig().getIndexes();
 
         if (impSIRadioNoDeac.isSelected())
-            index.setSpatial(IndexMode.UNCHANGED);
+            indexes.setSpatial(IndexMode.UNCHANGED);
         else if (impSIRadioDeacAc.isSelected())
-            index.setSpatial(IndexMode.DEACTIVATE_ACTIVATE);
+            indexes.setSpatial(IndexMode.DEACTIVATE_ACTIVATE);
         else
-            index.setSpatial(IndexMode.DEACTIVATE);
+            indexes.setSpatial(IndexMode.DEACTIVATE);
 
         if (impNIRadioNoDeac.isSelected())
-            index.setNormal(IndexMode.UNCHANGED);
+            indexes.setNormal(IndexMode.UNCHANGED);
         else if (impNIRadioDeacAc.isSelected())
-            index.setNormal(IndexMode.DEACTIVATE_ACTIVATE);
+            indexes.setNormal(IndexMode.DEACTIVATE_ACTIVATE);
         else
-            index.setNormal(IndexMode.DEACTIVATE);
+            indexes.setNormal(IndexMode.DEACTIVATE);
     }
 
     @Override

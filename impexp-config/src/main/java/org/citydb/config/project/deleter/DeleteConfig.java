@@ -30,6 +30,7 @@ package org.citydb.config.project.deleter;
 
 import org.citydb.config.project.common.ComputeNumberMatched;
 import org.citydb.config.project.common.IdList;
+import org.citydb.config.project.common.Indexes;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.QueryConfig;
 
@@ -48,6 +49,7 @@ import javax.xml.bind.annotation.XmlType;
         "autoCommit",
         "computeNumberMatched",
         "continuation",
+        "indexes",
         "deleteLog"
 })
 public class DeleteConfig {
@@ -64,6 +66,7 @@ public class DeleteConfig {
     private boolean autoCommit;
     private ComputeNumberMatched computeNumberMatched;
     private Continuation continuation;
+    private Indexes indexes;
     private DeleteLog deleteLog;
 
     public DeleteConfig() {
@@ -71,6 +74,7 @@ public class DeleteConfig {
         simpleQuery = new SimpleQuery();
         computeNumberMatched = new ComputeNumberMatched();
         continuation = new Continuation();
+        indexes = new Indexes();
         deleteLog = new DeleteLog();
     }
 
@@ -161,6 +165,16 @@ public class DeleteConfig {
     public void setContinuation(Continuation continuation) {
         if (continuation != null)
             this.continuation = continuation;
+    }
+
+    public Indexes getIndexes() {
+        return indexes;
+    }
+
+    public void setIndexes(Indexes indexes) {
+        if (indexes != null) {
+            this.indexes = indexes;
+        }
     }
 
     public DeleteLog getDeleteLog() {

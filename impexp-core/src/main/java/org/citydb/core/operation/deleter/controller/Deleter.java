@@ -34,6 +34,7 @@ import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.CacheMode;
 import org.citydb.core.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.core.database.adapter.AbstractUtilAdapter;
 import org.citydb.core.database.adapter.IndexStatusInfo;
 import org.citydb.core.database.connection.DatabaseConnectionPool;
 import org.citydb.core.database.schema.mapping.SchemaMapping;
@@ -180,6 +181,46 @@ public class Deleter implements EventHandler {
                     queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
         } catch (QueryBuildException e) {
             throw new DeleteException("Failed to build the delete query expression.", e);
+        }
+
+        // deactivate database indexes
+        if (shouldRun && !preview && (config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivate()
+                || config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivateActivate()
+                || config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivate()
+                || config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivateActivate())) {
+            try {
+                boolean showSpatialIndexStatus = true;
+                if (shouldRun && (config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivate()
+                        || config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivateActivate())) {
+                    if (query.isSetSelection() && query.getSelection().containsSpatialOperators()) {
+                        log.debug("Not deactivating spatial indexes because the delete query contains spatial filters.");
+                    } else {
+                        manageIndexes(false, true);
+                        showSpatialIndexStatus = false;
+                    }
+                }
+
+                if (showSpatialIndexStatus) {
+                    databaseAdapter.getUtil().getIndexStatus(IndexStatusInfo.IndexType.SPATIAL).printStatusToConsole();
+                }
+
+                if (shouldRun && (config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivate()
+                        || config.getDeleteConfig().getIndexes().isNormalIndexModeDeactivateActivate())) {
+                    manageIndexes(false, false);
+                } else {
+                    databaseAdapter.getUtil().getIndexStatus(IndexStatusInfo.IndexType.NORMAL).printStatusToConsole();
+                }
+            } catch (SQLException e) {
+                throw new DeleteException("Failed to deactivate indexes.", e);
+            }
+        } else {
+            try {
+                for (IndexStatusInfo.IndexType type : IndexStatusInfo.IndexType.values()) {
+                    databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
+                }
+            } catch (SQLException e) {
+                throw new DeleteException("Failed to query index status.", e);
+            }
         }
 
         // check and log index status
@@ -343,6 +384,24 @@ public class Deleter implements EventHandler {
             }
         }
 
+        // reactivate database indexes
+        if (shouldRun && !preview) {
+            if (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivateActivate()
+                    || config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate()) {
+                try {
+                    if (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivateActivate()) {
+                        manageIndexes(true, true);
+                    }
+
+                    if (config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate()) {
+                        manageIndexes(true, false);
+                    }
+                } catch (SQLException e) {
+                    log.warn("Failed to activate indexes.", e);
+                }
+            }
+        }
+
         if (shouldRun) {
             // show deleted features
             if (!objectCounter.isEmpty()) {
@@ -360,6 +419,29 @@ public class Deleter implements EventHandler {
         }
 
         return shouldRun;
+    }
+
+    private void manageIndexes(boolean enable, boolean workOnSpatialIndexes) throws SQLException {
+        AbstractUtilAdapter utilAdapter = databaseAdapter.getUtil();
+        log.info((enable ? "Activating " : "Deactivating ") + (workOnSpatialIndexes ? "spatial" : "normal") + " indexes...");
+
+        IndexStatusInfo indexStatus;
+        if (enable) {
+            indexStatus = workOnSpatialIndexes ? utilAdapter.createSpatialIndexes() : utilAdapter.createNormalIndexes();
+        } else {
+            indexStatus = workOnSpatialIndexes ? utilAdapter.dropSpatialIndexes() : utilAdapter.dropNormalIndexes();
+        }
+
+        if (indexStatus != null) {
+            IndexStatusInfo.IndexStatus expectedStatus = enable ? IndexStatusInfo.IndexStatus.VALID : IndexStatusInfo.IndexStatus.DROPPED;
+            for (IndexStatusInfo.IndexInfoObject indexObj : indexStatus.getIndexObjects()) {
+                if (indexObj.getStatus() != expectedStatus) {
+                    log.error("FAILED: " + indexObj);
+                    if (indexObj.hasErrorMessage())
+                        log.error("Error cause: " + indexObj.getErrorMessage());
+                }
+            }
+        }
     }
 
     private void setException(String message, Throwable cause) {

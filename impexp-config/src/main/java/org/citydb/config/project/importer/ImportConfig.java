@@ -28,6 +28,7 @@
 package org.citydb.config.project.importer;
 
 import org.citydb.config.project.common.AffineTransformation;
+import org.citydb.config.project.common.Indexes;
 import org.citydb.config.project.common.Path;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -63,7 +64,7 @@ public class ImportConfig {
     private AffineTransformation affineTransformation;
     private CityGMLOptions cityGMLOptions;
     private CityJSONOptions cityJSONOptions;
-    private Index indexes;
+    private Indexes indexes;
     private ImportLog importLog;
     private DuplicateLog duplicateLog;
     private ImportResources resources;
@@ -78,7 +79,7 @@ public class ImportConfig {
         affineTransformation = new AffineTransformation();
         cityGMLOptions = new CityGMLOptions();
         cityJSONOptions = new CityJSONOptions();
-        indexes = new Index();
+        indexes = new Indexes();
         importLog = new ImportLog();
         duplicateLog = new DuplicateLog();
         resources = new ImportResources();
@@ -152,11 +153,11 @@ public class ImportConfig {
         }
     }
 
-    public Index getIndexes() {
+    public Indexes getIndexes() {
         return indexes;
     }
 
-    public void setIndexes(Index indexes) {
+    public void setIndexes(Indexes indexes) {
         if (indexes != null) {
             this.indexes = indexes;
         }
