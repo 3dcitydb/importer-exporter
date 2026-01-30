@@ -192,7 +192,7 @@ public class Deleter implements EventHandler {
                 if (shouldRun && (config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivate()
                         || config.getDeleteConfig().getIndexes().isSpatialIndexModeDeactivateActivate())) {
                     if (query.isSetSelection() && query.getSelection().containsSpatialOperators()) {
-                        log.debug("Not deactivating spatial indexes because the delete query contains spatial filters.");
+                        log.info("Not deactivating spatial indexes because the delete query contains spatial filters.");
                     } else {
                         manageIndexes(false, true);
                     }
