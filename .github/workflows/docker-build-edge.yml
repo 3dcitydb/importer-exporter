@@ -10,13 +10,13 @@ jobs:
 
     steps:
       - name: Parse short sha
-        uses: benjlevesque/short-sha@v3.0
+        uses: benjlevesque/short-sha@v4.0
         id: short-sha
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Build and push image
         id: docker_build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           push: false
           tags: 3dcitydb/impexp:edge
